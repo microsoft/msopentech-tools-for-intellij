@@ -1,0 +1,174 @@
+<?xml version="1.0" ?>
+<!--
+Copyright 2014 Microsoft Open Technologies, Inc.
+ 
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+ 
+http://www.apache.org/licenses/LICENSE-2.0
+ 
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+-->
+<project xmlns:artifact="antlib:org.apache.maven.artifact.ant">
+    <!-- Setup paths for SWT jars. -->
+    <path id="swt-osx-x86.classpath" path="..\..\lib\swt\swt-4.4-cocoa-macosx-x86\swt.jar" />
+    <path id="swt-osx-x64.classpath" path="..\..\lib\swt\swt-4.4-cocoa-macosx-x86_64\swt.jar" />
+    <path id="swt-linux-x86.classpath" path="..\..\lib\swt\swt-4.4-gtk-linux-x86\swt.jar" />
+    <path id="swt-linux-x64.classpath" path="..\..\lib\swt\swt-4.4-gtk-linux-x86_64\swt.jar" />
+    <path id="swt-win32-x86.classpath" path="..\..\lib\swt\swt-4.4-win32-win32-x86\swt.jar" />
+    <path id="swt-win32-x64.classpath" path="..\..\lib\swt\swt-4.4-win32-win32-x86_64\swt.jar" />
+
+    <pathconvert refid="swt-osx-x86.classpath" property="swt-osx-x86.file" />
+    <pathconvert refid="swt-osx-x64.classpath" property="swt-osx-x64.file" />
+    <pathconvert refid="swt-linux-x86.classpath" property="swt-linux-x86.file" />
+    <pathconvert refid="swt-linux-x64.classpath" property="swt-linux-x64.file" />
+    <pathconvert refid="swt-win32-x86.classpath" property="swt-win32-x86.file" />
+    <pathconvert refid="swt-win32-x64.classpath" property="swt-win32-x64.file" />
+
+    <!-- Refer maven ant tasks library. -->
+    <path id="maven-ant-tasks.classpath" path="..\..\lib\maven-ant-tasks-2.1.3.jar" />
+    <typedef resource="org/apache/maven/artifact/ant/antlib.xml"
+             uri="antlib:org.apache.maven.artifact.ant"
+             classpathref="maven-ant-tasks.classpath" />
+
+    <!-- Setup dependency with Google Guava 18.0 from Maven -->
+    <artifact:dependencies pathid="dependency.classpath">
+        <dependency groupId="com.google.guava" artifactId="guava" version="18.0" />
+    </artifact:dependencies>
+    <pathconvert refid="dependency.classpath" property="dependency.file" />
+
+    <property name="src" location="src" />
+    <property name="dist" location="out\artifacts\ad-interactive-auth-jar"/>
+    <property name="build" location="out\production\ad-interactive-auth-jar" />
+
+    <target name="init">
+        <tstamp />
+        <mkdir dir="${build}" />
+    </target>
+
+    <target name="compile-osx-x86" depends="init">
+        <javac srcdir="${src}" destdir="${build}">
+            <classpath refid="dependency.classpath" />
+            <classpath refid="swt-osx-x86.classpath" />
+        </javac>
+    </target>
+    <target name="compile-osx-x64" depends="init">
+        <javac srcdir="${src}" destdir="${build}">
+            <classpath refid="dependency.classpath" />
+            <classpath refid="swt-osx-x64.classpath" />
+        </javac>
+    </target>
+    <target name="compile-linux-x86" depends="init">
+        <javac srcdir="${src}" destdir="${build}">
+            <classpath refid="dependency.classpath" />
+            <classpath refid="swt-linux-x86.classpath" />
+        </javac>
+    </target>
+    <target name="compile-linux-x64" depends="init">
+        <javac srcdir="${src}" destdir="${build}">
+            <classpath refid="dependency.classpath" />
+            <classpath refid="swt-linux-x64.classpath" />
+        </javac>
+    </target>
+    <target name="compile-win32-x86" depends="init">
+        <javac srcdir="${src}" destdir="${build}">
+            <classpath refid="dependency.classpath" />
+            <classpath refid="swt-win32-x86.classpath" />
+        </javac>
+    </target>
+    <target name="compile-win32-x64" depends="init">
+        <javac srcdir="${src}" destdir="${build}">
+            <classpath refid="dependency.classpath" />
+            <classpath refid="swt-win32-x64.classpath" />
+        </javac>
+    </target>
+
+    <target name="dist-osx-x86" depends="compile-osx-x86">
+        <mkdir dir="${dist}" />
+        <jar jarfile="${dist}\ad-interactive-auth-osx-x86.jar" basedir="${build}">
+            <zipfileset includes="**/*.class" src="${dependency.file}" />
+            <zipfileset includes="**/*.*" src="${swt-osx-x86.file}" />
+            <manifest>
+                <attribute name="Main-Class"
+                           value="com.microsoftopentechnologies.adinteractiveauth.Program"/>
+            </manifest>
+        </jar>
+    </target>
+    <target name="dist-osx-x64" depends="compile-osx-x64">
+        <mkdir dir="${dist}" />
+        <jar jarfile="${dist}\ad-interactive-auth-osx-x64.jar" basedir="${build}">
+            <zipfileset includes="**/*.class" src="${dependency.file}" />
+            <zipfileset includes="**/*.*" src="${swt-osx-x64.file}" />
+            <manifest>
+                <attribute name="Main-Class"
+                           value="com.microsoftopentechnologies.adinteractiveauth.Program"/>
+            </manifest>
+        </jar>
+    </target>
+    <target name="dist-linux-x86" depends="compile-linux-x86">
+        <mkdir dir="${dist}" />
+        <jar jarfile="${dist}\ad-interactive-auth-linux-x86.jar" basedir="${build}">
+            <zipfileset includes="**/*.class" src="${dependency.file}" />
+            <zipfileset includes="**/*.*" src="${swt-linux-x86.file}" />
+            <manifest>
+                <attribute name="Main-Class"
+                           value="com.microsoftopentechnologies.adinteractiveauth.Program"/>
+            </manifest>
+        </jar>
+    </target>
+    <target name="dist-linux-x64" depends="compile-linux-x64">
+        <mkdir dir="${dist}" />
+        <jar jarfile="${dist}\ad-interactive-auth-linux-x64.jar" basedir="${build}">
+            <zipfileset includes="**/*.class" src="${dependency.file}" />
+            <zipfileset includes="**/*.*" src="${swt-linux-x64.file}" />
+            <manifest>
+                <attribute name="Main-Class"
+                           value="com.microsoftopentechnologies.adinteractiveauth.Program"/>
+            </manifest>
+        </jar>
+    </target>
+    <target name="dist-win32-x86" depends="compile-win32-x86">
+        <mkdir dir="${dist}" />
+        <jar jarfile="${dist}\ad-interactive-auth-win32-x86.jar" basedir="${build}">
+            <zipfileset includes="**/*.class" src="${dependency.file}" />
+            <zipfileset includes="**/*.*" src="${swt-win32-x86.file}" />
+            <manifest>
+                <attribute name="Main-Class"
+                           value="com.microsoftopentechnologies.adinteractiveauth.Program"/>
+            </manifest>
+        </jar>
+    </target>
+    <target name="dist-win32-x64" depends="compile-win32-x64">
+        <mkdir dir="${dist}" />
+        <jar jarfile="${dist}\ad-interactive-auth-win32-x64.jar" basedir="${build}">
+            <zipfileset includes="**/*.class" src="${dependency.file}" />
+            <zipfileset includes="**/*.*" src="${swt-win32-x64.file}" />
+            <manifest>
+                <attribute name="Main-Class"
+                           value="com.microsoftopentechnologies.adinteractiveauth.Program"/>
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="dist">
+        <antcall>
+            <target name="dist-osx-x86" />
+            <target name="dist-osx-x64" />
+            <target name="dist-linux-x86" />
+            <target name="dist-linux-x64" />
+            <target name="dist-win32-x86" />
+            <target name="dist-win32-x64" />
+        </antcall>
+    </target>
+
+    <target name="clean">
+        <delete dir="${build}" />
+        <delete dir="${dist}" />
+    </target>
+</project>

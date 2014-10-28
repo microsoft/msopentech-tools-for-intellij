@@ -1,0 +1,715 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright 2014 Microsoft Open Technologies, Inc.
+ 
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+ 
+http://www.apache.org/licenses/LICENSE-2.0
+ 
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+-->
+<project name="msopentech_plugin_for_intellij/android_studio" default="all">
+
+
+    <property file="build.properties"/>
+
+    <!-- Compiler options -->
+
+    <property name="compiler.debug" value="on"/>
+    <property name="compiler.generate.no.warnings" value="off"/>
+    <property name="compiler.args" value=""/>
+    <property name="compiler.max.memory" value="700m"/>
+    <patternset id="ignored.files">
+        <exclude name="**/CVS/**"/>
+        <exclude name="**/SCCS/**"/>
+        <exclude name="**/RCS/**"/>
+        <exclude name="**/rcs/**"/>
+        <exclude name="**/.DS_Store/**"/>
+        <exclude name="**/.svn/**"/>
+        <exclude name="**/.pyc/**"/>
+        <exclude name="**/.pyo/**"/>
+        <exclude name="**/*.pyc/**"/>
+        <exclude name="**/*.pyo/**"/>
+        <exclude name="**/.git/**"/>
+        <exclude name="**/*.hprof/**"/>
+        <exclude name="**/_svn/**"/>
+        <exclude name="**/.hg/**"/>
+        <exclude name="**/*.lib/**"/>
+        <exclude name="**/*~/**"/>
+        <exclude name="**/__pycache__/**"/>
+        <exclude name="**/.bundle/**"/>
+        <exclude name="**/*.rbc/**"/>
+    </patternset>
+    <patternset id="library.patterns">
+        <include name="*.zip"/>
+        <include name="*.apk"/>
+        <include name="*.war"/>
+        <include name="*.egg"/>
+        <include name="*.ear"/>
+        <include name="*.ane"/>
+        <include name="*.swc"/>
+        <include name="*.jar"/>
+    </patternset>
+    <patternset id="compiler.resources">
+        <exclude name="**/?*.java"/>
+        <exclude name="**/?*.form"/>
+        <exclude name="**/?*.class"/>
+        <exclude name="**/?*.groovy"/>
+        <exclude name="**/?*.scala"/>
+        <exclude name="**/?*.flex"/>
+        <exclude name="**/?*.kt"/>
+        <exclude name="**/?*.clj"/>
+    </patternset>
+    <patternset id="androidstudio.compiler.resources">
+        <include name="**/?*.json"/>
+    </patternset>
+
+    <!-- JDK definitions -->
+
+    <property name="jdk.bin.idea" value="${jdk.home.idea}/../jdk1.6.0_45/bin"/>
+    <path id="jdk.classpath.idea">
+        <fileset dir="${jdk.home.idea}">
+            <include name="lib/annotations.jar"/>
+            <include name="lib/asm-all.jar"/>
+            <include name="lib/asm-commons.jar"/>
+            <include name="lib/asm.jar"/>
+            <include name="lib/asm4-all.jar"/>
+            <include name="lib/automaton.jar"/>
+            <include name="lib/boot.jar"/>
+            <include name="lib/bootstrap.jar"/>
+            <include name="lib/cglib-2.2.2.jar"/>
+            <include name="lib/cli-parser-1.1.jar"/>
+            <include name="lib/commons-codec-1.8.jar"/>
+            <include name="lib/commons-httpclient-3.1-patched.jar"/>
+            <include name="lib/commons-logging-1.1.3.jar"/>
+            <include name="lib/commons-net-3.1.jar"/>
+            <include name="lib/extensions.jar"/>
+            <include name="lib/fluent-hc-4.3.2.jar"/>
+            <include name="lib/forms_rt.jar"/>
+            <include name="lib/groovy-all-2.2.1.jar"/>
+            <include name="lib/gson-2.2.4.jar"/>
+            <include name="lib/guava-14.0.1.jar"/>
+            <include name="lib/hamcrest-core-1.3.jar"/>
+            <include name="lib/hamcrest-library-1.3.jar"/>
+            <include name="lib/httpclient-4.3.2.jar"/>
+            <include name="lib/httpcore-4.3.1.jar"/>
+            <include name="lib/httpmime-4.3.2.jar"/>
+            <include name="lib/icons.jar"/>
+            <include name="lib/idea.jar"/>
+            <include name="lib/idea_rt.jar"/>
+            <include name="lib/isorelax.jar"/>
+            <include name="lib/javac2.jar"/>
+            <include name="lib/jaxen-1.1.3.jar"/>
+            <include name="lib/jayatana-1.2.4.jar"/>
+            <include name="lib/jcip-annotations.jar"/>
+            <include name="lib/jdkAnnotations.jar"/>
+            <include name="lib/jdom.jar"/>
+            <include name="lib/jgoodies-common-1.2.1.jar"/>
+            <include name="lib/jgoodies-forms.jar"/>
+            <include name="lib/jgoodies-looks-2.4.2.jar"/>
+            <include name="lib/jh.jar"/>
+            <include name="lib/jing.jar"/>
+            <include name="lib/jna-utils.jar"/>
+            <include name="lib/jna.jar"/>
+            <include name="lib/jps-launcher.jar"/>
+            <include name="lib/jps-server.jar"/>
+            <include name="lib/jsch-0.1.50.jar"/>
+            <include name="lib/jsch.agentproxy.connector-factory.jar"/>
+            <include name="lib/jsch.agentproxy.core.jar"/>
+            <include name="lib/jsch.agentproxy.pageant.jar"/>
+            <include name="lib/jsch.agentproxy.sshagent.jar"/>
+            <include name="lib/jsch.agentproxy.usocket-jna.jar"/>
+            <include name="lib/jsch.agentproxy.usocket-nc.jar"/>
+            <include name="lib/jsr166e.jar"/>
+            <include name="lib/jsr173_1.0_api.jar"/>
+            <include name="lib/junit-4.11.jar"/>
+            <include name="lib/jzlib-1.1.1.jar"/>
+            <include name="lib/log4j.jar"/>
+            <include name="lib/markdownj-core-0.4.2-SNAPSHOT.jar"/>
+            <include name="lib/microba.jar"/>
+            <include name="lib/miglayout-swing.jar"/>
+            <include name="lib/nanoxml-2.2.3.jar"/>
+            <include name="lib/nekohtml-1.9.14.jar"/>
+            <include name="lib/openapi.jar"/>
+            <include name="lib/optimizedFileManager.jar"/>
+            <include name="lib/oromatcher.jar"/>
+            <include name="lib/picocontainer.jar"/>
+            <include name="lib/protobuf-2.5.0.jar"/>
+            <include name="lib/proxy-vole_20120920.jar"/>
+            <include name="lib/pty4j-0.3.jar"/>
+            <include name="lib/purejavacomm.jar"/>
+            <include name="lib/resolver.jar"/>
+            <include name="lib/resources.jar"/>
+            <include name="lib/resources_en.jar"/>
+            <include name="lib/rhino-js-1_7R4.jar"/>
+            <include name="lib/rngom-20051226-patched.jar"/>
+            <include name="lib/sanselan-0.98-snapshot.jar"/>
+            <include name="lib/serviceMessages.jar"/>
+            <include name="lib/snappy-java-1.0.5.jar"/>
+            <include name="lib/swingx-core-1.6.2.jar"/>
+            <include name="lib/trang-core.jar"/>
+            <include name="lib/trove4j.jar"/>
+            <include name="lib/trove4j_src.jar"/>
+            <include name="lib/util.jar"/>
+            <include name="lib/velocity.jar"/>
+            <include name="lib/winp-1.17-patched.jar"/>
+            <include name="lib/xbean.jar"/>
+            <include name="lib/xerces.jar"/>
+            <include name="lib/xmlrpc-2.0.jar"/>
+            <include name="lib/xpp3-1.1.4-min.jar"/>
+            <include name="lib/xstream-1.4.3.jar"/>
+            <include name="plugins/ant/lib/antIntegration.jar"/>
+            <include name="../jdk1.6.0_45/jre/lib/charsets.jar"/>
+            <include name="../jdk1.6.0_45/jre/lib/deploy.jar"/>
+            <include name="../jdk1.6.0_45/jre/lib/javaws.jar"/>
+            <include name="../jdk1.6.0_45/jre/lib/jce.jar"/>
+            <include name="../jdk1.6.0_45/jre/lib/jsse.jar"/>
+            <include name="../jdk1.6.0_45/jre/lib/management-agent.jar"/>
+            <include name="../jdk1.6.0_45/jre/lib/plugin.jar"/>
+            <include name="../jdk1.6.0_45/jre/lib/resources.jar"/>
+            <include name="../jdk1.6.0_45/jre/lib/rt.jar"/>
+            <include name="../jdk1.6.0_45/jre/lib/ext/dnsns.jar"/>
+            <include name="../jdk1.6.0_45/jre/lib/ext/localedata.jar"/>
+            <include name="../jdk1.6.0_45/jre/lib/ext/sunjce_provider.jar"/>
+            <include name="../jdk1.6.0_45/jre/lib/ext/sunmscapi.jar"/>
+        </fileset>
+    </path>
+
+    <property name="project.jdk.home" value="${jdk.home.idea}"/>
+    <property name="project.jdk.bin" value="${jdk.bin.idea}"/>
+    <property name="project.jdk.classpath" value="jdk.classpath.idea"/>
+
+
+    <!-- Project Libraries -->
+
+    <path id="library.antintegration.classpath">
+        <pathelement location="${idea.home}/plugins/ant/lib/antIntegration.jar"/>
+    </path>
+
+    <path id="library.azure-graph-api.classpath">
+        <pathelement location="${basedir}/lib/graph/directory-services-0.9-SNAPSHOT.jar"/>
+        <pathelement location="${basedir}/lib/graph/odata-engine-helpers-0.9-SNAPSHOT.jar"/>
+        <pathelement location="${basedir}/lib/graph/odata-engine-interfaces-0.9-SNAPSHOT.jar"/>
+        <pathelement location="${basedir}/lib/graph/odata-engine-java-desktop-impl-0.9-SNAPSHOT.jar"/>
+        <pathelement location="${basedir}/lib/graph/odata-engine-java-impl-0.9-SNAPSHOT.jar"/>
+    </path>
+
+    <path id="library.azurecommons.classpath">
+        <pathelement location="${basedir}/lib/AzureCommons.jar"/>
+    </path>
+
+    <path id="library.azuremanagementutil.classpath">
+        <pathelement location="${basedir}/lib/AzureManagementUtil.jar"/>
+    </path>
+
+    <path id="library.com.microsoft.azure:azure-core:0.6.0.classpath">
+        <pathelement location="${path.variable.maven_repository}/com/microsoft/azure/azure-core/0.6.0/azure-core-0.6.0.jar"/>
+        <pathelement location="${path.variable.maven_repository}/com/sun/jersey/jersey-client/1.13/jersey-client-1.13.jar"/>
+        <pathelement location="${path.variable.maven_repository}/com/sun/jersey/jersey-core/1.13/jersey-core-1.13.jar"/>
+        <pathelement location="${path.variable.maven_repository}/com/sun/jersey/jersey-json/1.13/jersey-json-1.13.jar"/>
+        <pathelement location="${path.variable.maven_repository}/com/sun/xml/bind/jaxb-impl/2.2.3-1/jaxb-impl-2.2.3-1.jar"/>
+        <pathelement location="${path.variable.maven_repository}/commons-codec/commons-codec/1.6/commons-codec-1.6.jar"/>
+        <pathelement location="${path.variable.maven_repository}/commons-logging/commons-logging/1.1.3/commons-logging-1.1.3.jar"/>
+        <pathelement location="${path.variable.maven_repository}/javax/activation/activation/1.1/activation-1.1.jar"/>
+        <pathelement location="${path.variable.maven_repository}/javax/inject/javax.inject/1/javax.inject-1.jar"/>
+        <pathelement location="${path.variable.maven_repository}/javax/mail/mail/1.4.5/mail-1.4.5.jar"/>
+        <pathelement location="${path.variable.maven_repository}/org/apache/httpcomponents/httpclient/4.3.1/httpclient-4.3.1.jar"/>
+        <pathelement location="${path.variable.maven_repository}/org/apache/httpcomponents/httpcore/4.3/httpcore-4.3.jar"/>
+        <pathelement location="${path.variable.maven_repository}/org/codehaus/jackson/jackson-core-asl/1.9.2/jackson-core-asl-1.9.2.jar"/>
+        <pathelement location="${path.variable.maven_repository}/org/codehaus/jackson/jackson-jaxrs/1.9.2/jackson-jaxrs-1.9.2.jar"/>
+        <pathelement location="${path.variable.maven_repository}/org/codehaus/jackson/jackson-mapper-asl/1.9.2/jackson-mapper-asl-1.9.2.jar"/>
+        <pathelement location="${path.variable.maven_repository}/org/codehaus/jackson/jackson-xc/1.9.2/jackson-xc-1.9.2.jar"/>
+        <pathelement location="${path.variable.maven_repository}/org/codehaus/jettison/jettison/1.1/jettison-1.1.jar"/>
+    </path>
+
+    <path id="library.com.microsoft.azure:azure-management-compute:0.6.0.classpath">
+        <pathelement location="${path.variable.maven_repository}/com/microsoft/azure/azure-core/0.6.0/azure-core-0.6.0.jar"/>
+        <pathelement location="${path.variable.maven_repository}/com/microsoft/azure/azure-management-compute/0.6.0/azure-management-compute-0.6.0.jar"/>
+        <pathelement location="${path.variable.maven_repository}/com/sun/jersey/jersey-client/1.13/jersey-client-1.13.jar"/>
+        <pathelement location="${path.variable.maven_repository}/com/sun/jersey/jersey-core/1.13/jersey-core-1.13.jar"/>
+        <pathelement location="${path.variable.maven_repository}/com/sun/jersey/jersey-json/1.13/jersey-json-1.13.jar"/>
+        <pathelement location="${path.variable.maven_repository}/com/sun/xml/bind/jaxb-impl/2.2.3-1/jaxb-impl-2.2.3-1.jar"/>
+        <pathelement location="${path.variable.maven_repository}/commons-codec/commons-codec/1.6/commons-codec-1.6.jar"/>
+        <pathelement location="${path.variable.maven_repository}/commons-logging/commons-logging/1.1.3/commons-logging-1.1.3.jar"/>
+        <pathelement location="${path.variable.maven_repository}/javax/activation/activation/1.1/activation-1.1.jar"/>
+        <pathelement location="${path.variable.maven_repository}/javax/inject/javax.inject/1/javax.inject-1.jar"/>
+        <pathelement location="${path.variable.maven_repository}/javax/mail/mail/1.4.5/mail-1.4.5.jar"/>
+        <pathelement location="${path.variable.maven_repository}/org/apache/httpcomponents/httpclient/4.3.1/httpclient-4.3.1.jar"/>
+        <pathelement location="${path.variable.maven_repository}/org/apache/httpcomponents/httpcore/4.3/httpcore-4.3.jar"/>
+        <pathelement location="${path.variable.maven_repository}/org/codehaus/jackson/jackson-core-asl/1.9.2/jackson-core-asl-1.9.2.jar"/>
+        <pathelement location="${path.variable.maven_repository}/org/codehaus/jackson/jackson-jaxrs/1.9.2/jackson-jaxrs-1.9.2.jar"/>
+        <pathelement location="${path.variable.maven_repository}/org/codehaus/jackson/jackson-mapper-asl/1.9.2/jackson-mapper-asl-1.9.2.jar"/>
+        <pathelement location="${path.variable.maven_repository}/org/codehaus/jackson/jackson-xc/1.9.2/jackson-xc-1.9.2.jar"/>
+        <pathelement location="${path.variable.maven_repository}/org/codehaus/jettison/jettison/1.1/jettison-1.1.jar"/>
+    </path>
+
+    <path id="library.com.microsoft.azure:azure-management-storage:0.6.0.classpath">
+        <pathelement location="${path.variable.maven_repository}/com/microsoft/azure/azure-core/0.6.0/azure-core-0.6.0.jar"/>
+        <pathelement location="${path.variable.maven_repository}/com/microsoft/azure/azure-management-storage/0.6.0/azure-management-storage-0.6.0.jar"/>
+        <pathelement location="${path.variable.maven_repository}/com/sun/jersey/jersey-client/1.13/jersey-client-1.13.jar"/>
+        <pathelement location="${path.variable.maven_repository}/com/sun/jersey/jersey-core/1.13/jersey-core-1.13.jar"/>
+        <pathelement location="${path.variable.maven_repository}/com/sun/jersey/jersey-json/1.13/jersey-json-1.13.jar"/>
+        <pathelement location="${path.variable.maven_repository}/com/sun/xml/bind/jaxb-impl/2.2.3-1/jaxb-impl-2.2.3-1.jar"/>
+        <pathelement location="${path.variable.maven_repository}/commons-codec/commons-codec/1.6/commons-codec-1.6.jar"/>
+        <pathelement location="${path.variable.maven_repository}/commons-logging/commons-logging/1.1.3/commons-logging-1.1.3.jar"/>
+        <pathelement location="${path.variable.maven_repository}/javax/activation/activation/1.1/activation-1.1.jar"/>
+        <pathelement location="${path.variable.maven_repository}/javax/inject/javax.inject/1/javax.inject-1.jar"/>
+        <pathelement location="${path.variable.maven_repository}/javax/mail/mail/1.4.5/mail-1.4.5.jar"/>
+        <pathelement location="${path.variable.maven_repository}/org/apache/httpcomponents/httpclient/4.3.1/httpclient-4.3.1.jar"/>
+        <pathelement location="${path.variable.maven_repository}/org/apache/httpcomponents/httpcore/4.3/httpcore-4.3.jar"/>
+        <pathelement location="${path.variable.maven_repository}/org/codehaus/jackson/jackson-core-asl/1.9.2/jackson-core-asl-1.9.2.jar"/>
+        <pathelement location="${path.variable.maven_repository}/org/codehaus/jackson/jackson-jaxrs/1.9.2/jackson-jaxrs-1.9.2.jar"/>
+        <pathelement location="${path.variable.maven_repository}/org/codehaus/jackson/jackson-mapper-asl/1.9.2/jackson-mapper-asl-1.9.2.jar"/>
+        <pathelement location="${path.variable.maven_repository}/org/codehaus/jackson/jackson-xc/1.9.2/jackson-xc-1.9.2.jar"/>
+        <pathelement location="${path.variable.maven_repository}/org/codehaus/jettison/jettison/1.1/jettison-1.1.jar"/>
+    </path>
+
+    <path id="library.com.microsoft.azure:azure-management:0.6.0.classpath">
+        <pathelement location="${path.variable.maven_repository}/com/microsoft/azure/azure-core/0.6.0/azure-core-0.6.0.jar"/>
+        <pathelement location="${path.variable.maven_repository}/com/microsoft/azure/azure-management/0.6.0/azure-management-0.6.0.jar"/>
+        <pathelement location="${path.variable.maven_repository}/com/sun/jersey/jersey-client/1.13/jersey-client-1.13.jar"/>
+        <pathelement location="${path.variable.maven_repository}/com/sun/jersey/jersey-core/1.13/jersey-core-1.13.jar"/>
+        <pathelement location="${path.variable.maven_repository}/com/sun/jersey/jersey-json/1.13/jersey-json-1.13.jar"/>
+        <pathelement location="${path.variable.maven_repository}/com/sun/xml/bind/jaxb-impl/2.2.3-1/jaxb-impl-2.2.3-1.jar"/>
+        <pathelement location="${path.variable.maven_repository}/commons-codec/commons-codec/1.6/commons-codec-1.6.jar"/>
+        <pathelement location="${path.variable.maven_repository}/commons-logging/commons-logging/1.1.3/commons-logging-1.1.3.jar"/>
+        <pathelement location="${path.variable.maven_repository}/javax/activation/activation/1.1/activation-1.1.jar"/>
+        <pathelement location="${path.variable.maven_repository}/javax/inject/javax.inject/1/javax.inject-1.jar"/>
+        <pathelement location="${path.variable.maven_repository}/javax/mail/mail/1.4.5/mail-1.4.5.jar"/>
+        <pathelement location="${path.variable.maven_repository}/org/apache/httpcomponents/httpclient/4.3.1/httpclient-4.3.1.jar"/>
+        <pathelement location="${path.variable.maven_repository}/org/apache/httpcomponents/httpcore/4.3/httpcore-4.3.jar"/>
+        <pathelement location="${path.variable.maven_repository}/org/codehaus/jackson/jackson-core-asl/1.9.2/jackson-core-asl-1.9.2.jar"/>
+        <pathelement location="${path.variable.maven_repository}/org/codehaus/jackson/jackson-jaxrs/1.9.2/jackson-jaxrs-1.9.2.jar"/>
+        <pathelement location="${path.variable.maven_repository}/org/codehaus/jackson/jackson-mapper-asl/1.9.2/jackson-mapper-asl-1.9.2.jar"/>
+        <pathelement location="${path.variable.maven_repository}/org/codehaus/jackson/jackson-xc/1.9.2/jackson-xc-1.9.2.jar"/>
+        <pathelement location="${path.variable.maven_repository}/org/codehaus/jettison/jettison/1.1/jettison-1.1.jar"/>
+    </path>
+
+    <path id="library.com.microsoft.azure:azure-storage:1.2.0.classpath">
+        <pathelement location="${path.variable.maven_repository}/com/fasterxml/jackson/core/jackson-core/2.2.3/jackson-core-2.2.3.jar"/>
+        <pathelement location="${path.variable.maven_repository}/com/microsoft/azure/azure-storage/1.2.0/azure-storage-1.2.0.jar"/>
+        <pathelement location="${path.variable.maven_repository}/org/apache/commons/commons-lang3/3.3.2/commons-lang3-3.3.2.jar"/>
+        <pathelement location="${path.variable.maven_repository}/org/slf4j/slf4j-api/1.7.5/slf4j-api-1.7.5.jar"/>
+    </path>
+
+    <path id="library.com.nimbusds:nimbus-jose-jwt:2.11.0.classpath">
+        <pathelement location="${path.variable.maven_repository}/com/nimbusds/nimbus-jose-jwt/2.11.0/nimbus-jose-jwt-2.11.0.jar"/>
+        <pathelement location="${path.variable.maven_repository}/commons-codec/commons-codec/1.7/commons-codec-1.7.jar"/>
+        <pathelement location="${path.variable.maven_repository}/net/jcip/jcip-annotations/1.0/jcip-annotations-1.0.jar"/>
+        <pathelement location="${path.variable.maven_repository}/net/minidev/json-smart/1.1.1/json-smart-1.1.1.jar"/>
+        <pathelement location="${path.variable.maven_repository}/org/bouncycastle/bcprov-jdk15on/1.47/bcprov-jdk15on-1.47.jar"/>
+    </path>
+
+    <path id="library.gradle.classpath">
+        <pathelement location="${idea.home}/plugins/gradle/lib/gradle.jar"/>
+    </path>
+
+    <path id="library.org.apache.httpcomponents:fluent-hc:4.3.5.classpath">
+        <pathelement location="${path.variable.maven_repository}/commons-codec/commons-codec/1.6/commons-codec-1.6.jar"/>
+        <pathelement location="${path.variable.maven_repository}/commons-logging/commons-logging/1.1.3/commons-logging-1.1.3.jar"/>
+        <pathelement location="${path.variable.maven_repository}/org/apache/httpcomponents/fluent-hc/4.3.5/fluent-hc-4.3.5.jar"/>
+        <pathelement location="${path.variable.maven_repository}/org/apache/httpcomponents/httpclient/4.3.5/httpclient-4.3.5.jar"/>
+        <pathelement location="${path.variable.maven_repository}/org/apache/httpcomponents/httpcore/4.3.2/httpcore-4.3.2.jar"/>
+    </path>
+
+    <path id="library.org.apache.httpcomponents:httpclient-cache:4.3.5.classpath">
+        <pathelement location="${path.variable.maven_repository}/commons-codec/commons-codec/1.6/commons-codec-1.6.jar"/>
+        <pathelement location="${path.variable.maven_repository}/commons-logging/commons-logging/1.1.3/commons-logging-1.1.3.jar"/>
+        <pathelement location="${path.variable.maven_repository}/org/apache/httpcomponents/httpclient-cache/4.3.5/httpclient-cache-4.3.5.jar"/>
+        <pathelement location="${path.variable.maven_repository}/org/apache/httpcomponents/httpclient/4.3.5/httpclient-4.3.5.jar"/>
+        <pathelement location="${path.variable.maven_repository}/org/apache/httpcomponents/httpcore/4.3.2/httpcore-4.3.2.jar"/>
+    </path>
+
+    <path id="library.org.apache.httpcomponents:httpmime:4.3.5.classpath">
+        <pathelement location="${path.variable.maven_repository}/commons-codec/commons-codec/1.6/commons-codec-1.6.jar"/>
+        <pathelement location="${path.variable.maven_repository}/commons-logging/commons-logging/1.1.3/commons-logging-1.1.3.jar"/>
+        <pathelement location="${path.variable.maven_repository}/org/apache/httpcomponents/httpclient/4.3.5/httpclient-4.3.5.jar"/>
+        <pathelement location="${path.variable.maven_repository}/org/apache/httpcomponents/httpcore/4.3.2/httpcore-4.3.2.jar"/>
+        <pathelement location="${path.variable.maven_repository}/org/apache/httpcomponents/httpmime/4.3.5/httpmime-4.3.5.jar"/>
+    </path>
+
+    <path id="library.projectmanagerlibrary.classpath">
+        <pathelement location="${basedir}/lib/ProjectManagerLibrary.jar"/>
+    </path>
+
+    <path id="library.swt-win32-x64.classpath">
+        <pathelement location="${basedir}/lib/swt/swt-4.4-win32-win32-x86_64/swt.jar"/>
+    </path>
+
+    <!-- Register Custom Compiler Taskdefs -->
+    <property name="javac2.home" value="${idea.home}/lib"/>
+    <path id="javac2.classpath">
+        <pathelement location="${javac2.home}/javac2.jar"/>
+        <pathelement location="${javac2.home}/jdom.jar"/>
+        <pathelement location="${javac2.home}/asm4-all.jar"/>
+        <pathelement location="${javac2.home}/jgoodies-forms.jar"/>
+    </path>
+    <target name="register.custom.compilers">
+        <taskdef name="javac2" classname="com.intellij.ant.Javac2" classpathref="javac2.classpath"/>
+        <taskdef name="instrumentIdeaExtensions" classname="com.intellij.ant.InstrumentIdeaExtensions" classpathref="javac2.classpath"/>
+    </target>
+
+    <!-- Modules -->
+
+    <!-- Module msopentech-tools-for-intellij -->
+
+    <dirname property="module.msopentech-tools-for-intellij.basedir" file="${ant.file}"/>
+
+
+    <property name="module.jdk.home.msopentech-tools-for-intellij" value="${project.jdk.home}"/>
+    <property name="module.jdk.bin.msopentech-tools-for-intellij" value="${project.jdk.bin}"/>
+    <property name="module.jdk.classpath.msopentech-tools-for-intellij" value="${project.jdk.classpath}"/>
+
+    <property name="compiler.args.msopentech-tools-for-intellij" value="-encoding ISO-8859-1 -source 1.6 ${compiler.args}"/>
+
+    <property name="msopentech-tools-for-intellij.output.dir" value="${module.msopentech-tools-for-intellij.basedir}/out/production/msopentech-tools-for-intellij"/>
+
+    <path id="msopentech-tools-for-intellij.module.bootclasspath">
+        <!-- Paths to be included in compilation bootclasspath -->
+    </path>
+
+    <path id="msopentech-tools-for-intellij.module.production.classpath">
+        <path refid="${module.jdk.classpath.msopentech-tools-for-intellij}"/>
+        <path refid="library.azurecommons.classpath"/>
+        <path refid="library.azuremanagementutil.classpath"/>
+        <path refid="library.projectmanagerlibrary.classpath"/>
+        <path refid="library.com.microsoft.azure:azure-core:0.6.0.classpath"/>
+        <path refid="library.com.microsoft.azure:azure-management-compute:0.6.0.classpath"/>
+        <path refid="library.com.microsoft.azure:azure-management-storage:0.6.0.classpath"/>
+        <path refid="library.com.microsoft.azure:azure-management:0.6.0.classpath"/>
+        <path refid="library.com.microsoft.azure:azure-storage:1.2.0.classpath"/>
+        <path refid="library.antintegration.classpath"/>
+        <path refid="library.com.nimbusds:nimbus-jose-jwt:2.11.0.classpath"/>
+        <path refid="library.org.apache.httpcomponents:fluent-hc:4.3.5.classpath"/>
+        <path refid="library.org.apache.httpcomponents:httpclient-cache:4.3.5.classpath"/>
+        <path refid="library.org.apache.httpcomponents:httpmime:4.3.5.classpath"/>
+        <path refid="library.azure-graph-api.classpath"/>
+        <path refid="library.gradle.classpath"/>
+    </path>
+
+    <path id="msopentech-tools-for-intellij.runtime.production.module.classpath">
+        <pathelement location="${msopentech-tools-for-intellij.output.dir}"/>
+        <path refid="library.azurecommons.classpath"/>
+        <path refid="library.azuremanagementutil.classpath"/>
+        <path refid="library.projectmanagerlibrary.classpath"/>
+        <path refid="library.com.microsoft.azure:azure-core:0.6.0.classpath"/>
+        <path refid="library.com.microsoft.azure:azure-management-compute:0.6.0.classpath"/>
+        <path refid="library.com.microsoft.azure:azure-management-storage:0.6.0.classpath"/>
+        <path refid="library.com.microsoft.azure:azure-management:0.6.0.classpath"/>
+        <path refid="library.com.microsoft.azure:azure-storage:1.2.0.classpath"/>
+        <path refid="library.antintegration.classpath"/>
+        <path refid="library.com.nimbusds:nimbus-jose-jwt:2.11.0.classpath"/>
+        <path refid="library.org.apache.httpcomponents:fluent-hc:4.3.5.classpath"/>
+        <path refid="library.org.apache.httpcomponents:httpclient-cache:4.3.5.classpath"/>
+        <path refid="library.org.apache.httpcomponents:httpmime:4.3.5.classpath"/>
+        <path refid="library.azure-graph-api.classpath"/>
+        <path refid="library.gradle.classpath"/>
+    </path>
+
+    <path id="msopentech-tools-for-intellij.module.classpath">
+        <path refid="${module.jdk.classpath.msopentech-tools-for-intellij}"/>
+        <pathelement location="${msopentech-tools-for-intellij.output.dir}"/>
+        <path refid="library.azurecommons.classpath"/>
+        <path refid="library.azuremanagementutil.classpath"/>
+        <path refid="library.projectmanagerlibrary.classpath"/>
+        <path refid="library.com.microsoft.azure:azure-core:0.6.0.classpath"/>
+        <path refid="library.com.microsoft.azure:azure-management-compute:0.6.0.classpath"/>
+        <path refid="library.com.microsoft.azure:azure-management-storage:0.6.0.classpath"/>
+        <path refid="library.com.microsoft.azure:azure-management:0.6.0.classpath"/>
+        <path refid="library.com.microsoft.azure:azure-storage:1.2.0.classpath"/>
+        <path refid="library.antintegration.classpath"/>
+        <path refid="library.com.nimbusds:nimbus-jose-jwt:2.11.0.classpath"/>
+        <path refid="library.org.apache.httpcomponents:fluent-hc:4.3.5.classpath"/>
+        <path refid="library.org.apache.httpcomponents:httpclient-cache:4.3.5.classpath"/>
+        <path refid="library.org.apache.httpcomponents:httpmime:4.3.5.classpath"/>
+        <path refid="library.azure-graph-api.classpath"/>
+        <path refid="library.gradle.classpath"/>
+    </path>
+
+    <path id="msopentech-tools-for-intellij.runtime.module.classpath">
+        <pathelement location="${msopentech-tools-for-intellij.output.dir}"/>
+        <path refid="library.azurecommons.classpath"/>
+        <path refid="library.azuremanagementutil.classpath"/>
+        <path refid="library.projectmanagerlibrary.classpath"/>
+        <path refid="library.com.microsoft.azure:azure-core:0.6.0.classpath"/>
+        <path refid="library.com.microsoft.azure:azure-management-compute:0.6.0.classpath"/>
+        <path refid="library.com.microsoft.azure:azure-management-storage:0.6.0.classpath"/>
+        <path refid="library.com.microsoft.azure:azure-management:0.6.0.classpath"/>
+        <path refid="library.com.microsoft.azure:azure-storage:1.2.0.classpath"/>
+        <path refid="library.antintegration.classpath"/>
+        <path refid="library.com.nimbusds:nimbus-jose-jwt:2.11.0.classpath"/>
+        <path refid="library.org.apache.httpcomponents:fluent-hc:4.3.5.classpath"/>
+        <path refid="library.org.apache.httpcomponents:httpclient-cache:4.3.5.classpath"/>
+        <path refid="library.org.apache.httpcomponents:httpmime:4.3.5.classpath"/>
+        <path refid="library.azure-graph-api.classpath"/>
+        <path refid="library.gradle.classpath"/>
+    </path>
+
+
+    <patternset id="excluded.from.module.msopentech-tools-for-intellij">
+        <patternset refid="ignored.files"/>
+    </patternset>
+
+    <patternset id="excluded.from.compilation.msopentech-tools-for-intellij">
+        <patternset refid="excluded.from.module.msopentech-tools-for-intellij"/>
+    </patternset>
+
+    <path id="msopentech-tools-for-intellij.sourcepath">
+        <dirset dir="${module.msopentech-tools-for-intellij.basedir}">
+            <include name="src/android"/>
+            <include name="src/azure"/>
+            <include name="resources"/>
+        </dirset>
+    </path>
+
+
+    <!-- Module msopentech-tools-for-androidstudio -->
+
+    <dirname property="module.msopentech-tools-for-androidstudio.basedir" file="${ant.file}"/>
+
+
+    <property name="module.jdk.home.msopentech-tools-for-androidstudio" value="${project.jdk.home}"/>
+    <property name="module.jdk.bin.msopentech-tools-for-androidstudio" value="${project.jdk.bin}"/>
+    <property name="module.jdk.classpath.msopentech-tools-for-androidstudio" value="${project.jdk.classpath}"/>
+
+    <property name="compiler.args.msopentech-tools-for-androidstudio" value="-encoding ISO-8859-1 -source 1.6 ${compiler.args}"/>
+
+    <property name="msopentech-tools-for-androidstudio.output.dir" value="${module.msopentech-tools-for-androidstudio.basedir}/out/production/msopentech-tools-for-androidstudio"/>
+
+    <path id="msopentech-tools-for-androidstudio.module.bootclasspath">
+        <!-- Paths to be included in compilation bootclasspath -->
+    </path>
+
+    <path id="msopentech-tools-for-androidstudio.module.production.classpath">
+        <path refid="${module.jdk.classpath.msopentech-tools-for-androidstudio}"/>
+        <path refid="library.com.nimbusds:nimbus-jose-jwt:2.11.0.classpath"/>
+        <path refid="library.org.apache.httpcomponents:fluent-hc:4.3.5.classpath"/>
+        <path refid="library.org.apache.httpcomponents:httpclient-cache:4.3.5.classpath"/>
+        <path refid="library.org.apache.httpcomponents:httpmime:4.3.5.classpath"/>
+        <path refid="library.azure-graph-api.classpath"/>
+        <path refid="library.gradle.classpath"/>
+    </path>
+
+    <path id="msopentech-tools-for-androidstudio.runtime.production.module.classpath">
+        <pathelement location="${msopentech-tools-for-androidstudio.output.dir}"/>
+        <path refid="library.com.nimbusds:nimbus-jose-jwt:2.11.0.classpath"/>
+        <path refid="library.org.apache.httpcomponents:fluent-hc:4.3.5.classpath"/>
+        <path refid="library.org.apache.httpcomponents:httpclient-cache:4.3.5.classpath"/>
+        <path refid="library.org.apache.httpcomponents:httpmime:4.3.5.classpath"/>
+        <path refid="library.azure-graph-api.classpath"/>
+        <path refid="library.gradle.classpath"/>
+    </path>
+
+    <path id="msopentech-tools-for-androidstudio.module.classpath">
+        <path refid="${module.jdk.classpath.msopentech-tools-for-androidstudio}"/>
+        <pathelement location="${msopentech-tools-for-androidstudio.output.dir}"/>
+        <path refid="library.com.nimbusds:nimbus-jose-jwt:2.11.0.classpath"/>
+        <path refid="library.org.apache.httpcomponents:fluent-hc:4.3.5.classpath"/>
+        <path refid="library.org.apache.httpcomponents:httpclient-cache:4.3.5.classpath"/>
+        <path refid="library.org.apache.httpcomponents:httpmime:4.3.5.classpath"/>
+        <path refid="library.azure-graph-api.classpath"/>
+        <path refid="library.gradle.classpath"/>
+    </path>
+
+    <path id="msopentech-tools-for-androidstudio.runtime.module.classpath">
+        <pathelement location="${msopentech-tools-for-androidstudio.output.dir}"/>
+        <path refid="library.com.nimbusds:nimbus-jose-jwt:2.11.0.classpath"/>
+        <path refid="library.org.apache.httpcomponents:fluent-hc:4.3.5.classpath"/>
+        <path refid="library.org.apache.httpcomponents:httpclient-cache:4.3.5.classpath"/>
+        <path refid="library.org.apache.httpcomponents:httpmime:4.3.5.classpath"/>
+        <path refid="library.azure-graph-api.classpath"/>
+        <path refid="library.gradle.classpath"/>
+    </path>
+
+
+    <patternset id="excluded.from.module.msopentech-tools-for-androidstudio">
+        <patternset refid="ignored.files"/>
+    </patternset>
+
+    <patternset id="excluded.from.compilation.msopentech-tools-for-androidstudio">
+        <patternset refid="excluded.from.module.msopentech-tools-for-androidstudio"/>
+    </patternset>
+
+    <path id="msopentech-tools-for-androidstudio.sourcepath">
+        <dirset dir="${module.msopentech-tools-for-androidstudio.basedir}">
+            <include name="src/android"/>
+            <include name="resources"/>
+        </dirset>
+    </path>
+
+    <target name="compile.msopentech-tools-for-intellij" depends="register.custom.compilers" description="Compile module msopentech-tools-for-intellij">
+        <mkdir dir="${msopentech-tools-for-intellij.output.dir}"/>
+        <javac2 destdir="${msopentech-tools-for-intellij.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.msopentech-tools-for-intellij}/javac">
+            <compilerarg line="${compiler.args.msopentech-tools-for-intellij}"/>
+            <bootclasspath refid="msopentech-tools-for-intellij.module.bootclasspath"/>
+            <classpath refid="msopentech-tools-for-intellij.module.production.classpath"/>
+            <src refid="msopentech-tools-for-intellij.sourcepath"/>
+            <patternset refid="excluded.from.compilation.msopentech-tools-for-intellij"/>
+        </javac2>
+
+        <copy todir="${msopentech-tools-for-intellij.output.dir}">
+            <fileset dir="${module.msopentech-tools-for-intellij.basedir}/src/android">
+                <patternset refid="compiler.resources"/>
+                <type type="file"/>
+            </fileset>
+            <fileset dir="${module.msopentech-tools-for-intellij.basedir}/src/azure">
+                <patternset refid="compiler.resources"/>
+                <type type="file"/>
+            </fileset>
+            <fileset dir="${module.msopentech-tools-for-intellij.basedir}/resources">
+                <patternset refid="compiler.resources"/>
+                <type type="file"/>
+            </fileset>
+            <fileset dir="${module.msopentech-tools-for-intellij.basedir}/resources">
+                <patternset refid="androidstudio.compiler.resources"/>
+                <type type="file"/>
+            </fileset>
+        </copy>
+    </target>
+
+    <target name="clean.msopentech-tools-for-intellij" description="cleanup module">
+        <delete dir="${msopentech-tools-for-intellij.output.dir}"/>
+    </target>
+
+    <property name="msopentech-tools-for-intellij.plugin.path.jar" value="${module.msopentech-tools-for-intellij.basedir}/msopentech-tools-for-intellij.zip"/>
+
+    <!-- Build archive for plugin 'msopentech-tools-for-intellij' -->
+    <target name="plugin.build.jar.msopentech-tools-for-intellij" depends="compile.msopentech-tools-for-intellij" description="Build plugin archive for module &#39;msopentech-tools-for-intellij&#39;">
+        <property name="tmp.dir.msopentech-tools-for-intellij" value="${module.msopentech-tools-for-intellij.basedir}/temp_intellij"/>
+        <mkdir dir="${tmp.dir.msopentech-tools-for-intellij}"/>
+        <mkdir dir="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij"/>
+        <mkdir dir="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib"/>
+        <jar destfile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/msopentech-tools-for-intellij.jar" duplicate="preserve">
+            <zipfileset dir="${module.msopentech-tools-for-intellij.basedir}/out/production/msopentech-tools-for-intellij"/>
+            <zipfileset file="${module.msopentech-tools-for-intellij.basedir}/azure/META-INF/plugin.xml" prefix="META-INF"/>
+            <manifest>
+                <attribute name="Created-By" value="IntelliJ IDEA"/>
+                <attribute name="Manifest-Version" value="1.0"/>
+            </manifest>
+        </jar>
+        <copy file="${path.variable.maven_repository}/org/apache/httpcomponents/httpmime/4.3.5/httpmime-4.3.5.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/httpmime-4.3.5.jar"/>
+        <copy file="${path.variable.maven_repository}/org/apache/httpcomponents/httpclient/4.3.5/httpclient-4.3.5.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/httpclient-4.3.5.jar"/>
+        <copy file="${path.variable.maven_repository}/org/apache/httpcomponents/httpcore/4.3.2/httpcore-4.3.2.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/httpcore-4.3.2.jar"/>
+        <copy file="${path.variable.maven_repository}/commons-logging/commons-logging/1.1.3/commons-logging-1.1.3.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/commons-logging-1.1.3.jar"/>
+        <copy file="${path.variable.maven_repository}/commons-codec/commons-codec/1.6/commons-codec-1.6.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/commons-codec-1.6.jar"/>
+        <copy file="${path.variable.maven_repository}/com/microsoft/azure/azure-management/0.6.0/azure-management-0.6.0.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/azure-management-0.6.0.jar"/>
+        <copy file="${path.variable.maven_repository}/com/microsoft/azure/azure-core/0.6.0/azure-core-0.6.0.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/azure-core-0.6.0.jar"/>
+        <copy file="${path.variable.maven_repository}/org/apache/httpcomponents/httpclient/4.3.1/httpclient-4.3.1.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/httpclient-4.3.1.jar"/>
+        <copy file="${path.variable.maven_repository}/org/apache/httpcomponents/httpcore/4.3/httpcore-4.3.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/httpcore-4.3.jar"/>
+        <copy file="${path.variable.maven_repository}/commons-logging/commons-logging/1.1.3/commons-logging-1.1.3.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/commons-logging-1.1.3.jar"/>
+        <copy file="${path.variable.maven_repository}/commons-codec/commons-codec/1.6/commons-codec-1.6.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/commons-codec-1.6.jar"/>
+        <copy file="${path.variable.maven_repository}/javax/mail/mail/1.4.5/mail-1.4.5.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/mail-1.4.5.jar"/>
+        <copy file="${path.variable.maven_repository}/javax/activation/activation/1.1/activation-1.1.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/activation-1.1.jar"/>
+        <copy file="${path.variable.maven_repository}/javax/inject/javax.inject/1/javax.inject-1.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/javax.inject-1.jar"/>
+        <copy file="${path.variable.maven_repository}/com/sun/jersey/jersey-client/1.13/jersey-client-1.13.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/jersey-client-1.13.jar"/>
+        <copy file="${path.variable.maven_repository}/com/sun/jersey/jersey-core/1.13/jersey-core-1.13.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/jersey-core-1.13.jar"/>
+        <copy file="${path.variable.maven_repository}/com/sun/jersey/jersey-json/1.13/jersey-json-1.13.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/jersey-json-1.13.jar"/>
+        <copy file="${path.variable.maven_repository}/org/codehaus/jettison/jettison/1.1/jettison-1.1.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/jettison-1.1.jar"/>
+        <copy file="${path.variable.maven_repository}/com/sun/xml/bind/jaxb-impl/2.2.3-1/jaxb-impl-2.2.3-1.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/jaxb-impl-2.2.3-1.jar"/>
+        <copy file="${path.variable.maven_repository}/org/codehaus/jackson/jackson-core-asl/1.9.2/jackson-core-asl-1.9.2.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/jackson-core-asl-1.9.2.jar"/>
+        <copy file="${path.variable.maven_repository}/org/codehaus/jackson/jackson-mapper-asl/1.9.2/jackson-mapper-asl-1.9.2.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/jackson-mapper-asl-1.9.2.jar"/>
+        <copy file="${path.variable.maven_repository}/org/codehaus/jackson/jackson-jaxrs/1.9.2/jackson-jaxrs-1.9.2.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/jackson-jaxrs-1.9.2.jar"/>
+        <copy file="${path.variable.maven_repository}/org/codehaus/jackson/jackson-xc/1.9.2/jackson-xc-1.9.2.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/jackson-xc-1.9.2.jar"/>
+        <copy file="${module.msopentech-tools-for-intellij.basedir}/lib/AzureManagementUtil.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/AzureManagementUtil.jar"/>
+        <copy file="${module.msopentech-tools-for-intellij.basedir}/lib/AzureCommons.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/AzureCommons.jar"/>
+        <copy file="${path.variable.maven_repository}/com/microsoft/azure/azure-storage/1.2.0/azure-storage-1.2.0.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/azure-storage-1.2.0.jar"/>
+        <copy file="${path.variable.maven_repository}/com/fasterxml/jackson/core/jackson-core/2.2.3/jackson-core-2.2.3.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/jackson-core-2.2.3.jar"/>
+        <copy file="${path.variable.maven_repository}/org/slf4j/slf4j-api/1.7.5/slf4j-api-1.7.5.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/slf4j-api-1.7.5.jar"/>
+        <copy file="${path.variable.maven_repository}/org/apache/commons/commons-lang3/3.3.2/commons-lang3-3.3.2.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/commons-lang3-3.3.2.jar"/>
+        <copy file="${module.msopentech-tools-for-intellij.basedir}/lib/ProjectManagerLibrary.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/ProjectManagerLibrary.jar"/>
+        <copy file="${path.variable.maven_repository}/com/microsoft/azure/azure-management-storage/0.6.0/azure-management-storage-0.6.0.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/azure-management-storage-0.6.0.jar"/>
+        <copy file="${path.variable.maven_repository}/com/microsoft/azure/azure-management-compute/0.6.0/azure-management-compute-0.6.0.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/azure-management-compute-0.6.0.jar"/>
+        <copy file="${idea.home}/plugins/gradle/lib/gradle.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/gradle.jar"/>
+        <copy file="${path.variable.maven_repository}/com/nimbusds/nimbus-jose-jwt/2.11.0/nimbus-jose-jwt-2.11.0.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/nimbus-jose-jwt-2.11.0.jar"/>
+        <copy file="${path.variable.maven_repository}/org/bouncycastle/bcprov-jdk15on/1.47/bcprov-jdk15on-1.47.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/bcprov-jdk15on-1.47.jar"/>
+        <copy file="${module.msopentech-tools-for-intellij.basedir}/lib/graph/directory-services-0.9-SNAPSHOT.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/directory-services-0.9.jar"/>
+        <copy file="${module.msopentech-tools-for-intellij.basedir}/lib/graph/odata-engine-helpers-0.9-SNAPSHOT.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/odata-engine-helpers-0.9.jar"/>
+        <copy file="${module.msopentech-tools-for-intellij.basedir}/lib/graph/odata-engine-interfaces-0.9-SNAPSHOT.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/odata-engine-interfaces-0.9.jar"/>
+        <copy file="${module.msopentech-tools-for-intellij.basedir}/lib/graph/odata-engine-java-desktop-impl-0.9-SNAPSHOT.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/odata-engine-java-desktop-impl-0.9.jar"/>
+        <copy file="${module.msopentech-tools-for-intellij.basedir}/lib/graph/odata-engine-java-impl-0.9-SNAPSHOT.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/odata-engine-java-impl-0.9.jar"/>
+        <copy file="${path.variable.maven_repository}/org/apache/httpcomponents/fluent-hc/4.3.5/fluent-hc-4.3.5.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/fluent-hc-4.3.5.jar"/>
+        <copy file="${path.variable.maven_repository}/net/jcip/jcip-annotations/1.0/jcip-annotations-1.0.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/jcip-annotations-1.0.jar"/>
+        <copy file="${path.variable.maven_repository}/net/minidev/json-smart/1.1.1/json-smart-1.1.1.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/json-smart-1.1.1.jar"/>
+        <zip destfile="${msopentech-tools-for-intellij.plugin.path.jar}">
+            <fileset dir="${module.msopentech-tools-for-intellij.basedir}/temp_intellij"/>
+        </zip>
+        <delete dir="${tmp.dir.msopentech-tools-for-intellij}"/>
+    </target>
+
+    <target name="compile.msopentech-tools-for-androidstudio" depends="register.custom.compilers" description="Compile module msopentech-tools-for-androidstudio">
+        <mkdir dir="${msopentech-tools-for-androidstudio.output.dir}"/>
+        <javac2 destdir="${msopentech-tools-for-androidstudio.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.msopentech-tools-for-androidstudio}/javac">
+            <compilerarg line="${compiler.args.msopentech-tools-for-androidstudio}"/>
+            <bootclasspath refid="msopentech-tools-for-androidstudio.module.bootclasspath"/>
+            <classpath refid="msopentech-tools-for-androidstudio.module.production.classpath"/>
+            <src refid="msopentech-tools-for-androidstudio.sourcepath"/>
+            <patternset refid="excluded.from.compilation.msopentech-tools-for-androidstudio"/>
+        </javac2>
+
+        <copy todir="${msopentech-tools-for-androidstudio.output.dir}">
+            <fileset dir="${module.msopentech-tools-for-androidstudio.basedir}/src/android">
+                <patternset refid="compiler.resources"/>
+                <type type="file"/>
+            </fileset>
+            <fileset dir="${module.msopentech-tools-for-intellij.basedir}/resources">
+                <patternset refid="androidstudio.compiler.resources"/>
+                <type type="file"/>
+            </fileset>
+        </copy>
+    </target>
+
+    <target name="clean.msopentech-tools-for-androidstudio" description="cleanup module">
+        <delete dir="${msopentech-tools-for-androidstudio.output.dir}"/>
+    </target>
+
+    <property name="msopentech-tools-for-androidstudio.plugin.path.jar" value="${module.msopentech-tools-for-androidstudio.basedir}/msopentech-tools-for-androidstudio.zip"/>
+
+    <!-- Build archive for plugin 'msopentech-tools-for-androidstudio' -->
+    <target name="plugin.build.jar.msopentech-tools-for-androidstudio" depends="compile.msopentech-tools-for-androidstudio" description="Build plugin archive for module &#39;msopentech-tools-for-androidstudio&#39;">
+        <property name="tmp.dir.msopentech-tools-for-androidstudio" value="${module.msopentech-tools-for-androidstudio.basedir}/temp_androidstudio"/>
+        <mkdir dir="${tmp.dir.msopentech-tools-for-androidstudio}"/>
+        <mkdir dir="${tmp.dir.msopentech-tools-for-androidstudio}/msopentech-tools-for-androidstudio"/>
+        <mkdir dir="${tmp.dir.msopentech-tools-for-androidstudio}/msopentech-tools-for-androidstudio/lib"/>
+        <jar destfile="${tmp.dir.msopentech-tools-for-androidstudio}/msopentech-tools-for-androidstudio/lib/msopentech-tools-for-androidstudio.jar" duplicate="preserve">
+            <zipfileset dir="${module.msopentech-tools-for-androidstudio.basedir}/out/production/msopentech-tools-for-androidstudio"/>
+            <zipfileset file="${module.msopentech-tools-for-intellij.basedir}/android/META-INF/plugin.xml" prefix="META-INF"/>
+            <manifest>
+                <attribute name="Created-By" value="IntelliJ IDEA"/>
+                <attribute name="Manifest-Version" value="1.0"/>
+            </manifest>
+        </jar>
+        <copy file="${path.variable.maven_repository}/org/apache/httpcomponents/httpmime/4.3.5/httpmime-4.3.5.jar" tofile="${tmp.dir.msopentech-tools-for-androidstudio}/msopentech-tools-for-androidstudio/lib/httpmime-4.3.5.jar"/>
+        <copy file="${path.variable.maven_repository}/org/apache/httpcomponents/httpclient/4.3.5/httpclient-4.3.5.jar" tofile="${tmp.dir.msopentech-tools-for-androidstudio}/msopentech-tools-for-androidstudio/lib/httpclient-4.3.5.jar"/>
+        <copy file="${path.variable.maven_repository}/org/apache/httpcomponents/httpcore/4.3.2/httpcore-4.3.2.jar" tofile="${tmp.dir.msopentech-tools-for-androidstudio}/msopentech-tools-for-androidstudio/lib/httpcore-4.3.2.jar"/>
+        <copy file="${path.variable.maven_repository}/commons-logging/commons-logging/1.1.3/commons-logging-1.1.3.jar" tofile="${tmp.dir.msopentech-tools-for-androidstudio}/msopentech-tools-for-androidstudio/lib/commons-logging-1.1.3.jar"/>
+        <copy file="${path.variable.maven_repository}/commons-codec/commons-codec/1.6/commons-codec-1.6.jar" tofile="${tmp.dir.msopentech-tools-for-androidstudio}/msopentech-tools-for-androidstudio/lib/commons-codec-1.6.jar"/>
+        <copy file="${idea.home}/plugins/gradle/lib/gradle.jar" tofile="${tmp.dir.msopentech-tools-for-androidstudio}/msopentech-tools-for-androidstudio/lib/gradle.jar"/>
+        <copy file="${path.variable.maven_repository}/com/nimbusds/nimbus-jose-jwt/2.11.0/nimbus-jose-jwt-2.11.0.jar" tofile="${tmp.dir.msopentech-tools-for-androidstudio}/msopentech-tools-for-androidstudio/lib/nimbus-jose-jwt-2.11.0.jar"/>
+        <copy file="${path.variable.maven_repository}/org/bouncycastle/bcprov-jdk15on/1.47/bcprov-jdk15on-1.47.jar" tofile="${tmp.dir.msopentech-tools-for-androidstudio}/msopentech-tools-for-androidstudio/lib/bcprov-jdk15on-1.47.jar"/>
+        <copy file="${module.msopentech-tools-for-androidstudio.basedir}/lib/graph/directory-services-0.9-SNAPSHOT.jar" tofile="${tmp.dir.msopentech-tools-for-androidstudio}/msopentech-tools-for-androidstudio/lib/directory-services-0.9.jar"/>
+        <copy file="${module.msopentech-tools-for-androidstudio.basedir}/lib/graph/odata-engine-helpers-0.9-SNAPSHOT.jar" tofile="${tmp.dir.msopentech-tools-for-androidstudio}/msopentech-tools-for-androidstudio/lib/odata-engine-helpers-0.9.jar"/>
+        <copy file="${module.msopentech-tools-for-androidstudio.basedir}/lib/graph/odata-engine-interfaces-0.9-SNAPSHOT.jar" tofile="${tmp.dir.msopentech-tools-for-androidstudio}/msopentech-tools-for-androidstudio/lib/odata-engine-interfaces-0.9.jar"/>
+        <copy file="${module.msopentech-tools-for-androidstudio.basedir}/lib/graph/odata-engine-java-desktop-impl-0.9-SNAPSHOT.jar" tofile="${tmp.dir.msopentech-tools-for-androidstudio}/msopentech-tools-for-androidstudio/lib/odata-engine-java-desktop-impl-0.9.jar"/>
+        <copy file="${module.msopentech-tools-for-androidstudio.basedir}/lib/graph/odata-engine-java-impl-0.9-SNAPSHOT.jar" tofile="${tmp.dir.msopentech-tools-for-androidstudio}/msopentech-tools-for-androidstudio/lib/odata-engine-java-impl-0.9.jar"/>
+        <copy file="${path.variable.maven_repository}/org/apache/httpcomponents/fluent-hc/4.3.5/fluent-hc-4.3.5.jar" tofile="${tmp.dir.msopentech-tools-for-androidstudio}/msopentech-tools-for-androidstudio/lib/fluent-hc-4.3.5.jar"/>
+        <copy file="${path.variable.maven_repository}/net/jcip/jcip-annotations/1.0/jcip-annotations-1.0.jar" tofile="${tmp.dir.msopentech-tools-for-androidstudio}/msopentech-tools-for-androidstudio/lib/jcip-annotations-1.0.jar"/>
+        <copy file="${path.variable.maven_repository}/net/minidev/json-smart/1.1.1/json-smart-1.1.1.jar" tofile="${tmp.dir.msopentech-tools-for-androidstudio}/msopentech-tools-for-androidstudio/lib/json-smart-1.1.1.jar"/>
+        <zip destfile="${msopentech-tools-for-androidstudio.plugin.path.jar}">
+            <fileset dir="${module.msopentech-tools-for-androidstudio.basedir}/temp_androidstudio"/>
+        </zip>
+        <delete dir="${tmp.dir.msopentech-tools-for-androidstudio}"/>
+    </target>
+
+    <target name="clean" depends="clean.msopentech-tools-for-intellij, clean.msopentech-tools-for-androidstudio" description="cleanup all"/>
+
+    <target name="build.modules" depends="clean, plugin.build.jar.msopentech-tools-for-intellij, plugin.build.jar.msopentech-tools-for-androidstudio" description="build all modules"/>
+
+    <target name="all" depends="build.modules" description="build all"/>
+</project>

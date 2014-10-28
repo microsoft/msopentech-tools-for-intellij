@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/src/ad-interactive-auth/ad-interactive-auth.iml" filepath="$PROJECT_DIR$/src/ad-interactive-auth/ad-interactive-auth.iml" />
+      <module fileurl="file://$PROJECT_DIR$/msopentech-tools-for-intellij.iml" filepath="$PROJECT_DIR$/msopentech-tools-for-intellij.iml" />
+    </modules>
+  </component>
+</project>
+

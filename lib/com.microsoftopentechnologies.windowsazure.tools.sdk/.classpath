@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry exported="true" kind="lib" path="dependencies/commons-codec-1.6.jar"/>
+	<classpathentry exported="true" kind="lib" path="dependencies/commons-lang3-3.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="dependencies/commons-logging-1.1.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="dependencies/httpclient-4.3.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="dependencies/httpcore-4.3.jar"/>
+	<classpathentry exported="true" kind="lib" path="dependencies/jackson-core-asl-1.9.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="dependencies/jackson-jaxrs-1.9.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="dependencies/jackson-mapper-asl-1.9.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="dependencies/jackson-xc-1.9.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="dependencies/javax.inject-1.jar"/>
+	<classpathentry exported="true" kind="lib" path="dependencies/jaxb-impl-2.2.3-1.jar"/>
+	<classpathentry exported="true" kind="lib" path="dependencies/jersey-client-1.13.jar"/>
+	<classpathentry exported="true" kind="lib" path="dependencies/jersey-core-1.13.jar"/>
+	<classpathentry exported="true" kind="lib" path="dependencies/jettison-1.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="dependencies/mail-1.4.5.jar"/>
+	<classpathentry exported="true" kind="lib" path="dependencies/azure-storage-1.2.0.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
+	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
+	<classpathentry exported="true" kind="lib" path="dependencies/jersey-json-1.13.jar"/>
+	<classpathentry exported="true" kind="lib" path="azure-core-0.6.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="dependencies/azure-management-0.6.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="dependencies/azure-management-compute-0.6.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="dependencies/azure-management-media-0.6.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="dependencies/azure-management-network-0.6.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="dependencies/azure-management-scheduler-0.6.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="dependencies/azure-management-sql-0.6.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="dependencies/azure-management-storage-0.6.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="dependencies/azure-management-websites-0.6.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="dependencies/azure-media-0.6.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="dependencies/azure-servicebus-0.6.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="dependencies/azure-serviceruntime-0.6.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="dependencies/azure-tracing-util-0.6.0.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

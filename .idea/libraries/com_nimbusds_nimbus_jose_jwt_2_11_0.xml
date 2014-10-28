@@ -1,0 +1,18 @@
+<component name="libraryTable">
+  <library name="com.nimbusds:nimbus-jose-jwt:2.11.0" type="repository">
+    <properties maven-id="com.nimbusds:nimbus-jose-jwt:2.11.0" />
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/nimbusds/nimbus-jose-jwt/2.11.0/nimbus-jose-jwt-2.11.0.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/bouncycastle/bcprov-jdk15on/1.47/bcprov-jdk15on-1.47.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/commons-codec/commons-codec/1.7/commons-codec-1.7.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/net/jcip/jcip-annotations/1.0/jcip-annotations-1.0.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/net/minidev/json-smart/1.1.1/json-smart-1.1.1.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/com/nimbusds/nimbus-jose-jwt/2.11.0/nimbus-jose-jwt-2.11.0-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/nimbusds/nimbus-jose-jwt/2.11.0/nimbus-jose-jwt-2.11.0-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

@@ -1,0 +1,24 @@
+<component name="libraryTable">
+  <library name="azure-graph-api">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/graph/directory-services-0.9-SNAPSHOT.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/graph/odata-engine-helpers-0.9-SNAPSHOT.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/graph/odata-engine-interfaces-0.9-SNAPSHOT.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/graph/odata-engine-java-desktop-impl-0.9-SNAPSHOT.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/graph/odata-engine-java-impl-0.9-SNAPSHOT.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/../Office-365-SDK-for-Android/sdk/file-services/src/main/java" />
+      <root url="file://$PROJECT_DIR$/../Office-365-SDK-for-Android/sdk/list-services/src/main/java" />
+      <root url="file://$PROJECT_DIR$/../Office-365-SDK-for-Android/sdk/outlook-services/src/main/java" />
+      <root url="file://$PROJECT_DIR$/../Office-365-SDK-for-Android/sdk/directory-services/src/main/java" />
+      <root url="file://$PROJECT_DIR$/../Office-365-SDK-for-Android/sdk/discovery-services/src/main/java" />
+      <root url="file://$PROJECT_DIR$/../Office-365-SDK-for-Android/sdk/odata-engine-helpers/src/main/java" />
+      <root url="file://$PROJECT_DIR$/../Office-365-SDK-for-Android/sdk/odata-engine-java-impl/src/main/java" />
+      <root url="file://$PROJECT_DIR$/../Office-365-SDK-for-Android/sdk/odata-engine-interfaces/src/main/java" />
+      <root url="file://$PROJECT_DIR$/../Office-365-SDK-for-Android/sdk/odata-engine-android-impl/src/main/java" />
+      <root url="file://$PROJECT_DIR$/../Office-365-SDK-for-Android/sdk/odata-engine-java-desktop-impl/src/main/java" />
+    </SOURCES>
+  </library>
+</component>

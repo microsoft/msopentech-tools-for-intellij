@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="PLUGIN_MODULE" version="4">
+  <component name="DevKit.ModuleBuildProperties" url="file://$MODULE_DIR$/azure/META-INF/plugin.xml" />
+  <component name="NewModuleRootManager" inherit-compiler-output="true">
+    <exclude-output />
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/src/android" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/azure" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/resources" type="java-resource" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="AzureCommons" level="project" />
+    <orderEntry type="library" name="AzureManagementUtil" level="project" />
+    <orderEntry type="library" name="ProjectManagerLibrary" level="project" />
+    <orderEntry type="library" name="com.microsoft.azure:azure-core:0.6.0" level="project" />
+    <orderEntry type="library" name="com.microsoft.azure:azure-management-compute:0.6.0" level="project" />
+    <orderEntry type="library" name="com.microsoft.azure:azure-management-storage:0.6.0" level="project" />
+    <orderEntry type="library" name="com.microsoft.azure:azure-management:0.6.0" level="project" />
+    <orderEntry type="library" name="com.microsoft.azure:azure-storage:1.2.0" level="project" />
+    <orderEntry type="library" name="antIntegration" level="project" />
+    <orderEntry type="library" name="com.nimbusds:nimbus-jose-jwt:2.11.0" level="project" />
+    <orderEntry type="library" name="org.apache.httpcomponents:fluent-hc:4.3.5" level="project" />
+    <orderEntry type="library" name="org.apache.httpcomponents:httpclient-cache:4.3.5" level="project" />
+    <orderEntry type="library" name="org.apache.httpcomponents:httpmime:4.3.5" level="project" />
+    <orderEntry type="library" name="azure-graph-api" level="project" />
+    <orderEntry type="library" name="gradle" level="project" />
+  </component>
+</module>
+
