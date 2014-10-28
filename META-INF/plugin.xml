@@ -23,15 +23,15 @@ limitations under the License.
     <description><![CDATA[
   Tools for easy development of apps connected to Microsoft Services. Current SDKs and management tools covers the following:
    <ul>
-        <li>Microsoft Azure Mobile Services for storage, authentication and custom scripts for Android </li>
-        <li>Push Notification for Android</li>
-        <li>Office 365 Outlook Services for Android</li>
-        <li>Office 365 File Services for Android</li>
-        <li>Office 365 SharePoint Lists for Android</li>
-        <li>Azure Tools for Java</li>
+        <li>Microsoft Azure Mobile Services for storage, authentication and custom scripts for Android Studio and IntelliJ IDEA</li>
+        <li>Push Notification for Android Studio and IntelliJ IDEA</li>
+        <li>Office 365 Outlook Services for Android Studio and IntelliJ IDEA</li>
+        <li>Office 365 File Services for Android Studio and IntelliJ IDEA</li>
+        <li>Office 365 SharePoint Lists for Android Studio and IntelliJ IDEA</li>
+        <li>Azure Tools for Java for IntelliJ IDEA</li>
    </ul>
    <b>License</b><br/>
-   By installing the <strong>MS Open Tech Tools for IntelliJ IDEA</strong> plugin, you agree to this <a href="http://go.microsoft.com/fwlink/?LinkId=517839">license</a>.
+   By installing the <strong>MS Open Tech Tools </strong> plugin, you agree to this <a href="http://go.microsoft.com/fwlink/?LinkId=517839">license</a>.
    Third party notices: <a href="http://go.microsoft.com/fwlink/?LinkId=517840">http://go.microsoft.com/fwlink/?LinkId=517840</a>
   ]]></description>
 
