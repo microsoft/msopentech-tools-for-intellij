@@ -2,7 +2,7 @@ MS Open Tech Tools:  IntelliJ and Android Studio Plugin for Microsoft Services
 ================================================================================
 Plugin for easy and fast development to enable developers of Android Apps to connect to Office 365 services and Azure Mobile Services, and developers of Java middleware to connect to Azure compute services. 
 
-For Android developers the plugin work with both [IntelliJ IDEA](http://www.jetbrains.com/idea/) and [Android Studio](http://developer.android.com/sdk/installing/studio.html). Current services available are: Windows Azure Mobile Services (storage, authentication, custom scripts...),  Push Notification and Office365 Services.
+For Android app developers, this plugin provides a highly productive integrated development environment within IntelliJ IDEA and Android Studio, which they can use to integrate Android apps with Office 365 and Azure Mobile Services. For middleware Java developers, the plugin provides an integrated environment to access Microsoft Azure compute services. (Access to Office 365 data and services is coming soon.) 
 
 At minimum you’ll need to install the following: 
 
