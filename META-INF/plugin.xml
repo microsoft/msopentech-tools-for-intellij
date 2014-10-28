@@ -42,7 +42,7 @@ limitations under the License.
     </change-notes>
 
     <!-- please see http://confluence.jetbrains.net/display/IDEADEV/Build+Number+Ranges for description -->
-    <idea-version since-build="107.105"/>
+    <idea-version since-build="135.1" until-build="136.0"/>
 
     <resource-bundle>com.microsoftopentechnologies.intellij.ui.messages.messages</resource-bundle>
 
@@ -55,6 +55,7 @@ limitations under the License.
     <depends optional="true">AntSupport</depends>
     <depends>com.intellij.modules.java</depends>
     <depends>com.intellij.modules.lang</depends>
+    <depends>org.jetbrains.plugins.gradle</depends>
 
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow

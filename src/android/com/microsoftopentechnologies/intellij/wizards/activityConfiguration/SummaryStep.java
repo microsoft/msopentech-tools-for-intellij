@@ -251,25 +251,25 @@ public class SummaryStep extends WizardStep<AddServiceWizardModel> {
     }
 
     private static final String[] O365_COMMON_DEPENDENCIES = new String[] {
-            "compile group: 'com.microsoft.services', name: 'odata-engine-interfaces', version: '0.9.0'",
-            "compile group: 'com.microsoft.services', name: 'odata-engine-java-impl', version: '0.9.0'",
-            "compile group: 'com.microsoft.services', name: 'odata-engine-helpers', version: '0.9.0'",
-            "compile group: 'com.microsoft.services', name: 'odata-engine-android-impl', version: '0.9.0'",
-            "compile group: 'com.microsoft.services', name: 'discovery-services', version: '0.9.0'",
-            "compile group: 'com.microsoft.services', name: 'directory-services', version: '0.9.0'",
+            "compile group: 'com.microsoft.services', name: 'odata-engine-interfaces', version: '(,1.0)'",
+            "compile group: 'com.microsoft.services', name: 'odata-engine-java-impl', version: '(,1.0)'",
+            "compile group: 'com.microsoft.services', name: 'odata-engine-helpers', version: '(,1.0)'",
+            "compile group: 'com.microsoft.services', name: 'odata-engine-android-impl', version: '(,1.0)'",
+            "compile group: 'com.microsoft.services', name: 'discovery-services', version: '(,1.0)'",
+            "compile group: 'com.microsoft.services', name: 'directory-services', version: '(,1.0)'",
             "compile group: 'com.google.guava', name: 'guava', version: '18.0'"
     };
 
     private static final String[] O365_FILES_DEPENDENCIES = new String[] {
-            "compile group: 'com.microsoft.services', name: 'file-services', version: '0.9.0'"
+            "compile group: 'com.microsoft.services', name: 'file-services', version: '(,1.0)'"
     };
 
     private static final String[] O365_LIST_DEPENDENCIES = new String[] {
-            "compile group: 'com.microsoft.services', name: 'list-services', version: '0.9.0'"
+            "compile group: 'com.microsoft.services', name: 'list-services', version: '(,1.0)'"
     };
 
     private static final String[] O365_OUTLOOK_DEPENDENCIES = new String[] {
-            "compile group: 'com.microsoft.services', name: 'outlook-services', version: '0.9.0'"
+            "compile group: 'com.microsoft.services', name: 'outlook-services', version: '(,1.0)'"
     };
 
     private void associateOffice365() throws ParseException, ExecutionException, InterruptedException {
