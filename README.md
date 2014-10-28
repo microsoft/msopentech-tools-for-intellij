@@ -10,7 +10,6 @@ Prerequisites
 =============
 * Install the IntelliJ IDEA or Android Studio.
 * Android SDK - [http://developer.android.com/sdk/index.html](http://developer.android.com/sdk/index.html) minimum version is Android 2.3 / API 9. 
-* Java JRE 1.6 and above - [http://www.oracle.com/technetwork/java/javase/downloads/index.html ](http://www.oracle.com/technetwork/java/javase/downloads/index.html)
 * Install the Java JDK (For changing the plugin you need JDK 1.6. For creating android apps using the latest 1.7 from http://www.oracle.com/technetwork/java/javase/downloads/index.html is sufficient)
 * For windows OS you may need to manually install the appropriate Open SSL version to your local machine (for example C:\OpenSSL-Win64\) and add that location in the system environment variable PATH(add “C:\OpenSSL-Win64\bin”). 
 
