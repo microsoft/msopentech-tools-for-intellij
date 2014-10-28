@@ -1,4 +1,4 @@
-"MS Open Tech Tools:  IntelliJ and Android Studio Plugin for Microsoft Services"
+MS Open Tech Tools:  IntelliJ and Android Studio Plugin for Microsoft Services
 ================================================================================
 
 Plugin for easy and fast development of apps connecting to and integrating into Microsoft Services. Current services available are: Windows Azure Mobile Services (storage, authentication, custom scripts...),  Push Notification and Office365 Services.
