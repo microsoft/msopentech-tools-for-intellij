@@ -47,7 +47,7 @@ public class AzureConfigurable extends SearchableConfigurable.Parent.Abstract im
     @Override
     protected Configurable[] buildConfigurables() {
         myPanels = new ArrayList<Configurable>();
-        if (AzurePlugin.IS_WINDOWS) {
+        if (!AzurePlugin.IS_ANDROID_STUDIO && AzurePlugin.IS_WINDOWS) {
             myPanels.add(new AzureAbstractConfigurable(new ServiceEndpointsPanel()));
             myPanels.add(new AzureAbstractConfigurable(new StorageAccountPanel(myProject)));
         }
@@ -91,7 +91,7 @@ public class AzureConfigurable extends SearchableConfigurable.Parent.Abstract im
 
     @Override
     public boolean isVisible() {
-        return AzurePlugin.IS_WINDOWS;
+        return !AzurePlugin.IS_ANDROID_STUDIO && AzurePlugin.IS_WINDOWS;
     }
 
     public class AzureAbstractConfigurable implements SearchableConfigurable, Configurable.NoScroll, OptionsContainingConfigurable {

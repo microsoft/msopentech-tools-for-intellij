@@ -15,32 +15,22 @@
  */
 package com.microsoftopentechnologies.intellij.actions;
 
-import com.intellij.lang.ant.config.AntBuildFile;
-import com.intellij.lang.ant.config.AntBuildFileBase;
-import com.intellij.lang.ant.config.AntBuildListener;
-import com.intellij.lang.ant.config.AntConfiguration;
-import com.intellij.lang.ant.config.execution.ExecutionHandler;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.project.Project;
-import com.intellij.util.ArrayUtil;
 import com.interopbridges.tools.windowsazure.WindowsAzureInvalidProjectOperationException;
 import com.interopbridges.tools.windowsazure.WindowsAzurePackageType;
 import com.interopbridges.tools.windowsazure.WindowsAzureProjectManager;
 import com.microsoftopentechnologies.intellij.module.AzureModuleType;
+import com.microsoftopentechnologies.intellij.util.AntHelper;
 import com.microsoftopentechnologies.intellij.util.PluginUtil;
 
 import java.io.File;
-import java.util.ArrayList;
 
 import static com.microsoftopentechnologies.intellij.ui.messages.AzureBundle.message;
 
 public class RunInEmulatorAction extends AnAction {
-    private String errorTitle;
-    private String errorMessage;
 
     public void actionPerformed(final AnActionEvent event) {
         final Module module = event.getData(LangDataKeys.MODULE);
@@ -57,34 +47,18 @@ public class RunInEmulatorAction extends AnAction {
             waProjManager.save();
             try {
                 final WindowsAzureProjectManager waProjMgr = WindowsAzureProjectManager.load(new File(modulePath));
-                PluginUtil.runAntBuild(event.getDataContext(), module, new AntBuildListener() {
-                    @Override
-                    public void buildFinished(int state, int errorCount) {
-                        if (state == AntBuildListener.FINISHED_SUCCESSFULLY) {
-                            try {
-                                waProjMgr.deployToEmulator();
-                            } catch (WindowsAzureInvalidProjectOperationException e) {
-                                errorTitle = String.format("%s%s%s", message("waEmulator"), " ", message("runEmltrErrTtl"));
-                                errorMessage = String.format("%s %s%s%s", message("runEmltrErrMsg"), module.getName(), " in ", message("waEmulator"));
-                                PluginUtil.displayErrorDialogInAWTAndLog(errorTitle, errorMessage, e);
-                            }
-                        } else if (state == AntBuildListener.FAILED_TO_RUN) {
-                            PluginUtil.displayErrorDialog(message("bldErrTtl"), message("bldErrMsg"));
-                        }
-                    }
-                });
+
+                AntHelper.runAntBuild(event.getDataContext(), module, AntHelper.createRunInEmulatorListener(module, waProjMgr));
             } catch (WindowsAzureInvalidProjectOperationException e) {
-                errorTitle = String.format("%s%s%s", message("waEmulator"), " ", message("runEmltrErrTtl"));
-                errorMessage = String.format("%s %s%s%s", message("runEmltrErrMsg"), module.getName(), " in ", message("waEmulator"));
+                String errorTitle = String.format("%s%s%s", message("waEmulator"), " ", message("runEmltrErrTtl"));
+                String errorMessage = String.format("%s %s%s%s", message("runEmltrErrMsg"), module.getName(), " in ", message("waEmulator"));
                 PluginUtil.displayErrorDialogInAWTAndLog(errorTitle, errorMessage, e);
             } catch (Exception ex) {
-                errorTitle = message("bldErrTtl");
-                errorMessage = message("bldErrMsg");
-                PluginUtil.displayErrorDialogInAWTAndLog(errorTitle, errorMessage, ex);
+                PluginUtil.displayErrorDialogInAWTAndLog(message("bldErrTtl"), message("bldErrMsg"), ex);
             }
         } catch (Exception e) {
-            errorTitle = String.format("%s%s%s", message("waEmulator"), " ", message("runEmltrErrTtl"));
-            errorMessage = String.format("%s %s%s%s", message("runEmltrErrMsg"), module.getName(), " in ", message("waEmulator"));
+            String errorTitle = String.format("%s%s%s", message("waEmulator"), " ", message("runEmltrErrTtl"));
+            String errorMessage = String.format("%s %s%s%s", message("runEmltrErrMsg"), module.getName(), " in ", message("waEmulator"));
             PluginUtil.displayErrorDialogAndLog(errorTitle, errorMessage, e);
         }
     }

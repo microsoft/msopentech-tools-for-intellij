@@ -15,7 +15,6 @@
  */
 package com.microsoftopentechnologies.intellij.actions;
 
-import com.intellij.lang.ant.config.AntBuildListener;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.LangDataKeys;
@@ -26,13 +25,12 @@ import com.interopbridges.tools.windowsazure.WindowsAzureProjectManager;
 import com.microsoftopentechnologies.intellij.AzurePlugin;
 import com.microsoftopentechnologies.intellij.module.AzureModuleType;
 import com.microsoftopentechnologies.intellij.ui.messages.AzureBundle;
+import com.microsoftopentechnologies.intellij.util.AntHelper;
 import com.microsoftopentechnologies.intellij.util.PluginUtil;
-import com.microsoftopentechnologies.intellij.util.WAHelper;
 import com.microsoftopentechnologies.wacommon.utils.WACommonException;
 import com.microsoftopentechnologies.wacommonutil.PreferenceSetUtil;
 
 import java.io.File;
-import java.io.IOException;
 
 import static com.microsoftopentechnologies.intellij.ui.messages.AzureBundle.message;
 
@@ -64,36 +62,7 @@ public class BuildPackageAction extends AnAction {
             waProjManager.save();
             WindowsAzureProjectManager.load(new File(modulePath)); // to verify correctness
 
-            PluginUtil.runAntBuild(event.getDataContext(), module, new AntBuildListener() {
-                @Override
-                public void buildFinished(int state, int errorCount) {
-                    if (state == AntBuildListener.FINISHED_SUCCESSFULLY) {
-                        String dplyFolderPath = "";
-                        try {
-                            WindowsAzureProjectManager waProjMngr = WindowsAzureProjectManager.load(new File(modulePath));
-
-                            dplyFolderPath = WAHelper.getDeployFolderPath(waProjMngr, module);
-                            String bldFlFilePath = String.format("%s%s%s", dplyFolderPath, File.separator, message("bldErFileName"));
-                            File buildFailFile = new File(bldFlFilePath);
-                            File deployFile = new File(dplyFolderPath);
-
-                            if (deployFile.exists() && deployFile.isDirectory() && deployFile.listFiles().length > 0 && !buildFailFile.exists()) {
-                                String[] cmd = {"explorer.exe", "\"" + dplyFolderPath + "\""};
-                                new ProcessBuilder(cmd).start();
-                            } else {
-                                PluginUtil.displayErrorDialog(message("bldErrTtl"), message("bldErrMsg"));
-                            }
-                            waProjMngr.save();
-                        } catch (IOException e) {
-                            AzurePlugin.log(String.format("%s %s", message("dplyFldErrMsg"), dplyFolderPath), e);
-                        } catch (Exception e) {
-                            PluginUtil.displayErrorDialogInAWTAndLog(message("bldErrTtl"), message("bldErrMsg"), e);
-                        }
-                    } else if (state == AntBuildListener.FAILED_TO_RUN) {
-                        PluginUtil.displayErrorDialog(message("bldErrTtl"), message("bldErrMsg"));
-                    }
-                }
-            });
+            AntHelper.runAntBuild(event.getDataContext(), module, AntHelper.createBuildPackageListener(module));
         } catch (final Exception e) {
             PluginUtil.displayErrorDialogInAWTAndLog(message("bldCldErrTtl"), String.format("%s %s", message("bldCldErrMsg"), module.getName()), e);
         }

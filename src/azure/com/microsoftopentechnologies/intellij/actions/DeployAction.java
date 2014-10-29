@@ -16,8 +16,8 @@
 package com.microsoftopentechnologies.intellij.actions;
 
 import com.microsoftopentechnologies.intellij.deploy.*;
+import com.microsoftopentechnologies.intellij.util.AntHelper;
 import com.microsoftopentechnologies.intellij.wizards.WizardCacheManager;
-import com.intellij.lang.ant.config.AntBuildListener;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.AnAction;
@@ -86,7 +86,6 @@ public class DeployAction extends AnAction {
 
         if (deployDialog.isOK()) {
             try {
-//            showBusy(true);
                 String modulePath = PluginUtil.getModulePath(module);
                 WindowsAzureProjectManager waProjManager = WindowsAzureProjectManager.load(new File(modulePath));
 
@@ -97,7 +96,6 @@ public class DeployAction extends AnAction {
                 }
                 // certificate upload configuration
                 List<WindowsAzureCertificate> certToUpload = handleCertUpload(waProjManager);
-//            showBusy(false);
                 if (certToUpload != null && certToUpload.size() > 0) {
                     List<CertificateUpload> certUploadList = new ArrayList<CertificateUpload>();
                     for (int i = 0; i < certToUpload.size(); i++) {
@@ -204,84 +202,15 @@ public class DeployAction extends AnAction {
         public void run(@NotNull ProgressIndicator indicator) {
             try {
                 waProjManager.setPackageType(WindowsAzurePackageType.CLOUD);
-//                selectedProject.build(IncrementalProjectBuilder.
-//                        CLEAN_BUILD, monitor);
                 waProjManager.save();
                 indicator.setFraction(0.0);
                 indicator.setText2(String.format(message("buildingProjTask"), myModule.getName()));
-                PluginUtil.runAntBuild(dataContext, myModule, createAntBuildListener());
+                AntHelper.runAntBuild(dataContext, myModule, AntHelper.createDeployListener(myModule, mdfdCmpntList, roleMdfdCache, isError));
                 indicator.setFraction(1.0);
-//                selectedProject.build(IncrementalProjectBuilder.
-//                        INCREMENTAL_BUILD, null);
-//                selectedProject.refreshLocal(IResource.DEPTH_INFINITE, monitor);
-//                super.setName("");
-//                monitor.done();
-//                if (WAEclipseHelper.isBuildSuccessful(waProjManager, selectedProject)) {
-//                    return Status.OK_STATUS;
-//                } else {
-//                    return Status.CANCEL_STATUS;
-//                }
             } catch (Exception e) {
                 log(message("error"), e);
                 isError = true;
             }
-        }
-
-        AntBuildListener createAntBuildListener() {
-            return new AntBuildListener() {
-                @Override
-                public void buildFinished(int state, int errorCount) {
-                    if (!isError) {
-                        WindowsAzureProjectManager waProjManager = null;
-                        try {
-                            waProjManager = WindowsAzureProjectManager.load(new File(PluginUtil.getModulePath(myModule)));
-                    /*
-                     * Build job is completed.
-					 * If component's url settings done before build then,
-					 * replace with auto.
-					*/
-                            if (mdfdCmpntList.size() > 0) {
-                                waProjManager = addAutoCloudUrl(waProjManager);
-                                waProjManager.save();
-                            }
-                    /*
-					 * If cache's storage account name and key,
-					 * is changed before build then replace with auto.
-					*/
-                            if (roleMdfdCache.size() > 0) {
-                                waProjManager = addAutoSettingsForCache(waProjManager);
-                                waProjManager.save();
-                            }
-//                                                WAEclipseHelper.refreshWorkspace(
-//                                                        com.persistent.winazureroles.Messages.rfrshErrTtl,
-//                                                        com.persistent.winazureroles.Messages.rfrshErrMsg);
-                        } catch (WindowsAzureInvalidProjectOperationException e) {
-                            PluginUtil.displayErrorDialogInAWTAndLog(message("error"), message("autoUploadEr"), e);
-                        }
-                        WindowsAzureDeploymentTask task = new WindowsAzureDeploymentTask(myModule);
-                        task.queue();
-//                job.addJobChangeListener(new JobChangeAdapter() {
-//                    public void done(IJobChangeEvent event) {
-//                        if (!event.getResult().isOK()) {
-//                            Display.getDefault().asyncExec(new Runnable() {
-//                                @Override
-//                                public void run() {
-//                                    MessageDialog.openInformation(
-//                                            getShell(),
-//                                            Messages.interrupt,
-//                                            Messages.deploymentInterrupted);
-//                                }
-//                            });
-//                        }
-//                                                    WAEclipseHelper.refreshWorkspace(
-//                                                            com.persistent.winazureroles.Messages.rfrshErrTtl,
-//                                                            com.persistent.winazureroles.Messages.rfrshErrMsg);
-//                    }
-//                });
-                    }
-                }
-
-            };
         }
 
         @Nullable
@@ -305,8 +234,6 @@ public class DeployAction extends AnAction {
 
         @Override
         public void run(@NotNull ProgressIndicator indicator) {
-//            monitor.beginTask(Messages.confStorageAccount,
-//                    IProgressMonitor.UNKNOWN);
             try {
                 // Create storage account if it does not exists
                 createStorageAccountIfNotExists();
@@ -318,7 +245,6 @@ public class DeployAction extends AnAction {
 				 */
                 waProjManager = removeAutoCloudUrl(waProjManager);
                 waProjManager.save();
-//                showBusy(false);
             } catch (Exception e) {
                 log(message("error"), e);
                 isError = true;
@@ -363,7 +289,7 @@ public class DeployAction extends AnAction {
         }
     }
 
-    public class WindowsAzureDeploymentTask extends Task.Backgroundable {
+    public static class WindowsAzureDeploymentTask extends Task.Backgroundable {
 
         private final Module myModule;
         private final AtomicBoolean wait = new AtomicBoolean(true);
@@ -777,8 +703,7 @@ public class DeployAction extends AnAction {
      * @param projMngr
      * @return
      */
-    private WindowsAzureProjectManager addAutoCloudUrl(
-            WindowsAzureProjectManager projMngr) {
+    public static WindowsAzureProjectManager addAutoCloudUrl(WindowsAzureProjectManager projMngr, List<AutoUpldCmpnts> mdfdCmpntList) {
         try {
             // get number of roles in one project
             List<WindowsAzureRole> roleList = projMngr.getRoles();
@@ -814,7 +739,7 @@ public class DeployAction extends AnAction {
      * @param projMngr
      * @return
      */
-    private WindowsAzureProjectManager addAutoSettingsForCache(WindowsAzureProjectManager projMngr) {
+    public static WindowsAzureProjectManager addAutoSettingsForCache(WindowsAzureProjectManager projMngr, List<String> roleMdfdCache) {
         try {
             // get number of roles in one project
             List<WindowsAzureRole> roleList = projMngr.getRoles();

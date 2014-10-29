@@ -42,7 +42,7 @@ public class ServiceEndpointsPanel implements AzureAbstractPanel {
     private String valOkToLeave = "";
 
     public ServiceEndpointsPanel() {
-        if (AzurePlugin.IS_WINDOWS) {
+        if (!AzurePlugin.IS_ANDROID_STUDIO && AzurePlugin.IS_WINDOWS) {
             init();
         }
     }

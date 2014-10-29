@@ -18,16 +18,16 @@ limitations under the License.
     <id>com.microsoftopentechnologies.intellij</id>
     <name>MSOpenTech Tools</name>
     <version>0.1</version>
-    <vendor url="http://msopentech.com">Microsoft Open Technologies, Inc.</vendor>
+    <vendor email="msopentech@microsoft.com" logo="/com/microsoftopentechnologies/intellij/icons/logo.png" url="http://msopentech.com">Microsoft Open Technologies, Inc.</vendor>
 
     <description><![CDATA[
   Tools for easy development of apps connected to Microsoft Services. Current SDKs and management tools covers the following:
    <ul>
-        <li>Microsoft Azure Mobile Services for storage, authentication and custom scripts for Android Studio and IntelliJ IDEA</li>
-        <li>Push Notification for Android Studio and IntelliJ IDEA</li>
-        <li>Office 365 Outlook Services for Android Studio and IntelliJ IDEA</li>
-        <li>Office 365 File Services for Android Studio and IntelliJ IDEA</li>
-        <li>Office 365 SharePoint Lists for Android Studio and IntelliJ IDEA</li>
+        <li>Microsoft Azure Mobile Services for storage, authentication and custom scripts for IntelliJ IDEA and Android Studio</li>
+        <li>Push Notification for IntelliJ IDEA and Android Studio</li>
+        <li>Office 365 Outlook Services for IntelliJ IDEA and Android Studio</li>
+        <li>Office 365 File Services for IntelliJ IDEA and Android Studio</li>
+        <li>Office 365 SharePoint Lists for IntelliJ IDEA and Android Studio</li>
         <li>Azure Tools for Java for IntelliJ IDEA</li>
    </ul>
    <b>License</b><br/>
@@ -78,6 +78,9 @@ limitations under the License.
     <application-components>
         <component>
             <implementation-class>com.microsoftopentechnologies.intellij.components.MSOpenTechTools</implementation-class>
+        </component>
+        <component>
+            <implementation-class>com.microsoftopentechnologies.intellij.AzureActionsComponent</implementation-class>
         </component>
     </application-components>
 
@@ -215,18 +218,15 @@ limitations under the License.
             <reference ref="Actions.RolePropertiesAction"/>
             <separator/>
             <reference ref="Actions.ModulePropertiesAction"/>
-            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
         </group>
 
-        <group id="AzureToolbarGroup" text="Azure" description="Azure" class="com.microsoftopentechnologies.intellij.actions.AzureToolbarGroup">
+        <group id="AzureToolbarGroup" text="Azure" description="Azure">
             <reference ref="Actions.RunInEmulatorAction"/>
             <reference ref="Actions.ResetEmulatorAction"/>
             <reference ref="Actions.BuildPackageAction"/>
             <reference ref="Actions.PackageAction"/>
             <reference ref="Actions.DeployAction"/>
             <reference ref="Actions.UnpublishAction"/>
-
-            <add-to-group group-id="MainToolBar" anchor="before" relative-to-action="HelpTopics"/>
         </group>
     </actions>
 </idea-plugin>

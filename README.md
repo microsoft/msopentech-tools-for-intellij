@@ -27,3 +27,4 @@ Azure Notes
 and all jars from 'dependencies' folder
 
 Also, need to add antIntegration.jar from <IDEA_INSTALLATION>/plugins/ant/lib to SDK classpath.
+

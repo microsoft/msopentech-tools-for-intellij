@@ -24,13 +24,15 @@ import com.intellij.openapi.application.ModalityState;
 import com.microsoft.directoryservices.Application;
 import com.microsoftopentechnologies.intellij.helpers.LinkListener;
 import com.microsoftopentechnologies.intellij.helpers.StringHelper;
-import com.microsoftopentechnologies.intellij.helpers.o365.Office365RestAPIManager;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
+import com.microsoftopentechnologies.intellij.helpers.o365.Office365RestAPIManager;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 public class CreateNewOffice365AppForm extends JDialog {
     private JPanel mainPanel;
@@ -100,13 +102,26 @@ public class CreateNewOffice365AppForm extends JDialog {
 
                             if (StringHelper.isNullOrWhiteSpace(name)) {
                                 error += "The application name must not be empty.\n";
+                            } else if (name.length() > 64) {
+                                error += "The application name cannot be more than 64 characters long.\n";
                             }
-                            if(StringHelper.isNullOrWhiteSpace(replyURL)) {
+
+                            if (StringHelper.isNullOrWhiteSpace(replyURL)) {
                                 error += "The reply URL must not be empty.\n";
+                            } else {
+                                try {
+                                    URI uri = new URI(replyURL);
+
+                                    if (!(uri.getScheme() != null && uri.getScheme().equalsIgnoreCase("https"))) {
+                                        error += "The reply URL must be an https:// address.\n";
+                                    }
+                                } catch (URISyntaxException e) {
+                                    error += "The reply URL must be a valid URL.\n";
+                                }
                             }
 
                             if (!error.isEmpty()) {
-                                JOptionPane.showMessageDialog(form, error, "Error creating the service", JOptionPane.ERROR_MESSAGE);
+                                JOptionPane.showMessageDialog(form, error, "Error creating the application", JOptionPane.ERROR_MESSAGE);
                                 return;
                             }
 

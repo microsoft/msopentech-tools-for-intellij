@@ -27,7 +27,7 @@ public class AzurePopupGroup extends DefaultActionGroup implements DumbAware {
 
     public void update(AnActionEvent e) {
         Module module = LangDataKeys.MODULE.getData(e.getDataContext());
-        if (!AzurePlugin.IS_WINDOWS || module == null) {
+        if (module == null) {
             e.getPresentation().setEnabledAndVisible(false);
         } else {
             VirtualFile selectedFile = CommonDataKeys.VIRTUAL_FILE.getData(e.getDataContext());

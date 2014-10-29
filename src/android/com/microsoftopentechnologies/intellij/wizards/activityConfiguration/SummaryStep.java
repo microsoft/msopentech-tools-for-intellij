@@ -94,27 +94,37 @@ public class SummaryStep extends WizardStep<AddServiceWizardModel> {
         summary.append("<html> <head> </head> <body style=\"font-family: sans serif;\"> <p style=\"margin-top: 0\"><b>Summary:</b></p> <ol> ");
 
         if (this.model.getService() != null) {
-            summary.append("<li>Add <a href=\"https://go.microsoft.com/fwLink/?LinkID=280126&clcid=0x409\">Azure Mobile Services</a> library to project <b>");
+            summary.append("<li>Added <a href=\"https://go.microsoft.com/fwLink/?LinkID=280126&clcid=0x409\">Azure Mobile Services</a> library to project <b>");
             summary.append(this.model.getProject().getName());
             summary.append("</b>.</li> ");
-            summary.append("<li>Add helper class using Mobile Service <b>");
+            summary.append("<li>Added helper class using Mobile Service <b>");
             summary.append(this.model.getService().getName());
             summary.append("</b>.</li> ");
         }
 
         if (this.model.getHubName() != null) {
-            summary.append("<li>Add <a href=\"https://go.microsoft.com/fwLink/?LinkID=280126&clcid=0x409\">Notification Hub</a> library to project <b>");
+            summary.append("<li>Added <a href=\"https://go.microsoft.com/fwLink/?LinkID=280126&clcid=0x409\">Notification Hub</a> library to project <b>");
             summary.append(this.model.getProject().getName());
             summary.append("</b>.</li> ");
-            summary.append("<li>Add helper class using Notification Hub <b>");
+            summary.append("<li>Added helper class using Notification Hub <b>");
             summary.append(this.model.getHubName());
             summary.append("</b>.</li> ");
         }
 
         if (this.model.isOutlookServices() || this.model.isFileServices() || this.model.isListServices()) {
-            summary.append("<li>Configure Office 365 in project <b>");
+            summary.append("<li>Configured Office 365 in project <b>");
             summary.append(this.model.getProject().getName());
             summary.append("</b>.</li> ");
+
+            if (this.model.isOutlookServices()) {
+                summary.append("<li>Added helper class OutlookServicesClient.</li> ");
+            }
+            if (this.model.isFileServices()) {
+                summary.append("<li>Added helper class FileServicesClient.</li> ");
+            }
+            if (this.model.isListServices()) {
+                summary.append("<li>Added helper class ListServicesClient.</li> ");
+            }
         }
 
         summary.append("</ol> <p style=\"margin-top: 0\">After clicking Finish, it might take a few seconds to complete set up.</p> </body> </html>");
@@ -250,7 +260,7 @@ public class SummaryStep extends WizardStep<AddServiceWizardModel> {
         }
     }
 
-    private static final String[] O365_COMMON_DEPENDENCIES = new String[] {
+    private static final String[] O365_COMMON_DEPENDENCIES = new String[]{
             "compile group: 'com.microsoft.services', name: 'odata-engine-interfaces', version: '(,1.0)'",
             "compile group: 'com.microsoft.services', name: 'odata-engine-java-impl', version: '(,1.0)'",
             "compile group: 'com.microsoft.services', name: 'odata-engine-helpers', version: '(,1.0)'",
@@ -260,15 +270,15 @@ public class SummaryStep extends WizardStep<AddServiceWizardModel> {
             "compile group: 'com.google.guava', name: 'guava', version: '18.0'"
     };
 
-    private static final String[] O365_FILES_DEPENDENCIES = new String[] {
+    private static final String[] O365_FILES_DEPENDENCIES = new String[]{
             "compile group: 'com.microsoft.services', name: 'file-services', version: '(,1.0)'"
     };
 
-    private static final String[] O365_LIST_DEPENDENCIES = new String[] {
+    private static final String[] O365_LIST_DEPENDENCIES = new String[]{
             "compile group: 'com.microsoft.services', name: 'list-services', version: '(,1.0)'"
     };
 
-    private static final String[] O365_OUTLOOK_DEPENDENCIES = new String[] {
+    private static final String[] O365_OUTLOOK_DEPENDENCIES = new String[]{
             "compile group: 'com.microsoft.services', name: 'outlook-services', version: '(,1.0)'"
     };
 
@@ -281,17 +291,17 @@ public class SummaryStep extends WizardStep<AddServiceWizardModel> {
             ListenableFuture<Application> future = manager.setO365PermissionsForApp(model.getOfficeApp(), model.getOfficePermissions());
             future.get();
 
-            if(!AndroidStudioHelper.isAndroidStudio()) {
+            if (!AndroidStudioHelper.isAndroidStudio()) {
                 // show a message instructing the developer to manually add dependencies to their
                 // build.gradle file; first add all common dependencies
                 ArrayList<String> dependencies = Lists.newArrayList(O365_COMMON_DEPENDENCIES);
-                if(model.isOutlookServices()) {
+                if (model.isOutlookServices()) {
                     Collections.addAll(dependencies, O365_OUTLOOK_DEPENDENCIES);
                 }
-                if(model.isFileServices()) {
+                if (model.isFileServices()) {
                     Collections.addAll(dependencies, O365_FILES_DEPENDENCIES);
                 }
-                if(model.isListServices()) {
+                if (model.isListServices()) {
                     Collections.addAll(dependencies, O365_LIST_DEPENDENCIES);
                 }
 

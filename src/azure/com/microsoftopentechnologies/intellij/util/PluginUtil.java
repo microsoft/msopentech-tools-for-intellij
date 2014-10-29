@@ -18,20 +18,15 @@ package com.microsoftopentechnologies.intellij.util;
 
 import com.intellij.ide.DataManager;
 import com.intellij.ide.projectView.impl.ProjectRootsUtil;
-import com.intellij.lang.ant.config.*;
-import com.intellij.lang.ant.config.execution.ExecutionHandler;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.application.PathManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
-import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.util.ArrayUtil;
 import com.interopbridges.tools.windowsazure.WindowsAzureInvalidProjectOperationException;
 import com.interopbridges.tools.windowsazure.WindowsAzureProjectManager;
 import com.interopbridges.tools.windowsazure.WindowsAzureRole;
@@ -39,7 +34,6 @@ import com.interopbridges.tools.windowsazure.WindowsAzureRoleComponentImportMeth
 import com.microsoftopentechnologies.intellij.AzurePlugin;
 import com.microsoftopentechnologies.wacommon.utils.WACommonException;
 import java.io.File;
-import java.util.ArrayList;
 
 import static com.microsoftopentechnologies.intellij.ui.messages.AzureBundle.message;
 
@@ -124,37 +118,6 @@ public class PluginUtil {
             throw e;
         }
         return libLocation;
-    }
-
-    public static void runAntBuild(final DataContext dataContext, final Module module, final AntBuildListener antBuildListener) {
-        final VirtualFile packageXmlFile = LocalFileSystem.getInstance().findFileByPath(getModulePath(module) + File.separator + message("resCLPkgXML"));
-        final AntConfiguration antConfiguration = AntConfiguration.getInstance(module.getProject());
-        ApplicationManager.getApplication().invokeAndWait(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            final AntBuildFile buildFile;
-                            boolean notInAnt = true;
-                            AntBuildFile buildFileTemp = null;
-                            for (AntBuildFile antBuildFile : antConfiguration.getBuildFiles()) {
-                                if (antBuildFile.getPresentableUrl().equals(packageXmlFile.getPresentableUrl())) {
-                                    buildFileTemp = antBuildFile;
-                                    notInAnt = false;
-                                    break;
-                                }
-                            }
-                            buildFile = notInAnt ? antConfiguration.addBuildFile(packageXmlFile) : buildFileTemp;
-                            final String[] targets = ArrayUtil.EMPTY_STRING_ARRAY; // default target
-                            ExecutionHandler.runBuild((AntBuildFileBase) buildFile, targets, null, dataContext, new ArrayList(), antBuildListener);
-                            if (notInAnt) {
-                                antConfiguration.removeBuildFile(buildFile);
-                            }
-                        } catch (AntNoFileException e) {
-                            throw new RuntimeException(message("bldErrMsg"), e);
-                        }
-                    }
-                }, ModalityState.defaultModalityState());
     }
 
     /**

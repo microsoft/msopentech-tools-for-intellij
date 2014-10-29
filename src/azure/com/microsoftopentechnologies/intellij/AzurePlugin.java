@@ -20,6 +20,7 @@ import com.intellij.openapi.application.PathManager;
 import com.intellij.openapi.components.*;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
+import com.intellij.util.PlatformUtilsCore;
 import com.interopbridges.tools.windowsazure.WindowsAzureProjectManager;
 import com.microsoftopentechnologies.deploy.deploy.DeploymentEventArgs;
 import com.microsoftopentechnologies.deploy.deploy.DeploymentEventListener;
@@ -45,6 +46,7 @@ public class AzurePlugin extends AbstractProjectComponent {
     public final static int REST_SERVICE_MAX_RETRY_COUNT = 7;
 
     public static boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().indexOf("win") >= 0;
+    public static boolean IS_ANDROID_STUDIO = "AndroidStudio".equals(PlatformUtilsCore.getPlatformPrefix());
 
     private static final String COMPONENTSETS_TYPE = "COMPONENTSETS";
     private static final String PREFERENCESETS_TYPE = "PREFERENCESETS";
@@ -74,7 +76,7 @@ public class AzurePlugin extends AbstractProjectComponent {
      * other plugins only in this method.
      */
     public void initComponent() {
-        if (IS_WINDOWS) {
+        if (!IS_ANDROID_STUDIO && IS_WINDOWS) {
             LOG.info("Starting Azure Plugin");
             try {
                 azureSettings.loadStorage();

@@ -18,6 +18,7 @@ package com.microsoftopentechnologies.intellij.wizards.activityConfiguration;
 
 import com.intellij.ui.wizard.WizardNavigationState;
 import com.intellij.ui.wizard.WizardStep;
+import com.microsoftopentechnologies.intellij.helpers.StringHelper;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -116,6 +117,39 @@ public class NotificationHubStep extends WizardStep<AddServiceWizardModel> {
 
     @Override
     public WizardStep onNext(AddServiceWizardModel model) {
+        String error = "";
+
+        String senderId = this.textSenderID.getText();
+        String connectionString = this.textConnectionString.getText();
+        String hubName = this.textHubName.getText();
+
+        if (StringHelper.isNullOrWhiteSpace(senderId)) {
+            error += "The Sender ID must not be empty.\n";
+        } else if (!senderId.matches("^[0-9]+$")) {
+            error += "Invalid Sender ID. The Sender Id must contain only numbers.\n";
+        }
+
+        if (StringHelper.isNullOrWhiteSpace(connectionString)) {
+            error += "The Connection String must not be empty.\n";
+        }
+
+        if (StringHelper.isNullOrWhiteSpace(hubName)) {
+            error += "The Notification Hub Name must not be empty.\n";
+        } else {
+            if (hubName.length() < 6 || hubName.length() > 50) {
+                error += "The Notification Hub Name must be between 6 and 50 characters long.\n";
+            }
+
+            if (!hubName.matches("^[A-Za-z][A-Za-z0-9-]+[A-Za-z0-9]$")) {
+                error += "Invalid Notification Hub name.  The Notification Hub name must start with a letter, contain only letters, numbers, and hyphens, and end with a letter or number.";
+            }
+        }
+
+        if (!error.isEmpty()) {
+            JOptionPane.showMessageDialog(null, error, "Error configuring the Notification Hub client information", JOptionPane.ERROR_MESSAGE);
+            return this;
+        }
+
         model.setSenderId(this.textSenderID.getText());
         model.setConnectionString(this.textConnectionString.getText());
         model.setHubName(this.textHubName.getText());
