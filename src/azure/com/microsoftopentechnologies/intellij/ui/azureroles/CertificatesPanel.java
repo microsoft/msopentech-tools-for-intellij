@@ -17,7 +17,12 @@ package com.microsoftopentechnologies.intellij.ui.azureroles;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.options.BaseConfigurable;
+import com.intellij.openapi.options.Configurable;
+import com.intellij.openapi.options.ConfigurationException;
+import com.intellij.openapi.options.SearchableConfigurable;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.ui.AnActionButton;
 import com.intellij.ui.AnActionButtonRunnable;
 import com.intellij.ui.AnActionButtonUpdater;
@@ -29,8 +34,12 @@ import com.interopbridges.tools.windowsazure.WindowsAzureCertificate;
 import com.interopbridges.tools.windowsazure.WindowsAzureInvalidProjectOperationException;
 import com.interopbridges.tools.windowsazure.WindowsAzureProjectManager;
 import com.interopbridges.tools.windowsazure.WindowsAzureRole;
+import com.microsoftopentechnologies.intellij.ui.AzureAbstractPanel;
 import com.microsoftopentechnologies.intellij.util.PluginUtil;
 import com.microsoftopentechnologies.util.WAEclipseHelperMethods;
+import org.jetbrains.annotations.Nls;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
@@ -39,7 +48,7 @@ import java.util.List;
 
 import static com.microsoftopentechnologies.intellij.ui.messages.AzureBundle.message;
 
-public class CertificatesPanel {
+public class CertificatesPanel extends BaseConfigurable implements AzureAbstractPanel, SearchableConfigurable, Configurable.NoScroll {
     private JPanel contentPane;
     private JPanel tablePanel;
     private TableView<WindowsAzureCertificate> tblCertificates;
@@ -69,16 +78,79 @@ public class CertificatesPanel {
         }
     }
 
-    public boolean isModified() {
-        return modified;
+    @NotNull
+    @Override
+    public String getId() {
+        return getDisplayName();
     }
 
-    public void setModified(boolean modified) {
-        this.modified = modified;
+    @Nullable
+    @Override
+    public Runnable enableSearch(String option) {
+        return null;
     }
 
-    public JPanel getPanel() {
+    @Override
+    public JComponent getPanel() {
         return contentPane;
+    }
+
+    @Nls
+    @Override
+    public String getDisplayName() {
+        return message("cmhLblCert");
+    }
+
+    @Override
+    public boolean doOKAction() {
+        try {
+            apply();
+            return true;
+        } catch (ConfigurationException e) {
+            PluginUtil.displayErrorDialogAndLog(e.getTitle(), e.getMessage(), e);
+            return false;
+        }
+    }
+
+    @Override
+    public String getSelectedValue() {
+        return certSelected;
+    }
+
+    @Override
+    public ValidationInfo doValidate() {
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public String getHelpTopic() {
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public JComponent createComponent() {
+        return contentPane;
+    }
+
+    @Override
+    public void apply() throws ConfigurationException {
+        try {
+            waProjManager.save();
+        } catch (WindowsAzureInvalidProjectOperationException e) {
+            throw new ConfigurationException(message("adRolErrMsgBox1") + message("adRolErrMsgBox2"), message("adRolErrTitle"));
+        }
+        setModified(false);
+    }
+
+    @Override
+    public void reset() {
+        setModified(false);
+    }
+
+    @Override
+    public void disposeUIResources() {
     }
 
     private final ColumnInfo<WindowsAzureCertificate, String> NAME = new ColumnInfo<WindowsAzureCertificate, String>(message("evColName")) {
@@ -197,10 +269,6 @@ public class CertificatesPanel {
 
     private void removeCertificate() {
         try {
-//                Map.Entry<String, WindowsAzureCertificate> certEntry =
-//                        (Map.Entry<String, WindowsAzureCertificate>)
-//                                tblViewer.getTable().getItem(selIndex).getData();
-//                WindowsAzureCertificate delCert = certEntry.getValue();
             WindowsAzureCertificate delCert = tblCertificates.getSelectedObject();
             if (delCert.isRemoteAccess() && delCert.isSSLCert()) {
                 String temp = String.format("%s%s%s", message("sslTtl"), " and ", message("cmhLblRmtAces"));
