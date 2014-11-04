@@ -53,7 +53,7 @@ import java.util.concurrent.ExecutionException;
 
 public class AzureRestAPIHelper {
 
-    public static final String AZURE_API_VERSION = "2013-08-01";
+    public static final String AZURE_API_VERSION = "2014-06-01";
     public static final String USER_AGENT_HEADER = "User-Agent";
     public static final String TELEMETRY_HEADER = "X-ClientService-ClientTag";
     public static final String X_MS_VERSION_HEADER = "x-ms-version";
@@ -655,7 +655,7 @@ public class AzureRestAPIHelper {
         conn.setSSLSocketFactory(sslContext.getSocketFactory());
         conn.addRequestProperty(USER_AGENT_HEADER, getPlatformUserAgent());
         conn.addRequestProperty(TELEMETRY_HEADER, getPlatformUserAgent());
-        conn.addRequestProperty(X_MS_VERSION_HEADER, "2012-03-01");
+        conn.addRequestProperty(X_MS_VERSION_HEADER, AZURE_API_VERSION);
         if (jsonContent) {
             conn.addRequestProperty(ACCEPT_HEADER, "application/json");
             conn.addRequestProperty(CONTENT_TYPE_HEADER, "application/json");
