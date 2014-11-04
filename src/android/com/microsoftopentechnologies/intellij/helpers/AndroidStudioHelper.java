@@ -24,10 +24,14 @@ import org.apache.commons.lang.StringUtils;
 
 import javax.swing.*;
 import java.io.*;
+import java.net.JarURLConnection;
+import java.net.URL;
+import java.net.URLConnection;
 import java.net.URLDecoder;
 import java.util.ArrayList;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
+import java.util.Enumeration;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 public class AndroidStudioHelper {
     private static final String mobileServicesTemplateName = "AzureServicesActivity";
@@ -49,26 +53,27 @@ public class AndroidStudioHelper {
         String[] env = null;
 
         if(!new File(templatePath + mobileServicesTemplateName).exists()) {
-            String tmpdir = getTempLocation();
-            BufferedInputStream bufferedInputStream = new BufferedInputStream(ServiceCodeReferenceHelper.getTemplateResource("ActivityTemplate.zip"));
-            unZip(bufferedInputStream, tmpdir);
+            String tmpDir = getTempLocation();
+            copyResourcesRecursively(ServiceCodeReferenceHelper.getTemplateResourceUrl("MobileServiceTemplate"), new File(tmpDir));
+
+            tmpDir = tmpDir + "MobileServiceTemplate" + File.separator;
 
             if (System.getProperty("os.name").toLowerCase().startsWith("windows")) {
                 try {
-                    copyFolder(new File(tmpdir + mobileServicesTemplateName), new File(templatePath + mobileServicesTemplateName));
-                    copyFolder(new File(tmpdir + officeTemplateName), new File(templatePath + officeTemplateName));
+                    copyFolder(new File(tmpDir + mobileServicesTemplateName), new File(templatePath + mobileServicesTemplateName));
+                    copyFolder(new File(tmpDir + officeTemplateName), new File(templatePath + officeTemplateName));
                 } catch (IOException ex) {
-                    PrintWriter printWriter = new PrintWriter(tmpdir + "\\script.bat");
+                    PrintWriter printWriter = new PrintWriter(tmpDir + "\\script.bat");
                     printWriter.println("@echo off");
                     printWriter.println("md \"" + templatePath + mobileServicesTemplateName + "\"");
                     printWriter.println("md \"" + templatePath + officeTemplateName + "\"");
-                    printWriter.println("xcopy \"" + tmpdir + mobileServicesTemplateName + "\" \"" + templatePath + mobileServicesTemplateName + "\" /s /i /Y");
-                    printWriter.println("xcopy \"" + tmpdir + officeTemplateName + "\" \"" + templatePath + officeTemplateName + "\" /s /i /Y");
+                    printWriter.println("xcopy \"" + tmpDir + mobileServicesTemplateName + "\" \"" + templatePath + mobileServicesTemplateName + "\" /s /i /Y");
+                    printWriter.println("xcopy \"" + tmpDir + officeTemplateName + "\" \"" + templatePath + officeTemplateName + "\" /s /i /Y");
                     printWriter.flush();
                     printWriter.close();
 
                     String[] tmpcmd = {
-                        tmpdir + "\\elevate.exe",
+                        tmpDir + "elevate.exe",
                         "script.bat",
                         "1"
                     };
@@ -84,7 +89,7 @@ public class AndroidStudioHelper {
                     tempenvlist.toArray(env);
 
                     Runtime rt = Runtime.getRuntime();
-                    Process proc = rt.exec(cmd, env, new File(tmpdir));
+                    Process proc = rt.exec(cmd, env, new File(tmpDir));
                     proc.waitFor();
 
                     //wait for elevate command to finish
@@ -103,17 +108,17 @@ public class AndroidStudioHelper {
                     //        "-e",
                     //        "do shell script \"mkdir -p \\\"/" + templatePath + officeTemplateName + "\\\"\"",
                             "-e",
-                            "do shell script \"cp -Rp \\\"" + tmpdir + mobileServicesTemplateName + "\\\" \\\"/" + templatePath + "\\\"\"",
+                            "do shell script \"cp -Rp \\\"" + tmpDir + mobileServicesTemplateName + "\\\" \\\"/" + templatePath + "\\\"\"",
                             "-e",
-                            "do shell script \"cp -Rp \\\"" + tmpdir + officeTemplateName + "\\\" \\\"/" + templatePath + "\\\"\""
+                            "do shell script \"cp -Rp \\\"" + tmpDir + officeTemplateName + "\\\" \\\"/" + templatePath + "\\\"\""
                     };
 
-                    exec(strings, tmpdir);
+                    exec(strings, tmpDir);
                 } else {
                     try {
 
-                        copyFolder(new File(tmpdir + mobileServicesTemplateName), new File(templatePath + mobileServicesTemplateName));
-                        copyFolder(new File(tmpdir + officeTemplateName), new File(templatePath + officeTemplateName));
+                        copyFolder(new File(tmpDir + mobileServicesTemplateName), new File(templatePath + mobileServicesTemplateName));
+                        copyFolder(new File(tmpDir + officeTemplateName), new File(templatePath + officeTemplateName));
 
 
                     } catch (IOException ex) {
@@ -132,9 +137,9 @@ public class AndroidStudioHelper {
                                     "-S",
                                     "cp",
                                     "-Rp",
-                                    tmpdir + mobileServicesTemplateName,
+                                    tmpDir + mobileServicesTemplateName,
                                     templatePath + mobileServicesTemplateName
-                            }, tmpdir);
+                            }, tmpDir);
 
 
                             exec(new String[]{
@@ -145,9 +150,9 @@ public class AndroidStudioHelper {
                                     "-S",
                                     "cp",
                                     "-Rp",
-                                    tmpdir + officeTemplateName,
+                                    tmpDir + officeTemplateName,
                                     templatePath + officeTemplateName
-                            }, tmpdir);
+                            }, tmpDir);
                         }
                     }
                 }
@@ -166,9 +171,10 @@ public class AndroidStudioHelper {
 
         String[] env = null;
 
-        String tmpdir = getTempLocation();
-        BufferedInputStream bufferedInputStream = new BufferedInputStream(ServiceCodeReferenceHelper.getTemplateResource("ActivityTemplate.zip"));
-        unZip(bufferedInputStream, tmpdir);
+        String tmpDir = getTempLocation();
+        copyResourcesRecursively(ServiceCodeReferenceHelper.getTemplateResourceUrl("MobileServiceTemplate"), new File(tmpDir));
+
+        tmpDir = tmpDir + "MobileServiceTemplate" + File.separator;
 
         if (System.getProperty("os.name").toLowerCase().startsWith("windows")) {
             try{
@@ -181,7 +187,7 @@ public class AndroidStudioHelper {
                 if(officeTemplate != null)
                     officeTemplate.delete(caller);
             } catch (IOException ex) {
-                PrintWriter printWriter = new PrintWriter(tmpdir + "\\script.bat");
+                PrintWriter printWriter = new PrintWriter(tmpDir + "\\script.bat");
                 printWriter.println("@echo off");
                 printWriter.println("del \"" + templatePath + mobileServicesTemplateName + "\" /Q /S");
                 printWriter.println("del \"" + templatePath + officeTemplateName + "\" /Q /S");
@@ -189,7 +195,7 @@ public class AndroidStudioHelper {
                 printWriter.close();
 
                 String[] tmpcmd = {
-                        tmpdir + "\\elevate.exe",
+                        tmpDir + "elevate.exe",
                         "script.bat",
                         "1"
                 };
@@ -205,7 +211,7 @@ public class AndroidStudioHelper {
                 tempenvlist.toArray(env);
 
                 Runtime rt = Runtime.getRuntime();
-                Process proc = rt.exec(cmd, env, new File(tmpdir));
+                Process proc = rt.exec(cmd, env, new File(tmpDir));
                 proc.waitFor();
             }
         } else if (System.getProperty("os.name").toLowerCase().startsWith("mac")) {
@@ -219,7 +225,7 @@ public class AndroidStudioHelper {
                         "do shell script \"rm -r \\\"/" + templatePath + mobileServicesTemplateName + "\\\"\"",
                         "-e",
                         "do shell script \"rm -r \\\"/" + templatePath + officeTemplateName + "\\\"\""
-                }, tmpdir);
+                }, tmpDir);
             }
         } else {
             try {
@@ -244,9 +250,9 @@ public class AndroidStudioHelper {
                             "-S",
                             "rm",
                             "-r",
-                            tmpdir + mobileServicesTemplateName,
+                            tmpDir + mobileServicesTemplateName,
                             templatePath + mobileServicesTemplateName
-                    }, tmpdir);
+                    }, tmpDir);
 
 
                     exec(new String[]{
@@ -257,9 +263,9 @@ public class AndroidStudioHelper {
                             "-S",
                             "rm",
                             "-r",
-                            tmpdir + officeTemplateName,
+                            tmpDir + officeTemplateName,
                             templatePath + officeTemplateName
-                    }, tmpdir);
+                    }, tmpDir);
                 }
             }
         }
@@ -292,54 +298,90 @@ public class AndroidStudioHelper {
 
         sb.append("TempAzure");
         sb.append(File.separator);
-        sb.append("MobileServiceTemplate");
-        sb.append(File.separator);
 
         return sb.toString();
     }
 
+    public static void copyResourcesRecursively(final URL originUrl, final File destination) throws IOException {
+        if(!destination.exists())
+            destination.mkdirs();
 
-    public static void unZip(InputStream zipFileIS, String outputFolder) throws IOException {
-
-        byte[] buffer = new byte[1024];
-
-        //create output directory is not exists
-        File folder = new File(outputFolder);
-        if(!folder.exists()){
-            folder.mkdir();
+        final URLConnection urlConnection = originUrl.openConnection();
+        if (urlConnection instanceof JarURLConnection) {
+            copyJarResourcesRecursively(destination, (JarURLConnection) urlConnection);
+        } else {
+            copyFilesRecusively(new File(originUrl.getPath()), destination);
         }
-
-        //get the zip file content
-        ZipInputStream zis = new ZipInputStream(zipFileIS);
-        //get the zipped file list entry
-        ZipEntry ze = zis.getNextEntry();
-
-        while(ze!=null){
-
-            String fileName = ze.getName();
-            File newFile = new File(outputFolder + File.separator + fileName);
-
-            if(ze.isDirectory()) {
-                newFile.mkdirs();
-            } else {
-
-                FileOutputStream fos = new FileOutputStream(newFile);
-
-                int len;
-                while ((len = zis.read(buffer)) > 0) {
-                    fos.write(buffer, 0, len);
-                }
-
-                fos.flush();
-                fos.close();
-            }
-            ze = zis.getNextEntry();
-        }
-
-        zis.closeEntry();
-        zis.close();
     }
 
+    public static void copyFile(final File toCopy, final File destFile) throws FileNotFoundException {
+        copyStream(new FileInputStream(toCopy), new FileOutputStream(destFile));
+    }
+
+    private static void copyFilesRecusively(final File toCopy, final File destDir) throws FileNotFoundException {
+
+        if (toCopy.isDirectory()) {
+            final File newDestDir = new File(destDir, toCopy.getName());
+            newDestDir.mkdir();
+
+            for (final File child : toCopy.listFiles()) {
+                copyFilesRecusively(child, newDestDir);
+            }
+        } else {
+            copyFile(toCopy, new File(destDir, toCopy.getName()));
+        }
+    }
+
+    public static void copyJarResourcesRecursively(final File destDir, final JarURLConnection jarConnection) throws IOException {
+
+        final JarFile jarFile = jarConnection.getJarFile();
+
+        for (final Enumeration<JarEntry> e = jarFile.entries(); e.hasMoreElements();) {
+            final JarEntry entry = e.nextElement();
+            if (entry.getName().startsWith(jarConnection.getEntryName())) {
+                final String filename = StringUtils.removeStart(entry.getName(), //
+                        jarConnection.getEntryName());
+
+                final File f = new File(destDir, filename);
+                if (entry.isDirectory()) {
+                    if (!ensureDirectoryExists(f)) {
+                        throw new IOException("Could not create directory: " + f.getAbsolutePath());
+                    }
+                } else {
+                    final InputStream entryInputStream = jarFile.getInputStream(entry);
+
+                    copyStream(entryInputStream, f);
+
+                    entryInputStream.close();
+                }
+            }
+        }
+    }
+
+    private static boolean copyStream(final InputStream is, final File f) throws FileNotFoundException {
+        return copyStream(is, new FileOutputStream(f));
+    }
+
+    private static boolean copyStream(final InputStream is, final OutputStream os) {
+        try {
+            final byte[] buf = new byte[1024];
+
+            int len = 0;
+            while ((len = is.read(buf)) > 0) {
+                os.write(buf, 0, len);
+            }
+            is.close();
+            os.close();
+            return true;
+        } catch (final IOException e) {
+            return false;
+        }
+
+    }
+
+    private static boolean ensureDirectoryExists(final File f) {
+        return f.exists() || f.mkdir();
+    }
 
     private static class StreamGobbler extends Thread {
         InputStream is;

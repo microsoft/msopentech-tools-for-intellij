@@ -78,6 +78,10 @@ public class ServiceCodeReferenceHelper {
         return ServiceCodeReferenceHelper.class.getResourceAsStream(TEMPLATES_URL + libTemplate);
     }
 
+    public static URL getTemplateResourceUrl(String libTemplate) {
+        return ServiceCodeReferenceHelper.class.getResource(TEMPLATES_URL + libTemplate);
+    }
+
     public void addMobileServicesLibs()
             throws ParserConfigurationException, TransformerException, SAXException, XPathExpressionException, IOException {
         addReferences(MOBILESERVICE_PATH, MOBILESERVICE_LIBTEMPLATE, MOBILESERVICE_LIBNAME);
