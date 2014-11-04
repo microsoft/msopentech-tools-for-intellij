@@ -17,14 +17,9 @@
 package com.microsoftopentechnologies.intellij.components;
 
 import com.google.gson.Gson;
-import com.google.gson.stream.MalformedJsonException;
-import com.intellij.ide.plugins.IdeaPluginDescriptor;
-import com.intellij.ide.plugins.PluginManager;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.application.PathManager;
 import com.intellij.openapi.components.ApplicationComponent;
-import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoftopentechnologies.intellij.helpers.AndroidStudioHelper;
@@ -32,7 +27,10 @@ import com.microsoftopentechnologies.intellij.helpers.StringHelper;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
 
 public class MSOpenTechTools extends ApplicationComponent.Adapter {
     private static MSOpenTechTools current = null;
@@ -65,8 +63,7 @@ public class MSOpenTechTools extends ApplicationComponent.Adapter {
         // load up the plugin settings
         try {
             loadPluginSettings();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             UIHelper.showException("An error occurred while attempting to load " +
                     "settings for the MSOpenTech Tools plugin.", e);
         }
@@ -79,22 +76,22 @@ public class MSOpenTechTools extends ApplicationComponent.Adapter {
         BufferedReader reader = null;
         try {
             reader = new BufferedReader(
-                        new InputStreamReader(
-                                MSOpenTechTools.class.getResourceAsStream("/settings.json")));
+                    new InputStreamReader(
+                            MSOpenTechTools.class.getResourceAsStream("/settings.json")));
             StringBuilder sb = new StringBuilder();
             String line = null;
-            while((line = reader.readLine()) != null) {
+            while ((line = reader.readLine()) != null) {
                 sb.append(line);
             }
 
             Gson gson = new Gson();
             settings = gson.fromJson(sb.toString(), PluginSettings.class);
-        }
-        finally {
-            if(reader != null) {
+        } finally {
+            if (reader != null) {
                 try {
                     reader.close();
-                } catch (IOException ignored) {}
+                } catch (IOException ignored) {
+                }
             }
         }
     }
@@ -118,17 +115,17 @@ public class MSOpenTechTools extends ApplicationComponent.Adapter {
         // subscriptions.
         PropertiesComponent properties = PropertiesComponent.getInstance();
         String currentPluginVersion = properties.getValue(AppSettingsNames.CURRENT_PLUGIN_VERSION);
-        if(StringHelper.isNullOrWhiteSpace(currentPluginVersion) ||
-           !getSettings().getPluginVersion().equals(currentPluginVersion)) {
+        if (StringHelper.isNullOrWhiteSpace(currentPluginVersion) ||
+                !getSettings().getPluginVersion().equals(currentPluginVersion)) {
 
-            String[] settings = new String[] {
+            String[] settings = new String[]{
                     AppSettingsNames.AZURE_AUTHENTICATION_MODE,
                     AppSettingsNames.AZURE_AUTHENTICATION_TOKEN,
                     AppSettingsNames.O365_AUTHENTICATION_TOKEN,
                     AppSettingsNames.SUBSCRIPTION_FILE
             };
 
-            for(String setting : settings) {
+            for (String setting : settings) {
                 properties.unsetValue(setting);
             }
         }
@@ -139,28 +136,28 @@ public class MSOpenTechTools extends ApplicationComponent.Adapter {
         // TODO: Instead of checking for an "ok" value to decide whether the activity templates in Android Studio
         // should be deleted or not, we should version the Android Studio templates zip and check if the version
         // currently installed matches what's shipped in the plugin or not. If it doesn't match then we delete.
-        if(cleanTempData.isEmpty()) {
+        if (cleanTempData.isEmpty()) {
             try {
-                if(AndroidStudioHelper.isAndroidStudio())
-                    AndroidStudioHelper.deleteActivityTemplates(this);
+                AndroidStudioHelper.deleteActivityTemplates(this);
 
                 String tmpdir = System.getProperty("java.io.tmpdir");
                 StringBuilder sb = new StringBuilder();
                 sb.append(tmpdir);
 
-                if(!tmpdir.endsWith(File.separator))
+                if (!tmpdir.endsWith(File.separator))
                     sb.append(File.separator);
 
                 sb.append("TempAzure");
 
                 final VirtualFile tempFolder = LocalFileSystem.getInstance().findFileByIoFile(new File(sb.toString()));
-                if(tempFolder != null && tempFolder.exists()) {
+                if (tempFolder != null && tempFolder.exists()) {
                     ApplicationManager.getApplication().runWriteAction(new Runnable() {
                         @Override
                         public void run() {
                             try {
                                 tempFolder.delete(MSOpenTechTools.getCurrent());
-                            } catch (IOException ignored) {}
+                            } catch (IOException ignored) {
+                            }
                         }
                     });
                 }

@@ -168,21 +168,6 @@ limitations under the License.
 
         </action>
 
-        <group id="NewGroupMicrosoftServices"
-               text="Microsoft"
-               description="Microsoft"
-               icon="/com/microsoftopentechnologies/intellij/icons/azure.png"
-               popup="true"
-               class="com.microsoftopentechnologies.intellij.actions.NewGroupMicrosoftServicesGroup">
-            <action class="com.microsoftopentechnologies.intellij.actions.NewAzureServicesWizardAction"
-                    id="NewAzureServicesWizard"
-                    text="Azure Services" description="Azure Services" />
-            <action class="com.microsoftopentechnologies.intellij.actions.NewOffice365WizardAction"
-                    id="NewOffice365Wizard"
-                    text="Office 365" description="Office 365" />
-            <add-to-group group-id="NewGroup" anchor="last"/>
-        </group>
-
         <action id="Actions.RunInEmulatorAction"
                 class="com.microsoftopentechnologies.intellij.actions.RunInEmulatorAction" text="Run in Azure Emulator"
                 description="Run in Azure Emulator" icon="/icons/RunEmulatorIcon.png"/>

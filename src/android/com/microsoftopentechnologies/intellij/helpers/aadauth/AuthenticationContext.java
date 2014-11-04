@@ -18,7 +18,10 @@ package com.microsoftopentechnologies.intellij.helpers.aadauth;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.CharStreams;
-import com.google.common.util.concurrent.*;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.SettableFuture;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -40,7 +43,6 @@ import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class AuthenticationContext {
@@ -59,7 +61,7 @@ public class AuthenticationContext {
     }
 
     public void dispose() {
-        if(webServer != null) {
+        if (webServer != null) {
             webServer.stop();
             webServer = null;
         }
@@ -106,7 +108,7 @@ public class AuthenticationContext {
 
                 try {
                     // if code is null then the user cancelled the auth
-                    if(code == null) {
+                    if (code == null) {
                         future.set(null);
                         return;
                     }
@@ -124,7 +126,7 @@ public class AuthenticationContext {
                     byte[] requestData = EncodingHelper.toQueryString(params).getBytes(Charsets.UTF_8);
 
                     // make a POST request to the endpoint with this data
-                    HttpURLConnection connection = (HttpURLConnection)adAuthEndpointUrl.openConnection();
+                    HttpURLConnection connection = (HttpURLConnection) adAuthEndpointUrl.openConnection();
                     connection.setRequestMethod("POST");
                     connection.setDoOutput(true);
                     connection.setDoInput(true);
@@ -134,11 +136,12 @@ public class AuthenticationContext {
                     connection.setRequestProperty("Content-Length", Integer.toString(requestData.length));
                     output = connection.getOutputStream();
                     output.write(requestData);
-                    output.close(); output = null;
+                    output.close();
+                    output = null;
 
                     // read the response
                     int statusCode = connection.getResponseCode();
-                    if(statusCode != HttpURLConnection.HTTP_OK) {
+                    if (statusCode != HttpURLConnection.HTTP_OK) {
                         // TODO: Is IOException the right exception type to raise?
                         String err = CharStreams.toString(new InputStreamReader(connection.getErrorStream()));
                         future.setException(new IOException("AD Auth token endpoint returned HTTP status code " +
@@ -149,15 +152,16 @@ public class AuthenticationContext {
                     reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
                     StringBuilder sb = new StringBuilder();
                     String line;
-                    while((line = reader.readLine()) != null) {
+                    while ((line = reader.readLine()) != null) {
                         sb.append(line);
                     }
-                    reader.close(); reader = null;
+                    reader.close();
+                    reader = null;
 
                     // parse the JSON
                     String response = sb.toString();
                     JsonParser parser = new JsonParser();
-                    JsonObject root = (JsonObject)parser.parse(response);
+                    JsonObject root = (JsonObject) parser.parse(response);
 
                     // construct the authentication result object
                     AuthenticationResult result = new AuthenticationResult(
@@ -176,17 +180,16 @@ public class AuthenticationContext {
                     future.setException(e);
                 } catch (ParseException e) {
                     future.setException(e);
-                }
-                finally {
+                } finally {
                     try {
                         if (output != null) {
                             output.close();
                         }
-                        if(reader != null) {
+                        if (reader != null) {
                             reader.close();
                         }
+                    } catch (IOException ignored) {
                     }
-                    catch (IOException ignored){}
                 }
             }
 
@@ -213,13 +216,13 @@ public class AuthenticationContext {
         params.put(OAuthParameter.clientId, clientId);
         params.put(OAuthParameter.grantType, OAuthGrantType.RefreshToken);
         params.put(OAuthParameter.refreshToken, authenticationResult.getRefreshToken());
-        if(resource != null) {
+        if (resource != null) {
             params.put(OAuthParameter.resource, resource);
         }
         byte[] requestData = EncodingHelper.toQueryString(params).getBytes(Charsets.UTF_8);
 
         // make a POST request to the endpoint with this data
-        HttpURLConnection connection = (HttpURLConnection)adAuthEndpointUrl.openConnection();
+        HttpURLConnection connection = (HttpURLConnection) adAuthEndpointUrl.openConnection();
         connection.setRequestMethod("POST");
         connection.setDoOutput(true);
         connection.setDoInput(true);
@@ -229,11 +232,12 @@ public class AuthenticationContext {
         connection.setRequestProperty("Content-Length", Integer.toString(requestData.length));
         OutputStream output = connection.getOutputStream();
         output.write(requestData);
-        output.close(); output = null;
+        output.close();
+        output = null;
 
         // read the response
         int statusCode = connection.getResponseCode();
-        if(statusCode != HttpURLConnection.HTTP_OK) {
+        if (statusCode != HttpURLConnection.HTTP_OK) {
             // TODO: Is IOException the right exception type to raise?
             throw new IOException("AD Auth token endpoint returned HTTP status code " +
                     Integer.toString(statusCode));
@@ -242,15 +246,16 @@ public class AuthenticationContext {
         BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
         StringBuilder sb = new StringBuilder();
         String line;
-        while((line = reader.readLine()) != null) {
+        while ((line = reader.readLine()) != null) {
             sb.append(line);
         }
-        reader.close(); reader = null;
+        reader.close();
+        reader = null;
 
         // parse the JSON
         String response = sb.toString();
         JsonParser parser = new JsonParser();
-        JsonObject root = (JsonObject)parser.parse(response);
+        JsonObject root = (JsonObject) parser.parse(response);
 
         // update the authentication result object
         return new AuthenticationResult(
@@ -264,7 +269,7 @@ public class AuthenticationContext {
 
     private String getJsonStringProp(JsonObject obj, String propName) {
         JsonElement element = obj.get(propName);
-        if(element != null) {
+        if (element != null) {
             return element.getAsString();
         }
 
@@ -273,7 +278,7 @@ public class AuthenticationContext {
 
     private long getJsonLongProp(JsonObject obj, String propName) {
         JsonElement element = obj.get(propName);
-        if(element != null) {
+        if (element != null) {
             return element.getAsLong();
         }
 
@@ -301,15 +306,17 @@ public class AuthenticationContext {
             params.put(OAuthParameter.redirectUri, redirectUri);
             params.put(OAuthParameter.correlationId, correlationId);
             params.put(OAuthParameter.prompt, PromptValue.login);
+            params.put("site_id", "500879");
+            params.put("display", "popup");
             String query = null;
-                query = EncodingHelper.toQueryString(params);
+            query = EncodingHelper.toQueryString(params);
 
             // build the actual URI
             String adUri = AUTHORIZE_ENDPOINT_TEMPLATE.replace("{host}", authority).replace("{tenant}", tenantName);
             adUri = adUri + "?" + query;
 
             // initialize and start up web server
-            if(webServer == null) {
+            if (webServer == null) {
                 webServer = new AADWebServer();
                 webServer.start();
             }
@@ -323,10 +330,10 @@ public class AuthenticationContext {
 
                         if (StringHelper.isNullOrWhiteSpace(code)) {
                             String msg = "An error occurred during authentication. 'code' is null/empty.";
-                            if(params.containsKey("error")) {
+                            if (params.containsKey("error")) {
                                 msg += "\nError code: " + params.get("error");
                             }
-                            if(params.containsKey("error_description")) {
+                            if (params.containsKey("error_description")) {
                                 msg += "\nDescription: " + params.get("error_description");
                             }
 
@@ -334,8 +341,7 @@ public class AuthenticationContext {
                         } else {
                             future.set(code);
                         }
-                    }
-                    finally {
+                    } finally {
                         authCodeLock.unlock();
                     }
                 }
@@ -349,8 +355,7 @@ public class AuthenticationContext {
                         if (!gotAuthCode) {
                             future.set(null);
                         }
-                    }
-                    finally {
+                    } finally {
                         authCodeLock.unlock();
                     }
                 }
