@@ -18,6 +18,7 @@ package com.microsoftopentechnologies.intellij.components;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.command.CommandProcessor;
 import com.intellij.openapi.components.ProjectComponent;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.fileEditor.impl.FileDocumentManagerImpl;
@@ -126,10 +127,10 @@ public class AzureServiceComponent implements ProjectComponent {
 
                     if ("java".equals(vf.getExtension()) && (requestor instanceof FileDocumentManagerImpl)) {
                         FileDocumentManagerImpl fdm = (FileDocumentManagerImpl) requestor;
-                        Document document = fdm.getDocument(vf);
+                        final Document document = fdm.getDocument(vf);
 
                         if (document != null) {
-                            int codeLineStart = document.getLineStartOffset(0);
+                            final int codeLineStart = document.getLineStartOffset(0);
                             int codeLineEnd = document.getLineEndOffset(0);
                             TextRange codeLineRange = new TextRange(codeLineStart, codeLineEnd);
                             String codeLine = document.getText(codeLineRange);
@@ -140,8 +141,14 @@ public class AzureServiceComponent implements ProjectComponent {
                             final boolean isListServices = codeLine.equals(LIST_SERVICES_CODE) || codeLine.equals(OUTLOOK_LIST_SERVICES_CODE) || codeLine.equals(FILE_LIST_SERVICES_CODE) || codeLine.equals(OUTLOOK_FILE_LIST_SERVICES_CODE);
 
                             if (isMobileService || isNotificationHub || isOutlookServices || isFileServices || isListServices) {
-                                int packageLineStart = document.getLineStartOffset(1);
-                                document.deleteString(codeLineStart, packageLineStart);
+                                final int packageLineStart = document.getLineStartOffset(1);
+
+                                CommandProcessor.getInstance().runUndoTransparentAction(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        document.deleteString(codeLineStart, packageLineStart);
+                                    }
+                                });
 
                                 ApplicationManager.getApplication().invokeLater(new Runnable() {
                                     @Override
