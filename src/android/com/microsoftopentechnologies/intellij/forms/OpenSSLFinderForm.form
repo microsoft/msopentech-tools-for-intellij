@@ -19,7 +19,7 @@ limitations under the License.
   <grid id="cbd77" binding="contentPane" layout-manager="GridLayoutManager" row-count="2" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
     <margin top="10" left="10" bottom="10" right="10"/>
     <constraints>
-      <xy x="48" y="195" width="594" height="156"/>
+      <xy x="48" y="195" width="597" height="156"/>
     </constraints>
     <properties/>
     <border type="none"/>
@@ -80,7 +80,7 @@ limitations under the License.
               </grid>
             </constraints>
             <properties>
-              <text value="OpenSSL was not found. An OpenSSL instalation is required to use the Mobile Service Plugin."/>
+              <text value="OpenSSL was not found. An OpenSSL installation is required to use the Mobile Service Plugin."/>
             </properties>
           </component>
           <component id="c339e" class="javax.swing.JLabel">

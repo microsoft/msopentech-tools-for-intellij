@@ -16,11 +16,14 @@
 package com.microsoftopentechnologies.intellij.ui.azureroles;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.module.Module;
 import com.intellij.openapi.options.BaseConfigurable;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SearchableConfigurable;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.ui.ValidationInfo;
+import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.ui.AnActionButton;
 import com.intellij.ui.AnActionButtonRunnable;
 import com.intellij.ui.AnActionButtonUpdater;
@@ -30,6 +33,7 @@ import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.ListTableModel;
 import com.intellij.util.ui.table.ComboBoxTableCellEditor;
 import com.interopbridges.tools.windowsazure.*;
+import com.microsoftopentechnologies.intellij.ui.AzureAbstractPanel;
 import com.microsoftopentechnologies.intellij.util.PluginUtil;
 import com.microsoftopentechnologies.util.WAEclipseHelperMethods;
 import org.apache.commons.lang3.StringUtils;
@@ -37,19 +41,14 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.table.TableCellEditor;
 
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.security.InvalidAlgorithmParameterException;
 import java.util.List;
 
 import static com.microsoftopentechnologies.intellij.ui.messages.AzureBundle.message;
 
-public class RoleEndpointsPanel extends BaseConfigurable implements SearchableConfigurable, Configurable.NoScroll {
+public class RoleEndpointsPanel extends BaseConfigurable implements AzureAbstractPanel, SearchableConfigurable, Configurable.NoScroll {
     /**
      * End point range's minimum value.
      */
@@ -63,6 +62,7 @@ public class RoleEndpointsPanel extends BaseConfigurable implements SearchableCo
     private TableView<WindowsAzureEndpoint> tblEndpoints;
     private JPanel tablePanel;
 
+    private Module module;
     private WindowsAzureProjectManager waProjManager;
     private final WindowsAzureRole windowsAzureRole;
     private List<WindowsAzureEndpoint> listEndPoints;
@@ -70,7 +70,8 @@ public class RoleEndpointsPanel extends BaseConfigurable implements SearchableCo
     private ListTableModel<WindowsAzureEndpoint> myModel;
 
 
-    public RoleEndpointsPanel(WindowsAzureProjectManager waProjManager, WindowsAzureRole windowsAzureRole) {
+    public RoleEndpointsPanel(Module module, WindowsAzureProjectManager waProjManager, WindowsAzureRole windowsAzureRole) {
+        this.module = module;
         this.waProjManager = waProjManager;
         this.windowsAzureRole = windowsAzureRole;
         try {
@@ -88,7 +89,7 @@ public class RoleEndpointsPanel extends BaseConfigurable implements SearchableCo
     }
 
     private void initializeModel() {
-        myModel = new EndpointsTableModel(listEndPoints, windowsAzureRole);
+        myModel = new EndpointsTableModel(listEndPoints);
         tblEndpoints.setModelAndUpdateColumns(myModel);
         tblEndpoints.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     }
@@ -129,6 +130,7 @@ public class RoleEndpointsPanel extends BaseConfigurable implements SearchableCo
         EndpointDialog endpointDialog = new EndpointDialog(windowsAzureRole, null);
         endpointDialog.show();
         if (endpointDialog.isOK()) {
+            ((EndpointsTableModel) tblEndpoints.getModel()).fireTableDataChanged();
             setModified(true);
         }
     }
@@ -159,6 +161,7 @@ public class RoleEndpointsPanel extends BaseConfigurable implements SearchableCo
                 EndpointDialog endpointDialog = new EndpointDialog(windowsAzureRole, waEndpoint);
                 endpointDialog.show();
                 if (endpointDialog.isOK()) {
+                    ((EndpointsTableModel) tblEndpoints.getModel()).fireTableDataChanged();
                     setModified(true);
                 }
             }
@@ -193,7 +196,7 @@ public class RoleEndpointsPanel extends BaseConfigurable implements SearchableCo
         		 * is associated with Debugging.
         		 */
             else if (waEndpoint.getName().equalsIgnoreCase(dbgEndptName)) {
-                StringBuffer msg = new StringBuffer(message("dlgEPDel"));
+                StringBuilder msg = new StringBuilder(message("dlgEPDel"));
                 msg.append(message("dlgEPDel1"));
                 msg.append(message("dlgEPDel2"));
                 int choice = Messages.showYesNoDialog(msg.toString(), message("dlgDelEndPt1"), Messages.getQuestionIcon());
@@ -207,8 +210,7 @@ public class RoleEndpointsPanel extends BaseConfigurable implements SearchableCo
                  * Endpoint associated with both SSL
                  * and Session affinity
                  */
-            else if (waEndpoint.isStickySessionEndpoint()
-                    && waEndpoint.isSSLEndpoint()) {
+            else if (waEndpoint.isStickySessionEndpoint() && waEndpoint.isSSLEndpoint()) {
                 int choice = Messages.showOkCancelDialog(message("bothDelMsg"), message("dlgDelEndPt1"), Messages.getQuestionIcon());
                 if (choice == Messages.OK) {
                     setModified(true);
@@ -280,8 +282,34 @@ public class RoleEndpointsPanel extends BaseConfigurable implements SearchableCo
     }
 
     @Override
+    public JComponent getPanel() {
+        return contentPane;
+    }
+
+    @Override
     public String getDisplayName() {
         return message("cmhLblEndPts");
+    }
+
+    @Override
+    public boolean doOKAction() {
+        try {
+            apply();
+        } catch (ConfigurationException e) {
+            PluginUtil.displayErrorDialogAndLog(e.getTitle(), e.getMessage(), e);
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public String getSelectedValue() {
+        return null;
+    }
+
+    @Override
+    public ValidationInfo doValidate() {
+        return null;
     }
 
     @Nullable
@@ -298,16 +326,14 @@ public class RoleEndpointsPanel extends BaseConfigurable implements SearchableCo
 
     @Override
     public void apply() throws ConfigurationException {
-        boolean okToProceed = true;
         try {
             if (isModified()) {
                 waProjManager.save();
                 setModified(false);
             }
-//            WAEclipseHelper.refreshWorkspace(Messages.rolsRefTitle, Messages.rolsRefMsg);
+            LocalFileSystem.getInstance().findFileByPath(PluginUtil.getModulePath(module)).refresh(true, true);
         } catch (WindowsAzureInvalidProjectOperationException e) {
             throw new ConfigurationException(message("adRolErrMsgBox1") + message("adRolErrMsgBox2"), message("adRolErrTitle"));
-//            PluginUtil.displayErrorDialogAndLog(message("adRolErrTitle"), message("adRolErrMsgBox1") + message("adRolErrMsgBox2"), e);
         }
     }
 
@@ -662,11 +688,9 @@ public class RoleEndpointsPanel extends BaseConfigurable implements SearchableCo
     };
 
     private class EndpointsTableModel extends ListTableModel<WindowsAzureEndpoint> {
-        private final WindowsAzureRole windowsAzureRole;
 
-        private EndpointsTableModel(List<WindowsAzureEndpoint> listEndPoints, WindowsAzureRole waRole) {
+        private EndpointsTableModel(List<WindowsAzureEndpoint> listEndPoints) {
             super(new ColumnInfo[]{NAME, TYPE, PUBLIC_PORT, PRIVATE_PORT}, listEndPoints, 0);
-            this.windowsAzureRole = waRole;
         }
 
         @Override

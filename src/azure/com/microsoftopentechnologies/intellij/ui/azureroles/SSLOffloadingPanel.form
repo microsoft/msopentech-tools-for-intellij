@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.microsoftopentechnologies.intellij.ui.azureroles.SSLOffloadingPanel">
+  <grid id="27dc6" binding="contentPane" layout-manager="GridLayoutManager" row-count="5" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+    <margin top="0" left="0" bottom="0" right="0"/>
+    <constraints>
+      <xy x="20" y="20" width="500" height="400"/>
+    </constraints>
+    <properties/>
+    <border type="none"/>
+    <children>
+      <component id="101ab" class="javax.swing.JCheckBox" binding="btnSSLOffloading">
+        <constraints>
+          <grid row="0" column="0" row-span="1" col-span="3" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text resource-bundle="com/microsoftopentechnologies/intellij/ui/messages/messages" key="lbEnblSslOff"/>
+        </properties>
+      </component>
+      <component id="fb47c" class="javax.swing.JLabel" binding="lblEndptToUse">
+        <constraints>
+          <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text resource-bundle="com/microsoftopentechnologies/intellij/ui/messages/messages" key="lbEndptToUse"/>
+        </properties>
+      </component>
+      <component id="72b44" class="javax.swing.JLabel" binding="lblCert">
+        <constraints>
+          <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text resource-bundle="com/microsoftopentechnologies/intellij/ui/messages/messages" key="lbSslCert"/>
+        </properties>
+      </component>
+      <component id="185db" class="javax.swing.JComboBox" binding="comboEndpt">
+        <constraints>
+          <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+      </component>
+      <component id="3434a" class="javax.swing.JComboBox" binding="comboCert">
+        <constraints>
+          <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+      </component>
+      <component id="9047a" class="javax.swing.JTextPane" binding="linkNote">
+        <constraints>
+          <grid row="3" column="0" row-span="1" col-span="3" vsize-policy="6" hsize-policy="6" anchor="0" fill="3" indent="0" use-parent-layout="false">
+            <preferred-size width="150" height="50"/>
+          </grid>
+        </constraints>
+        <properties/>
+      </component>
+      <component id="1f3d8" class="org.jdesktop.swingx.JXHyperlink" binding="linkCert">
+        <constraints>
+          <grid row="2" column="2" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <clickedColor color="-10969610"/>
+          <text resource-bundle="com/microsoftopentechnologies/intellij/ui/messages/messages" key="linkLblCert"/>
+        </properties>
+      </component>
+      <component id="ed20e" class="org.jdesktop.swingx.JXHyperlink" binding="linkEndpoint">
+        <constraints>
+          <grid row="1" column="2" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <clickedColor color="-10969610"/>
+          <text resource-bundle="com/microsoftopentechnologies/intellij/ui/messages/messages" key="linkLblEndpt"/>
+        </properties>
+      </component>
+      <vspacer id="eb770">
+        <constraints>
+          <grid row="4" column="0" row-span="1" col-span="3" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+        </constraints>
+      </vspacer>
+    </children>
+  </grid>
+</form>
