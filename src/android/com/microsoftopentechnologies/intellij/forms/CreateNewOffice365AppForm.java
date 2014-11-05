@@ -41,7 +41,7 @@ public class CreateNewOffice365AppForm extends JDialog {
     private JLabel lblPrivacy;
     private JButton btnCreate;
     private JCheckBox multiTenantCheckBox;
-    private JTextField replyURLTextField;
+    private JTextField redirectURITextField;
     private DialogResult dialogResult;
     private Application application;
 
@@ -96,7 +96,7 @@ public class CreateNewOffice365AppForm extends JDialog {
                     public void run() {
                         try {
                             final String name = nameTextField.getText();
-                            final String replyURL = replyURLTextField.getText();
+                            final String replyURL = redirectURITextField.getText();
 
                             String error = "";
 
@@ -107,16 +107,12 @@ public class CreateNewOffice365AppForm extends JDialog {
                             }
 
                             if (StringHelper.isNullOrWhiteSpace(replyURL)) {
-                                error += "The reply URL must not be empty.\n";
+                                error += "The redirect URI must not be empty.\n";
                             } else {
                                 try {
-                                    URI uri = new URI(replyURL);
-
-                                    if (!(uri.getScheme() != null && uri.getScheme().equalsIgnoreCase("https"))) {
-                                        error += "The reply URL must be an https:// address.\n";
-                                    }
+                                    new URI(replyURL);
                                 } catch (URISyntaxException e) {
-                                    error += "The reply URL must be a valid URL.\n";
+                                    error += "The redirect URI must be a valid URI.\n";
                                 }
                             }
 
