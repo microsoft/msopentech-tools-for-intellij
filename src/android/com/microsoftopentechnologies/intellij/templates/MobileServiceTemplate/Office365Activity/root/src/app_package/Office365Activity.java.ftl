@@ -87,6 +87,13 @@ public class ${activityClass} extends Activity {
         return client.getMe().getFolders().getById("Inbox").getMessages().read();
     }
 </#if>
+<#if includeFileServices>
+
+   public ListenableFuture<List<SPList>> getMyFiles() {
+        FileServicesClient client = new FileServicesClient();
+        return client.getfiles();
+    }
+</#if>
 <#if includeListServices>
 
     public ListenableFuture<List<SPList>> getMyLists() {
