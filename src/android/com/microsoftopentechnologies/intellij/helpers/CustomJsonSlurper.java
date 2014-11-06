@@ -16,6 +16,7 @@
 
 package com.microsoftopentechnologies.intellij.helpers;
 
+import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import groovy.json.JsonSlurper;
 
 

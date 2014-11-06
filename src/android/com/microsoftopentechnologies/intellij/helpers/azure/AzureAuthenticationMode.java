@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package com.microsoftopentechnologies.intellij.helpers;
+package com.microsoftopentechnologies.intellij.helpers.azure;
 
 public enum AzureAuthenticationMode {
     Unknown,

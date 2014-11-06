@@ -20,7 +20,7 @@ import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
-import org.apache.commons.lang.StringUtils;
+import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 
 import javax.swing.*;
 import java.io.*;

@@ -19,13 +19,13 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SearchableConfigurable;
-import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.interopbridges.tools.windowsazure.WindowsAzureInvalidProjectOperationException;
 import com.interopbridges.tools.windowsazure.WindowsAzureProjectManager;
 import com.interopbridges.tools.windowsazure.WindowsAzureRole;
 import com.microsoftopentechnologies.intellij.ui.JdkServerPanel;
 import com.microsoftopentechnologies.intellij.util.PluginUtil;
+import com.microsoftopentechnologies.util.WAEclipseHelperMethods;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -46,10 +46,10 @@ public class ServerConfigurationConfigurable implements SearchableConfigurable, 
     private Module module;
 
     public ServerConfigurationConfigurable(Module module, WindowsAzureProjectManager waProjManager, WindowsAzureRole waRole) {
-        jdkServerPanel = new JdkServerPanel(module.getProject(), waRole, waProjManager);
         this.waProjManager = waProjManager;
         this.waRole = waRole;
         this.module = module;
+        jdkServerPanel = new JdkServerPanel(module.getProject(), waRole, waProjManager);
     }
 
     @NotNull
@@ -97,7 +97,7 @@ public class ServerConfigurationConfigurable implements SearchableConfigurable, 
 					 * Delete files from approot,
 					 * whose entry from component table is removed.
 					 */
-            List<String> fileToDel = jdkServerPanel.getApplicationsTab().getFileToDel();
+            List<String> fileToDel = jdkServerPanel.getFileToDel();
             if (!fileToDel.isEmpty()) {
                 for (int i = 0; i < fileToDel.size(); i++) {
                     String str = fileToDel.get(i);
@@ -128,21 +128,14 @@ public class ServerConfigurationConfigurable implements SearchableConfigurable, 
      */
     private void deleteJdkDir() {
         String jdkPath = "";
-//        try {
-//            String jdkDirName = new File(finalJdkPath).getName();
-//            jdkPath = String.format("%s%s%s%s%s",
-//                    root.getProject(waProjManager.getProjectName()).getLocation(),
-//                    File.separator, waRole.getName(), Messages.approot, jdkDirName);
-//        } catch (WindowsAzureInvalidProjectOperationException e1) {
-//            PluginUtil.displayErrorDialogAndLog(message("jdkPathErrTtl"), message("jdkDirErrMsg"), e1);
-//        }
-//        File jdkFile = new File(jdkPath);
-//        if (jdkFile.exists()) {
-//            WAEclipseHelperMethods.deleteDirectory(jdkFile);
-////            WAEclipseHelper.refreshWorkspace(
-////                    Messages.rfrshErrTtl,
-////                    Messages.rfrshErrMsg);
-//        }
+        String jdkDirName = new File(jdkServerPanel.getFinalJdkPath()).getName();
+        String modulePath = PluginUtil.getModulePath(module);
+        jdkPath = String.format("%s%s%s%s%s", modulePath, File.separator, waRole.getName(), message("approot"), jdkDirName);
+        File jdkFile = new File(jdkPath);
+        if (jdkFile.exists()) {
+            WAEclipseHelperMethods.deleteDirectory(jdkFile);
+            LocalFileSystem.getInstance().findFileByPath(modulePath).refresh(true, true);
+        }
     }
 
     /**
@@ -151,30 +144,17 @@ public class ServerConfigurationConfigurable implements SearchableConfigurable, 
      *  if server name or source path is modified.
      */
     private void deleteServerFile() {
-        File srvFile = null;
-//        try {
-//            srvFile = new File(String.format("%s%s%s%s%s",
-//                    root.getProject(waProjManager.
-//                            getProjectName()).getLocation(),
-//                    File.separator, windowsAzureRole.getName(),
-//                    Messages.approot, ProjectNatureHelper.
-//                            getAsName(finalSrvPath, finalImpMethod, finalAsName)));
-//        } catch (WindowsAzureInvalidProjectOperationException e) {
-//            PluginUtil.displayErrorDialogAndLog(
-//                    getShell(),
-//                    Messages.genErrTitle,
-//                    Messages.srvFileErr, e);
-//        }
-//        if (srvFile.exists()) {
-//            if (srvFile.isFile()) {
-//                srvFile.delete();
-//            } else if (srvFile.isDirectory()) {
-//                WAEclipseHelperMethods.deleteDirectory(srvFile);
-//            }
-//            WAEclipseHelper.refreshWorkspace(
-//                    Messages.rfrshErrTtl,
-//                    Messages.rfrshErrMsg);
-//        }
+        String modulePath = PluginUtil.getModulePath(module);
+        File srvFile = new File(String.format("%s%s%s%s%s", modulePath, File.separator, waRole.getName(), message("approot"),
+                PluginUtil.getAsName(module.getProject(), jdkServerPanel.getFinalSrvPath(), jdkServerPanel.getFinalImpMethod(), jdkServerPanel.getFinalAsName())));
+        if (srvFile.exists()) {
+            if (srvFile.isFile()) {
+                srvFile.delete();
+            } else if (srvFile.isDirectory()) {
+                WAEclipseHelperMethods.deleteDirectory(srvFile);
+            }
+            LocalFileSystem.getInstance().findFileByPath(modulePath).refresh(true, true);
+        }
     }
 
     @Override
