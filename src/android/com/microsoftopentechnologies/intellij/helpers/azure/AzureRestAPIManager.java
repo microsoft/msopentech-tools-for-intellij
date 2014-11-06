@@ -14,13 +14,14 @@
  *  limitations under the License.
  */
 
-package com.microsoftopentechnologies.intellij.helpers;
+package com.microsoftopentechnologies.intellij.helpers.azure;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.gson.Gson;
 import com.intellij.ide.util.PropertiesComponent;
 import com.microsoftopentechnologies.intellij.components.MSOpenTechTools;
+import com.microsoftopentechnologies.intellij.helpers.*;
 import com.microsoftopentechnologies.intellij.helpers.aadauth.AuthenticationResult;
 import com.microsoftopentechnologies.intellij.model.*;
 import org.w3c.dom.NodeList;

@@ -28,6 +28,10 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoftopentechnologies.intellij.forms.ErrorMessageForm;
 import com.microsoftopentechnologies.intellij.forms.ImportSubscriptionForm;
+import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
+import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIHelper;
+import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIManager;
+import com.microsoftopentechnologies.intellij.helpers.azure.AzureTreeLoader;
 import com.microsoftopentechnologies.intellij.model.*;
 import org.jetbrains.annotations.NotNull;
 

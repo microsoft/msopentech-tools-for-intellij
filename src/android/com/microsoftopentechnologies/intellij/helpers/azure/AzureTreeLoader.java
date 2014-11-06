@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package com.microsoftopentechnologies.intellij.helpers;
+package com.microsoftopentechnologies.intellij.helpers.azure;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
@@ -24,6 +24,7 @@ import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.model.*;
 import org.jetbrains.annotations.NotNull;
 

@@ -28,7 +28,7 @@ import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.*;
 import com.microsoftopentechnologies.intellij.forms.OpenSSLFinderForm;
 import com.microsoftopentechnologies.intellij.helpers.AndroidStudioHelper;
-import com.microsoftopentechnologies.intellij.helpers.AzureCmdException;
+import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.OpenSSLHelper;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.wizards.activityConfiguration.AddServiceWizard;
