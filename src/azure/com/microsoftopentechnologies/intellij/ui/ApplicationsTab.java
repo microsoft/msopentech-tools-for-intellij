@@ -48,25 +48,22 @@ public class ApplicationsTab extends JPanel {
     private Project project;
     private WindowsAzureProjectManager waProjManager;
     private WindowsAzureRole waRole;
-    private final boolean newRole;
+    private boolean newRole;
     private boolean modified;
 
     private final ArrayList<AppCmpntParam> appList = new ArrayList<AppCmpntParam>();
-    private final ArrayList<String> fileToDel = new ArrayList<String>();
-
-    public ApplicationsTab(Project project, WindowsAzureProjectManager waProjManager, WindowsAzureRole waRole) {
-        this.project = project;
-        this.waProjManager = waProjManager;
-        this.waRole = waRole;
-        this.newRole = waProjManager == null;
-        init();
-    }
+    private List<String> fileToDel;
 
     public JPanel getPanel() {
         return contentPane;
     }
 
-    private void init() {
+    void init(Project project, WindowsAzureProjectManager waProjManager, WindowsAzureRole waRole, List<String> fileToDel) {
+        this.project = project;
+        this.waProjManager = waProjManager;
+        this.waRole = waRole;
+        this.fileToDel = fileToDel;
+        this.newRole = waProjManager == null;
         appTable.setModel(new ApplicationsTableModel());
         appTable.getSelectionModel().addListSelectionListener(createAppTableListener());
         addButton.addActionListener(createAddApplicationListener());
@@ -217,10 +214,6 @@ public class ApplicationsTab extends JPanel {
      */
     public ArrayList<AppCmpntParam> getAppsList() {
         return appList;
-    }
-
-    public ArrayList<String> getFileToDel() {
-        return fileToDel;
     }
 
     public boolean isModified() {
