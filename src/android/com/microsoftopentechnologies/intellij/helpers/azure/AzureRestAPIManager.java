@@ -21,7 +21,9 @@ import com.google.common.collect.Iterables;
 import com.google.gson.Gson;
 import com.intellij.ide.util.PropertiesComponent;
 import com.microsoftopentechnologies.intellij.components.MSOpenTechTools;
-import com.microsoftopentechnologies.intellij.helpers.*;
+import com.microsoftopentechnologies.intellij.helpers.CustomJsonSlurper;
+import com.microsoftopentechnologies.intellij.helpers.NoSubscriptionException;
+import com.microsoftopentechnologies.intellij.helpers.StringHelper;
 import com.microsoftopentechnologies.intellij.helpers.aadauth.AuthenticationResult;
 import com.microsoftopentechnologies.intellij.model.*;
 import org.w3c.dom.NodeList;
@@ -66,7 +68,7 @@ public class AzureRestAPIManager implements AzureManager {
     }
 
     public static AzureManager getManager() {
-        if(apiManager == null) {
+        if (apiManager == null) {
             apiManager = new AzureRestAPIManager();
         }
 
@@ -93,12 +95,12 @@ public class AzureRestAPIManager implements AzureManager {
         String key = MSOpenTechTools.AppSettingsNames.AZURE_AUTHENTICATION_TOKEN + "_" + subscriptionId;
 
         // check if the token is already available in our cache
-        if(authenticationTokenSubscriptionMap.containsKey(key)) {
+        if (authenticationTokenSubscriptionMap.containsKey(key)) {
             return authenticationTokenSubscriptionMap.get(key);
         }
 
         String json = PropertiesComponent.getInstance().getValue(key);
-        if(!StringHelper.isNullOrWhiteSpace(json)) {
+        if (!StringHelper.isNullOrWhiteSpace(json)) {
             Gson gson = new Gson();
             AuthenticationResult token = gson.fromJson(json, AuthenticationResult.class);
 
@@ -106,8 +108,7 @@ public class AzureRestAPIManager implements AzureManager {
             authenticationTokenSubscriptionMapLock.lock();
             try {
                 authenticationTokenSubscriptionMap.put(key, token);
-            }
-            finally {
+            } finally {
                 authenticationTokenSubscriptionMapLock.unlock();
             }
         }
@@ -124,8 +125,8 @@ public class AzureRestAPIManager implements AzureManager {
         authenticationTokenSubscriptionMapLock.lock();
         try {
             // update the token in the cache
-            if(authenticationToken == null) {
-                if(authenticationTokenSubscriptionMap.containsKey(key)) {
+            if (authenticationToken == null) {
+                if (authenticationTokenSubscriptionMap.containsKey(key)) {
                     authenticationTokenSubscriptionMap.remove(key);
                 }
             } else {
@@ -134,28 +135,26 @@ public class AzureRestAPIManager implements AzureManager {
 
             // save the token in persistent storage
             String json = "";
-            if(authenticationToken != null) {
+            if (authenticationToken != null) {
                 Gson gson = new Gson();
                 json = gson.toJson(authenticationToken, AuthenticationResult.class);
             }
             PropertiesComponent.getInstance().setValue(key, json);
-        }
-        finally {
+        } finally {
             authenticationTokenSubscriptionMapLock.unlock();
         }
     }
 
     @Override
     public AuthenticationResult getAuthenticationToken() {
-        if(authenticationToken == null) {
+        if (authenticationToken == null) {
             String json = PropertiesComponent.getInstance().getValue(MSOpenTechTools.AppSettingsNames.AZURE_AUTHENTICATION_TOKEN);
-            if(!StringHelper.isNullOrWhiteSpace(json)) {
+            if (!StringHelper.isNullOrWhiteSpace(json)) {
                 Gson gson = new Gson();
                 authenticationTokenLock.lock();
                 try {
                     authenticationToken = gson.fromJson(json, AuthenticationResult.class);
-                }
-                finally {
+                } finally {
                     authenticationTokenLock.unlock();
                 }
             }
@@ -177,8 +176,7 @@ public class AzureRestAPIManager implements AzureManager {
             }
 
             PropertiesComponent.getInstance().setValue(MSOpenTechTools.AppSettingsNames.AZURE_AUTHENTICATION_TOKEN, json);
-        }
-        finally {
+        } finally {
             authenticationTokenLock.unlock();
         }
     }
@@ -188,20 +186,19 @@ public class AzureRestAPIManager implements AzureManager {
         PropertiesComponent.getInstance().unsetValue(MSOpenTechTools.AppSettingsNames.SUBSCRIPTION_FILE);
         subscriptionsLock.lock();
         try {
-            if(subscriptions != null) {
+            if (subscriptions != null) {
                 subscriptions.clear();
                 subscriptions = null;
             }
-        }
-        finally {
+        } finally {
             subscriptionsLock.unlock();
         }
     }
 
     @Override
     public void clearAuthenticationTokens() {
-        if(subscriptions != null) {
-            for(Subscription subscription : subscriptions) {
+        if (subscriptions != null) {
+            for (Subscription subscription : subscriptions) {
                 setAuthenticationTokenForSubscription(subscription.getId().toString(), null);
             }
         }
@@ -212,9 +209,9 @@ public class AzureRestAPIManager implements AzureManager {
     public ArrayList<Subscription> getSubscriptionList() throws AzureCmdException {
         try {
             AzureAuthenticationMode mode = getAuthenticationMode();
-            if(mode == AzureAuthenticationMode.SubscriptionSettings) {
+            if (mode == AzureAuthenticationMode.SubscriptionSettings) {
                 return getSubscriptionListFromCert();
-            } else if(mode == AzureAuthenticationMode.ActiveDirectory) {
+            } else if (mode == AzureAuthenticationMode.ActiveDirectory) {
                 return getSubscriptionListFromToken();
             }
 
@@ -226,7 +223,7 @@ public class AzureRestAPIManager implements AzureManager {
 
     public ArrayList<Subscription> getSubscriptionListFromCert() throws SAXException, ParserConfigurationException, XPathExpressionException, IOException {
         String subscriptionFile = PropertiesComponent.getInstance().getValue(MSOpenTechTools.AppSettingsNames.SUBSCRIPTION_FILE, "");
-        if(subscriptionFile.trim().isEmpty()) {
+        if (subscriptionFile.trim().isEmpty()) {
             return null;
         }
         NodeList subscriptionList = (NodeList) AzureRestAPIHelper.getXMLValue(subscriptionFile, "//Subscription", XPathConstants.NODESET);
@@ -260,14 +257,13 @@ public class AzureRestAPIManager implements AzureManager {
 
                 subscriptions.add(subscription);
             }
-        }
-        finally {
+        } finally {
             subscriptionsLock.unlock();
         }
     }
 
     public ArrayList<Subscription> getSubscriptionListFromToken() throws AzureCmdException, IOException, CertificateException, NoSuchAlgorithmException, UnrecoverableKeyException, ExecutionException, ParserConfigurationException, InterruptedException, SAXException, NoSubscriptionException, KeyStoreException, XPathExpressionException, KeyManagementException {
-        if(subscriptions == null) {
+        if (subscriptions == null) {
             refreshSubscriptionListFromToken();
             assert subscriptions != null;
         }
@@ -278,13 +274,13 @@ public class AzureRestAPIManager implements AzureManager {
     public Subscription getSubscriptionFromId(final String subscriptionId) throws SAXException, ParserConfigurationException, XPathExpressionException, IOException, CertificateException, NoSuchAlgorithmException, UnrecoverableKeyException, ExecutionException, InterruptedException, KeyManagementException, KeyStoreException, AzureCmdException, NoSubscriptionException {
         ArrayList<Subscription> subscriptions = null;
         AzureAuthenticationMode mode = getAuthenticationMode();
-        if(mode == AzureAuthenticationMode.SubscriptionSettings) {
+        if (mode == AzureAuthenticationMode.SubscriptionSettings) {
             subscriptions = getSubscriptionListFromCert();
-        } else if(mode == AzureAuthenticationMode.ActiveDirectory) {
+        } else if (mode == AzureAuthenticationMode.ActiveDirectory) {
             subscriptions = getSubscriptionListFromToken();
         }
 
-        if(subscriptions == null) {
+        if (subscriptions == null) {
             return null;
         }
 
@@ -430,13 +426,11 @@ public class AzureRestAPIManager implements AzureManager {
     @Override
     public void createService(UUID subscriptionId, String region, String username, String password, String serviceName, String server, String database) throws AzureCmdException {
         try {
-
-
             String path = String.format("/%s/applications", subscriptionId.toString());
 
-            String JSONParameter = null;
-            if (database == null || server == null) {
+            String JSONParameter;
 
+            if (database == null || server == null) {
                 String zumoServerId = UUID.randomUUID().toString().replace("-", "");
                 String zumoDBId = UUID.randomUUID().toString().replace("-", "");
                 String dbName = serviceName + "_db";
@@ -453,7 +447,6 @@ public class AzureRestAPIManager implements AzureManager {
                         zumoServerId + ".Name'},'CollationName':'SQL_Latin1_General_CP1_CI_AS'},'Version':'1.0','Name':'ZumoSqlDatabase_" + zumoDBId +
                         "','Type':'Microsoft.WindowsAzure.SQLAzure.DataBase'}}}";
             } else {
-
                 String zumoServerId = UUID.randomUUID().toString().replace("-", "");
                 String zumoDBId = UUID.randomUUID().toString().replace("-", "");
 
@@ -480,19 +473,35 @@ public class AzureRestAPIManager implements AzureManager {
             if (statusNode.getLength() > 0 && statusNode.item(0).getTextContent().equals("Healthy")) {
                 return;
             } else {
+                deleteService(subscriptionId, serviceName);
 
                 String errors = ((String) AzureRestAPIHelper.getXMLValue(xml, "//FailureCode[text()]", XPathConstants.STRING));
-
                 throw new AzureCmdException("Error creating service", errors);
             }
         } catch (Exception e) {
-            if (e instanceof AzureCmdException)
+            if (e instanceof AzureCmdException) {
                 throw (AzureCmdException) e;
-            else
+            } else {
                 throw new AzureCmdException("Error creating service", e);
+            }
         }
     }
 
+    private void deleteService(UUID subscriptionId, String serviceName) {
+        String mspath = String.format("/%s/services/mobileservices/mobileservices/%s?deletedata=true", subscriptionId.toString(), serviceName);
+
+        try {
+            AzureRestAPIHelper.deleteRestApiCommand(mspath, subscriptionId.toString(), String.format("/%s/operations/", subscriptionId.toString()), true);
+        } catch (Throwable t) {
+        }
+
+        String appPath = String.format("/%s/applications/%smobileservice", subscriptionId.toString(), serviceName);
+
+        try {
+            AzureRestAPIHelper.deleteRestApiCommand(appPath, subscriptionId.toString(), String.format("/%s/operations/", subscriptionId.toString()), false);
+        } catch (Throwable t) {
+        }
+    }
 
     @Override
     public List<Table> getTableList(UUID subscriptionId, String serviceName) throws AzureCmdException {
