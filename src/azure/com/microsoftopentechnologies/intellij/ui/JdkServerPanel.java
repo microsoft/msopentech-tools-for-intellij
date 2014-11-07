@@ -344,6 +344,7 @@ public class JdkServerPanel {
     public void initForWizard() {
         jdkCheckBox.addItemListener(createJdkCheckBoxListener());
         jdkCheckBox.setSelected(true);
+        jdkPath.addActionListener(UIUtils.createFileChooserListener(jdkPath, null, FileChooserDescriptorFactory.createSingleFolderDescriptor()));
         jdkPath.getTextField().getDocument().addDocumentListener(createJdkPathListener());
         serverPath.addBrowseFolderListener(new TextBrowseFolderListener(FileChooserDescriptorFactory.createSingleFolderDescriptor()) {
             protected void onFileChoosen(@NotNull VirtualFile chosenFile) {
@@ -361,6 +362,18 @@ public class JdkServerPanel {
         jdkPath.addFocusListener(createJdkPathPreferenceListener());
         jdkCheckBox.addItemListener(createJdkCheckBoxPreferenceListener());
         jdkCheckBox.setSelected(true);
+        jdkPath.addBrowseFolderListener(new TextBrowseFolderListener(FileChooserDescriptorFactory.createSingleFolderDescriptor()) {
+            protected void onFileChoosen(@NotNull VirtualFile chosenFile) {
+                String oldTxt = jdkPath.getText();
+                super.onFileChoosen(chosenFile);
+                String directory = jdkPath.getText();
+                if (directory != null && !directory.equalsIgnoreCase(oldTxt)) {
+                    setJDK(directory);
+                    modified = true;
+                    modifyJdkText(waRole, message("dlNtLblDir"));
+                }
+            }
+        });
         serverPath.addFocusListener(createServerPathPreferenceListener());
         serverCheckBox.addItemListener(createServerPreferenceListener());
         serverType.addItemListener(createServerTypePreferenceListener());
@@ -1148,7 +1161,12 @@ public class JdkServerPanel {
      */
     public String jdkChkBoxChecked(WindowsAzureRole role, String depJdkName) {
         // Pre-populate with auto-discovered JDK if any
-        String jdkDefaultDir = WAEclipseHelperMethods.jdkDefaultDirectory(null);
+        String jdkDefaultDir = null;
+        try {
+            jdkDefaultDir = WAEclipseHelperMethods.jdkDefaultDirectory(waRole.getJDKSourcePath());
+        } catch (WindowsAzureInvalidProjectOperationException e) {
+            log(message("error"), e);
+        }
         jdkPath.setText(jdkDefaultDir);
         setJDK(jdkPath.getText().trim());
         setEnableJDK(true);

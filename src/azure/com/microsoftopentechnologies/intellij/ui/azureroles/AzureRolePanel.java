@@ -15,16 +15,17 @@
  */
 package com.microsoftopentechnologies.intellij.ui.azureroles;
 
+import com.intellij.openapi.module.Module;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.vfs.LocalFileSystem;
 import com.interopbridges.tools.windowsazure.WindowsAzureInvalidProjectOperationException;
 import com.interopbridges.tools.windowsazure.WindowsAzureNamedCache;
 import com.interopbridges.tools.windowsazure.WindowsAzureProjectManager;
 import com.interopbridges.tools.windowsazure.WindowsAzureRole;
 import com.microsoftopentechnologies.intellij.AzurePlugin;
-import com.microsoftopentechnologies.intellij.ui.AzureAbstractPanel;
 import com.microsoftopentechnologies.intellij.util.PluginUtil;
 import org.jetbrains.annotations.Nullable;
 
@@ -32,6 +33,7 @@ import javax.swing.*;
 
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.io.File;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -45,11 +47,12 @@ public class AzureRolePanel implements Configurable {
     private JComboBox comboVMSize;
     private JTextField txtNoOfInstances;
 
-
+    private Module module;
     private WindowsAzureProjectManager waProjManager;
     private WindowsAzureRole windowsAzureRole;
 
-    public AzureRolePanel(WindowsAzureProjectManager waProjManager, WindowsAzureRole windowsAzureRole) {
+    public AzureRolePanel(Module module, WindowsAzureProjectManager waProjManager, WindowsAzureRole windowsAzureRole) {
+        this.module = module;
         this.waProjManager = waProjManager;
         this.windowsAzureRole = windowsAzureRole;
         init();
@@ -205,6 +208,9 @@ public class AzureRolePanel implements Configurable {
         try {
             okToProceed = handleHighAvailabilityFeature(okToProceed);
             waProjManager.save();
+            LocalFileSystem.getInstance().findFileByPath(PluginUtil.getModulePath(module) + File.separator + message("resCLPkgXML")).refresh(true, false);
+            LocalFileSystem.getInstance().findFileByPath(PluginUtil.getModulePath(module) + File.separator + message("cscfgDefaultFileName")).refresh(true, false);
+            LocalFileSystem.getInstance().findFileByPath(PluginUtil.getModulePath(module) + File.separator + message("csdefDefaultFileName")).refresh(true, false);
         } catch (WindowsAzureInvalidProjectOperationException e) {
             PluginUtil.displayErrorDialogAndLog(message("adRolErrTitle"), message("adRolErrMsgBox1") + message("adRolErrMsgBox2"), e);
         }

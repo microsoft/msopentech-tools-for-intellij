@@ -43,7 +43,7 @@ public class RolesConfigurable extends SearchableConfigurable.Parent.Abstract {
         this.waProjManager = waProjManager;
         this.windowsAzureRole = windowsAzureRole;
         this.isNew = isNew;
-        panel = new AzureRolePanel(waProjManager, windowsAzureRole);
+        panel = new AzureRolePanel(module, waProjManager, windowsAzureRole);
     }
 
     @Override
