@@ -18,6 +18,8 @@ package com.microsoftopentechnologies.intellij.helpers;
 
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.util.io.FileUtil;
+import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
+import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIHelper;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;

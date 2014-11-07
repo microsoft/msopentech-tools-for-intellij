@@ -24,7 +24,7 @@ import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.microsoftopentechnologies.intellij.forms.TableForm;
-import com.microsoftopentechnologies.intellij.helpers.AzureRestAPIManager;
+import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIManager;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.model.MobileServiceTreeItem;
 import com.microsoftopentechnologies.intellij.model.Table;

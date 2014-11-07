@@ -22,7 +22,7 @@ import com.intellij.ui.wizard.WizardNavigationState;
 import com.intellij.ui.wizard.WizardStep;
 import com.microsoftopentechnologies.intellij.forms.CreateNewServiceForm;
 import com.microsoftopentechnologies.intellij.forms.ManageSubscriptionForm;
-import com.microsoftopentechnologies.intellij.helpers.AzureRestAPIManager;
+import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIManager;
 import com.microsoftopentechnologies.intellij.helpers.ReadOnlyCellTableModel;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.model.Service;

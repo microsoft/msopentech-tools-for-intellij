@@ -32,11 +32,10 @@ import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.openapi.wm.ex.ToolWindowEx;
 import com.intellij.ui.treeStructure.Tree;
 import com.microsoftopentechnologies.intellij.forms.*;
-import com.microsoftopentechnologies.intellij.helpers.AzureCmdException;
-import com.microsoftopentechnologies.intellij.helpers.AzureRestAPIManager;
+import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
+import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIManager;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.model.*;
-import com.sun.deploy.panel.JavaPanel;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
