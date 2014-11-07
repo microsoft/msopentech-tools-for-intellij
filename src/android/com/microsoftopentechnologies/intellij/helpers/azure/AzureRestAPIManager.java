@@ -13,7 +13,6 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-
 package com.microsoftopentechnologies.intellij.helpers.azure;
 
 import com.google.common.base.Predicate;
@@ -21,7 +20,9 @@ import com.google.common.collect.Iterables;
 import com.google.gson.Gson;
 import com.intellij.ide.util.PropertiesComponent;
 import com.microsoftopentechnologies.intellij.components.MSOpenTechTools;
-import com.microsoftopentechnologies.intellij.helpers.*;
+import com.microsoftopentechnologies.intellij.helpers.CustomJsonSlurper;
+import com.microsoftopentechnologies.intellij.helpers.NoSubscriptionException;
+import com.microsoftopentechnologies.intellij.helpers.StringHelper;
 import com.microsoftopentechnologies.intellij.helpers.aadauth.AuthenticationResult;
 import com.microsoftopentechnologies.intellij.model.*;
 import org.w3c.dom.NodeList;
@@ -66,7 +67,7 @@ public class AzureRestAPIManager implements AzureManager {
     }
 
     public static AzureManager getManager() {
-        if(apiManager == null) {
+        if (apiManager == null) {
             apiManager = new AzureRestAPIManager();
         }
 
@@ -93,12 +94,12 @@ public class AzureRestAPIManager implements AzureManager {
         String key = MSOpenTechTools.AppSettingsNames.AZURE_AUTHENTICATION_TOKEN + "_" + subscriptionId;
 
         // check if the token is already available in our cache
-        if(authenticationTokenSubscriptionMap.containsKey(key)) {
+        if (authenticationTokenSubscriptionMap.containsKey(key)) {
             return authenticationTokenSubscriptionMap.get(key);
         }
 
         String json = PropertiesComponent.getInstance().getValue(key);
-        if(!StringHelper.isNullOrWhiteSpace(json)) {
+        if (!StringHelper.isNullOrWhiteSpace(json)) {
             Gson gson = new Gson();
             AuthenticationResult token = gson.fromJson(json, AuthenticationResult.class);
 
@@ -106,8 +107,7 @@ public class AzureRestAPIManager implements AzureManager {
             authenticationTokenSubscriptionMapLock.lock();
             try {
                 authenticationTokenSubscriptionMap.put(key, token);
-            }
-            finally {
+            } finally {
                 authenticationTokenSubscriptionMapLock.unlock();
             }
         }
@@ -124,8 +124,8 @@ public class AzureRestAPIManager implements AzureManager {
         authenticationTokenSubscriptionMapLock.lock();
         try {
             // update the token in the cache
-            if(authenticationToken == null) {
-                if(authenticationTokenSubscriptionMap.containsKey(key)) {
+            if (authenticationToken == null) {
+                if (authenticationTokenSubscriptionMap.containsKey(key)) {
                     authenticationTokenSubscriptionMap.remove(key);
                 }
             } else {
@@ -134,28 +134,30 @@ public class AzureRestAPIManager implements AzureManager {
 
             // save the token in persistent storage
             String json = "";
-            if(authenticationToken != null) {
+
+            if (authenticationToken != null) {
                 Gson gson = new Gson();
                 json = gson.toJson(authenticationToken, AuthenticationResult.class);
             }
+
             PropertiesComponent.getInstance().setValue(key, json);
-        }
-        finally {
+        } finally {
             authenticationTokenSubscriptionMapLock.unlock();
         }
     }
 
     @Override
     public AuthenticationResult getAuthenticationToken() {
-        if(authenticationToken == null) {
+        if (authenticationToken == null) {
             String json = PropertiesComponent.getInstance().getValue(MSOpenTechTools.AppSettingsNames.AZURE_AUTHENTICATION_TOKEN);
-            if(!StringHelper.isNullOrWhiteSpace(json)) {
+
+            if (!StringHelper.isNullOrWhiteSpace(json)) {
                 Gson gson = new Gson();
                 authenticationTokenLock.lock();
+
                 try {
                     authenticationToken = gson.fromJson(json, AuthenticationResult.class);
-                }
-                finally {
+                } finally {
                     authenticationTokenLock.unlock();
                 }
             }
@@ -171,14 +173,14 @@ public class AzureRestAPIManager implements AzureManager {
         try {
             this.authenticationToken = authenticationToken;
             String json = "";
+
             if (this.authenticationToken != null) {
                 Gson gson = new Gson();
                 json = gson.toJson(this.authenticationToken, AuthenticationResult.class);
             }
 
             PropertiesComponent.getInstance().setValue(MSOpenTechTools.AppSettingsNames.AZURE_AUTHENTICATION_TOKEN, json);
-        }
-        finally {
+        } finally {
             authenticationTokenLock.unlock();
         }
     }
@@ -187,24 +189,25 @@ public class AzureRestAPIManager implements AzureManager {
     public void clearSubscriptions() throws AzureCmdException {
         PropertiesComponent.getInstance().unsetValue(MSOpenTechTools.AppSettingsNames.SUBSCRIPTION_FILE);
         subscriptionsLock.lock();
+
         try {
-            if(subscriptions != null) {
+            if (subscriptions != null) {
                 subscriptions.clear();
                 subscriptions = null;
             }
-        }
-        finally {
+        } finally {
             subscriptionsLock.unlock();
         }
     }
 
     @Override
     public void clearAuthenticationTokens() {
-        if(subscriptions != null) {
-            for(Subscription subscription : subscriptions) {
+        if (subscriptions != null) {
+            for (Subscription subscription : subscriptions) {
                 setAuthenticationTokenForSubscription(subscription.getId().toString(), null);
             }
         }
+
         setAuthenticationToken(null);
     }
 
@@ -212,9 +215,10 @@ public class AzureRestAPIManager implements AzureManager {
     public ArrayList<Subscription> getSubscriptionList() throws AzureCmdException {
         try {
             AzureAuthenticationMode mode = getAuthenticationMode();
-            if(mode == AzureAuthenticationMode.SubscriptionSettings) {
+
+            if (mode == AzureAuthenticationMode.SubscriptionSettings) {
                 return getSubscriptionListFromCert();
-            } else if(mode == AzureAuthenticationMode.ActiveDirectory) {
+            } else if (mode == AzureAuthenticationMode.ActiveDirectory) {
                 return getSubscriptionListFromToken();
             }
 
@@ -226,12 +230,15 @@ public class AzureRestAPIManager implements AzureManager {
 
     public ArrayList<Subscription> getSubscriptionListFromCert() throws SAXException, ParserConfigurationException, XPathExpressionException, IOException {
         String subscriptionFile = PropertiesComponent.getInstance().getValue(MSOpenTechTools.AppSettingsNames.SUBSCRIPTION_FILE, "");
-        if(subscriptionFile.trim().isEmpty()) {
+
+        if (subscriptionFile.trim().isEmpty()) {
             return null;
         }
+
         NodeList subscriptionList = (NodeList) AzureRestAPIHelper.getXMLValue(subscriptionFile, "//Subscription", XPathConstants.NODESET);
 
         ArrayList<Subscription> list = new ArrayList<Subscription>();
+
         for (int i = 0; i < subscriptionList.getLength(); i++) {
             Subscription subscription = new Subscription();
             subscription.setName(AzureRestAPIHelper.getAttributeValue(subscriptionList.item(i), "Name"));
@@ -250,8 +257,10 @@ public class AzureRestAPIManager implements AzureManager {
                 subscriptionXml, "//Subscription", XPathConstants.NODESET);
 
         subscriptionsLock.lock();
+
         try {
             subscriptions = new ArrayList<Subscription>();
+
             for (int i = 0; i < subscriptionList.getLength(); i++) {
                 Subscription subscription = new Subscription();
                 subscription.setName(AzureRestAPIHelper.getChildNodeValue(subscriptionList.item(i), "SubscriptionName"));
@@ -260,14 +269,13 @@ public class AzureRestAPIManager implements AzureManager {
 
                 subscriptions.add(subscription);
             }
-        }
-        finally {
+        } finally {
             subscriptionsLock.unlock();
         }
     }
 
     public ArrayList<Subscription> getSubscriptionListFromToken() throws AzureCmdException, IOException, CertificateException, NoSuchAlgorithmException, UnrecoverableKeyException, ExecutionException, ParserConfigurationException, InterruptedException, SAXException, NoSubscriptionException, KeyStoreException, XPathExpressionException, KeyManagementException {
-        if(subscriptions == null) {
+        if (subscriptions == null) {
             refreshSubscriptionListFromToken();
             assert subscriptions != null;
         }
@@ -278,17 +286,19 @@ public class AzureRestAPIManager implements AzureManager {
     public Subscription getSubscriptionFromId(final String subscriptionId) throws SAXException, ParserConfigurationException, XPathExpressionException, IOException, CertificateException, NoSuchAlgorithmException, UnrecoverableKeyException, ExecutionException, InterruptedException, KeyManagementException, KeyStoreException, AzureCmdException, NoSubscriptionException {
         ArrayList<Subscription> subscriptions = null;
         AzureAuthenticationMode mode = getAuthenticationMode();
-        if(mode == AzureAuthenticationMode.SubscriptionSettings) {
+
+        if (mode == AzureAuthenticationMode.SubscriptionSettings) {
             subscriptions = getSubscriptionListFromCert();
-        } else if(mode == AzureAuthenticationMode.ActiveDirectory) {
+        } else if (mode == AzureAuthenticationMode.ActiveDirectory) {
             subscriptions = getSubscriptionListFromToken();
         }
 
-        if(subscriptions == null) {
+        if (subscriptions == null) {
             return null;
         }
 
         final UUID sid = UUID.fromString(subscriptionId);
+
         return Iterables.find(subscriptions, new Predicate<Subscription>() {
             @Override
             public boolean apply(Subscription subscription) {
@@ -326,6 +336,7 @@ public class AzureRestAPIManager implements AzureManager {
             List<Map<String, Object>> tempRes = (List<Map<String, Object>>) slurper.parseText(json);
 
             List<Service> res = new ArrayList<Service>();
+
             for (Map<String, Object> item : tempRes) {
                 Service ser = new Service();
 
@@ -351,7 +362,6 @@ public class AzureRestAPIManager implements AzureManager {
             }
 
             return res;
-
         } catch (Exception e) {
             throw new AzureCmdException("Error getting service list", e);
         }
@@ -368,6 +378,7 @@ public class AzureRestAPIManager implements AzureManager {
             List<Map<String, String>> tempRes = (List<Map<String, String>>) slurper.parseText(json);
 
             List<String> res = new ArrayList<String>();
+
             for (Map<String, String> item : tempRes) {
                 res.add(item.get("region"));
             }
@@ -386,6 +397,7 @@ public class AzureRestAPIManager implements AzureManager {
 
             List<SqlDb> res = new ArrayList<SqlDb>();
             NodeList nl = (NodeList) AzureRestAPIHelper.getXMLValue(xml, "//ServiceResource", XPathConstants.NODESET);
+
             for (int i = 0; i != nl.getLength(); i++) {
 
                 SqlDb sqls = new SqlDb();
@@ -396,7 +408,6 @@ public class AzureRestAPIManager implements AzureManager {
             }
 
             return res;
-
         } catch (Exception e) {
             throw new AzureCmdException("Error getting database list", e);
         }
@@ -411,6 +422,7 @@ public class AzureRestAPIManager implements AzureManager {
             List<SqlServer> res = new ArrayList<SqlServer>();
 
             NodeList nl = (NodeList) AzureRestAPIHelper.getXMLValue(xml, "//Server", XPathConstants.NODESET);
+
             for (int i = 0; i != nl.getLength(); i++) {
                 SqlServer sqls = new SqlServer();
 
@@ -421,7 +433,6 @@ public class AzureRestAPIManager implements AzureManager {
             }
 
             return res;
-
         } catch (Exception e) {
             throw new AzureCmdException("Error getting server list", e);
         }
@@ -430,13 +441,11 @@ public class AzureRestAPIManager implements AzureManager {
     @Override
     public void createService(UUID subscriptionId, String region, String username, String password, String serviceName, String server, String database) throws AzureCmdException {
         try {
-
-
             String path = String.format("/%s/applications", subscriptionId.toString());
 
-            String JSONParameter = null;
-            if (database == null || server == null) {
+            String JSONParameter;
 
+            if (database == null || server == null) {
                 String zumoServerId = UUID.randomUUID().toString().replace("-", "");
                 String zumoDBId = UUID.randomUUID().toString().replace("-", "");
                 String dbName = serviceName + "_db";
@@ -453,7 +462,6 @@ public class AzureRestAPIManager implements AzureManager {
                         zumoServerId + ".Name'},'CollationName':'SQL_Latin1_General_CP1_CI_AS'},'Version':'1.0','Name':'ZumoSqlDatabase_" + zumoDBId +
                         "','Type':'Microsoft.WindowsAzure.SQLAzure.DataBase'}}}";
             } else {
-
                 String zumoServerId = UUID.randomUUID().toString().replace("-", "");
                 String zumoDBId = UUID.randomUUID().toString().replace("-", "");
 
@@ -480,19 +488,36 @@ public class AzureRestAPIManager implements AzureManager {
             if (statusNode.getLength() > 0 && statusNode.item(0).getTextContent().equals("Healthy")) {
                 return;
             } else {
+                deleteService(subscriptionId, serviceName);
 
                 String errors = ((String) AzureRestAPIHelper.getXMLValue(xml, "//FailureCode[text()]", XPathConstants.STRING));
-
-                throw new AzureCmdException("Error creating service", errors);
+                String errorMessage = ((String) AzureRestAPIHelper.getXMLValue(errors, "//Message[text()]", XPathConstants.STRING));
+                throw new AzureCmdException("Error creating service", errorMessage);
             }
-        } catch (Exception e) {
-            if (e instanceof AzureCmdException)
-                throw (AzureCmdException) e;
-            else
-                throw new AzureCmdException("Error creating service", e);
+        } catch (Throwable t) {
+            if (t instanceof AzureCmdException) {
+                throw (AzureCmdException) t;
+            } else {
+                throw new AzureCmdException("Error creating service", t);
+            }
         }
     }
 
+    private void deleteService(UUID subscriptionId, String serviceName) {
+        String mspath = String.format("/%s/services/mobileservices/mobileservices/%s?deletedata=true", subscriptionId.toString(), serviceName);
+
+        try {
+            AzureRestAPIHelper.deleteRestApiCommand(mspath, subscriptionId.toString(), String.format("/%s/operations/", subscriptionId.toString()), true);
+        } catch (Throwable t) {
+        }
+
+        String appPath = String.format("/%s/applications/%smobileservice", subscriptionId.toString(), serviceName);
+
+        try {
+            AzureRestAPIHelper.deleteRestApiCommand(appPath, subscriptionId.toString(), String.format("/%s/operations/", subscriptionId.toString()), false);
+        } catch (Throwable t) {
+        }
+    }
 
     @Override
     public List<Table> getTableList(UUID subscriptionId, String serviceName) throws AzureCmdException {
@@ -505,6 +530,7 @@ public class AzureRestAPIManager implements AzureManager {
             List<Map<String, String>> tempRes = (List<Map<String, String>>) slurper.parseText(json);
 
             List<Table> res = new ArrayList<Table>();
+
             for (Map<String, String> item : tempRes) {
                 Table t = new Table();
                 t.setName(item.get("name"));
@@ -514,7 +540,6 @@ public class AzureRestAPIManager implements AzureManager {
             }
 
             return res;
-
         } catch (Exception e) {
             throw new AzureCmdException("Error getting table list", e);
         }
@@ -603,11 +628,9 @@ public class AzureRestAPIManager implements AzureManager {
             }
 
             return t;
-
         } catch (Exception e) {
             throw new AzureCmdException("Error getting table data", e);
         }
-
     }
 
     @Override
@@ -623,7 +646,6 @@ public class AzureRestAPIManager implements AzureManager {
             writer.write(script);
             writer.flush();
             writer.close();
-
         } catch (Exception e) {
             //On error, create script for template
         }
@@ -657,6 +679,7 @@ public class AzureRestAPIManager implements AzureManager {
             List<Map<String, String>> tempRes = (List<Map<String, String>>) slurper.parseText(json);
 
             List<CustomAPI> res = new ArrayList<CustomAPI>();
+
             for (Map<String, String> item : tempRes) {
                 CustomAPI c = new CustomAPI();
                 c.setName(item.get("name"));
@@ -689,7 +712,6 @@ public class AzureRestAPIManager implements AzureManager {
             writer.write(script);
             writer.flush();
             writer.close();
-
         } catch (Exception e) {
             throw new AzureCmdException("Error getting API list", e);
         }
@@ -703,7 +725,6 @@ public class AzureRestAPIManager implements AzureManager {
             String path = String.format("/%s/services/mobileservices/mobileservices/%s/apis/%s/script", subscriptionId.toString(), serviceName, apiName);
 
             AzureRestAPIHelper.uploadScript(path, filePath, subscriptionId.toString());
-
         } catch (Exception e) {
             throw new AzureCmdException("Error upload script", e);
         }
@@ -723,7 +744,6 @@ public class AzureRestAPIManager implements AzureManager {
 
 
             AzureRestAPIHelper.postRestApiCommand(path, postData, subscriptionId.toString(), null, true);
-
         } catch (Exception e) {
             throw new AzureCmdException("Error creating API", e);
         }
@@ -741,13 +761,10 @@ public class AzureRestAPIManager implements AzureManager {
                     + "\",\"delete\":\"" + permissions.getDeletePermission()
                     + "\"}";
 
-
             AzureRestAPIHelper.putRestApiCommand(path, postData, subscriptionId.toString(), null, true);
-
         } catch (Exception e) {
             throw new AzureCmdException("Error updating API", e);
         }
-
     }
 
     @Override
@@ -761,6 +778,7 @@ public class AzureRestAPIManager implements AzureManager {
             List<Map<String, Object>> tempRes = (List<Map<String, Object>>) slurper.parseText(json);
 
             List<Job> res = new ArrayList<Job>();
+
             for (Map<String, Object> item : tempRes) {
                 Job j = new Job();
                 j.setAppName(item.get("appName").toString());
@@ -795,11 +813,9 @@ public class AzureRestAPIManager implements AzureManager {
 
 
             AzureRestAPIHelper.postRestApiCommand(path, postData, subscriptionId.toString(), null, true);
-
         } catch (Exception e) {
             throw new AzureCmdException("Error creating jobs", e);
         }
-
     }
 
     @Override
@@ -819,7 +835,6 @@ public class AzureRestAPIManager implements AzureManager {
             }
 
             AzureRestAPIHelper.putRestApiCommand(path, postData, subscriptionId.toString(), null, true);
-
         } catch (Exception e) {
             throw new AzureCmdException("Error updating job", e);
         }
@@ -837,7 +852,6 @@ public class AzureRestAPIManager implements AzureManager {
             writer.write(script);
             writer.flush();
             writer.close();
-
         } catch (Exception e) {
             e.printStackTrace();
             //On error, create script for template
@@ -861,7 +875,6 @@ public class AzureRestAPIManager implements AzureManager {
 
     @Override
     public List<LogEntry> listLog(UUID subscriptionId, String serviceName) throws AzureCmdException, ParseException {
-
         try {
             String path = String.format("/%s/services/mobileservices/mobileservices/%s/logs?$top=10", subscriptionId.toString(), serviceName);
 
@@ -873,6 +886,7 @@ public class AzureRestAPIManager implements AzureManager {
             List<Map<String, String>> tempRes = (List<Map<String, String>>) results.get("results");
 
             List<LogEntry> res = new ArrayList<LogEntry>();
+
             for (Map<String, String> item : tempRes) {
                 LogEntry logEntry = new LogEntry();
 
@@ -887,7 +901,6 @@ public class AzureRestAPIManager implements AzureManager {
             }
 
             return res;
-
         } catch (Exception e) {
             throw new AzureCmdException("Error getting log", e);
         }
