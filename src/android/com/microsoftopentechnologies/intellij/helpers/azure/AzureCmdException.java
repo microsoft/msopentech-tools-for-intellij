@@ -13,14 +13,13 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-
 package com.microsoftopentechnologies.intellij.helpers.azure;
-
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
 public class AzureCmdException extends Exception {
+    private String mErrorLog;
 
     public AzureCmdException(String message, String errorLog) {
         super(message);
@@ -28,24 +27,21 @@ public class AzureCmdException extends Exception {
         mErrorLog = errorLog;
     }
 
-    public AzureCmdException(String message, Exception ex) {
+    public AzureCmdException(String message, Throwable throwable) {
         super(message);
 
-        if(ex instanceof AzureCmdException) {
-            mErrorLog = ((AzureCmdException) ex).getErrorLog();
+        if (throwable instanceof AzureCmdException) {
+            mErrorLog = ((AzureCmdException) throwable).getErrorLog();
         } else {
             StringWriter sw = new StringWriter();
             PrintWriter writer = new PrintWriter(sw);
 
-            ex.printStackTrace(writer);
+            throwable.printStackTrace(writer);
             writer.flush();
 
             mErrorLog = sw.toString();
         }
     }
-
-
-    private String mErrorLog;
 
     public String getErrorLog() {
         return mErrorLog;
