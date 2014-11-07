@@ -21,17 +21,15 @@ import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
+import sun.misc.IOUtils;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileSystemView;
 import java.io.*;
-import java.net.JarURLConnection;
 import java.net.URL;
-import java.net.URLConnection;
 import java.net.URLDecoder;
 import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
+
 
 public class AndroidStudioHelper {
     private static final String mobileServicesTemplateName = "AzureServicesActivity";
@@ -54,7 +52,7 @@ public class AndroidStudioHelper {
 
         if(!new File(templatePath + mobileServicesTemplateName).exists()) {
             String tmpDir = getTempLocation();
-            copyResourcesRecursively(ServiceCodeReferenceHelper.getTemplateResourceUrl("MobileServiceTemplate"), new File(tmpDir));
+            copyResourcesRecursively(new File(tmpDir));
 
             tmpDir = tmpDir + "MobileServiceTemplate" + File.separator;
 
@@ -160,6 +158,40 @@ public class AndroidStudioHelper {
         }
     }
 
+    private static void copyResourcesRecursively(File targetDir) throws IOException {
+        InputStream fileList = ServiceCodeReferenceHelper.getTemplateResource("MobileServiceTemplate/fileList.txt");
+        BufferedReader in = new BufferedReader(new InputStreamReader(fileList));
+
+        String line;
+        while((line = in.readLine()) != null) {
+
+            String[] pathParts = line.split("/");
+            String fileName = pathParts[pathParts.length - 1];
+            String path = line.replace(fileName, "");
+
+            String targetPath = targetDir.getAbsolutePath() + File.separator
+                    + "MobileServiceTemplate" + File.separator
+                    + path.replace("/", File.separator);
+
+            File targetFolder = new File(targetPath);
+            targetFolder.mkdirs();
+
+            File targetFile = new File(targetFolder, fileName);
+            targetFile.createNewFile();
+            targetFile.setWritable(true);
+
+            InputStream inputStream = ServiceCodeReferenceHelper.getTemplateResource("MobileServiceTemplate/" + line);
+
+            byte[] content = IOUtils.readFully(inputStream, -1, true);
+
+            FileOutputStream fileOutputStream = new FileOutputStream(targetFile);
+            fileOutputStream.write(content);
+            fileOutputStream.flush();
+            fileOutputStream.close();
+
+        }
+    }
+
     public static void deleteActivityTemplates(Object caller) throws IOException, InterruptedException {
         String[] cmd = null;
 
@@ -172,7 +204,7 @@ public class AndroidStudioHelper {
         String[] env = null;
 
         String tmpDir = getTempLocation();
-        copyResourcesRecursively(ServiceCodeReferenceHelper.getTemplateResourceUrl("MobileServiceTemplate"), new File(tmpDir));
+        copyResourcesRecursively(new File(tmpDir));
 
         tmpDir = tmpDir + "MobileServiceTemplate" + File.separator;
 
@@ -300,87 +332,6 @@ public class AndroidStudioHelper {
         sb.append(File.separator);
 
         return sb.toString();
-    }
-
-    public static void copyResourcesRecursively(final URL originUrl, final File destination) throws IOException {
-        if(!destination.exists())
-            destination.mkdirs();
-
-        final URLConnection urlConnection = originUrl.openConnection();
-        if (urlConnection instanceof JarURLConnection) {
-            copyJarResourcesRecursively(destination, (JarURLConnection) urlConnection);
-        } else {
-            copyFilesRecusively(new File(originUrl.getPath()), destination);
-        }
-    }
-
-    public static void copyFile(final File toCopy, final File destFile) throws FileNotFoundException {
-        copyStream(new FileInputStream(toCopy), new FileOutputStream(destFile));
-    }
-
-    private static void copyFilesRecusively(final File toCopy, final File destDir) throws FileNotFoundException {
-
-        if (toCopy.isDirectory()) {
-            final File newDestDir = new File(destDir, toCopy.getName());
-            newDestDir.mkdir();
-
-            for (final File child : toCopy.listFiles()) {
-                copyFilesRecusively(child, newDestDir);
-            }
-        } else {
-            copyFile(toCopy, new File(destDir, toCopy.getName()));
-        }
-    }
-
-    public static void copyJarResourcesRecursively(final File destDir, final JarURLConnection jarConnection) throws IOException {
-
-        final JarFile jarFile = jarConnection.getJarFile();
-
-        for (final Enumeration<JarEntry> e = jarFile.entries(); e.hasMoreElements();) {
-            final JarEntry entry = e.nextElement();
-            if (entry.getName().startsWith(jarConnection.getEntryName())) {
-                final String filename = StringUtils.removeStart(entry.getName(), //
-                        jarConnection.getEntryName());
-
-                final File f = new File(destDir, filename);
-                if (entry.isDirectory()) {
-                    if (!ensureDirectoryExists(f)) {
-                        throw new IOException("Could not create directory: " + f.getAbsolutePath());
-                    }
-                } else {
-                    final InputStream entryInputStream = jarFile.getInputStream(entry);
-
-                    copyStream(entryInputStream, f);
-
-                    entryInputStream.close();
-                }
-            }
-        }
-    }
-
-    private static boolean copyStream(final InputStream is, final File f) throws FileNotFoundException {
-        return copyStream(is, new FileOutputStream(f));
-    }
-
-    private static boolean copyStream(final InputStream is, final OutputStream os) {
-        try {
-            final byte[] buf = new byte[1024];
-
-            int len = 0;
-            while ((len = is.read(buf)) > 0) {
-                os.write(buf, 0, len);
-            }
-            is.close();
-            os.close();
-            return true;
-        } catch (final IOException e) {
-            return false;
-        }
-
-    }
-
-    private static boolean ensureDirectoryExists(final File f) {
-        return f.exists() || f.mkdir();
     }
 
     private static class StreamGobbler extends Thread {
