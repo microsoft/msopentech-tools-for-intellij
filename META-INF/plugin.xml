@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!--
 Copyright 2014 Microsoft Open Technologies, Inc.
  
@@ -13,11 +14,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
--->
-<idea-plugin version="2">
+--><idea-plugin version="2">
     <id>com.microsoftopentechnologies.intellij</id>
     <name>MSOpenTech Tools</name>
-    <version>0.1</version>
+    <version>0.1.7</version>
     <vendor email="msopentech@microsoft.com" logo="/com/microsoftopentechnologies/intellij/icons/logo.png" url="http://msopentech.com">Microsoft Open Technologies, Inc.</vendor>
 
     <description><![CDATA[
@@ -42,7 +42,7 @@ limitations under the License.
     </change-notes>
 
     <!-- please see http://confluence.jetbrains.net/display/IDEADEV/Build+Number+Ranges for description -->
-    <idea-version since-build="135.1" until-build="136.0"/>
+    <idea-version since-build="135.1"/>
 
     <resource-bundle>com.microsoftopentechnologies.intellij.ui.messages.messages</resource-bundle>
 
@@ -58,21 +58,12 @@ limitations under the License.
     <depends>org.jetbrains.plugins.gradle</depends>
 
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow
-                anchor="left"
-                factoryClass="com.microsoftopentechnologies.intellij.components.ServerExplorerToolWindowFactory"
-                id="Server Explorer"
-                canCloseContents="false"
-                icon="/com/microsoftopentechnologies/intellij/icons/azure.png"/>
-        <moduleType id="AZURE_MODULE"
-                    implementationClass="com.microsoftopentechnologies.intellij.module.AzureModuleType"/>
-        <moduleConfigurationEditorProvider
-                implementation="com.microsoftopentechnologies.intellij.module.AzureModuleConfigurationEditorProvider"/>
+        <toolWindow anchor="left" canCloseContents="false" factoryClass="com.microsoftopentechnologies.intellij.components.ServerExplorerToolWindowFactory" icon="/com/microsoftopentechnologies/intellij/icons/azure.png" id="Server Explorer"/>
+        <moduleType id="AZURE_MODULE" implementationClass="com.microsoftopentechnologies.intellij.module.AzureModuleType"/>
+        <moduleConfigurationEditorProvider implementation="com.microsoftopentechnologies.intellij.module.AzureModuleConfigurationEditorProvider"/>
         <projectConfigurable instance="com.microsoftopentechnologies.intellij.AzureConfigurable"/>
-        <iconProvider implementation="com.microsoftopentechnologies.intellij.AzureIconProvider"
-                      order="before javaDirectory"/>
-        <projectService serviceInterface="com.microsoftopentechnologies.intellij.AzureSettings"
-                        serviceImplementation="com.microsoftopentechnologies.intellij.AzureSettings"/>
+        <iconProvider implementation="com.microsoftopentechnologies.intellij.AzureIconProvider" order="before javaDirectory"/>
+        <projectService serviceImplementation="com.microsoftopentechnologies.intellij.AzureSettings" serviceInterface="com.microsoftopentechnologies.intellij.AzureSettings"/>
     </extensions>
 
     <application-components>
@@ -101,101 +92,59 @@ limitations under the License.
     </module-components>
 
     <actions>
-        <action id="SaveMobileServiceScript" class="com.microsoftopentechnologies.intellij.actions.SaveScriptAction"
-                text="Upload script"
-                description="Upload this script to Windows Azure Mobile Service">
-            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+        <action class="com.microsoftopentechnologies.intellij.actions.SaveScriptAction" description="Upload this script to Windows Azure Mobile Service" id="SaveMobileServiceScript" text="Upload script">
+            <add-to-group anchor="last" group-id="ProjectViewPopupMenu"/>
         </action>
-        <action id="CreateMobileServiceTable" class="com.microsoftopentechnologies.intellij.actions.CreateTableAction"
-                text="Create table"
-                description="Create a table ">
-            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+        <action class="com.microsoftopentechnologies.intellij.actions.CreateTableAction" description="Create a table " id="CreateMobileServiceTable" text="Create table">
+            <add-to-group anchor="last" group-id="ProjectViewPopupMenu"/>
         </action>
 
-        <action id="CreateMobileServiceAPI" class="com.microsoftopentechnologies.intellij.actions.CreateAPIAction"
-                text="Create API"
-                description="Create a custom API">
-            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+        <action class="com.microsoftopentechnologies.intellij.actions.CreateAPIAction" description="Create a custom API" id="CreateMobileServiceAPI" text="Create API">
+            <add-to-group anchor="last" group-id="ProjectViewPopupMenu"/>
         </action>
-        <action id="CreateMobileServiceJob" class="com.microsoftopentechnologies.intellij.actions.CreateJobAction"
-                text="Create new Job"
-                description="Creates a new job, scheduled or on demand">
-            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+        <action class="com.microsoftopentechnologies.intellij.actions.CreateJobAction" description="Creates a new job, scheduled or on demand" id="CreateMobileServiceJob" text="Create new Job">
+            <add-to-group anchor="last" group-id="ProjectViewPopupMenu"/>
         </action>
 
-        <action id="SaveMobileServiceCustomAPI"
-                class="com.microsoftopentechnologies.intellij.actions.SaveCustomAPIAction"
-                text="Upload Custom API" description="Upload the Custom API's script">
-            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+        <action class="com.microsoftopentechnologies.intellij.actions.SaveCustomAPIAction" description="Upload the Custom API's script" id="SaveMobileServiceCustomAPI" text="Upload Custom API">
+            <add-to-group anchor="last" group-id="ProjectViewPopupMenu"/>
         </action>
-        <action id="DisassociateMobileService"
-                class="com.microsoftopentechnologies.intellij.actions.DisassociateServiceAction"
-                text="Disconnect service" description="Disconnect service from project">
-            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+        <action class="com.microsoftopentechnologies.intellij.actions.DisassociateServiceAction" description="Disconnect service from project" id="DisassociateMobileService" text="Disconnect service">
+            <add-to-group anchor="last" group-id="ProjectViewPopupMenu"/>
         </action>
 
-        <action id="MobileServiceRefresh" class="com.microsoftopentechnologies.intellij.actions.RefreshAction"
-                text="Refresh"
-                description="Refresh service info">
-            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+        <action class="com.microsoftopentechnologies.intellij.actions.RefreshAction" description="Refresh service info" id="MobileServiceRefresh" text="Refresh">
+            <add-to-group anchor="last" group-id="ProjectViewPopupMenu"/>
         </action>
-        <action id="EditMobileServiceCustomAPI"
-                class="com.microsoftopentechnologies.intellij.actions.EditCustomAPIAction"
-                text="Edit custom API" description="Edit the selected custom API">
-            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+        <action class="com.microsoftopentechnologies.intellij.actions.EditCustomAPIAction" description="Edit the selected custom API" id="EditMobileServiceCustomAPI" text="Edit custom API">
+            <add-to-group anchor="last" group-id="ProjectViewPopupMenu"/>
         </action>
-        <action id="EditMobileServiceTable" class="com.microsoftopentechnologies.intellij.actions.EditTableAction"
-                text="Edit Table"
-                description="Edits the selected table">
-            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+        <action class="com.microsoftopentechnologies.intellij.actions.EditTableAction" description="Edits the selected table" id="EditMobileServiceTable" text="Edit Table">
+            <add-to-group anchor="last" group-id="ProjectViewPopupMenu"/>
 
         </action>
 
-        <action id="SaveMobileServiceJob" class="com.microsoftopentechnologies.intellij.actions.SaveJobAction"
-                text="Upload Job Script"
-                description="Uploads the edited script of the job">
-            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+        <action class="com.microsoftopentechnologies.intellij.actions.SaveJobAction" description="Uploads the edited script of the job" id="SaveMobileServiceJob" text="Upload Job Script">
+            <add-to-group anchor="last" group-id="ProjectViewPopupMenu"/>
         </action>
-        <action id="EditMobileServiceJob" class="com.microsoftopentechnologies.intellij.actions.EditJobAction"
-                text="Edit Job"
-                description="Edits the scheduled job settings">
-            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+        <action class="com.microsoftopentechnologies.intellij.actions.EditJobAction" description="Edits the scheduled job settings" id="EditMobileServiceJob" text="Edit Job">
+            <add-to-group anchor="last" group-id="ProjectViewPopupMenu"/>
         </action>
-        <action id="ShowMobileServiceLog" class="com.microsoftopentechnologies.intellij.actions.ShowLogAction"
-                text="Show Log"
-                description="Show the log of the mobile service">
-            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+        <action class="com.microsoftopentechnologies.intellij.actions.ShowLogAction" description="Show the log of the mobile service" id="ShowMobileServiceLog" text="Show Log">
+            <add-to-group anchor="last" group-id="ProjectViewPopupMenu"/>
 
         </action>
 
-        <action id="Actions.RunInEmulatorAction"
-                class="com.microsoftopentechnologies.intellij.actions.RunInEmulatorAction" text="Run in Azure Emulator"
-                description="Run in Azure Emulator" icon="/icons/RunEmulatorIcon.png"/>
-        <action id="Actions.ResetEmulatorAction"
-                class="com.microsoftopentechnologies.intellij.actions.ResetEmulatorAction" text="Reset Azure Emulator"
-                description="Reset Azure Emulator" icon="/icons/ResetEmulatorIcon.png"/>
-        <action id="Actions.PackageAction" class="com.microsoftopentechnologies.intellij.actions.PackageAction"
-                text="Package for Azure"
-                description="Package for Azure" icon="/icons/small/cloudService.png"/>
-        <action id="Actions.DeployAction" class="com.microsoftopentechnologies.intellij.actions.DeployAction"
-                text="Publish to Azure"
-                description="Publish to Azure Cloud" icon="/icons/publish.png"/>
-        <action id="Actions.UnpublishAction" class="com.microsoftopentechnologies.intellij.actions.UnpublishAction"
-                text="Unpublish"
-                description="Unpublish" icon="/icons/unpublish.png"/>
-        <action id="Actions.BuildPackageAction"
-                class="com.microsoftopentechnologies.intellij.actions.BuildPackageAction"
-                text="Build Cloud Package for Azure"
-                description="Build Cloud Package for Azure" icon="/icons/BuildToCloudIcon.png"/>
-        <action id="Actions.RolePropertiesAction"
-                class="com.microsoftopentechnologies.intellij.actions.RolePropertiesAction" text="Role Properties"
-                description="Role Properties"/>
-        <action id="Actions.ModulePropertiesAction"
-                class="com.microsoftopentechnologies.intellij.actions.ModulePropertiesAction" text="Properties..."
-                description="Properties..." icon="/icons/small/cloudService.png"/>
+        <action class="com.microsoftopentechnologies.intellij.actions.RunInEmulatorAction" description="Run in Azure Emulator" icon="/icons/RunEmulatorIcon.png" id="Actions.RunInEmulatorAction" text="Run in Azure Emulator"/>
+        <action class="com.microsoftopentechnologies.intellij.actions.ResetEmulatorAction" description="Reset Azure Emulator" icon="/icons/ResetEmulatorIcon.png" id="Actions.ResetEmulatorAction" text="Reset Azure Emulator"/>
+        <action class="com.microsoftopentechnologies.intellij.actions.PackageAction" description="Package for Azure" icon="/icons/small/cloudService.png" id="Actions.PackageAction" text="Package for Azure"/>
+        <action class="com.microsoftopentechnologies.intellij.actions.DeployAction" description="Publish to Azure Cloud" icon="/icons/publish.png" id="Actions.DeployAction" text="Publish to Azure"/>
+        <action class="com.microsoftopentechnologies.intellij.actions.UnpublishAction" description="Unpublish" icon="/icons/unpublish.png" id="Actions.UnpublishAction" text="Unpublish"/>
+        <action class="com.microsoftopentechnologies.intellij.actions.BuildPackageAction" description="Build Cloud Package for Azure" icon="/icons/BuildToCloudIcon.png" id="Actions.BuildPackageAction" text="Build Cloud Package for Azure"/>
+        <action class="com.microsoftopentechnologies.intellij.actions.RolePropertiesAction" description="Role Properties" id="Actions.RolePropertiesAction" text="Role Properties"/>
+        <action class="com.microsoftopentechnologies.intellij.actions.ModulePropertiesAction" description="Properties..." icon="/icons/small/cloudService.png" id="Actions.ModulePropertiesAction" text="Properties..."/>
 
-        <group id="AzurePopupGroup" text="Azure" description="Azure" icon="/icons/small/windowsAzure.png" popup="true"
-               class="com.microsoftopentechnologies.intellij.actions.AzurePopupGroup">
+        <group class="com.microsoftopentechnologies.intellij.actions.AzurePopupGroup" description="Azure" icon="/icons/small/windowsAzure.png" id="AzurePopupGroup" popup="true" text="Azure">
             <reference ref="Actions.PackageAction"/>
             <separator/>
             <reference ref="Actions.DeployAction"/>
@@ -205,7 +154,7 @@ limitations under the License.
             <reference ref="Actions.ModulePropertiesAction"/>
         </group>
 
-        <group id="AzureToolbarGroup" text="Azure" description="Azure">
+        <group description="Azure" id="AzureToolbarGroup" text="Azure">
             <reference ref="Actions.RunInEmulatorAction"/>
             <reference ref="Actions.ResetEmulatorAction"/>
             <reference ref="Actions.BuildPackageAction"/>
