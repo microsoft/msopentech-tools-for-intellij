@@ -25,6 +25,7 @@ import com.microsoftopentechnologies.intellij.helpers.OpenSSLHelper;
 import com.microsoftopentechnologies.intellij.helpers.StringHelper;
 import com.microsoftopentechnologies.intellij.helpers.aadauth.AuthenticationContext;
 import com.microsoftopentechnologies.intellij.helpers.aadauth.AuthenticationResult;
+import com.microsoftopentechnologies.intellij.helpers.aadauth.PromptValue;
 import com.microsoftopentechnologies.intellij.model.Subscription;
 import org.apache.xerces.dom.DeferredElementImpl;
 import org.jetbrains.annotations.Nullable;
@@ -496,7 +497,8 @@ public class AzureRestAPIHelper {
                     settings.getClientId(),
                     settings.getRedirectUri(),
                     null,
-                    windowTitle);
+                    windowTitle,
+                    (isForSubscription) ? PromptValue.attemptNone : PromptValue.login);
             token = future.get();
 
             // save the token

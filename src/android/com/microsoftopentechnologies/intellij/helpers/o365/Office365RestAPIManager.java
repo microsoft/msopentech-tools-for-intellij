@@ -33,6 +33,7 @@ import com.microsoftopentechnologies.intellij.components.PluginSettings;
 import com.microsoftopentechnologies.intellij.helpers.StringHelper;
 import com.microsoftopentechnologies.intellij.helpers.aadauth.AuthenticationContext;
 import com.microsoftopentechnologies.intellij.helpers.aadauth.AuthenticationResult;
+import com.microsoftopentechnologies.intellij.helpers.aadauth.PromptValue;
 import com.microsoftopentechnologies.intellij.helpers.graph.PluginDependencyResolver;
 import com.microsoftopentechnologies.intellij.helpers.graph.ServicePermissionEntry;
 import com.microsoftopentechnologies.intellij.model.Office365Permission;
@@ -139,7 +140,8 @@ public class Office365RestAPIManager implements Office365Manager {
                     settings.getGraphApiUri(),
                     settings.getClientId(),
                     settings.getRedirectUri(),
-                    null);
+                    null,
+                    PromptValue.login);
             setAuthenticationToken(future.get());
         }
         finally {

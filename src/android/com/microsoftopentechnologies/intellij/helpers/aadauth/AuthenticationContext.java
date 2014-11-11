@@ -72,14 +72,16 @@ public class AuthenticationContext {
             final String resource,
             final String clientId,
             final String redirectUri,
-            final Project project) throws IOException {
+            final Project project,
+            final String promptValue) throws IOException {
         return acquireTokenInteractiveAsync(
                 tenantName,
                 resource,
                 clientId,
                 redirectUri,
                 project,
-                "Sign in to your Microsoft account");
+                "Sign in to your Microsoft account",
+                promptValue);
     }
 
     public ListenableFuture<AuthenticationResult> acquireTokenInteractiveAsync(
@@ -88,7 +90,8 @@ public class AuthenticationContext {
             final String clientId,
             final String redirectUri,
             final Project project,
-            final String windowTitle) throws IOException {
+            final String windowTitle,
+            final String promptValue) throws IOException {
 
         final SettableFuture<AuthenticationResult> future = SettableFuture.create();
 
@@ -99,7 +102,8 @@ public class AuthenticationContext {
                 clientId,
                 redirectUri,
                 project,
-                windowTitle);
+                windowTitle,
+                promptValue);
         Futures.addCallback(authCodeFuture, new FutureCallback<String>() {
             @Override
             public void onSuccess(String code) {
@@ -291,7 +295,8 @@ public class AuthenticationContext {
             final String clientId,
             final String redirectUri,
             final Project project,
-            final String windowTitle) throws IOException {
+            final String windowTitle,
+            final String promptValue) throws IOException {
 
         final SettableFuture<String> future = SettableFuture.create();
 
@@ -305,7 +310,7 @@ public class AuthenticationContext {
             params.put(OAuthParameter.responseType, OAuthResponseType.code);
             params.put(OAuthParameter.redirectUri, redirectUri);
             params.put(OAuthParameter.correlationId, correlationId);
-            params.put(OAuthParameter.prompt, PromptValue.login);
+            params.put(OAuthParameter.prompt, promptValue);
             params.put("site_id", "500879");
             params.put("display", "popup");
             String query = null;

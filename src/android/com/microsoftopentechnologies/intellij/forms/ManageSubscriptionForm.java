@@ -26,6 +26,7 @@ import com.microsoftopentechnologies.intellij.components.PluginSettings;
 import com.microsoftopentechnologies.intellij.helpers.*;
 import com.microsoftopentechnologies.intellij.helpers.aadauth.AuthenticationContext;
 import com.microsoftopentechnologies.intellij.helpers.aadauth.AuthenticationResult;
+import com.microsoftopentechnologies.intellij.helpers.aadauth.PromptValue;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureAuthenticationMode;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureManager;
@@ -183,7 +184,8 @@ public class ManageSubscriptionForm extends JDialog {
                             settings.getAzureServiceManagementUri(),
                             settings.getClientId(),
                             settings.getRedirectUri(),
-                            project), new FutureCallback<AuthenticationResult>() {
+                            project,
+                            PromptValue.login), new FutureCallback<AuthenticationResult>() {
                         @Override
                         public void onSuccess(AuthenticationResult authenticationResult) {
                             context.dispose();
