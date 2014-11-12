@@ -30,6 +30,7 @@ import com.intellij.openapi.ui.JBPopupMenu;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.openapi.wm.ex.ToolWindowEx;
+import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.treeStructure.Tree;
 import com.microsoftopentechnologies.intellij.forms.*;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
@@ -205,7 +206,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory {
             tree.setVisible(false);
             loading.setVisible(false);
 
-            toolWindowComponent.add(treePanel);
+            toolWindowComponent.add(new JBScrollPane(treePanel));
 
             loadTree(project, tree);
         }
