@@ -176,45 +176,48 @@ public class SummaryStep extends WizardStep<AddServiceWizardModel> {
                         progressIndicator.setFraction(steps / totalSteps);
                     }
 
-                    ApplicationManager.getApplication().invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                //scheduled a gradle sync project action from the android/gradle plugin
-                                final ProjectDataManager projectDataManager = ServiceManager.getService(ProjectDataManager.class);
-                                ExternalSystemUtil.refreshProject(myProject,
-                                        GradleConstants.SYSTEM_ID,
-                                        myProject.getBaseDir().getCanonicalPath() != null ? myProject.getBaseDir().getCanonicalPath() : myProject.getBaseDir().getPath(),
-                                        new ExternalProjectRefreshCallback() {
-                                            @Override
-                                            public void onSuccess(@Nullable final DataNode<ProjectData> externalProject) {
-                                                if (externalProject == null) {
-                                                    return;
-                                                }
-                                                ExternalSystemApiUtil.executeProjectChangeAction(true, new DisposeAwareProjectChange(myProject) {
-                                                    @Override
-                                                    public void execute() {
-                                                        ProjectRootManagerEx.getInstanceEx(myProject).mergeRootsChangesDuring(new Runnable() {
-                                                            @Override
-                                                            public void run() {
-                                                                projectDataManager.importData(externalProject.getKey(), Collections.singleton(externalProject), myProject, true);
-                                                            }
-                                                        });
+                    // just for Azure Services. Office 365 already triggered gradle sync - avoid conflict
+                    if (summaryStep.model.getService() != null || summaryStep.model.getHubName() != null) {
+                        ApplicationManager.getApplication().invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    //scheduled a gradle sync project action from the android/gradle plugin
+                                    final ProjectDataManager projectDataManager = ServiceManager.getService(ProjectDataManager.class);
+                                    ExternalSystemUtil.refreshProject(myProject,
+                                            GradleConstants.SYSTEM_ID,
+                                            myProject.getBaseDir().getCanonicalPath() != null ? myProject.getBaseDir().getCanonicalPath() : myProject.getBaseDir().getPath(),
+                                            new ExternalProjectRefreshCallback() {
+                                                @Override
+                                                public void onSuccess(@Nullable final DataNode<ProjectData> externalProject) {
+                                                    if (externalProject == null) {
+                                                        return;
                                                     }
-                                                });
-                                            }
+                                                    ExternalSystemApiUtil.executeProjectChangeAction(true, new DisposeAwareProjectChange(myProject) {
+                                                        @Override
+                                                        public void execute() {
+                                                            ProjectRootManagerEx.getInstanceEx(myProject).mergeRootsChangesDuring(new Runnable() {
+                                                                @Override
+                                                                public void run() {
+                                                                    projectDataManager.importData(externalProject.getKey(), Collections.singleton(externalProject), myProject, true);
+                                                                }
+                                                            });
+                                                        }
+                                                    });
+                                                }
 
-                                            @Override
-                                            public void onFailure(@NotNull String errorMessage, @Nullable String errorDetails) {
-                                            }
-                                        },
-                                        false,
-                                        ProgressExecutionMode.IN_BACKGROUND_ASYNC);
-                            } catch (Throwable ex) {
-                                UIHelper.showException("Error invoking Gradle build", ex);
+                                                @Override
+                                                public void onFailure(@NotNull String errorMessage, @Nullable String errorDetails) {
+                                                }
+                                            },
+                                            false,
+                                            ProgressExecutionMode.IN_BACKGROUND_ASYNC);
+                                } catch (Throwable ex) {
+                                    UIHelper.showException("Error invoking Gradle build", ex);
+                                }
                             }
-                        }
-                    }, ModalityState.NON_MODAL);
+                        }, ModalityState.NON_MODAL);
+                    }
                 } catch (Throwable ex) {
                     UIHelper.showException("Error setting up Microsoft services", ex);
                 }
