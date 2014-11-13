@@ -89,9 +89,9 @@ public class ${activityClass} extends Activity {
 </#if>
 <#if includeFileServices>
 
-   public ListenableFuture<List<SPList>> getMyFiles() {
+   public ListenableFuture<List<Item>> getMyFiles() {
         FileServicesClient client = new FileServicesClient();
-        return client.getfiles();
+        return client.getfiles().read();
     }
 </#if>
 <#if includeListServices>
