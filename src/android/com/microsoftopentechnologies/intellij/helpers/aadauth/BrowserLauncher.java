@@ -97,10 +97,19 @@ public class BrowserLauncher {
             }
         }
 
-        private void launch(File appJar) throws IOException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InterruptedException {
+        private void launch(File appJar) throws NoSuchMethodException, InterruptedException, IOException, IllegalAccessException, InvocationTargetException, ClassNotFoundException {
+            // launch the browser in-proc on Windows/Linux and out-proc on Macs
             String osName = System.getProperty("os.name").toLowerCase();
             boolean isMac = osName.contains("mac");
 
+            if(isMac) {
+                launchExternalProcess(appJar, isMac);
+            } else {
+                launchInvoke(appJar);
+            }
+        }
+
+        private void launchExternalProcess(File appJar, boolean isMac) throws IOException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InterruptedException {
             List<String> args = new ArrayList<String>();
             args.add("java");
             if(isMac) {
