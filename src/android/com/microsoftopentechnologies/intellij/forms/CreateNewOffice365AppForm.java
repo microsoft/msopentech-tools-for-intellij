@@ -13,7 +13,6 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-
 package com.microsoftopentechnologies.intellij.forms;
 
 import com.google.common.collect.Lists;
@@ -151,15 +150,15 @@ public class CreateNewOffice365AppForm extends JDialog {
                                         public void run() {
                                             form.setCursor(Cursor.getDefaultCursor());
                                             UIHelper.showException(
-                                                    "An error ocurred while registering the application.",
-                                                    throwable);
+                                                    "An error occurred while registering the application.",
+                                                    throwable, "Error registering the application");
                                         }
                                     }, ModalityState.any());
                                 }
                             });
                         } catch (Throwable e) {
                             form.setCursor(Cursor.getDefaultCursor());
-                            UIHelper.showException("Error creating the service: ", e);
+                            UIHelper.showException("An error occurred while creating the service.", e, "Error creating the service");
                         }
                     }
                 });

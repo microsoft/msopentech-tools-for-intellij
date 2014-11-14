@@ -13,7 +13,6 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-
 package com.microsoftopentechnologies.intellij.forms;
 
 import javax.swing.*;
@@ -28,17 +27,11 @@ public class ErrorMessageForm extends JDialog {
     private JCheckBox showAdvancedInfoCheckBox;
     private JTextArea detailTextArea;
     private JScrollPane detailScroll;
-    private JPanel errorMessagePanel;
-    private JPanel detailPanel;
-    private JPanel errorPanel;
-    private String details;
 
-    public ErrorMessageForm() {
-        final JDialog form = this;
-
+    public ErrorMessageForm(String title) {
         setContentPane(contentPane);
         setModal(true);
-        setTitle("Error");
+        setTitle(title);
         getRootPane().setDefaultButton(buttonOK);
 
         buttonOK.addActionListener(new ActionListener() {
@@ -54,14 +47,13 @@ public class ErrorMessageForm extends JDialog {
         });
     }
 
-    public void showErrorMessajeForm(String errorMessage, String details) {
-        lblError.setText("<html><p>" + (errorMessage.length() > 260 ? errorMessage.substring(0,260) + "..." : errorMessage) + "</p></html>");
+    public void showErrorMessageForm(String errorMessage, String details) {
+        lblError.setText("<html><p>" + (errorMessage.length() > 260 ? errorMessage.substring(0, 260) + "..." : errorMessage) + "</p></html>");
         detailTextArea.setText(details);
         this.setResizable(false);
     }
 
     private void setDetailsVisible(boolean visible) {
-
         detailScroll.setVisible(visible);
 
         if (visible) {
@@ -70,20 +62,19 @@ public class ErrorMessageForm extends JDialog {
             this.detailScroll.setPreferredSize(dimension);
             this.detailScroll.setMaximumSize(dimension);
 
-            this.setSize(this.getSize().width, this.getSize().height + 200);
+            this.setSize(this.getSize().width, this.getSize().height + 220);
         } else {
 
             Dimension dimension = new Dimension(detailScroll.getMinimumSize().width, detailScroll.getMinimumSize().height - 200);
             this.detailScroll.setMinimumSize(dimension);
             this.detailScroll.setPreferredSize(dimension);
             this.detailScroll.setMaximumSize(dimension);
-            this.setSize(this.getSize().width, this.getSize().height - 200);
+            this.setSize(this.getSize().width, this.getSize().height - 220);
         }
 
         detailScroll.repaint();
 
         JViewport jv = detailScroll.getViewport();
-        jv.setViewPosition(new Point(0,0));
+        jv.setViewPosition(new Point(0, 0));
     }
-
 }
