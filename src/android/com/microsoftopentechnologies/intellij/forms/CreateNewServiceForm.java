@@ -13,9 +13,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-
 package com.microsoftopentechnologies.intellij.forms;
-
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
@@ -39,7 +37,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
-
 
 public class CreateNewServiceForm extends JDialog {
 
@@ -133,7 +130,7 @@ public class CreateNewServiceForm extends JDialog {
                 } catch (Throwable e) {
 
                     form.setCursor(Cursor.getDefaultCursor());
-                    UIHelper.showException("Error: ", e);
+                    UIHelper.showException("Error retrieving the subscription list: ", e, "Error retrieving the subscription list");
                 }
             }
         });
@@ -227,12 +224,10 @@ public class CreateNewServiceForm extends JDialog {
 
                             form.setVisible(false);
                             form.dispose();
-
-
                         } catch (Throwable e) {
                             form.setCursor(Cursor.getDefaultCursor());
 
-                            UIHelper.showException("Error creating the service: ", e);
+                            UIHelper.showException("An error occurred while creating the service.", e, "Error creating the service");
                         }
                     }
                 });
@@ -270,7 +265,7 @@ public class CreateNewServiceForm extends JDialog {
                         }
                     }, ModalityState.any());
                 } catch (AzureCmdException e) {
-                    UIHelper.showException("Error: ", e);
+                    UIHelper.showException("Error retrieving the location list: ", e, "Error retrieving the location list");
                 }
             }
         });
@@ -314,7 +309,7 @@ public class CreateNewServiceForm extends JDialog {
                         }
                     }, ModalityState.any());
                 } catch (Exception e) {
-                    UIHelper.showException("Error: ", e);
+                    UIHelper.showException("Error retrieving the server and database list: ", e, "Error retrieving the server and database list");
                 }
             }
         });
