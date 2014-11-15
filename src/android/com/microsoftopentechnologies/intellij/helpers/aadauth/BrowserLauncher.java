@@ -98,11 +98,26 @@ public class BrowserLauncher {
         }
 
         private void launch(File appJar) throws NoSuchMethodException, InterruptedException, IOException, IllegalAccessException, InvocationTargetException, ClassNotFoundException {
-            // launch the browser in-proc on Windows/Linux and out-proc on Macs
             String osName = System.getProperty("os.name").toLowerCase();
             boolean isMac = osName.contains("mac");
+            boolean isLinux = osName.contains("linux");
 
-            if(isMac) {
+            // Launch the browser in-proc on Windows and out-proc on Mac and Linux.
+            // We do this because:
+            //  [1] On OSX, in order for SWT to work the -XstartOnFirstThread option must
+            //      have been passed to the VM which unfortunately is not passed to IJ/AS
+            //      when it is invoked. So we launch a new instance of the JVM with this
+            //      option set.
+            //  [2] On Linux, right now, launching SWT in-proc seems to cause intermittent
+            //      crashes. So till we know why that's happening (will be fixed in a future
+            //      SWT release perhaps?) we'll launch out-proc which appears to work well.
+            //
+            // You might wonder why we don't just launch out-proc on Windows as well. Turns
+            // out, caching of AD auth session cookies are per-process. This means that
+            // subsequent runs of the auth flow in the browser in the same process will
+            // cause it to reuse session cookies which saves the user from having to enter
+            // credentials over and over again.
+            if(isMac || isLinux) {
                 launchExternalProcess(appJar, isMac);
             } else {
                 launchInvoke(appJar);
@@ -111,7 +126,12 @@ public class BrowserLauncher {
 
         private void launchExternalProcess(File appJar, boolean isMac) throws IOException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InterruptedException {
             List<String> args = new ArrayList<String>();
-            args.add("java");
+
+            // fetch path to the currently running JVM
+            File javaHome = new File(System.getProperty("java.home"));
+            File javaExecutable = new File(javaHome, "bin" + File.separator + "java");
+            args.add(javaExecutable.getAbsolutePath());
+
             if(isMac) {
                 // swt on mac requires this argument in order for the swt dispatch
                 // loop to be running on the UI thread
