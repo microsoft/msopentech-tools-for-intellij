@@ -204,7 +204,7 @@ public class AndroidStudioHelper {
         String[] env = null;
 
         String tmpDir = getTempLocation();
-        copyResourcesRecursively(new File(tmpDir));
+//        copyResourcesRecursively(new File(tmpDir));
 
         tmpDir = tmpDir + "MobileServiceTemplate" + File.separator;
 
@@ -221,8 +221,8 @@ public class AndroidStudioHelper {
             } catch (IOException ex) {
                 PrintWriter printWriter = new PrintWriter(tmpDir + "\\script.bat");
                 printWriter.println("@echo off");
-                printWriter.println("del \"" + templatePath + mobileServicesTemplateName + "\" /Q /S");
-                printWriter.println("del \"" + templatePath + officeTemplateName + "\" /Q /S");
+                printWriter.println("rd \"" + templatePath + mobileServicesTemplateName + "\" /Q /S");
+                printWriter.println("rd \"" + templatePath + officeTemplateName + "\" /Q /S");
                 printWriter.flush();
                 printWriter.close();
 
