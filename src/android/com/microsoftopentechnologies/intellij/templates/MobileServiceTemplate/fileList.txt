@@ -1,0 +1,15 @@
+elevate.exe
+AzureServicesActivity/globals.xml.ftl
+AzureServicesActivity/recipe.xml.ftl
+AzureServicesActivity/template.xml
+AzureServicesActivity/template_azure_services_activity.png
+AzureServicesActivity/root/AndroidManifest.xml.ftl
+AzureServicesActivity/root/res/values/strings.xml.ftl
+AzureServicesActivity/root/src/app_package/AzureServiceActivity.java.ftl
+Office365Activity/globals.xml.ftl
+Office365Activity/recipe.xml.ftl
+Office365Activity/template.xml
+Office365Activity/template_o365_services_activity.png
+Office365Activity/root/AndroidManifest.xml.ftl
+Office365Activity/root/res/values/strings.xml.ftl
+Office365Activity/root/src/app_package/Office365Activity.java.ftl

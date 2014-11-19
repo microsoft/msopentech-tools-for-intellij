@@ -58,7 +58,6 @@ public class CertificatesPanel extends BaseConfigurable implements AzureAbstract
     private WindowsAzureRole waRole;
     private Map<String, WindowsAzureCertificate> mapCert;
     public String certSelected = "";
-    private boolean modified;
 
     public CertificatesPanel(Module module, WindowsAzureProjectManager waProjManager, WindowsAzureRole waRole) {
         this.module = module;
@@ -252,7 +251,7 @@ public class CertificatesPanel extends BaseConfigurable implements AzureAbstract
         CertificateDialog dialog = new CertificateDialog(module, mapCert, waRole);
         dialog.show();
         if (dialog.isOK()) {
-            modified = true;
+            setModified(true);
             String name = dialog.getNewlyAddedCert();
             tblCertificates.getListTableModel().addRow(mapCert.get(name));
             List<WindowsAzureCertificate> items = tblCertificates.getItems();
@@ -282,7 +281,7 @@ public class CertificatesPanel extends BaseConfigurable implements AzureAbstract
                 if (choice == Messages.OK) {
                     delCert.delete();
                     certSelected = "";
-                    modified = true;
+                    setModified(true);
                     tblCertificates.getListTableModel().removeRow(tblCertificates.getSelectedRow());
                 }
             }

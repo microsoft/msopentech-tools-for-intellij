@@ -53,7 +53,7 @@ import java.util.zip.ZipFile;
 public class ServiceCodeReferenceHelper {
 
     private static final String AZURESDK_URL = "http://zumo.blob.core.windows.net/sdk/azuresdk-android-1.1.5.zip";
-    private static final String TEMPLATES_URL = "/com/microsoftopentechnologies/intellij/templates/";
+    static final String TEMPLATES_URL = "/com/microsoftopentechnologies/intellij/templates/";
 
     private static final String NOTIFICATIONHELPER_PATH = "notifications/";
 
@@ -869,7 +869,7 @@ public class ServiceCodeReferenceHelper {
         return buffer.toByteArray();
     }
 
-    private static String getString(InputStream is) {
+    public static String getString(InputStream is) {
         //Using the trick described in this link to read whole streams in one operation:
         //http://stackoverflow.com/a/5445161
         Scanner s = new Scanner(is).useDelimiter("\\A");

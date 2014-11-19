@@ -13,13 +13,15 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-
 package com.microsoftopentechnologies.intellij.forms;
-
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
-import com.microsoftopentechnologies.intellij.helpers.*;
+import com.microsoftopentechnologies.intellij.helpers.LinkListener;
+import com.microsoftopentechnologies.intellij.helpers.UIHelper;
+import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
+import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIHelper;
+import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIManager;
 import com.microsoftopentechnologies.intellij.model.SqlDb;
 import com.microsoftopentechnologies.intellij.model.SqlServer;
 import com.microsoftopentechnologies.intellij.model.Subscription;
@@ -35,7 +37,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
-
 
 public class CreateNewServiceForm extends JDialog {
 
@@ -129,7 +130,7 @@ public class CreateNewServiceForm extends JDialog {
                 } catch (Throwable e) {
 
                     form.setCursor(Cursor.getDefaultCursor());
-                    UIHelper.showException("Error: ", e);
+                    UIHelper.showException("Error retrieving the subscription list: ", e, "Error retrieving the subscription list");
                 }
             }
         });
@@ -154,22 +155,25 @@ public class CreateNewServiceForm extends JDialog {
 
                             String error = "";
 
-                            if (name.isEmpty())
+                            if (name.isEmpty()) {
                                 error += "The service name must not be empty \n";
+                            }
 
-
-                            if (region.isEmpty())
+                            if (region.isEmpty()) {
                                 error += "A region must be selected \n";
+                            }
 
-                            if (admin.isEmpty())
+                            if (admin.isEmpty()) {
                                 error += "User name must not be empty \n";
+                            }
 
-                            if (pass.isEmpty())
+                            if (pass.isEmpty()) {
                                 error += "Password must not be empty \n";
+                            }
 
-                            if (server != null && db == null)
+                            if (server != null && db == null) {
                                 error += "Database must not be empty \n";
-
+                            }
 
                             if (!error.isEmpty()) {
                                 JOptionPane.showMessageDialog(form, error, "Error creating the service", JOptionPane.ERROR_MESSAGE);
@@ -183,7 +187,7 @@ public class CreateNewServiceForm extends JDialog {
                                 return;
                             }
 
-                            if(server == null) {
+                            if (server == null) {
                                 if (!pass.matches("^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$") || pass.contains(admin)) {
                                     JOptionPane.showMessageDialog(form, "Invalid password. The password must: \n" +
                                             " - Not contain all login name\n" +
@@ -203,10 +207,7 @@ public class CreateNewServiceForm extends JDialog {
                             }
 
 
-
-
                             form.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-
 
 
                             if (AzureRestAPIHelper.existsMobileService(name)) {
@@ -223,19 +224,16 @@ public class CreateNewServiceForm extends JDialog {
 
                             form.setVisible(false);
                             form.dispose();
-
-
                         } catch (Throwable e) {
                             form.setCursor(Cursor.getDefaultCursor());
 
-                            UIHelper.showException("Error creating the service: ", e);
+                            UIHelper.showException("An error occurred while creating the service.", e, "Error creating the service");
                         }
                     }
                 });
             }
         });
     }
-
 
     private void updateVisibleFields(Object selectedServer) {
         boolean isExistingDb = selectedServer instanceof SqlDb;
@@ -267,7 +265,7 @@ public class CreateNewServiceForm extends JDialog {
                         }
                     }, ModalityState.any());
                 } catch (AzureCmdException e) {
-                    UIHelper.showException("Error: ", e);
+                    UIHelper.showException("Error retrieving the location list: ", e, "Error retrieving the location list");
                 }
             }
         });
@@ -311,7 +309,7 @@ public class CreateNewServiceForm extends JDialog {
                         }
                     }, ModalityState.any());
                 } catch (Exception e) {
-                    UIHelper.showException("Error: ", e);
+                    UIHelper.showException("Error retrieving the server and database list: ", e, "Error retrieving the server and database list");
                 }
             }
         });

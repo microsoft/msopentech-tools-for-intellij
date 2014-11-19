@@ -13,7 +13,6 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-
 package com.microsoftopentechnologies.intellij.helpers;
 
 import com.intellij.ide.util.treeView.NodeRenderer;
@@ -28,6 +27,10 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoftopentechnologies.intellij.forms.ErrorMessageForm;
 import com.microsoftopentechnologies.intellij.forms.ImportSubscriptionForm;
+import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
+import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIHelper;
+import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIManager;
+import com.microsoftopentechnologies.intellij.helpers.azure.AzureTreeLoader;
 import com.microsoftopentechnologies.intellij.model.*;
 import org.jetbrains.annotations.NotNull;
 
@@ -54,26 +57,30 @@ public class UIHelper {
     public static void packAndCenterJDialog(JDialog form) {
         form.pack();
         form.setLocation(
-                (Toolkit.getDefaultToolkit().getScreenSize().width)/2 - form.getWidth()/2,
-                (Toolkit.getDefaultToolkit().getScreenSize().height)/2 - form.getHeight()/2);
+                (Toolkit.getDefaultToolkit().getScreenSize().width) / 2 - form.getWidth() / 2,
+                (Toolkit.getDefaultToolkit().getScreenSize().height) / 2 - form.getHeight() / 2);
     }
 
     public static void showException(final String message, final Throwable ex) {
+        showException(message, ex, "Error");
+    }
+
+    public static void showException(final String message, final Throwable ex, final String title) {
         ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
             public void run() {
                 String headerMessage = message + " ";
                 String details = "";
 
-                if(ex != null) {
+                if (ex != null) {
                     StringWriter sw = new StringWriter();
                     ex.printStackTrace(new PrintWriter(sw));
                     String stackTrace = sw.toString();
 
-                    if(ex instanceof AzureCmdException) {
+                    if (ex instanceof AzureCmdException) {
                         String errorLog = ((AzureCmdException) ex).getErrorLog();
 
-                        if(errorLog == null) {
+                        if (errorLog == null) {
                             errorLog = stackTrace;
                         } else {
                             //Not showing error if no account info found
@@ -90,8 +97,8 @@ public class UIHelper {
                                 return;
                             }
                         }
-                        details= errorLog;
 
+                        details = errorLog;
                     } else {
                         details = stackTrace;
                         String exMessage = (ex.getLocalizedMessage() == null || ex.getLocalizedMessage().isEmpty()) ? ex.getMessage() : ex.getLocalizedMessage();
@@ -99,10 +106,10 @@ public class UIHelper {
                     }
                 }
 
-                ErrorMessageForm em = new ErrorMessageForm();
+                ErrorMessageForm em = new ErrorMessageForm(title);
                 em.setCursor(Cursor.getDefaultCursor());
                 UIHelper.packAndCenterJDialog(em);
-                em.showErrorMessajeForm(headerMessage, details);
+                em.showErrorMessageForm(headerMessage, details);
                 em.setVisible(true);
             }
         });
@@ -134,18 +141,18 @@ public class UIHelper {
                 super.customizeCellRenderer(jTree, value, selected,
                         expanded, isLeaf, row, focused);
 
-                if(value instanceof DefaultMutableTreeNode) {
+                if (value instanceof DefaultMutableTreeNode) {
                     Object data = ((DefaultMutableTreeNode) value).getUserObject();
 
-                    if(data instanceof Table){
+                    if (data instanceof Table) {
                         setIcon(tableImg);
-                    } else if(data instanceof Script){
+                    } else if (data instanceof Script) {
                         setIcon(scriptImg);
-                    } else if(data instanceof Service){
+                    } else if (data instanceof Service) {
                         setIcon(serviceImg);
-                    } else if(data instanceof CustomAPI){
+                    } else if (data instanceof CustomAPI) {
                         setIcon(customAPIImg);
-                    } else if(data instanceof Job){
+                    } else if (data instanceof Job) {
                         setIcon(jobImg);
                     }
                 }
@@ -154,19 +161,18 @@ public class UIHelper {
     }
 
     public static ImageIcon loadIcon(String name) {
-        java.net.URL url = UIHelper.class.getResource("/com/microsoftopentechnologies/intellij/icons/" +  name);
+        java.net.URL url = UIHelper.class.getResource("/com/microsoftopentechnologies/intellij/icons/" + name);
         return new ImageIcon(url);
     }
 
-    public static void treeClick(final JTree tree, final DefaultMutableTreeNode selectedNode, final UUID subscriptionId, final String serviceName, final Project mProject)
-    {
+    public static void treeClick(final JTree tree, final DefaultMutableTreeNode selectedNode, final UUID subscriptionId, final String serviceName, final Project mProject) {
 
-        if(selectedNode.getChildCount() == 0 && selectedNode.getUserObject() instanceof MobileServiceTreeItem){
+        if (selectedNode.getChildCount() == 0 && selectedNode.getUserObject() instanceof MobileServiceTreeItem) {
 
             //if children not loaded yet or last leaf
-            final MobileServiceTreeItem selectedObject =  (MobileServiceTreeItem) selectedNode.getUserObject();
+            final MobileServiceTreeItem selectedObject = (MobileServiceTreeItem) selectedNode.getUserObject();
 
-            if(!selectedObject.isLoading()) {
+            if (!selectedObject.isLoading()) {
                 selectedObject.setLoading(true);
                 DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
                 model.reload(selectedNode);
@@ -201,8 +207,7 @@ public class UIHelper {
                                     }
                                 });
                             }
-                        }
-                        else if (selectedObject instanceof Table)
+                        } else if (selectedObject instanceof Table)
                             atl.tableLoader((Table) selectedObject, selectedNode);
                         else if (selectedObject instanceof MobileServiceScriptTreeItem)
                             atl.scriptLoader((MobileServiceScriptTreeItem) selectedObject, selectedNode);
@@ -216,7 +221,7 @@ public class UIHelper {
                             }
                         });
 
-                }
+                    }
                 });
             }
         }
@@ -224,12 +229,12 @@ public class UIHelper {
 
     public static void saveScript(Project project, final DefaultMutableTreeNode selectedNode, final Script script, final String serviceName, final String subscriptionId) throws AzureCmdException {
         VirtualFile editorFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(new File(script.getLocalFilePath(serviceName)));
-        if(editorFile != null) {
+        if (editorFile != null) {
             FileEditor[] fe = FileEditorManager.getInstance(project).getAllEditors(editorFile);
 
-            if(fe.length > 0 && fe[0].isModified()) {
+            if (fe.length > 0 && fe[0].isModified()) {
                 int i = JOptionPane.showConfirmDialog(null, "The file is modified. Do you want to save pending changes?", "Upload Script", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE);
-                switch(i) {
+                switch (i) {
                     case JOptionPane.YES_OPTION:
                         ApplicationManager.getApplication().saveAll();
                         break;
@@ -239,7 +244,7 @@ public class UIHelper {
                 }
             }
 
-            ProgressManager.getInstance().run(new Task.Backgroundable(project, "Uploading table script", false){
+            ProgressManager.getInstance().run(new Task.Backgroundable(project, "Uploading table script", false) {
                 @Override
                 public void run(@NotNull ProgressIndicator progressIndicator) {
                     try {
@@ -249,7 +254,7 @@ public class UIHelper {
                         ApplicationManager.getApplication().invokeLater(new Runnable() {
                             @Override
                             public void run() {
-                                if(script.getSelfLink() == null)
+                                if (script.getSelfLink() == null)
                                     script.setSelfLink("");
                                 selectedNode.setUserObject(script);
                             }
@@ -266,12 +271,12 @@ public class UIHelper {
 
     public static void saveCustomAPI(Project project, final CustomAPI customAPI, final String serviceName, final String subscriptionId) throws AzureCmdException {
         VirtualFile editorFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(new File(customAPI.getLocalFilePath(serviceName)));
-        if(editorFile != null) {
+        if (editorFile != null) {
             FileEditor[] fe = FileEditorManager.getInstance(project).getAllEditors(editorFile);
 
-            if(fe.length > 0 && fe[0].isModified()) {
+            if (fe.length > 0 && fe[0].isModified()) {
                 int i = JOptionPane.showConfirmDialog(null, "The file is modified. Do you want to save pending changes?", "Upload Script", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE);
-                switch(i) {
+                switch (i) {
                     case JOptionPane.YES_OPTION:
                         ApplicationManager.getApplication().saveAll();
                         break;
@@ -281,7 +286,7 @@ public class UIHelper {
                 }
             }
 
-            ProgressManager.getInstance().run(new Task.Backgroundable(project, "Uploading custom api script", false){
+            ProgressManager.getInstance().run(new Task.Backgroundable(project, "Uploading custom api script", false) {
                 @Override
                 public void run(@NotNull ProgressIndicator progressIndicator) {
                     try {
@@ -297,12 +302,12 @@ public class UIHelper {
 
     public static void saveJob(Project project, final Job job, final String serviceName, final String subscriptionId) throws AzureCmdException {
         VirtualFile editorFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(new File(job.getLocalFilePath(serviceName)));
-        if(editorFile != null) {
+        if (editorFile != null) {
             FileEditor[] fe = FileEditorManager.getInstance(project).getAllEditors(editorFile);
 
-            if(fe.length > 0 && fe[0].isModified()) {
+            if (fe.length > 0 && fe[0].isModified()) {
                 int i = JOptionPane.showConfirmDialog(null, "The file is modified. Do you want to save pending changes?", "Upload Script", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE);
-                switch(i) {
+                switch (i) {
                     case JOptionPane.YES_OPTION:
                         ApplicationManager.getApplication().saveAll();
                         break;
@@ -312,7 +317,7 @@ public class UIHelper {
                 }
             }
 
-            ProgressManager.getInstance().run(new Task.Backgroundable(project, "Uploading job script", false){
+            ProgressManager.getInstance().run(new Task.Backgroundable(project, "Uploading job script", false) {
                 @Override
                 public void run(@NotNull ProgressIndicator progressIndicator) {
                     try {

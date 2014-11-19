@@ -30,13 +30,13 @@ import com.intellij.openapi.ui.JBPopupMenu;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.openapi.wm.ex.ToolWindowEx;
+import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.treeStructure.Tree;
 import com.microsoftopentechnologies.intellij.forms.*;
-import com.microsoftopentechnologies.intellij.helpers.AzureCmdException;
-import com.microsoftopentechnologies.intellij.helpers.AzureRestAPIManager;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
+import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
+import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIManager;
 import com.microsoftopentechnologies.intellij.model.*;
-import com.sun.deploy.panel.JavaPanel;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -69,36 +69,37 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory {
 
         PropertiesComponent pc = PropertiesComponent.getInstance(project);
         final boolean enabled = Boolean.parseBoolean(pc.getValue("pluginenabled"));
-        if(enabled) {
+        if (enabled) {
 
             final Tree tree = new Tree();
 
             tree.addMouseListener(new MouseListener() {
                 @Override
-                public void mouseClicked(MouseEvent mouseEvent) {}
+                public void mouseClicked(MouseEvent mouseEvent) {
+                }
 
                 @Override
                 public void mousePressed(MouseEvent mouseEvent) {
                     int selRow = tree.getRowForLocation(mouseEvent.getX(), mouseEvent.getY());
                     TreePath selPath = tree.getPathForLocation(mouseEvent.getX(), mouseEvent.getY());
 
-                    if(selPath != null) {
+                    if (selPath != null) {
                         if (selRow != -1 && SwingUtilities.isLeftMouseButton(mouseEvent)) {
                             DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) selPath.getLastPathComponent();
 
-                            if(selectedNode != null) {
+                            if (selectedNode != null) {
                                 loadServiceTree(project, tree, selectedNode);
                             }
 
                         }
 
-                        if(SwingUtilities.isRightMouseButton(mouseEvent) || mouseEvent.isPopupTrigger()) {
+                        if (SwingUtilities.isRightMouseButton(mouseEvent) || mouseEvent.isPopupTrigger()) {
                             if (selRow != -1) {
                                 DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) selPath.getLastPathComponent();
 
                                 if (selectedNode != null) {
 
-                                    if(selectedNode.getUserObject() instanceof Subscription) {
+                                    if (selectedNode.getUserObject() instanceof Subscription) {
 
                                         JBPopupMenu menu = new JBPopupMenu();
                                         JMenuItem mi = new JMenuItem("Create Service");
@@ -127,12 +128,11 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory {
                                         menu.add(mi);
 
                                         menu.show(mouseEvent.getComponent(), mouseEvent.getX(), mouseEvent.getY());
-                                    }
-                                    else if(selectedNode.getUserObject() instanceof MobileServiceTreeItem) {
-                                        MobileServiceTreeItem selectedObject =  (MobileServiceTreeItem) selectedNode.getUserObject();
+                                    } else if (selectedNode.getUserObject() instanceof MobileServiceTreeItem) {
+                                        MobileServiceTreeItem selectedObject = (MobileServiceTreeItem) selectedNode.getUserObject();
 
                                         JBPopupMenu menu = new JBPopupMenu();
-                                        for(JBMenuItem mi : getMenuItems(project, selectedObject, selectedNode, tree)) {
+                                        for (JBMenuItem mi : getMenuItems(project, selectedObject, selectedNode, tree)) {
                                             mi.setIconTextGap(16);
                                             menu.add(mi);
                                         }
@@ -147,37 +147,42 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory {
                 }
 
                 @Override
-                public void mouseReleased(MouseEvent mouseEvent) {}
+                public void mouseReleased(MouseEvent mouseEvent) {
+                }
+
                 @Override
-                public void mouseEntered(MouseEvent mouseEvent) {}
+                public void mouseEntered(MouseEvent mouseEvent) {
+                }
+
                 @Override
-                public void mouseExited(MouseEvent mouseEvent) {}
+                public void mouseExited(MouseEvent mouseEvent) {
+                }
             });
 
             tree.setCellRenderer(UIHelper.getTreeNodeRenderer());
             tree.setRootVisible(false);
 
-             if(toolWindow instanceof ToolWindowEx) {
-                 ToolWindowEx toolWindowEx = (ToolWindowEx) toolWindow;
+            if (toolWindow instanceof ToolWindowEx) {
+                ToolWindowEx toolWindowEx = (ToolWindowEx) toolWindow;
 
-                 toolWindowEx.setTitleActions(
-                     new AnAction("Refresh", "Refresh Service List", UIHelper.loadIcon("refresh.png")) {
-                         @Override
-                         public void actionPerformed(AnActionEvent event) {
-                             loadTree(project, tree);
-                         }
-                     },
-                     new AnAction("Manage Subscriptions", "Manage Subscriptions", AllIcons.Ide.Link) {
-                         @Override
-                         public void actionPerformed(AnActionEvent anActionEvent) {
-                             ManageSubscriptionForm form = new ManageSubscriptionForm(anActionEvent.getProject());
-                             UIHelper.packAndCenterJDialog(form);
-                             form.setVisible(true);
-                             loadTree(project, tree);
-                         }
-                     });
+                toolWindowEx.setTitleActions(
+                        new AnAction("Refresh", "Refresh Service List", UIHelper.loadIcon("refresh.png")) {
+                            @Override
+                            public void actionPerformed(AnActionEvent event) {
+                                loadTree(project, tree);
+                            }
+                        },
+                        new AnAction("Manage Subscriptions", "Manage Subscriptions", AllIcons.Ide.Link) {
+                            @Override
+                            public void actionPerformed(AnActionEvent anActionEvent) {
+                                ManageSubscriptionForm form = new ManageSubscriptionForm(anActionEvent.getProject());
+                                UIHelper.packAndCenterJDialog(form);
+                                form.setVisible(true);
+                                loadTree(project, tree);
+                            }
+                        });
 
-             }
+            }
 
             GridBagConstraints c = new GridBagConstraints();
             c.gridx = 0;
@@ -187,21 +192,21 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory {
             c.fill = GridBagConstraints.BOTH;
             c.anchor = GridBagConstraints.NORTHWEST;
 
-            treePanel.add(tree,c);
+            treePanel.add(tree, c);
 
             c = new GridBagConstraints();
             c.gridx = 0;
             c.gridy = 1;
             c.weightx = 0;
             c.weighty = 0;
-            c.fill =  GridBagConstraints.BOTH;
+            c.fill = GridBagConstraints.BOTH;
             c.anchor = GridBagConstraints.CENTER;
-            treePanel.add(loading,c);
+            treePanel.add(loading, c);
 
             tree.setVisible(false);
             loading.setVisible(false);
 
-            toolWindowComponent.add(treePanel);
+            toolWindowComponent.add(new JBScrollPane(treePanel));
 
             loadTree(project, tree);
         }
@@ -210,7 +215,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory {
     private void loadServiceTree(Project project, JTree tree, DefaultMutableTreeNode selectedNode) {
         Object[] userObjectPath = selectedNode.getUserObjectPath();
 
-        if(userObjectPath.length > 2) {
+        if (userObjectPath.length > 2) {
             Subscription subscription = (Subscription) userObjectPath[1];
             Service service = (Service) userObjectPath[2];
 
@@ -219,11 +224,10 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory {
     }
 
 
-
     private void loadTree(Project project, final JTree tree) {
         final ServerExplorerToolWindowFactory toolWindowFactory = this;
 
-        if(isRefreshEnabled) {
+        if (isRefreshEnabled) {
             toolWindowFactory.isRefreshEnabled = false;
 
             final DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
@@ -243,7 +247,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory {
                         final ArrayList<Subscription> subscriptionList = AzureRestAPIManager.getManager().getSubscriptionList();
                         final HashMap<String, List<Service>> services = new HashMap<String, List<Service>>();
 
-                        if(subscriptionList == null) {
+                        if (subscriptionList == null) {
                             toolWindowFactory.isRefreshEnabled = true;
 
                             ApplicationManager.getApplication().invokeLater(new Runnable() {
@@ -301,7 +305,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory {
         final String serviceName = service.getName();
         final String subscriptionId = subscription.getId().toString();
 
-        if(selectedItem instanceof Service) {
+        if (selectedItem instanceof Service) {
             JBMenuItem newTableMenuItem = new JBMenuItem("Create table");
             JBMenuItem newAPIMenuItem = new JBMenuItem("Create API");
             JBMenuItem newJobMenuItem = new JBMenuItem("Create new job");
@@ -401,15 +405,15 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory {
             });
 
             return new JBMenuItem[]{
-                newTableMenuItem,
-                newAPIMenuItem,
-                newJobMenuItem,
-                showLog,
-                refresh
+                    newTableMenuItem,
+                    newAPIMenuItem,
+                    newJobMenuItem,
+                    showLog,
+                    refresh
             };
         }
 
-        if(selectedItem instanceof Table) {
+        if (selectedItem instanceof Table) {
 
 
             JBMenuItem editTable = new JBMenuItem("Edit Table");
@@ -449,10 +453,10 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory {
                 }
             });
 
-            return new JBMenuItem[]{ editTable };
+            return new JBMenuItem[]{editTable};
         }
 
-        if(selectedItem instanceof Script) {
+        if (selectedItem instanceof Script) {
             JBMenuItem uploadScript = new JBMenuItem("Update script");
 
             final Script script = (Script) selectedItem;
@@ -473,12 +477,12 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory {
             });
 
             return new JBMenuItem[]{
-                uploadScript
+                    uploadScript
             };
         }
 
 
-        if(selectedItem instanceof CustomAPI) {
+        if (selectedItem instanceof CustomAPI) {
             final CustomAPI customAPI = (CustomAPI) selectedItem;
 
             JBMenuItem uploadAPI = new JBMenuItem("Update Custom API");
@@ -516,13 +520,13 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory {
             });
 
             return new JBMenuItem[]{
-                uploadAPI,
-                editAPI,
+                    uploadAPI,
+                    editAPI,
             };
         }
 
 
-        if(selectedItem instanceof Job) {
+        if (selectedItem instanceof Job) {
             final Job job = (Job) selectedItem;
 
             JBMenuItem uploadJob = new JBMenuItem("Update job");
@@ -560,8 +564,8 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory {
             });
 
             return new JBMenuItem[]{
-                uploadJob,
-                editJob,
+                    uploadJob,
+                    editJob,
             };
         }
 

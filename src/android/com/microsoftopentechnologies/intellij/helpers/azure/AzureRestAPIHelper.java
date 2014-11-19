@@ -14,14 +14,18 @@
  *  limitations under the License.
  */
 
-package com.microsoftopentechnologies.intellij.helpers;
+package com.microsoftopentechnologies.intellij.helpers.azure;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import com.intellij.ide.util.PropertiesComponent;
 import com.microsoftopentechnologies.intellij.components.MSOpenTechTools;
 import com.microsoftopentechnologies.intellij.components.PluginSettings;
+import com.microsoftopentechnologies.intellij.helpers.NoSubscriptionException;
+import com.microsoftopentechnologies.intellij.helpers.OpenSSLHelper;
+import com.microsoftopentechnologies.intellij.helpers.StringHelper;
 import com.microsoftopentechnologies.intellij.helpers.aadauth.AuthenticationContext;
 import com.microsoftopentechnologies.intellij.helpers.aadauth.AuthenticationResult;
+import com.microsoftopentechnologies.intellij.helpers.aadauth.PromptValue;
 import com.microsoftopentechnologies.intellij.model.Subscription;
 import org.apache.xerces.dom.DeferredElementImpl;
 import org.jetbrains.annotations.Nullable;
@@ -46,7 +50,8 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.xpath.*;
 import java.io.*;
-import java.net.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.security.*;
 import java.security.cert.CertificateException;
 import java.util.concurrent.ExecutionException;
@@ -158,18 +163,18 @@ public class AzureRestAPIHelper {
 
     public static String getRestApiCommand(String path, String subscriptionId)
             throws IOException,
-                   SAXException,
-                   ParserConfigurationException,
-                   XPathExpressionException,
-                   NoSuchAlgorithmException,
-                   KeyStoreException,
-                   CertificateException,
-                   UnrecoverableKeyException,
-                   KeyManagementException,
-                   NoSubscriptionException,
-                   AzureCmdException,
-                   ExecutionException,
-                   InterruptedException {
+            SAXException,
+            ParserConfigurationException,
+            XPathExpressionException,
+            NoSuchAlgorithmException,
+            KeyStoreException,
+            CertificateException,
+            UnrecoverableKeyException,
+            KeyManagementException,
+            NoSubscriptionException,
+            AzureCmdException,
+            ExecutionException,
+            InterruptedException {
 
         AzureRestCallbackAdapter<String> callback = new AzureRestCallbackAdapter<String>() {
             @Override
@@ -184,7 +189,7 @@ public class AzureRestAPIHelper {
         };
 
         runWithSSLConnection(path, true, subscriptionId, callback);
-        if(!callback.isOk()) {
+        if (!callback.isOk()) {
             throw callback.getError();
         }
         return callback.getResult();
@@ -198,6 +203,10 @@ public class AzureRestAPIHelper {
         return restApiCommand("PUT", path, postData, subscriptionId, asyncUrl, jsonContent);
     }
 
+    public static String deleteRestApiCommand(String path, String subscriptionId, String asyncUrl, boolean jsonContent) throws IOException, CertificateException, NoSuchAlgorithmException, UnrecoverableKeyException, ParserConfigurationException, SAXException, KeyStoreException, XPathExpressionException, KeyManagementException, AzureCmdException, InterruptedException, NoSubscriptionException, ExecutionException {
+        return restApiCommand("DELETE", path, null, subscriptionId, asyncUrl, jsonContent);
+    }
+
     private static String restApiCommand(
             final String method,
             final String path,
@@ -206,18 +215,18 @@ public class AzureRestAPIHelper {
             final String asyncUrl,
             final boolean jsonContent)
             throws IOException,
-                   CertificateException,
-                   NoSuchAlgorithmException,
-                   UnrecoverableKeyException,
-                   ParserConfigurationException,
-                   SAXException,
-                   KeyStoreException,
-                   XPathExpressionException,
-                   KeyManagementException,
-                   AzureCmdException,
-                   InterruptedException,
-                   NoSubscriptionException,
-                   ExecutionException {
+            CertificateException,
+            NoSuchAlgorithmException,
+            UnrecoverableKeyException,
+            ParserConfigurationException,
+            SAXException,
+            KeyStoreException,
+            XPathExpressionException,
+            KeyManagementException,
+            AzureCmdException,
+            InterruptedException,
+            NoSubscriptionException,
+            ExecutionException {
 
         // This is a callback method that is invoked in a loop below after the request has been
         // sent. The purpose of this method is to check the status of the pending operation and check
@@ -243,8 +252,7 @@ public class AzureRestAPIHelper {
                     }
 
                     return responseCode;
-                }
-                catch(Exception e) {
+                } catch (Exception e) {
                     setError(new AzureCmdException(e.getMessage(), e));
                     return HttpURLConnection.HTTP_INTERNAL_ERROR;
                 }
@@ -257,13 +265,15 @@ public class AzureRestAPIHelper {
                 setError(null);
 
                 sslConnection.setRequestMethod(method);
-                sslConnection.setDoOutput(true);
+                sslConnection.setDoOutput(postData != null);
                 sslConnection.setRequestProperty("Accept", "");
 
-                DataOutputStream wr = new DataOutputStream(sslConnection.getOutputStream());
-                wr.writeBytes(postData);
-                wr.flush();
-                wr.close();
+                if (postData != null) {
+                    DataOutputStream wr = new DataOutputStream(sslConnection.getOutputStream());
+                    wr.writeBytes(postData);
+                    wr.flush();
+                    wr.close();
+                }
 
                 int responseCode = sslConnection.getResponseCode();
                 if (responseCode >= 200 && responseCode < 300) {
@@ -274,10 +284,10 @@ public class AzureRestAPIHelper {
                         sslConnection.disconnect();
 
                         boolean succeed = false;
-                        while(!succeed) {
+                        while (!succeed) {
                             try {
                                 runWithSSLConnection(operationURL, false, subscriptionId, requestStatusCallback);
-                                if(!requestStatusCallback.isOk()) {
+                                if (!requestStatusCallback.isOk()) {
                                     setError(requestStatusCallback.getError());
 
                                     // NOTE: setting "succeed" to false below means that the loop for
@@ -290,14 +300,13 @@ public class AzureRestAPIHelper {
                                     succeed = requestStatusCallback.getResult();
                                 }
 
-                                if(!succeed) {
+                                if (!succeed) {
                                     // wait for a while otherwise Azure complains with a
                                     // "too many requests received" error
                                     // TODO: This is a bit hacky. See if we can do better.
                                     Thread.sleep(2000);
                                 }
-                            }
-                            catch(Exception e) {
+                            } catch (Exception e) {
                                 setError(new AzureCmdException(e.getMessage(), e));
                                 return responseCode;
                             }
@@ -316,7 +325,7 @@ public class AzureRestAPIHelper {
         };
 
         runWithSSLConnection(path, jsonContent, subscriptionId, callback);
-        if(!callback.isOk()) {
+        if (!callback.isOk()) {
             throw callback.getError();
         }
         return callback.getResult();
@@ -327,9 +336,11 @@ public class AzureRestAPIHelper {
         int apply(HttpsURLConnection sslConnection) throws IOException;
 
         T getResult();
+
         void setResult(T result);
 
         AzureCmdException getError();
+
         void setError(AzureCmdException throwable);
 
         boolean isOk();
@@ -374,28 +385,26 @@ public class AzureRestAPIHelper {
             String subscriptionId,
             AzureRestCallback<T> callback)
             throws IOException,
-                   CertificateException,
-                   NoSuchAlgorithmException,
-                   UnrecoverableKeyException,
-                   ParserConfigurationException,
-                   SAXException,
-                   KeyStoreException,
-                   XPathExpressionException,
-                   KeyManagementException,
-                   ExecutionException,
-                   InterruptedException,
-                   AzureCmdException,
-                   NoSubscriptionException {
+            CertificateException,
+            NoSuchAlgorithmException,
+            UnrecoverableKeyException,
+            ParserConfigurationException,
+            SAXException,
+            KeyStoreException,
+            XPathExpressionException,
+            KeyManagementException,
+            ExecutionException,
+            InterruptedException,
+            AzureCmdException,
+            NoSubscriptionException {
 
         AzureManager apiManager = AzureRestAPIManager.getManager();
         AzureAuthenticationMode authMode = apiManager.getAuthenticationMode();
-        if(authMode == AzureAuthenticationMode.ActiveDirectory) {
+        if (authMode == AzureAuthenticationMode.ActiveDirectory) {
             runWithSSLConnectionFromToken(path, jsonContent, subscriptionId, callback, apiManager);
-        }
-        else if(authMode == AzureAuthenticationMode.SubscriptionSettings) {
+        } else if (authMode == AzureAuthenticationMode.SubscriptionSettings) {
             runWithSSLConnectionFromCert(path, jsonContent, subscriptionId, callback);
-        }
-        else {
+        } else {
             throw new NoSubscriptionException("A valid Azure subscription has not been configured yet.");
         }
     }
@@ -406,8 +415,7 @@ public class AzureRestAPIHelper {
             String subscriptionId,
             AzureRestCallback<T> callback) throws IOException, KeyManagementException, NoSuchAlgorithmException, UnrecoverableKeyException, KeyStoreException, CertificateException, ParserConfigurationException, XPathExpressionException, SAXException, AzureCmdException {
 
-        HttpsURLConnection sslConnection = null;
-        sslConnection = getSSLConnectionFromCert(path, jsonContent, subscriptionId);
+        HttpsURLConnection sslConnection = getSSLConnectionFromCert(path, jsonContent, subscriptionId);
         int response = callback.apply(sslConnection);
         if (response < 200 || response > 299) {
             throw new AzureCmdException("Error connecting to service", readStream(sslConnection.getErrorStream()));
@@ -424,14 +432,14 @@ public class AzureRestAPIHelper {
         HttpsURLConnection sslConnection;// there should already be a valid auth token by this time
         boolean isForSubscription = !StringHelper.isNullOrWhiteSpace(subscriptionId);
 
-        if(!isForSubscription && apiManager.getAuthenticationToken() == null) {
+        if (!isForSubscription && apiManager.getAuthenticationToken() == null) {
             throw new UnsupportedOperationException("The authentication mode has been set to use AD " +
-                "but no valid access token found. Please sign in to your account.");
+                    "but no valid access token found. Please sign in to your account.");
         }
 
         // if this call is for a specific subscription and we don't have an authentication token for
         // that subscription then acquire one
-        if(isForSubscription && apiManager.getAuthenticationTokenForSubscription(subscriptionId) == null) {
+        if (isForSubscription && apiManager.getAuthenticationTokenForSubscription(subscriptionId) == null) {
             // perform interactive authentication
             acquireTokenInteractive(subscriptionId, apiManager);
         }
@@ -439,33 +447,32 @@ public class AzureRestAPIHelper {
         sslConnection = getSSLConnectionFromAccessToken(path, jsonContent, subscriptionId, false);
         int response = callback.apply(sslConnection);
 
-        if(response == HttpURLConnection.HTTP_UNAUTHORIZED) {
+        if (response == HttpURLConnection.HTTP_UNAUTHORIZED) {
             // retry with refresh token
             sslConnection = getSSLConnectionFromAccessToken(path, jsonContent, subscriptionId, true);
 
             // sslConnection will be null if we don't have a refresh token; in which
             // we fall through to the next "if" check where we attempt interactive auth
-            if(sslConnection != null) {
+            if (sslConnection != null) {
                 response = callback.apply(sslConnection);
             }
 
-            if(response == HttpURLConnection.HTTP_UNAUTHORIZED) {
+            if (response == HttpURLConnection.HTTP_UNAUTHORIZED) {
                 // perform interactive authentication
                 acquireTokenInteractive(subscriptionId, apiManager);
 
                 // third time lucky?
                 sslConnection = getSSLConnectionFromAccessToken(path, jsonContent, subscriptionId, false);
                 response = callback.apply(sslConnection);
-                if(response < 200 || response > 299) {
+                if (response < 200 || response > 299) {
                     // clear the auth token
                     apiManager.setAuthenticationToken(null);
                     throw new AzureCmdException("Error connecting to service", readStream(sslConnection.getErrorStream()));
                 }
-            }
-            else if(response < 200 || response > 299) {
+            } else if (response < 200 || response > 299) {
                 throw new AzureCmdException("Error connecting to service", readStream(sslConnection.getErrorStream()));
             }
-        } else if(response < 200 || response > 299) {
+        } else if (response < 200 || response > 299) {
             throw new AzureCmdException("Error connecting to service", readStream(sslConnection.getErrorStream()));
         }
     }
@@ -490,17 +497,17 @@ public class AzureRestAPIHelper {
                     settings.getClientId(),
                     settings.getRedirectUri(),
                     null,
-                    windowTitle);
+                    windowTitle,
+                    (isForSubscription) ? PromptValue.attemptNone : PromptValue.login);
             token = future.get();
 
             // save the token
-            if(isForSubscription) {
+            if (isForSubscription) {
                 apiManager.setAuthenticationTokenForSubscription(subscriptionId, token);
             } else {
                 apiManager.setAuthenticationToken(token);
             }
-        }
-        finally {
+        } finally {
             if (context != null) {
                 context.dispose();
             }
@@ -526,25 +533,24 @@ public class AzureRestAPIHelper {
                 apiManager.getAuthenticationToken();
 
         // get a new access token if "useRefreshToken" is true
-        if(useRefreshToken) {
+        if (useRefreshToken) {
             // check if we have a refresh token to redeem
-            if(StringHelper.isNullOrWhiteSpace(token.getRefreshToken())) {
+            if (StringHelper.isNullOrWhiteSpace(token.getRefreshToken())) {
                 return null;
             }
 
             AuthenticationContext context = new AuthenticationContext(settings.getAdAuthority());
             try {
                 token = context.acquireTokenByRefreshToken(
-                            token,
-                            getTenantName(subscriptionId),
-                            settings.getAzureServiceManagementUri(),
-                            settings.getClientId());
-            }
-            finally {
+                        token,
+                        getTenantName(subscriptionId),
+                        settings.getAzureServiceManagementUri(),
+                        settings.getClientId());
+            } finally {
                 context.dispose();
             }
 
-            if(isForSubscription) {
+            if (isForSubscription) {
                 apiManager.setAuthenticationTokenForSubscription(subscriptionId, token);
             } else {
                 apiManager.setAuthenticationToken(token);
@@ -592,9 +598,9 @@ public class AzureRestAPIHelper {
         // get tenant id from subscription if this request is for an
         // azure subscription
         String tenantName = MSOpenTechTools.getCurrent().getSettings().getTenantName();
-        if(!StringHelper.isNullOrWhiteSpace(subscriptionId)) {
+        if (!StringHelper.isNullOrWhiteSpace(subscriptionId)) {
             Subscription subscription = AzureRestAPIManager.getManager().getSubscriptionFromId(subscriptionId);
-            if(subscription != null) {
+            if (subscription != null) {
                 tenantName = subscription.getTenantId();
             }
         }
@@ -606,14 +612,14 @@ public class AzureRestAPIHelper {
             boolean jsonContent,
             String subscriptionId)
             throws IOException,
-                   KeyManagementException,
-                   NoSuchAlgorithmException,
-                   UnrecoverableKeyException,
-                   KeyStoreException,
-                   CertificateException,
-                   ParserConfigurationException,
-                   XPathExpressionException,
-                   SAXException {
+            KeyManagementException,
+            NoSuchAlgorithmException,
+            UnrecoverableKeyException,
+            KeyStoreException,
+            CertificateException,
+            ParserConfigurationException,
+            XPathExpressionException,
+            SAXException {
 
         String publishSettings = PropertiesComponent.getInstance().getValue(MSOpenTechTools.AppSettingsNames.SUBSCRIPTION_FILE, "");
         if (publishSettings.isEmpty())
@@ -686,11 +692,11 @@ public class AzureRestAPIHelper {
                     response.append(separator);
                 }
             }
-            in.close(); in = null;
+            in.close();
+            in = null;
             return response.toString();
-        }
-        finally {
-            if(in != null) {
+        } finally {
+            if (in != null) {
                 in.close();
             }
         }
@@ -698,18 +704,18 @@ public class AzureRestAPIHelper {
 
     public static void uploadScript(final String path, final String filePath, final String subscriptionId)
             throws IOException,
-                   CertificateException,
-                   NoSuchAlgorithmException,
-                   UnrecoverableKeyException,
-                   ParserConfigurationException,
-                   SAXException,
-                   KeyStoreException,
-                   XPathExpressionException,
-                   KeyManagementException,
-                   AzureCmdException,
-                   InterruptedException,
-                   NoSubscriptionException,
-                   ExecutionException {
+            CertificateException,
+            NoSuchAlgorithmException,
+            UnrecoverableKeyException,
+            ParserConfigurationException,
+            SAXException,
+            KeyStoreException,
+            XPathExpressionException,
+            KeyManagementException,
+            AzureCmdException,
+            InterruptedException,
+            NoSubscriptionException,
+            ExecutionException {
 
         runWithSSLConnection(path, true, subscriptionId, new AzureRestCallbackAdapter<Void>() {
             @Override

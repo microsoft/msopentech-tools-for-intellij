@@ -23,9 +23,15 @@ import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.project.Project;
 import com.microsoftopentechnologies.intellij.components.MSOpenTechTools;
 import com.microsoftopentechnologies.intellij.components.PluginSettings;
-import com.microsoftopentechnologies.intellij.helpers.*;
+import com.microsoftopentechnologies.intellij.helpers.ReadOnlyCellTableModel;
+import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.helpers.aadauth.AuthenticationContext;
 import com.microsoftopentechnologies.intellij.helpers.aadauth.AuthenticationResult;
+import com.microsoftopentechnologies.intellij.helpers.aadauth.PromptValue;
+import com.microsoftopentechnologies.intellij.helpers.azure.AzureAuthenticationMode;
+import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
+import com.microsoftopentechnologies.intellij.helpers.azure.AzureManager;
+import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIManager;
 import com.microsoftopentechnologies.intellij.model.Subscription;
 
 import javax.swing.*;
@@ -102,12 +108,17 @@ public class ManageSubscriptionForm extends JDialog {
                         UIHelper.showException("Error clearing user subscriptions", t);
                     }
 
-                    ReadOnlyCellTableModel model = (ReadOnlyCellTableModel)subscriptionTable.getModel();
-                    while (model.getRowCount() > 0)
+                    ReadOnlyCellTableModel model = (ReadOnlyCellTableModel) subscriptionTable.getModel();
+                    while (model.getRowCount() > 0) {
                         model.removeRow(0);
+                    }
+
+                    removeButton.setEnabled(false);
                 }
             }
         });
+
+        removeButton.setEnabled(false);
 
         okButton.addActionListener(new ActionListener() {
             @Override
@@ -141,7 +152,7 @@ public class ManageSubscriptionForm extends JDialog {
 
     private void onOk() {
         // check if we have any subscriptions added
-        if(subscriptionTable.getModel().getRowCount() == 0) {
+        if (subscriptionTable.getModel().getRowCount() == 0) {
             JOptionPane.showMessageDialog(this,
                     "Please Sign In/Import your Azure subscription(s).",
                     "Manage Azure Subscriptions",
@@ -179,7 +190,8 @@ public class ManageSubscriptionForm extends JDialog {
                             settings.getAzureServiceManagementUri(),
                             settings.getClientId(),
                             settings.getRedirectUri(),
-                            project), new FutureCallback<AuthenticationResult>() {
+                            project,
+                            PromptValue.login), new FutureCallback<AuthenticationResult>() {
                         @Override
                         public void onSuccess(AuthenticationResult authenticationResult) {
                             context.dispose();
@@ -258,13 +270,17 @@ public class ManageSubscriptionForm extends JDialog {
 
                     subscriptionList = AzureRestAPIManager.getManager().getSubscriptionList();
 
-                    if (subscriptionList != null) {
+                    if (subscriptionList != null && subscriptionList.size() > 0) {
                         for (Subscription subs : subscriptionList) {
                             Vector<String> row = new Vector<String>();
                             row.add(subs.getName());
                             row.add(subs.getId().toString());
                             model.addRow(row);
                         }
+
+                        removeButton.setEnabled(true);
+                    } else {
+                        removeButton.setEnabled(false);
                     }
 
                     form.setCursor(Cursor.getDefaultCursor());

@@ -14,8 +14,9 @@
  *  limitations under the License.
  */
 
-package com.microsoftopentechnologies.intellij.helpers;
+package com.microsoftopentechnologies.intellij.helpers.azure;
 
+import com.microsoftopentechnologies.intellij.helpers.NoSubscriptionException;
 import com.microsoftopentechnologies.intellij.helpers.aadauth.AuthenticationResult;
 import com.microsoftopentechnologies.intellij.model.*;
 import org.xml.sax.SAXException;

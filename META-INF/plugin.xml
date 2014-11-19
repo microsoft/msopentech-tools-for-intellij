@@ -17,7 +17,7 @@ limitations under the License.
 <idea-plugin version="2">
     <id>com.microsoftopentechnologies.intellij</id>
     <name>MSOpenTech Tools</name>
-    <version>0.1</version>
+    <version>0.1.7</version>
     <vendor email="msopentech@microsoft.com" logo="/com/microsoftopentechnologies/intellij/icons/logo.png" url="http://msopentech.com">Microsoft Open Technologies, Inc.</vendor>
 
     <description><![CDATA[
@@ -32,7 +32,7 @@ limitations under the License.
    </ul>
    <b>License</b><br/>
    By installing the <strong>MS Open Tech Tools </strong> plugin, you agree to this <a href="http://go.microsoft.com/fwlink/?LinkId=517839">license</a>.
-   Third party notices: <a href="http://go.microsoft.com/fwlink/?LinkId=517840">http://go.microsoft.com/fwlink/?LinkId=517840</a>
+   Third party notices: <a href="http://go.microsoft.com/fwlink/?LinkId=517840">http://go.microsoft.com/fwlink/?LinkId=517840</a>
   ]]></description>
 
     <change-notes><![CDATA[
@@ -42,7 +42,7 @@ limitations under the License.
     </change-notes>
 
     <!-- please see http://confluence.jetbrains.net/display/IDEADEV/Build+Number+Ranges for description -->
-    <idea-version since-build="135.1" until-build="136.0"/>
+    <idea-version since-build="135.1"/>
 
     <resource-bundle>com.microsoftopentechnologies.intellij.ui.messages.messages</resource-bundle>
 
@@ -215,3 +215,4 @@ limitations under the License.
         </group>
     </actions>
 </idea-plugin>
+
