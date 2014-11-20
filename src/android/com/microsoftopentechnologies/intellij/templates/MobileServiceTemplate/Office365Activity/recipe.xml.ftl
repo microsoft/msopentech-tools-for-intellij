@@ -25,15 +25,11 @@ limitations under the License.
 	
 </#if>
 <#if includeOutlookServices || includeFileServices>
-	<dependency mavenUrl="com.microsoft.services:odata-engine-interfaces:(,1.0)" />
-	<dependency mavenUrl="com.microsoft.services:odata-engine-helpers:(,1.0)" />
-	<dependency mavenUrl="com.microsoft.services:odata-engine-android-impl:(,1.0)" />
-	<dependency mavenUrl="com.microsoft.services:odata-engine-java-impl:(,1.0)" />
+	<dependency mavenUrl="com.microsoft.services:odata-engine-android-impl:(,1.0)@aar" />
 	
 </#if>
 <#if includeListServices>
 	<dependency mavenUrl="com.microsoft.services:list-services:(,1.0)" />
-	<dependency mavenUrl="com.google.guava:guava:18.0" />
 	
 </#if>
     <merge from="AndroidManifest.xml.ftl"
