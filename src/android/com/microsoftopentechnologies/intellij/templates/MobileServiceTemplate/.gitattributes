@@ -1,2 +1,6 @@
 # Perform LF normalization
-* text eol=lf
+*.ftl text eol=lf
+*.xml text eol=lf
+
+*.png binary
+*.exe binary
