@@ -17,7 +17,7 @@ limitations under the License.
 <idea-plugin version="2">
     <id>com.microsoftopentechnologies.intellij</id>
     <name>MSOpenTech Tools</name>
-    <version>0.1.7</version>
+    <version>0.1.28</version>
     <vendor email="msopentech@microsoft.com" logo="/com/microsoftopentechnologies/intellij/icons/logo.png" url="http://msopentech.com">Microsoft Open Technologies, Inc.</vendor>
 
     <description><![CDATA[
