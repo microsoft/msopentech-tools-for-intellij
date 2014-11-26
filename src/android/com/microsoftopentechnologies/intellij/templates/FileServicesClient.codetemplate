@@ -4,12 +4,9 @@ import com.microsoft.fileservices.Item;
 import com.microsoft.fileservices.odata.DriveFetcher;
 import com.microsoft.fileservices.odata.ItemCollectionOperations;
 import com.microsoft.fileservices.odata.ItemFetcher;
-import com.microsoft.fileservices.odata.ODataCollectionFetcher;
 
+import com.microsoft.services.odata.ODataCollectionFetcher;
 import com.microsoft.services.odata.impl.DefaultDependencyResolver;
-import com.microsoft.services.odata.interfaces.Credentials;
-import com.microsoft.services.odata.interfaces.CredentialsFactory;
-import com.microsoft.services.odata.interfaces.Request;
 
 import com.microsoft.sharepointservices.odata.SharePointClient;
 
@@ -18,19 +15,9 @@ public class FileServicesClient {
     private SharePointClient client;
 
     public FileServicesClient() {
-        DefaultDependencyResolver resolver = new DefaultDependencyResolver();
-
-        resolver.setCredentialsFactory(new CredentialsFactory() {
-            @Override
-            public Credentials getCredentials() {
-                return new Credentials() {
-                    @Override
-                    public void prepareRequest(Request request) {
-                        // TODO: Implement this invoking AAD or another credentials provider
-                    }
-                };
-            }
-        });
+        // TODO: Implement this invoking AAD or another credentials provider
+        String token = "someAADtoken";
+        DefaultDependencyResolver resolver = new DefaultDependencyResolver(token);
 
         client = new SharePointClient(ENDPOINT_URL, resolver);
     }

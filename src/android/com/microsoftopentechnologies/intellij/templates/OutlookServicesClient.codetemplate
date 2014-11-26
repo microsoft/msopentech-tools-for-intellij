@@ -2,37 +2,22 @@ package $PACKAGE;
 
 import com.microsoft.outlookservices.User;
 import com.microsoft.outlookservices.odata.OutlookClient;
-import com.microsoft.outlookservices.odata.ODataCollectionFetcher;
 import com.microsoft.outlookservices.odata.UserCollectionOperations;
 import com.microsoft.outlookservices.odata.UserFetcher;
 
+import com.microsoft.services.odata.ODataCollectionFetcher;
 import com.microsoft.services.odata.impl.DefaultDependencyResolver;
-import com.microsoft.services.odata.interfaces.Credentials;
-import com.microsoft.services.odata.interfaces.CredentialsFactory;
-import com.microsoft.services.odata.interfaces.Request;
 
 public class OutlookServicesClient {
     private static final String ENDPOINT_URL = "$ENDPOINTURL";
     private OutlookClient client;
 
     public OutlookServicesClient() {
-        DefaultDependencyResolver resolver = new DefaultDependencyResolver();
+        // TODO: Implement this invoking AAD or another credentials provider
+        String token = "someAADtoken";
+        DefaultDependencyResolver resolver = new DefaultDependencyResolver(token);
 
-        resolver.setCredentialsFactory(new CredentialsFactory() {
-            @Override
-            public Credentials getCredentials() {
-                return new Credentials() {
-                    @Override
-                    public void prepareRequest(Request request) {
-                        // TODO: Implement this invoking AAD or another credentials provider
-                    }
-                };
-            }
-
-            ;
-        });
-
-        client = new com.microsoft.outlookservices.odata.OutlookClient(ENDPOINT_URL, resolver);
+        client = new OutlookClient(ENDPOINT_URL, resolver);
     }
 
     public UserFetcher getMe() {
