@@ -805,10 +805,11 @@ public class AzureRestAPIManager implements AzureManager {
         try {
             String path = String.format("/%s/services/mobileservices/mobileservices/%s/scheduler/jobs", subscriptionId.toString(), serviceName);
 
-            String postData = "{\"name\":\"" + jobName
-                    + "\",\"intervalUnit\":\"" + intervalUnit
-                    + "\",\"intervalPeriod\":" + String.valueOf(interval)
-                    + ",\"startTime\":\"" + startDate + "\""
+            String postData = "{\"name\":\"" + jobName + "\""
+                    + (
+                        intervalUnit.equals("none") ? "" : (",\"intervalUnit\":\"" + intervalUnit
+                        + "\",\"intervalPeriod\":" + String.valueOf(interval)
+                        + ",\"startTime\":\"" + startDate + "\""))
                     + "}";
 
 
@@ -823,12 +824,13 @@ public class AzureRestAPIManager implements AzureManager {
         try {
             String path = String.format("/%s/services/mobileservices/mobileservices/%s/scheduler/jobs/%s", subscriptionId.toString(), serviceName, jobName);
 
-            String postData = "{\"name\":\"" + jobName
-                    + "\",\"intervalUnit\":\"" + intervalUnit
-                    + "\",\"intervalPeriod\":" + String.valueOf(interval)
-                    + ",\"status\":\"" + (enabled ? "enabled" : "disabled")
-                    + "\",\"startTime\":\"" + startDate
-                    + "\"}";
+            String postData = "{"
+                    + "\"status\":\"" + (enabled ? "enabled" : "disabled") + "\""
+                    + (
+                        intervalUnit.equals("none") ? "" : (",\"intervalUnit\":\"" + intervalUnit
+                            + "\",\"intervalPeriod\":" + String.valueOf(interval)
+                            + ",\"startTime\":\"" + startDate + "\""))
+                    + "}";
 
             if (intervalUnit.equals("none")) {
                 postData = "{\"status\":\"disabled\"}";
