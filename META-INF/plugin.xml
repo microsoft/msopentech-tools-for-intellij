@@ -61,7 +61,7 @@ limitations under the License.
         <toolWindow
                 anchor="left"
                 factoryClass="com.microsoftopentechnologies.intellij.components.ServerExplorerToolWindowFactory"
-                id="Server Explorer"
+                id="Service Explorer"
                 canCloseContents="false"
                 icon="/com/microsoftopentechnologies/intellij/icons/azure.png"/>
         <moduleType id="AZURE_MODULE"
