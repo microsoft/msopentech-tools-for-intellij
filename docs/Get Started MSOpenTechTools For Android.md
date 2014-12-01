@@ -17,29 +17,20 @@ For example, if you run on Win64 you’ll need to install Win64 OpenSSL v1.0.1j.
 ### Install Microsoft Open Tech Plugin  
 Both IntelliJ and Android Studio allows to install the plugin by browsing repositories or by installing the plugin from the disk.
  
-In this tutorial we show you how to download the binaries from the github repository [https://github.com/MSOpenTech/msopentech-tools-for-intellij](https://github.com/MSOpenTech/msopentech-tools-for-intellij). 
+Unless you contribute to the open source repository from GitHub we recommend you to download the plugin from the Jet Brains repository instead of downloading the one from GitHub   [https://github.com/MSOpenTech/msopentech-tools-for-intellij](https://github.com/MSOpenTech/msopentech-tools-for-intellij) on your local folder. 
 
-Step 1 Download the binaries from the github repository to your local folder. (Optional if installation is from the repository).
-
-![](https://raw.githubusercontent.com/MSOpenTech/msopentech-tools-for-intellij/master/docs/media/DownloadFromGithub.png?token=AFgG-B4AHrvHWLXeTMfKjYexOWRMLWugks5UWDUxwA%3D%3D)
- 
-Step 2 Install Plugin inside IntelliJ or Android Studio
+Install Plugin inside IntelliJ or Android Studio
 
 Developer follows the usual plugin installation steps provided by IntelliJ by going to File > Settings >Plugins
+In the Settings window select Plugins and in the Plugin window select Browse repositories. 
 
-![](https://raw.githubusercontent.com/MSOpenTech/msopentech-tools-for-intellij/master/docs/media/Step1-GoToFileSetings.png?token=AFgG-PgUKGS4RU96890etgUAQ6ru_8scks5UWDZIwA%3D%3D)
+![](https://raw.githubusercontent.com/MSOpenTech/msopentech-tools-for-intellij/master/docs/media/IntelliJ_InstallPlugin.png?token=AFgG-AymdnnkT9cj1uKO98LMXdLGIcnlks5UWDaPwA%3D%3D)
  
-In the Settings window select Plugins and in the Plugin window select Install plugin from Disk. Navigate to local folder and select the zip file corresponding to the IDE.
+Search by MSOpenTech or Android or Azure ...
 
-Note that in IntelliJ you’ll select the “msopentech-tools-for-intellij.zip”
-
-![](https://raw.githubusercontent.com/MSOpenTech/msopentech-tools-for-intellij/master/docs/media/IntelliJ_NavigatePluginDisk.png?token=AFgG-AymdnnkT9cj1uKO98LMXdLGIcnlks5UWDaPwA%3D%3D)
+![](https://raw.githubusercontent.com/MSOpenTech/msopentech-tools-for-intellij/master/docs/media/IntelliJ_InstallPlugin_Browse.png?token=AFgG-G40JYAZvn3Mu65bW8JTfSW_dCrkks5UWDbXwA%3D%3D)
  
-Note that in Android Studio you’ll select the “msopentech-tools-for-androidstudio.zip”
-
-![](https://raw.githubusercontent.com/MSOpenTech/msopentech-tools-for-intellij/master/docs/media/AS_NavigatePluginDisk.png?token=AFgG-G40JYAZvn3Mu65bW8JTfSW_dCrkks5UWDbXwA%3D%3D)
- 
-Both Android Studio and IntellliJ will require to restart the IDE to finish the plugin installation.  
+The same steps will apply to Android Studio. Both Android Studio and IntellliJ will require to restart the IDE to finish the plugin installation.  
 ### Create a new Android App in IntelliJ ##
 Follow these steps to create a new mobile service:
 

@@ -1,6 +1,6 @@
 {
   "clientId": "61d65f5a-6e3b-468b-af73-a033f5098c5c",
-  "pluginVersion": "0.1.7",
+  "pluginVersion": "0.1.28",
   "tenantName": "common",
   "redirectUri": "https://msopentech.com/",
   "adAuthority": "login.windows.net",

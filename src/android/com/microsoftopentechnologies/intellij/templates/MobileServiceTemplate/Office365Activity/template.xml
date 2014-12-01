@@ -20,8 +20,8 @@ limitations under the License.
     revision="1"
     name="Office 365 Activity"
     description="Creates a new activity that initiates and connects to Office365 services."
-    minApi="7"
-    minBuildApi="7">
+    minApi="15"
+    minBuildApi="15">
 
     <category value="Microsoft" />
     <formfactor value="Mobile" />
