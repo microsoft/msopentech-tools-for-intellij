@@ -1,4 +1,4 @@
-elevate.exe
+WindowsTemplateCopy.exe
 AzureServicesActivity/globals.xml.ftl
 AzureServicesActivity/recipe.xml.ftl
 AzureServicesActivity/template.xml

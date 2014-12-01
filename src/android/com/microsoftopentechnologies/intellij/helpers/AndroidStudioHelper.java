@@ -16,15 +16,18 @@
 
 package com.microsoftopentechnologies.intellij.helpers;
 
+import com.google.common.base.Utf8;
 import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
+import io.netty.handler.codec.base64.Base64Encoder;
 import sun.misc.IOUtils;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileSystemView;
+import javax.xml.bind.DatatypeConverter;
 import java.io.*;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -73,6 +76,8 @@ public class AndroidStudioHelper {
                     copyFolder(new File(tmpDir + officeTemplateName), new File(templatePath + officeTemplateName));
 
                 } catch (IOException ex) {
+
+                    /*
                     PrintWriter printWriter = new PrintWriter(tmpDir + "\\script.bat");
                     printWriter.println("@echo off");
 
@@ -88,10 +93,23 @@ public class AndroidStudioHelper {
                     printWriter.flush();
                     printWriter.close();
 
-                    String[] tmpcmd = {
+                    */
+
+                    String parameterFormat = "<Copy originPath='%s' targetPath='%s' deleteTarget='%s'/>";
+
+                    StringBuilder sb = new StringBuilder();
+                    sb.append("<WindowsTemplateCopyParameters>");
+                    sb.append(String.format(parameterFormat, tmpDir + mobileServicesTemplateName, templatePath + mobileServicesTemplateName, deleteTemplates ? "true" : "false"));
+                    sb.append(String.format(parameterFormat, tmpDir + officeTemplateName, templatePath + officeTemplateName, deleteTemplates ? "true" : "false"));
+                    sb.append("</WindowsTemplateCopyParameters>");
+                    String param = DatatypeConverter.printBase64Binary(sb.toString().getBytes("UTF-8"));
+
+
+                    String[] tmpCmd = {
                          "cmd",
                         "/c",
-                        tmpDir + "elevate.exe "
+                        tmpDir + "WindowsTemplateCopy.exe",
+                        param,
                     };
 
                     ArrayList<String> tempenvlist = new ArrayList<String>();
@@ -103,13 +121,13 @@ public class AndroidStudioHelper {
                     tempenvlist.toArray(env);
 
                     Runtime rt = Runtime.getRuntime();
-                    Process proc = rt.exec(tmpcmd, env, new File(tmpDir));
-                    proc.waitFor();
+                    Process proc = rt.exec(tmpCmd, env, new File(tmpDir));
+                    int errorCode = proc.waitFor();
 
                     //wait for elevate command to finish
                     Thread.sleep(3000);
 
-                    if(!new File(templatePath + mobileServicesTemplateName).exists())
+                    if(!new File(templatePath + mobileServicesTemplateName).exists() || errorCode != 0)
                         UIHelper.showException("Error copying template files. Please refer to documentation to copy manually.", new Exception());
                 }
             } else if (System.getProperty("os.name").toLowerCase().startsWith("mac")) {
