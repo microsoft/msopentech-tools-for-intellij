@@ -21,9 +21,9 @@ import com.intellij.openapi.util.io.FileUtil;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIHelper;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.w3c.dom.Element;
 import sun.misc.BASE64Decoder;
 import sun.misc.BASE64Encoder;
 
@@ -38,6 +38,7 @@ import java.io.*;
 public class OpenSSLHelper {
     public static String PASSWORD = "Java6NeedsPwd";
     String path;
+
     public static boolean existsOpenSSL() throws AzureCmdException {
         String path = getOpenSSLPath();
         return (path != null && !path.isEmpty());
@@ -47,7 +48,7 @@ public class OpenSSLHelper {
 
         PropertiesComponent propertiesComponent = PropertiesComponent.getInstance();
 
-        if(propertiesComponent.isValueSet("MSOpenSSLPath")) {
+        if (propertiesComponent.isValueSet("MSOpenSSLPath")) {
             return propertiesComponent.getValue("MSOpenSSLPath");
         } else {
             try {
@@ -80,7 +81,7 @@ public class OpenSSLHelper {
 
             Document ownerDocument = null;
 
-            for(int i = 0; i != subscriptionList.getLength(); i++) {
+            for (int i = 0; i != subscriptionList.getLength(); i++) {
 
                 //Gets the pfx info
                 Element node = (Element) subscriptionList.item(i);
@@ -104,14 +105,16 @@ public class OpenSSLHelper {
                 pfxOutputStream.close();
 
                 String path = getOpenSSLPath();
-                if (!path.endsWith(File.separator))
+                if (!path.endsWith(File.separator)) {
                     path = path + File.separator;
+                }
+
 
                 //Export to pem with OpenSSL
-                runCommand(path + "openssl pkcs12 -in temp.pfx -out temp.pem -nodes -password pass:", tmpPath);
+                runCommand("\"" + path + "openssl\" pkcs12 -in temp.pfx -out temp.pem -nodes -password pass:", tmpPath);
 
                 //Export to pfx again and change password
-                runCommand(path + "openssl pkcs12 -export -out temppwd.pfx -in temp.pem -password pass:" + PASSWORD, tmpPath);
+                runCommand("\"" + path + "openssl\" pkcs12 -export -out temppwd.pfx -in temp.pem -password pass:" + PASSWORD, tmpPath);
 
                 //Read file and replace pfx with password protected pfx
                 File pwdPfxFile = new File(tmpPath.getPath() + File.separator + "temppwd.pfx");
@@ -123,13 +126,13 @@ public class OpenSSLHelper {
                 FileUtil.delete(tmpPath);
 
 
-                node.setAttribute("ManagementCertificate", new BASE64Encoder().encode(buf).replace("\r","").replace("\n",""));
+                node.setAttribute("ManagementCertificate", new BASE64Encoder().encode(buf).replace("\r", "").replace("\n", ""));
 
-                if(isFirstVersion)
+                if (isFirstVersion)
                     node.setAttribute("ServiceManagementUrl", AzureRestAPIHelper.getAttributeValue(publishProfileNode, "Url"));
             }
 
-            if(ownerDocument == null)
+            if (ownerDocument == null)
                 return null;
 
             Transformer tf = TransformerFactory.newInstance().newTransformer();
@@ -155,7 +158,7 @@ public class OpenSSLHelper {
 
         String errResponse = new String(FileUtil.adaptiveLoadBytes(p.getErrorStream()));
 
-        if(p.waitFor() != 0) {
+        if (p.waitFor() != 0) {
             AzureCmdException ex = new AzureCmdException("Error executing OpenSSL command \n", errResponse);
             ex.printStackTrace();
 
