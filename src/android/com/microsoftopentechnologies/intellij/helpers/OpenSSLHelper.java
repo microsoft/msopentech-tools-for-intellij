@@ -109,12 +109,17 @@ public class OpenSSLHelper {
                     path = path + File.separator;
                 }
 
+                String mOsVersion = System.getProperty("os.name");
+                String osName = mOsVersion.split(" ")[0];
+
+                String optionalQuotes = osName.equals("Windows") ? "\"" : "";
+
 
                 //Export to pem with OpenSSL
-                runCommand("\"" + path + "openssl\" pkcs12 -in temp.pfx -out temp.pem -nodes -password pass:", tmpPath);
+                runCommand(optionalQuotes + path + "openssl" + optionalQuotes + " pkcs12 -in temp.pfx -out temp.pem -nodes -password pass:", tmpPath);
 
                 //Export to pfx again and change password
-                runCommand("\"" + path + "openssl\" pkcs12 -export -out temppwd.pfx -in temp.pem -password pass:" + PASSWORD, tmpPath);
+                runCommand(optionalQuotes + path + "openssl" + optionalQuotes + " pkcs12 -export -out temppwd.pfx -in temp.pem -password pass:" + PASSWORD, tmpPath);
 
                 //Read file and replace pfx with password protected pfx
                 File pwdPfxFile = new File(tmpPath.getPath() + File.separator + "temppwd.pfx");
