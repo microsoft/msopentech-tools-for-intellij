@@ -77,24 +77,6 @@ public class AndroidStudioHelper {
 
                 } catch (IOException ex) {
 
-                    /*
-                    PrintWriter printWriter = new PrintWriter(tmpDir + "\\script.bat");
-                    printWriter.println("@echo off");
-
-                    if(deleteTemplates) {
-                        printWriter.println("rd \"" + templatePath + mobileServicesTemplateName + "\" /Q /S");
-                        printWriter.println("rd \"" + templatePath + officeTemplateName + "\" /Q /S");
-                    }
-
-                    printWriter.println("md \"" + templatePath + mobileServicesTemplateName + "\"");
-                    printWriter.println("md \"" + templatePath + officeTemplateName + "\"");
-                    printWriter.println("xcopy \"" + tmpDir + mobileServicesTemplateName + "\" \"" + templatePath + mobileServicesTemplateName + "\" /s /i /Y");
-                    printWriter.println("xcopy \"" + tmpDir + officeTemplateName + "\" \"" + templatePath + officeTemplateName + "\" /s /i /Y");
-                    printWriter.flush();
-                    printWriter.close();
-
-                    */
-
                     String parameterFormat = "<Copy originPath='%s' targetPath='%s' deleteTarget='%s'/>";
 
                     StringBuilder sb = new StringBuilder();
@@ -134,6 +116,7 @@ public class AndroidStudioHelper {
 
                 String[] deleteAndCopy = {
                         "osascript",
+                        "-e",
                         "do shell script \"rm -r \\\"/" + templatePath + mobileServicesTemplateName + "\\\"\"",
                         "-e",
                         "do shell script \"rm -r \\\"/" + templatePath + officeTemplateName + "\\\"\"",
