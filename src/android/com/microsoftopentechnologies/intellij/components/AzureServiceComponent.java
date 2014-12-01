@@ -24,18 +24,20 @@ import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.fileEditor.impl.FileDocumentManagerImpl;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectLocator;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.*;
 import com.microsoftopentechnologies.intellij.forms.OpenSSLFinderForm;
 import com.microsoftopentechnologies.intellij.helpers.AndroidStudioHelper;
-import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.OpenSSLHelper;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
+import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.wizards.activityConfiguration.AddServiceWizard;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.Collection;
 
 public class AzureServiceComponent implements ProjectComponent {
     private Project mProject;
@@ -49,6 +51,8 @@ public class AzureServiceComponent implements ProjectComponent {
     private static String OUTLOOK_LIST_SERVICES_CODE = "//322e22fa-c249-4805-b057-c7b282acb605";
     private static String FILE_LIST_SERVICES_CODE = "//7193e8e2-dcec-4eb9-a3d6-02d86f88eaed";
     private static String OUTLOOK_FILE_LIST_SERVICES_CODE = "//25fdea0c-8a15-457f-9b15-dacb4e7dc2b2";
+    private static VirtualFileListener vfl = getVirtualFileListener();
+    private static Integer vflCount = 0;
 
     public AzureServiceComponent(Project project) {
         mProject = project;
@@ -84,12 +88,42 @@ public class AzureServiceComponent implements ProjectComponent {
             } catch (Throwable ex) {
                 UIHelper.showException("Error generating template", ex);
             }
+
+            synchronized (vflCount) {
+                if (vflCount.equals(0)) {
+                    VirtualFileManager.getInstance().addVirtualFileListener(vfl);
+                }
+
+                vflCount++;
+            }
         } catch (AzureCmdException e) {
             UIHelper.showException("Error initializing Microsoft Services plugin", e);
         }
     }
 
-    private VirtualFileListener getVirtualFileListener() {
+    public void disposeComponent() {
+        synchronized (vflCount) {
+            vflCount--;
+
+            if (vflCount.equals(0)) {
+                VirtualFileManager.getInstance().removeVirtualFileListener(vfl);
+            }
+        }
+    }
+
+    @NotNull
+    public String getComponentName() {
+        return "AzureServiceComponent";
+    }
+
+    public void projectOpened() {
+    }
+
+    public void projectClosed() {
+        UIHelper.setProjectTree(null);
+    }
+
+    private static VirtualFileListener getVirtualFileListener() {
         return new VirtualFileListener() {
             @Override
             public void propertyChanged(@NotNull VirtualFilePropertyEvent virtualFilePropertyEvent) {
@@ -153,7 +187,10 @@ public class AzureServiceComponent implements ProjectComponent {
                                 ApplicationManager.getApplication().invokeLater(new Runnable() {
                                     @Override
                                     public void run() {
-                                        AddServiceWizard.run(mProject, ModuleUtil.findModuleForFile(vf, mProject), isMobileService, isNotificationHub, isOutlookServices, isFileServices, isListServices);
+                                        Collection<Project> projects = ProjectLocator.getInstance().getProjectsForFile(vf);
+                                        if (projects.size() == 1) {
+                                            AddServiceWizard.run((Project) projects.toArray()[0], ModuleUtil.findModuleForFile(vf, (Project) projects.toArray()[0]), isMobileService, isNotificationHub, isOutlookServices, isFileServices, isListServices);
+                                        }
                                     }
                                 });
                             }
@@ -170,26 +207,5 @@ public class AzureServiceComponent implements ProjectComponent {
             public void beforeFileMovement(@NotNull VirtualFileMoveEvent virtualFileMoveEvent) {
             }
         };
-    }
-
-    public void disposeComponent() {
-    }
-
-    @NotNull
-    public String getComponentName() {
-        return "AzureServiceComponent";
-    }
-
-    VirtualFileListener vfl;
-
-    public void projectOpened() {
-        vfl = getVirtualFileListener();
-        mProject.getBaseDir().getFileSystem().addVirtualFileListener(vfl);
-    }
-
-    public void projectClosed() {
-        UIHelper.setProjectTree(null);
-
-        mProject.getBaseDir().getFileSystem().removeVirtualFileListener(vfl);
     }
 }
