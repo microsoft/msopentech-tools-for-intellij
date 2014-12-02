@@ -106,7 +106,7 @@ public class CustomAPIForm extends JDialog {
                     @Override
                     public void run() {
 
-                        String tableName = tableNameTextField.getText();
+                        String apiName = tableNameTextField.getText();
 
                         CustomAPIPermissions permissions = new CustomAPIPermissions();
                         permissions.setPatchPermission(((PermissionItem) patchPermissionComboBox.getSelectedItem()).getType());
@@ -118,11 +118,17 @@ public class CustomAPIForm extends JDialog {
                         try {
                             form.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
+                            if (!apiName.matches("^[A-Za-z][A-Za-z0-9_]+")) {
+                                JOptionPane.showMessageDialog(form, "Invalid table name. Service name must start with a letter and \n" +
+                                        "contain only letters, numbers, and underscores.", "Error creating the table", JOptionPane.ERROR_MESSAGE);
+                                return;
+                            }
+
                             if(editingCustomAPI == null) {
-                                AzureRestAPIManager.getManager().createCustomAPI(subscriptionId, serviceName, tableName, permissions);
+                                AzureRestAPIManager.getManager().createCustomAPI(subscriptionId, serviceName, apiName, permissions);
                             }
                             else {
-                                AzureRestAPIManager.getManager().updateCustomAPI(subscriptionId, serviceName, tableName, permissions);
+                                AzureRestAPIManager.getManager().updateCustomAPI(subscriptionId, serviceName, apiName, permissions);
                                 editingCustomAPI.setCustomAPIPermissions(permissions);
                             }
 
