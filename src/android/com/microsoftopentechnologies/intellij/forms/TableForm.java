@@ -135,6 +135,12 @@ public class TableForm extends JDialog {
 
                         String tableName = tableNameTextField.getText();
 
+                        if(!tableName.matches("^[A-Za-z][A-Za-z0-9_]+")) {
+                            JOptionPane.showMessageDialog(form, "Invalid service name. Table name must start with a letter, \n" +
+                                    "contain only letters, numbers, and undercores.", "Error creating the table", JOptionPane.ERROR_MESSAGE);
+                            return;
+                        }
+
                         try {
                             form.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
