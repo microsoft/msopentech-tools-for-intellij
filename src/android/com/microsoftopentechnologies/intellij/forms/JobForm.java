@@ -124,6 +124,12 @@ public class JobForm extends JDialog {
                     SimpleDateFormat ISO8601DATEFORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.ENGLISH);
                     String now = ISO8601DATEFORMAT.format(new Date());
 
+                    if (!jobName.matches("^[A-Za-z][A-Za-z0-9_]+")) {
+                        JOptionPane.showMessageDialog(form, "Invalid table name. Service name must start with a letter and \n" +
+                                "contain only letters, numbers, and underscores.", "Error creating the table", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+
                     if(id == null)
                         AzureRestAPIManager.getManager().createJob(subscriptionId, serviceName, jobName, interval, unit, now);
                     else {
