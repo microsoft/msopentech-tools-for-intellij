@@ -43,11 +43,13 @@ public class ${activityClass} extends Activity {
             @Override
             public void onSuccess(List<Message> messages) {
                 // handle success
+
             }
 
             @Override
             public void onFailure(Throwable throwable) {
                 // handle failure
+
             }
         });
 </#if>
@@ -57,11 +59,13 @@ public class ${activityClass} extends Activity {
             @Override
             public void onSuccess(List<Item> messages) {
                 // handle success
+
             }
 
             @Override
             public void onFailure(Throwable throwable) {
                 // handle failure
+
             }
         });
 </#if>
@@ -71,11 +75,13 @@ public class ${activityClass} extends Activity {
             @Override
             public void onSuccess(List<SPList> messages) {
                 // handle success
+
             }
 
             @Override
             public void onFailure(Throwable throwable) {
                 // handle failure
+
             }
         });
 </#if>

@@ -22,9 +22,10 @@ import com.intellij.ui.wizard.WizardNavigationState;
 import com.intellij.ui.wizard.WizardStep;
 import com.microsoftopentechnologies.intellij.forms.CreateNewServiceForm;
 import com.microsoftopentechnologies.intellij.forms.ManageSubscriptionForm;
-import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIManager;
 import com.microsoftopentechnologies.intellij.helpers.ReadOnlyCellTableModel;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
+import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
+import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIManager;
 import com.microsoftopentechnologies.intellij.model.Service;
 import com.microsoftopentechnologies.intellij.model.Subscription;
 
@@ -133,17 +134,39 @@ public class AzureMobileServiceStep extends WizardStep<AddServiceWizardModel> {
                 UIHelper.packAndCenterJDialog(form);
                 form.setVisible(true);
 
-                if(form.getDialogResult() == ManageSubscriptionForm.DialogResult.OK) {
+                if (form.getDialogResult() == ManageSubscriptionForm.DialogResult.OK) {
                     fillList();
                 } else {
-                    // clear the mobile services list
-                    final ReadOnlyCellTableModel messageTableModel = new ReadOnlyCellTableModel();
-                    messageTableModel.addColumn("Message");
-                    Vector<String> vector = new Vector<String>();
-                    vector.add("Please sign in/import your Azure subscription.");
-                    messageTableModel.addRow(vector);
+                    try {
+                        List<Subscription> subscriptionList = AzureRestAPIManager.getManager().getSubscriptionList();
 
-                    mobileServices.setModel(messageTableModel);
+                        if (subscriptionList == null || subscriptionList.size() == 0) {
+                            buttonAddService.setEnabled(false);
+
+                            // clear the mobile services list
+                            final ReadOnlyCellTableModel messageTableModel = new ReadOnlyCellTableModel();
+                            messageTableModel.addColumn("Message");
+                            Vector<String> vector = new Vector<String>();
+                            vector.add("Please sign in/import your Azure subscriptions.");
+                            messageTableModel.addRow(vector);
+
+                            mobileServices.setModel(messageTableModel);
+                        } else {
+                            fillList();
+                        }
+                    } catch (AzureCmdException e) {
+                        final ReadOnlyCellTableModel messageTableModel = new ReadOnlyCellTableModel();
+                        messageTableModel.addColumn("Message");
+                        Vector<String> vector = new Vector<String>();
+                        vector.add("There has been an error while retrieving the configured Azure subscriptions.");
+
+                        messageTableModel.addRow(vector);
+                        vector = new Vector<String>();
+                        vector.add("Please retry signing in/importing your Azure subscriptions.");
+                        messageTableModel.addRow(vector);
+
+                        mobileServices.setModel(messageTableModel);
+                    }
                 }
             }
         });
@@ -270,7 +293,7 @@ public class AzureMobileServiceStep extends WizardStep<AddServiceWizardModel> {
                         }
 
                         Vector<String> vector = new Vector<String>();
-                        vector.add("There are no imported Azure subscriptions");
+                        vector.add("Please sign in/import your Azure subscriptions.");
                         messageTableModel.addRow(vector);
                         mobileServices.setModel(messageTableModel);
 

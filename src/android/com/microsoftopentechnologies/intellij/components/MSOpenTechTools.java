@@ -133,10 +133,7 @@ public class MSOpenTechTools extends ApplicationComponent.Adapter {
         // save the current plugin version
         properties.setValue(AppSettingsNames.CURRENT_PLUGIN_VERSION, getSettings().getPluginVersion());
 
-        // TODO: Instead of checking for an "ok" value to decide whether the activity templates in Android Studio
-        // should be deleted or not, we should version the Android Studio templates zip and check if the version
-        // currently installed matches what's shipped in the plugin or not. If it doesn't match then we delete.
-        if (cleanTempData.isEmpty()) {
+        if (cleanTempData.isEmpty() || !cleanTempData.equals(settings.getPluginVersion()) ) {
             try {
                 AndroidStudioHelper.deleteActivityTemplates(this);
 
@@ -162,7 +159,7 @@ public class MSOpenTechTools extends ApplicationComponent.Adapter {
                     });
                 }
 
-                propComp.setValue(AppSettingsNames.CLEAN_TEMP_DATA, "OK");
+                propComp.setValue(AppSettingsNames.CLEAN_TEMP_DATA, settings.getPluginVersion());
 
             } catch (Exception e) {
                 UIHelper.showException("Error deleting older templates", e);

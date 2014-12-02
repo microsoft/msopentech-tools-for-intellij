@@ -58,12 +58,12 @@ public class ${activityClass} extends Activity {
             createAndShowDialog(e, "Error trying to get mobile service. Invalid URL");
         }
         </#if>
+
         <#if includeNotificationHub>
         try {
             //Use the NotificationHub object to register to GCM by getting the registration ID and using the register method
             NotificationHub notificationHub = NotificationHubsHelper.getNotificationHub(this);
             notificationHub.register("GCM_REGISTRATION_ID");
-
         } catch (Exception e) {
             createAndShowDialog(e, "Error registering notification hub");
         }
@@ -80,9 +80,11 @@ public class ${activityClass} extends Activity {
      */
     private void createAndShowDialog(Exception exception, String title) {
         Throwable ex = exception;
+
         if(exception.getCause() != null){
             ex = exception.getCause();
         }
+
         createAndShowDialog(ex.getMessage(), title);
     }
 

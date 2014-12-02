@@ -20,8 +20,8 @@ limitations under the License.
     revision="1"
     name="Azure Services Activity"
     description="Creates a new activity that initiates and connects to Azure services such as Mobile Services and Notification Hub."
-    minApi="7"
-    minBuildApi="7">
+    minApi="8"
+    minBuildApi="8">
 
     <category value="Microsoft" />
     <formfactor value="Mobile" />
