@@ -18,8 +18,8 @@ package com.microsoftopentechnologies.intellij.forms;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
-import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIManager;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
+import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIManager;
 import com.microsoftopentechnologies.intellij.model.CustomAPI;
 import com.microsoftopentechnologies.intellij.model.CustomAPIPermissions;
 import com.microsoftopentechnologies.intellij.model.PermissionItem;
@@ -106,7 +106,7 @@ public class CustomAPIForm extends JDialog {
                     @Override
                     public void run() {
 
-                        String tableName = tableNameTextField.getText();
+                        String apiName = tableNameTextField.getText().trim();
 
                         CustomAPIPermissions permissions = new CustomAPIPermissions();
                         permissions.setPatchPermission(((PermissionItem) patchPermissionComboBox.getSelectedItem()).getType());
@@ -118,11 +118,19 @@ public class CustomAPIForm extends JDialog {
                         try {
                             form.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
+
+
+                            if(!apiName.matches("^[A-Za-z][A-Za-z0-9_]+")) {
+                                JOptionPane.showMessageDialog(form, "Invalid api name. Api name must start with a letter, \n" +
+                                        "contain only letters, numbers, and undercores.", "Error creating the api", JOptionPane.ERROR_MESSAGE);
+                                return;
+                            }
+
                             if(editingCustomAPI == null) {
-                                AzureRestAPIManager.getManager().createCustomAPI(subscriptionId, serviceName, tableName, permissions);
+                                AzureRestAPIManager.getManager().createCustomAPI(subscriptionId, serviceName, apiName, permissions);
                             }
                             else {
-                                AzureRestAPIManager.getManager().updateCustomAPI(subscriptionId, serviceName, tableName, permissions);
+                                AzureRestAPIManager.getManager().updateCustomAPI(subscriptionId, serviceName, apiName, permissions);
                                 editingCustomAPI.setCustomAPIPermissions(permissions);
                             }
 
