@@ -133,9 +133,8 @@ public class MSOpenTechTools extends ApplicationComponent.Adapter {
         // save the current plugin version
         properties.setValue(AppSettingsNames.CURRENT_PLUGIN_VERSION, getSettings().getPluginVersion());
 
-        if (cleanTempData.isEmpty() || !cleanTempData.equals(settings.getPluginVersion()) ) {
-            try {
-                AndroidStudioHelper.deleteActivityTemplates(this);
+        try {
+            if (cleanTempData.isEmpty() || !cleanTempData.equals(settings.getPluginVersion()) ) {
 
                 String tmpdir = System.getProperty("java.io.tmpdir");
                 StringBuilder sb = new StringBuilder();
@@ -148,23 +147,22 @@ public class MSOpenTechTools extends ApplicationComponent.Adapter {
 
                 final VirtualFile tempFolder = LocalFileSystem.getInstance().findFileByIoFile(new File(sb.toString()));
                 if (tempFolder != null && tempFolder.exists()) {
-                    ApplicationManager.getApplication().runWriteAction(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                tempFolder.delete(MSOpenTechTools.getCurrent());
-                            } catch (IOException ignored) {
-                            }
-                        }
-                    });
+                    try {
+                        tempFolder.delete(MSOpenTechTools.getCurrent());
+                    } catch (IOException ignored) { }
                 }
 
                 propComp.setValue(AppSettingsNames.CLEAN_TEMP_DATA, settings.getPluginVersion());
 
-            } catch (Exception e) {
-                UIHelper.showException("Error deleting older templates", e);
+                AndroidStudioHelper.newActivityTemplateManager(true, this);
+
+            } else {
+                AndroidStudioHelper.newActivityTemplateManager(false, this);
             }
+        } catch (Exception e) {
+            UIHelper.showException("Error copying templates", e);
         }
+
     }
 
     @NotNull

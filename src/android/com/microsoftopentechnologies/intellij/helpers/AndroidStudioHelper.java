@@ -16,15 +16,18 @@
 
 package com.microsoftopentechnologies.intellij.helpers;
 
+import com.google.common.base.Utf8;
 import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
+import io.netty.handler.codec.base64.Base64Encoder;
 import sun.misc.IOUtils;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileSystemView;
+import javax.xml.bind.DatatypeConverter;
 import java.io.*;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -39,9 +42,7 @@ public class AndroidStudioHelper {
         return ApplicationInfo.getInstance().getVersionName().startsWith("Android Studio");
     }
 
-    public static void newActivityTemplateManager() throws IOException, InterruptedException {
-        String[] cmd = null;
-
+    public static void newActivityTemplateManager(boolean deleteTemplates, Object caller) throws IOException, InterruptedException {
         String templatePath = URLDecoder.decode(ApplicationComponent.class.getResource("").getPath().replace("file:/", ""), "UTF-8");
         templatePath = templatePath.replace("/", File.separator);
         templatePath = templatePath.substring(0, templatePath.indexOf(File.separator + "lib"));
@@ -50,7 +51,7 @@ public class AndroidStudioHelper {
 
         String[] env = null;
 
-        if(!new File(templatePath + mobileServicesTemplateName).exists()) {
+        if(deleteTemplates || !new File(templatePath + mobileServicesTemplateName).exists()) {
             String tmpDir = getTempLocation();
             copyResourcesRecursively(new File(tmpDir));
 
@@ -58,25 +59,40 @@ public class AndroidStudioHelper {
 
             if (System.getProperty("os.name").toLowerCase().startsWith("windows")) {
                 try {
+
+                    if(deleteTemplates) {
+                        VirtualFile mobileTemplate = LocalFileSystem.getInstance().findFileByIoFile(new File(templatePath + mobileServicesTemplateName));
+                        VirtualFile officeTemplate = LocalFileSystem.getInstance().findFileByIoFile(new File(templatePath + officeTemplateName));
+
+                        if(mobileTemplate != null)
+                            mobileTemplate.delete(caller);
+
+                        if(officeTemplate != null)
+                            officeTemplate.delete(caller);
+
+                    }
+
                     copyFolder(new File(tmpDir + mobileServicesTemplateName), new File(templatePath + mobileServicesTemplateName));
                     copyFolder(new File(tmpDir + officeTemplateName), new File(templatePath + officeTemplateName));
+
                 } catch (IOException ex) {
-                    PrintWriter printWriter = new PrintWriter(tmpDir + "\\script.bat");
-                    printWriter.println("@echo off");
-                    printWriter.println("md \"" + templatePath + mobileServicesTemplateName + "\"");
-                    printWriter.println("md \"" + templatePath + officeTemplateName + "\"");
-                    printWriter.println("xcopy \"" + tmpDir + mobileServicesTemplateName + "\" \"" + templatePath + mobileServicesTemplateName + "\" /s /i /Y");
-                    printWriter.println("xcopy \"" + tmpDir + officeTemplateName + "\" \"" + templatePath + officeTemplateName + "\" /s /i /Y");
-                    printWriter.flush();
-                    printWriter.close();
 
-                    String[] tmpcmd = {
-                        tmpDir + "elevate.exe",
-                        "script.bat",
-                        "1"
+                    String parameterFormat = "<Copy originPath='%s' targetPath='%s' deleteTarget='%s'/>";
+
+                    StringBuilder sb = new StringBuilder();
+                    sb.append("<WindowsTemplateCopyParameters>");
+                    sb.append(String.format(parameterFormat, tmpDir + mobileServicesTemplateName, templatePath + mobileServicesTemplateName, deleteTemplates ? "true" : "false"));
+                    sb.append(String.format(parameterFormat, tmpDir + officeTemplateName, templatePath + officeTemplateName, deleteTemplates ? "true" : "false"));
+                    sb.append("</WindowsTemplateCopyParameters>");
+                    String param = DatatypeConverter.printBase64Binary(sb.toString().getBytes("UTF-8"));
+
+
+                    String[] tmpCmd = {
+                         "cmd",
+                        "/c",
+                        tmpDir + "WindowsTemplateCopy.exe",
+                        param,
                     };
-
-                    cmd = tmpcmd;
 
                     ArrayList<String> tempenvlist = new ArrayList<String>();
                     for(String envval : System.getenv().keySet())
@@ -87,71 +103,116 @@ public class AndroidStudioHelper {
                     tempenvlist.toArray(env);
 
                     Runtime rt = Runtime.getRuntime();
-                    Process proc = rt.exec(cmd, env, new File(tmpDir));
-                    proc.waitFor();
+                    Process proc = rt.exec(tmpCmd, env, new File(tmpDir));
+                    int errorCode = proc.waitFor();
 
                     //wait for elevate command to finish
                     Thread.sleep(3000);
 
-                    if(!new File(templatePath + mobileServicesTemplateName).exists())
+                    if(!new File(templatePath + mobileServicesTemplateName).exists() || errorCode != 0)
                         UIHelper.showException("Error copying template files. Please refer to documentation to copy manually.", new Exception());
                 }
+            } else if (System.getProperty("os.name").toLowerCase().startsWith("mac")) {
+
+                String[] deleteAndCopy = {
+                        "osascript",
+                        "-e",
+                        "do shell script \"rm -r \\\"/" + templatePath + mobileServicesTemplateName + "\\\"\"",
+                        "-e",
+                        "do shell script \"rm -r \\\"/" + templatePath + officeTemplateName + "\\\"\"",
+                        "-e",
+                        "do shell script \"cp -Rp \\\"" + tmpDir + mobileServicesTemplateName + "\\\" \\\"/" + templatePath + "\\\"\"",
+                        "-e",
+                        "do shell script \"cp -Rp \\\"" + tmpDir + officeTemplateName + "\\\" \\\"/" + templatePath + "\\\"\""
+                };
+
+                String[] copy = {
+                        "osascript",
+                        "-e",
+                        "do shell script \"cp -Rp \\\"" + tmpDir + mobileServicesTemplateName + "\\\" \\\"/" + templatePath + "\\\"\"",
+                        "-e",
+                        "do shell script \"cp -Rp \\\"" + tmpDir + officeTemplateName + "\\\" \\\"/" + templatePath + "\\\"\""
+                };
+
+                exec(deleteTemplates ? deleteAndCopy : copy, tmpDir);
             } else {
-                if (System.getProperty("os.name").toLowerCase().startsWith("mac")) {
+                try {
 
-                    String[] strings = {
-                            "osascript",
-                    //        "-e",
-                    //        "do shell script \"mkdir -p \\\"/" + templatePath + mobileServicesTemplateName + "\\\"\"",
-                    //        "-e",
-                    //        "do shell script \"mkdir -p \\\"/" + templatePath + officeTemplateName + "\\\"\"",
-                            "-e",
-                            "do shell script \"cp -Rp \\\"" + tmpDir + mobileServicesTemplateName + "\\\" \\\"/" + templatePath + "\\\"\"",
-                            "-e",
-                            "do shell script \"cp -Rp \\\"" + tmpDir + officeTemplateName + "\\\" \\\"/" + templatePath + "\\\"\""
-                    };
+                    if(deleteTemplates) {
+                        VirtualFile mobileTemplate = LocalFileSystem.getInstance().findFileByIoFile(new File(templatePath + mobileServicesTemplateName));
+                        VirtualFile officeTemplate = LocalFileSystem.getInstance().findFileByIoFile(new File(templatePath + officeTemplateName));
 
-                    exec(strings, tmpDir);
-                } else {
-                    try {
+                        if(mobileTemplate != null)
+                            mobileTemplate.delete(caller);
 
-                        copyFolder(new File(tmpDir + mobileServicesTemplateName), new File(templatePath + mobileServicesTemplateName));
-                        copyFolder(new File(tmpDir + officeTemplateName), new File(templatePath + officeTemplateName));
+                        if(officeTemplate != null)
+                            officeTemplate.delete(caller);
+
+                    }
+
+                    copyFolder(new File(tmpDir + mobileServicesTemplateName), new File(templatePath + mobileServicesTemplateName));
+                    copyFolder(new File(tmpDir + officeTemplateName), new File(templatePath + officeTemplateName));
 
 
-                    } catch (IOException ex) {
+                } catch (IOException ex) {
 
-                        JPasswordField pf = new JPasswordField();
-                        int okCxl = JOptionPane.showConfirmDialog(null, pf, "To copy Microsoft Services templates, the plugin needs your password:", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+                    JPasswordField pf = new JPasswordField();
+                    int okCxl = JOptionPane.showConfirmDialog(null, pf, "To copy Microsoft Services templates, the plugin needs your password:", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
 
-                        if (okCxl == JOptionPane.OK_OPTION) {
-                            String password = new String(pf.getPassword());
-
-                            exec(new String[]{
-                                    "echo",
-                                    password,
-                                    "|",
-                                    "sudo",
-                                    "-S",
-                                    "cp",
-                                    "-Rp",
-                                    tmpDir + mobileServicesTemplateName,
-                                    templatePath + mobileServicesTemplateName
-                            }, tmpDir);
+                    if (okCxl == JOptionPane.OK_OPTION) {
+                        String password = new String(pf.getPassword());
 
 
-                            exec(new String[]{
-                                    "echo",
-                                    password,
-                                    "|",
-                                    "sudo",
-                                    "-S",
-                                    "cp",
-                                    "-Rp",
-                                    tmpDir + officeTemplateName,
-                                    templatePath + officeTemplateName
-                            }, tmpDir);
-                        }
+                        exec(new String[]{
+                                "echo",
+                                password,
+                                "|",
+                                "sudo",
+                                "-S",
+                                "rm",
+                                "-r",
+                                tmpDir + mobileServicesTemplateName,
+                                templatePath + mobileServicesTemplateName
+                        }, tmpDir);
+
+
+                        exec(new String[]{
+                                "echo",
+                                password,
+                                "|",
+                                "sudo",
+                                "-S",
+                                "rm",
+                                "-r",
+                                tmpDir + officeTemplateName,
+                                templatePath + officeTemplateName
+                        }, tmpDir);
+
+
+                        exec(new String[]{
+                                "echo",
+                                password,
+                                "|",
+                                "sudo",
+                                "-S",
+                                "cp",
+                                "-Rp",
+                                tmpDir + mobileServicesTemplateName,
+                                templatePath + mobileServicesTemplateName
+                        }, tmpDir);
+
+
+                        exec(new String[]{
+                                "echo",
+                                password,
+                                "|",
+                                "sudo",
+                                "-S",
+                                "cp",
+                                "-Rp",
+                                tmpDir + officeTemplateName,
+                                templatePath + officeTemplateName
+                        }, tmpDir);
                     }
                 }
             }
@@ -192,116 +253,6 @@ public class AndroidStudioHelper {
         }
     }
 
-    public static void deleteActivityTemplates(Object caller) throws IOException, InterruptedException {
-        String[] cmd = null;
-
-        String templatePath = URLDecoder.decode(ApplicationComponent.class.getResource("").getPath().replace("file:/", ""), "UTF-8");
-        templatePath = templatePath.replace("/", File.separator);
-        templatePath = templatePath.substring(0, templatePath.indexOf(File.separator + "lib"));
-        templatePath = templatePath + File.separator + "plugins" + File.separator + "android" + File.separator;
-        templatePath = templatePath + "lib" + File.separator + "templates" + File.separator + "activities" + File.separator;
-
-        String[] env = null;
-
-        String tmpDir = getTempLocation();
-//        copyResourcesRecursively(new File(tmpDir));
-
-        tmpDir = tmpDir + "MobileServiceTemplate" + File.separator;
-
-        if (System.getProperty("os.name").toLowerCase().startsWith("windows")) {
-            try{
-                VirtualFile mobileTemplate = LocalFileSystem.getInstance().findFileByIoFile(new File(templatePath + mobileServicesTemplateName));
-                VirtualFile officeTemplate = LocalFileSystem.getInstance().findFileByIoFile(new File(templatePath + officeTemplateName));
-
-                if(mobileTemplate != null)
-                    mobileTemplate.delete(caller);
-
-                if(officeTemplate != null)
-                    officeTemplate.delete(caller);
-            } catch (IOException ex) {
-                PrintWriter printWriter = new PrintWriter(tmpDir + "\\script.bat");
-                printWriter.println("@echo off");
-                printWriter.println("rd \"" + templatePath + mobileServicesTemplateName + "\" /Q /S");
-                printWriter.println("rd \"" + templatePath + officeTemplateName + "\" /Q /S");
-                printWriter.flush();
-                printWriter.close();
-
-                String[] tmpcmd = {
-                        tmpDir + "elevate.exe",
-                        "script.bat",
-                        "1"
-                };
-
-                cmd = tmpcmd;
-
-                ArrayList<String> tempenvlist = new ArrayList<String>();
-                for(String envval : System.getenv().keySet())
-                    tempenvlist.add(String.format("%s=%s", envval, System.getenv().get(envval)));
-
-                tempenvlist.add("PRECOMPILE_STREAMLINE_FILES=1");
-                env = new String[tempenvlist.size()];
-                tempenvlist.toArray(env);
-
-                Runtime rt = Runtime.getRuntime();
-                Process proc = rt.exec(cmd, env, new File(tmpDir));
-                proc.waitFor();
-            }
-        } else if (System.getProperty("os.name").toLowerCase().startsWith("mac")) {
-            VirtualFile mobileTemplate = LocalFileSystem.getInstance().findFileByIoFile(new File(templatePath + mobileServicesTemplateName));
-            VirtualFile officeTemplate = LocalFileSystem.getInstance().findFileByIoFile(new File(templatePath + officeTemplateName));
-
-            if(mobileTemplate != null && officeTemplate != null) {
-               exec(new String[]{
-                        "osascript",
-                        "-e",
-                        "do shell script \"rm -r \\\"/" + templatePath + mobileServicesTemplateName + "\\\"\"",
-                        "-e",
-                        "do shell script \"rm -r \\\"/" + templatePath + officeTemplateName + "\\\"\""
-                }, tmpDir);
-            }
-        } else {
-            try {
-                VirtualFile mobileTemplate = LocalFileSystem.getInstance().findFileByIoFile(new File(templatePath + mobileServicesTemplateName));
-                VirtualFile officeTemplate = LocalFileSystem.getInstance().findFileByIoFile(new File(templatePath + officeTemplateName));
-
-                mobileTemplate.delete(caller);
-                officeTemplate.delete(caller);
-            } catch (IOException ex) {
-
-                JPasswordField pf = new JPasswordField();
-                int okCxl = JOptionPane.showConfirmDialog(null, pf, "To copy Microsoft Services templates, the plugin needs your password:", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
-
-                if (okCxl == JOptionPane.OK_OPTION) {
-                    String password = new String(pf.getPassword());
-
-                    exec(new String[]{
-                            "echo",
-                            password,
-                            "|",
-                            "sudo",
-                            "-S",
-                            "rm",
-                            "-r",
-                            tmpDir + mobileServicesTemplateName,
-                            templatePath + mobileServicesTemplateName
-                    }, tmpDir);
-
-
-                    exec(new String[]{
-                            "echo",
-                            password,
-                            "|",
-                            "sudo",
-                            "-S",
-                            "rm",
-                            "-r",
-                            tmpDir + officeTemplateName,
-                            templatePath + officeTemplateName
-                    }, tmpDir);
-                }
-            }
-        }
-    }
 
     private static void exec(String[] cmd, String tmpdir) throws IOException, InterruptedException {
         String[] env = new String[]{"PRECOMPILE_STREAMLINE_FILES=1"};
