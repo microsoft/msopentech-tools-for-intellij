@@ -1,3 +1,0 @@
-c:\temp\firma_ps1\Build.1.0.0.1\WindowsTemplateCopy\AnyCPU\WindowsTemplateCopy.exe
-c:\Work\IntelliJ-IDEA-Plugins\Microsoft Windows Azure Plugin for IntelliJ\akrakovsky\msopentech-tools-for-intellij\WindowsTemplateCopy\WindowsTemplateCopy\obj\Release\WindowsTemplateCopy.csprojResolveAssemblyReference.cache
-c:\Work\IntelliJ-IDEA-Plugins\Microsoft Windows Azure Plugin for IntelliJ\akrakovsky\msopentech-tools-for-intellij\WindowsTemplateCopy\WindowsTemplateCopy\obj\Release\WindowsTemplateCopy.exe

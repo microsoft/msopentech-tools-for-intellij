@@ -1,4 +1,0 @@
-C:\Work\IntelliJ-IDEA-Plugins\Microsoft Windows Azure Plugin for IntelliJ\akrakovsky\msopentech-tools-for-intellij\WindowsTemplateCopy\WindowsTemplateCopy\bin\Debug\WindowsTemplateCopy.exe
-C:\Work\IntelliJ-IDEA-Plugins\Microsoft Windows Azure Plugin for IntelliJ\akrakovsky\msopentech-tools-for-intellij\WindowsTemplateCopy\WindowsTemplateCopy\bin\Debug\WindowsTemplateCopy.pdb
-C:\Work\IntelliJ-IDEA-Plugins\Microsoft Windows Azure Plugin for IntelliJ\akrakovsky\msopentech-tools-for-intellij\WindowsTemplateCopy\WindowsTemplateCopy\obj\Debug\WindowsTemplateCopy.exe
-C:\Work\IntelliJ-IDEA-Plugins\Microsoft Windows Azure Plugin for IntelliJ\akrakovsky\msopentech-tools-for-intellij\WindowsTemplateCopy\WindowsTemplateCopy\obj\Debug\WindowsTemplateCopy.pdb
