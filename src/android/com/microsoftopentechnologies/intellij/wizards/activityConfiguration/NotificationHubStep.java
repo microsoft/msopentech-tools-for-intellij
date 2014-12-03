@@ -150,23 +150,23 @@ public class NotificationHubStep extends WizardStep<AddServiceWizardModel> {
             return this;
         }
 
-        model.setSenderId(this.textSenderID.getText());
-        model.setConnectionString(this.textConnectionString.getText());
-        model.setHubName(this.textHubName.getText());
+        model.setSenderId(this.textSenderID.getText().trim());
+        model.setConnectionString(this.textConnectionString.getText().trim());
+        model.setHubName(this.textHubName.getText().trim());
         return super.onNext(model);
     }
 
     @Override
     public WizardStep onPrevious(AddServiceWizardModel model) {
-        model.setSenderId(this.textSenderID.getText());
-        model.setConnectionString(this.textConnectionString.getText());
-        model.setHubName(this.textHubName.getText());
+        model.setSenderId(this.textSenderID.getText().trim());
+        model.setConnectionString(this.textConnectionString.getText().trim());
+        model.setHubName(this.textHubName.getText().trim());
         return super.onPrevious(model);
     }
 
     private void validateTextFields() {
-        this.model.getCurrentNavigationState().NEXT.setEnabled(this.textSenderID.getText().length() > 0
-                && this.textConnectionString.getText().length() > 0
-                && this.textHubName.getText().length() > 0);
+        this.model.getCurrentNavigationState().NEXT.setEnabled(this.textSenderID.getText().trim().length() > 0
+                && this.textConnectionString.getText().trim().length() > 0
+                && this.textHubName.getText().trim().length() > 0);
     }
 }
