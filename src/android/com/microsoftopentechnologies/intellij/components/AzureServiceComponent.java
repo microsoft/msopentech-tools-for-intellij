@@ -83,11 +83,6 @@ public class AzureServiceComponent implements ProjectComponent {
                 });
             }
 
-            try {
-                AndroidStudioHelper.newActivityTemplateManager();
-            } catch (Throwable ex) {
-                UIHelper.showException("Error generating template", ex);
-            }
 
             synchronized (vflCount) {
                 if (vflCount.equals(0)) {

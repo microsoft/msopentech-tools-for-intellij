@@ -69,6 +69,8 @@ public class ManageSubscriptionForm extends JDialog {
         this.setTitle("Manage subscriptions");
         this.setModal(true);
         this.setContentPane(mainPanel);
+
+        this.setResizable(false);
         getRootPane().setDefaultButton(okButton);
 
         final ReadOnlyCellTableModel model = new ReadOnlyCellTableModel();

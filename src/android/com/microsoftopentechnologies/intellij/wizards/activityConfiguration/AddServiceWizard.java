@@ -39,7 +39,8 @@ public class AddServiceWizard extends WizardDialog<AddServiceWizardModel> {
     @Override
     protected Dimension getWindowPreferredSize() {
         this.getWindow();
-        return new Dimension(600, 350);
+        this.setResizable(false);
+        return new Dimension(767, 467);
     }
 
     @Override

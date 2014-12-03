@@ -119,9 +119,9 @@ public class NotificationHubStep extends WizardStep<AddServiceWizardModel> {
     public WizardStep onNext(AddServiceWizardModel model) {
         String error = "";
 
-        String senderId = this.textSenderID.getText();
-        String connectionString = this.textConnectionString.getText();
-        String hubName = this.textHubName.getText();
+        String senderId = this.textSenderID.getText().trim();
+        String connectionString = this.textConnectionString.getText().trim();
+        String hubName = this.textHubName.getText().trim();
 
         if (StringHelper.isNullOrWhiteSpace(senderId)) {
             error += "The Sender ID must not be empty.\n";
