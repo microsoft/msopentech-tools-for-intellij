@@ -18,8 +18,8 @@ package com.microsoftopentechnologies.intellij.forms;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
-import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIManager;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
+import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIManager;
 import com.microsoftopentechnologies.intellij.model.PermissionItem;
 import com.microsoftopentechnologies.intellij.model.PermissionType;
 import com.microsoftopentechnologies.intellij.model.Table;
@@ -133,7 +133,7 @@ public class TableForm extends JDialog {
                         tablePermisions.setRead(((PermissionItem)readPermissionComboBox.getSelectedItem()).getType());
                         tablePermisions.setInsert(((PermissionItem)insertPermisssionComboBox.getSelectedItem()).getType());
 
-                        String tableName = tableNameTextField.getText();
+                        String tableName = tableNameTextField.getText().trim();
 
                         if(!tableName.matches("^[A-Za-z][A-Za-z0-9_]+")) {
                             JOptionPane.showMessageDialog(form, "Invalid service name. Table name must start with a letter, \n" +

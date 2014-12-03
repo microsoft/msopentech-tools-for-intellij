@@ -18,8 +18,8 @@ package com.microsoftopentechnologies.intellij.forms;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
-import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIManager;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
+import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIManager;
 import com.microsoftopentechnologies.intellij.model.CustomAPI;
 import com.microsoftopentechnologies.intellij.model.CustomAPIPermissions;
 import com.microsoftopentechnologies.intellij.model.PermissionItem;
@@ -106,7 +106,7 @@ public class CustomAPIForm extends JDialog {
                     @Override
                     public void run() {
 
-                        String apiName = tableNameTextField.getText();
+                        String apiName = tableNameTextField.getText().trim();
 
                         CustomAPIPermissions permissions = new CustomAPIPermissions();
                         permissions.setPatchPermission(((PermissionItem) patchPermissionComboBox.getSelectedItem()).getType());

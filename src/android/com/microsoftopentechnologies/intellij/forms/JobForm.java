@@ -17,8 +17,8 @@
 package com.microsoftopentechnologies.intellij.forms;
 
 import com.intellij.openapi.project.Project;
-import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIManager;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
+import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIManager;
 import com.microsoftopentechnologies.intellij.model.Job;
 
 import javax.swing.*;
@@ -31,6 +31,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 import java.util.UUID;
+
+import static java.lang.Integer.parseInt;
 
 public class JobForm extends JDialog {
     private JPanel mainPanel;
@@ -99,7 +101,7 @@ public class JobForm extends JDialog {
                     JFormattedTextField field = (JFormattedTextField) jComponent;
 
                     try {
-                        Integer.parseInt(field.getText());
+                        parseInt(field.getText());
                     } catch(NumberFormatException e) {
                         return false;
                     }
@@ -117,8 +119,8 @@ public class JobForm extends JDialog {
                 try {
                     form.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
-                    String jobName = jobNameTextField.getText();
-                    int interval = onDemandRadioButton.isSelected() ? 0 : Integer.parseInt(intervalFormattedTextField.getText());
+                    String jobName = jobNameTextField.getText().trim();
+                    int interval = onDemandRadioButton.isSelected() ? 0 : parseInt(intervalFormattedTextField.getText());
                     String unit = onDemandRadioButton.isSelected() ? "none" : Job.getUnits()[intervalUnitComboBox.getSelectedIndex()];
 
                     SimpleDateFormat ISO8601DATEFORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.ENGLISH);
@@ -180,7 +182,7 @@ public class JobForm extends JDialog {
             int index = 0;
             String[] units = Job.getUnits();
             for(int i = 0; i < units.length; i++)
-                if(job.getIntervalUnit() == units[i])
+                if(job.getIntervalUnit().equals(units[i]))
                     index = i;
 
             intervalUnitComboBox.setSelectedIndex(index);
@@ -215,7 +217,7 @@ public class JobForm extends JDialog {
         job.setEnabled(enabledCheckBox.isSelected());
         if(scheduledRadioButton.isSelected()) {
             job.setIntervalUnit(Job.getUnits()[intervalUnitComboBox.getSelectedIndex()]);
-            job.setIntervalPeriod(Integer.parseInt(intervalFormattedTextField.getText()));
+            job.setIntervalPeriod(parseInt(intervalFormattedTextField.getText()));
         }
 
         return job;
