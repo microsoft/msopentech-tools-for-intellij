@@ -88,7 +88,6 @@ public class EditJobAction extends AnAction {
                 }
             });
             form.setSubscriptionId(UUID.fromString(subscriptionId));
-            form.setProject(e.getProject());
             form.pack();
             form.setVisible(true);
         }

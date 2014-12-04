@@ -31,6 +31,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
 import java.util.UUID;
 
 public class CustomAPIForm extends JDialog {
@@ -125,6 +126,18 @@ public class CustomAPIForm extends JDialog {
                                         "contain only letters, numbers, and undercores.", "Error creating the api", JOptionPane.ERROR_MESSAGE);
                                 return;
                             }
+                            ArrayList<String> existingApiNames = new ArrayList<String>();
+
+                            for (CustomAPI api : AzureRestAPIManager.getManager().getAPIList(subscriptionId, serviceName)) {
+                                existingApiNames.add(api.getName().toLowerCase());
+                            }
+
+                            if(existingApiNames.contains(apiName.toLowerCase())) {
+                                JOptionPane.showMessageDialog(form, "Invalid API name. An API with that name already exists in this service.",
+                                        "Error creating the API", JOptionPane.ERROR_MESSAGE);
+                                return;
+                            }
+
 
                             if(editingCustomAPI == null) {
                                 AzureRestAPIManager.getManager().createCustomAPI(subscriptionId, serviceName, apiName, permissions);

@@ -28,6 +28,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 import java.util.UUID;
@@ -49,7 +50,6 @@ public class JobForm extends JDialog {
     private UUID id;
     private String serviceName;
     private UUID subscriptionId;
-    private Project project;
 
     public void setAfterSave(Runnable afterSave) {
         this.afterSave = afterSave;
@@ -133,6 +133,19 @@ public class JobForm extends JDialog {
                         return;
                     }
 
+
+                    ArrayList<String> existingJobNames = new ArrayList<String>();
+
+                    for (Job job : AzureRestAPIManager.getManager().listJobs(subscriptionId, serviceName)) {
+                        existingJobNames.add(job.getName().toLowerCase());
+                    }
+
+                    if(existingJobNames.contains(jobName.toLowerCase())) {
+                        JOptionPane.showMessageDialog(form, "Invalid job name. A job with that name already exists in this service.",
+                                "Error creating the job", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+
                     if(id == null)
                         AzureRestAPIManager.getManager().createJob(subscriptionId, serviceName, jobName, interval, unit, now);
                     else {
@@ -205,10 +218,6 @@ public class JobForm extends JDialog {
         onDemandLabel.setEnabled(onDemandRadioButton.isSelected());
     }
 
-    public void setProject(Project project) {
-        this.project = project;
-    }
-
     public Job getEditingJob() {
         Job job = new Job();
 
@@ -222,4 +231,5 @@ public class JobForm extends JDialog {
 
         return job;
     }
+
 }
