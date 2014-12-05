@@ -24,6 +24,7 @@ import com.microsoftopentechnologies.intellij.model.PermissionItem;
 import com.microsoftopentechnologies.intellij.model.PermissionType;
 import com.microsoftopentechnologies.intellij.model.Table;
 import com.microsoftopentechnologies.intellij.model.TablePermissions;
+import org.apache.commons.lang.ArrayUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -31,6 +32,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.UUID;
 
 
@@ -66,6 +69,8 @@ public class TableForm extends JDialog {
     public void setAfterSave(Runnable afterSave) {
         this.afterSave = afterSave;
     }
+
+    private ArrayList<String> existingTableNames;
 
     public void setEditingTable(Table editingTable) {
 
@@ -126,28 +131,40 @@ public class TableForm extends JDialog {
                 ApplicationManager.getApplication().invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        TablePermissions tablePermisions = new TablePermissions();
-
-                        tablePermisions.setDelete(((PermissionItem)deletePermissionComboBox.getSelectedItem()).getType());
-                        tablePermisions.setUpdate(((PermissionItem)updatePermissionComboBox.getSelectedItem()).getType());
-                        tablePermisions.setRead(((PermissionItem)readPermissionComboBox.getSelectedItem()).getType());
-                        tablePermisions.setInsert(((PermissionItem)insertPermisssionComboBox.getSelectedItem()).getType());
-
-                        String tableName = tableNameTextField.getText().trim();
-
-                        if(!tableName.matches("^[A-Za-z][A-Za-z0-9_]+")) {
-                            JOptionPane.showMessageDialog(form, "Invalid service name. Table name must start with a letter, \n" +
-                                    "contain only letters, numbers, and undercores.", "Error creating the table", JOptionPane.ERROR_MESSAGE);
-                            return;
-                        }
-
                         try {
+                            TablePermissions tablePermissions = new TablePermissions();
+
+                            tablePermissions.setDelete(((PermissionItem) deletePermissionComboBox.getSelectedItem()).getType());
+                            tablePermissions.setUpdate(((PermissionItem) updatePermissionComboBox.getSelectedItem()).getType());
+                            tablePermissions.setRead(((PermissionItem) readPermissionComboBox.getSelectedItem()).getType());
+                            tablePermissions.setInsert(((PermissionItem) insertPermisssionComboBox.getSelectedItem()).getType());
+
+                            String tableName = tableNameTextField.getText().trim();
+
+                            if(!tableName.matches("^[A-Za-z][A-Za-z0-9_]+")) {
+                                JOptionPane.showMessageDialog(form, "Invalid table name. Table name must start with a letter, \n" +
+                                        "contain only letters, numbers, and underscores.", "Error creating the table", JOptionPane.ERROR_MESSAGE);
+                                return;
+                            }
+
+
+                            ArrayList<String> existingTableNamesLowerCase = new ArrayList<String>();
+                            for (String existingTableName : existingTableNames) {
+                                existingTableNamesLowerCase.add(existingTableName.toLowerCase());
+                            }
+
+                            if(existingTableNamesLowerCase.contains(tableName.toLowerCase())) {
+                                JOptionPane.showMessageDialog(form, "Invalid table name. A table with that name already exists in this service.",
+                                        "Error creating the table", JOptionPane.ERROR_MESSAGE);
+                                return;
+                            }
+
                             form.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
                             if(editingTable == null) {
-                                AzureRestAPIManager.getManager().createTable(subscriptionId, serviceName, tableName, tablePermisions);
+                                AzureRestAPIManager.getManager().createTable(subscriptionId, serviceName, tableName, tablePermissions);
                             } else {
-                                AzureRestAPIManager.getManager().updateTable(subscriptionId, serviceName, tableName, tablePermisions);
+                                AzureRestAPIManager.getManager().updateTable(subscriptionId, serviceName, tableName, tablePermissions);
                             }
                             if(afterSave != null)
                                 afterSave.run();
@@ -175,4 +192,7 @@ public class TableForm extends JDialog {
         return 0;
     }
 
+    public void setExistingTableNames(ArrayList<String> existingTableNames) {
+        this.existingTableNames = existingTableNames;
+    }
 }

@@ -322,6 +322,12 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory {
                     form.setSubscriptionId(item.getSubcriptionId());
                     form.setProject(p);
 
+                    ArrayList<String> existingTables = new ArrayList<String>();
+                    for (Table table : item.getTables())
+                        existingTables.add(table.getName());
+
+                    form.setExistingTableNames(existingTables);
+
                     form.setAfterSave(new Runnable() {
                         @Override
                         public void run() {
@@ -362,7 +368,6 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory {
                     JobForm form = new JobForm();
                     form.setServiceName(item.getName());
                     form.setSubscriptionId(item.getSubcriptionId());
-                    form.setProject(p);
                     form.setTitle("Create new Job");
 
                     form.setAfterSave(new Runnable() {
@@ -551,7 +556,6 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory {
                     form.setServiceName(serviceName);
                     form.setTitle("Edit job");
                     form.setSubscriptionId(UUID.fromString(subscriptionId));
-                    form.setProject(p);
                     form.setAfterSave(new Runnable() {
                         @Override
                         public void run() {

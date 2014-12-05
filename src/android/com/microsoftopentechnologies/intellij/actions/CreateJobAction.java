@@ -69,7 +69,6 @@ public class CreateJobAction extends AnAction {
         form.setServiceName(serviceName);
         form.setSubscriptionId(UUID.fromString(subscriptionId));
         form.setTitle("Create new Job");
-        form.setProject(e.getProject());
         form.setAfterSave(new Runnable() {
             @Override
             public void run() {
