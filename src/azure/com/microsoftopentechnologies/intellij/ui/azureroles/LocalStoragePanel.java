@@ -47,7 +47,20 @@ import java.util.Map;
 import static com.microsoftopentechnologies.intellij.ui.messages.AzureBundle.message;
 
 public class LocalStoragePanel extends BaseConfigurable implements SearchableConfigurable, Configurable.NoScroll {
+    private enum RecycleType {
+        CLEAN(message("lclStgClean")), PRESERVE(message("lclStgPsv"));
 
+        private String name;
+
+        RecycleType(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public String toString() {
+            return name;
+        }
+    }
     private JPanel contentPane;
     private JPanel tablePanel;
     private TableView<WindowsAzureLocalStorage> tblResources;
@@ -159,12 +172,12 @@ public class LocalStoragePanel extends BaseConfigurable implements SearchableCon
         }
     };
 
-    private final ColumnInfo<WindowsAzureLocalStorage, String> RECYCLE = new ColumnInfo<WindowsAzureLocalStorage, String>(message("lclStgRcl")) {
-        public String valueOf(WindowsAzureLocalStorage object) {
+    private final ColumnInfo<WindowsAzureLocalStorage, RecycleType> RECYCLE = new ColumnInfo<WindowsAzureLocalStorage, RecycleType>(message("lclStgRcl")) {
+        public RecycleType valueOf(WindowsAzureLocalStorage object) {
             if (object.getCleanOnRecycle()) {
-                return message("lclStgClean");
+                return RecycleType.CLEAN;
             } else {
-                return message("lclStgPsv");
+                return RecycleType.PRESERVE;
             }
         }
 
@@ -174,9 +187,9 @@ public class LocalStoragePanel extends BaseConfigurable implements SearchableCon
         }
 
         @Override
-        public void setValue(WindowsAzureLocalStorage entry, String modifiedVal) {
+        public void setValue(WindowsAzureLocalStorage entry, RecycleType modifiedVal) {
             try {
-                entry.setCleanOnRecycle(modifiedVal.toString().equals("0"));
+                entry.setCleanOnRecycle(modifiedVal == RecycleType.CLEAN);
                 setModified(true);
             } catch (Exception e) {
                 PluginUtil.displayErrorDialogAndLog(message("certErrTtl"), message("certErrMsg"), e);
