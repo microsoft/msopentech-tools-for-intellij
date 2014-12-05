@@ -16,7 +16,6 @@
 
 package com.microsoftopentechnologies.intellij.forms;
 
-import com.intellij.openapi.project.Project;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIManager;
 import com.microsoftopentechnologies.intellij.model.Job;
@@ -28,10 +27,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Locale;
-import java.util.UUID;
+import java.util.*;
+import java.util.List;
 
 import static java.lang.Integer.parseInt;
 
@@ -50,6 +47,8 @@ public class JobForm extends JDialog {
     private UUID id;
     private String serviceName;
     private UUID subscriptionId;
+
+    private List<String> existingJobNames;
 
     public void setAfterSave(Runnable afterSave) {
         this.afterSave = afterSave;
@@ -128,19 +127,23 @@ public class JobForm extends JDialog {
 
 
                     if(!jobName.matches("^[A-Za-z][A-Za-z0-9_]+")) {
+                        form.setCursor(Cursor.getDefaultCursor());
                         JOptionPane.showMessageDialog(form, "Invalid service name. Job name must start with a letter, \n" +
                                 "contain only letters, numbers, and undercores.", "Error creating the job", JOptionPane.ERROR_MESSAGE);
                         return;
                     }
 
 
-                    ArrayList<String> existingJobNames = new ArrayList<String>();
+                    if(existingJobNames == null) {
+                        existingJobNames = new ArrayList<String>();
 
-                    for (Job job : AzureRestAPIManager.getManager().listJobs(subscriptionId, serviceName)) {
-                        existingJobNames.add(job.getName().toLowerCase());
+                        for (Job job : AzureRestAPIManager.getManager().listJobs(subscriptionId, serviceName)) {
+                            existingJobNames.add(job.getName().toLowerCase());
+                        }
                     }
 
                     if(existingJobNames.contains(jobName.toLowerCase())) {
+                        form.setCursor(Cursor.getDefaultCursor());
                         JOptionPane.showMessageDialog(form, "Invalid job name. A job with that name already exists in this service.",
                                 "Error creating the job", JOptionPane.ERROR_MESSAGE);
                         return;

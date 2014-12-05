@@ -32,6 +32,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class CustomAPIForm extends JDialog {
@@ -49,7 +50,7 @@ public class CustomAPIForm extends JDialog {
     private Project project;
     private CustomAPI editingCustomAPI;
     private Runnable afterSave;
-
+    private List<String> existingApiNames;
 
     public Project getProject() {
         return project;
@@ -119,20 +120,23 @@ public class CustomAPIForm extends JDialog {
                         try {
                             form.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
-
-
                             if(!apiName.matches("^[A-Za-z][A-Za-z0-9_]+")) {
+                                form.setCursor(Cursor.getDefaultCursor());
                                 JOptionPane.showMessageDialog(form, "Invalid api name. Api name must start with a letter, \n" +
                                         "contain only letters, numbers, and undercores.", "Error creating the api", JOptionPane.ERROR_MESSAGE);
                                 return;
                             }
-                            ArrayList<String> existingApiNames = new ArrayList<String>();
 
-                            for (CustomAPI api : AzureRestAPIManager.getManager().getAPIList(subscriptionId, serviceName)) {
-                                existingApiNames.add(api.getName().toLowerCase());
+                            if(existingApiNames == null) {
+                                existingApiNames = new ArrayList<String>();
+
+                                for (CustomAPI api : AzureRestAPIManager.getManager().getAPIList(subscriptionId, serviceName)) {
+                                    existingApiNames.add(api.getName().toLowerCase());
+                                }
                             }
 
                             if(existingApiNames.contains(apiName.toLowerCase())) {
+                                form.setCursor(Cursor.getDefaultCursor());
                                 JOptionPane.showMessageDialog(form, "Invalid API name. An API with that name already exists in this service.",
                                         "Error creating the API", JOptionPane.ERROR_MESSAGE);
                                 return;
