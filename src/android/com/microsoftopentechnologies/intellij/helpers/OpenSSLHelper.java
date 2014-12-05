@@ -40,8 +40,17 @@ public class OpenSSLHelper {
     String path;
 
     public static boolean existsOpenSSL() throws AzureCmdException {
+        boolean result = false;
         String path = getOpenSSLPath();
-        return (path != null && !path.isEmpty());
+
+        if (path != null && !path.isEmpty()) {
+            try {
+                result = new File(path).exists();
+            } catch (Throwable t) {
+            }
+        }
+
+        return result;
     }
 
     private static String getOpenSSLPath() {
