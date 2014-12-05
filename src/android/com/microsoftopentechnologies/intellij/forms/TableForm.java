@@ -147,7 +147,13 @@ public class TableForm extends JDialog {
                                 return;
                             }
 
-                            if(existingTableNames.contains(tableName.toLowerCase())) {
+
+                            ArrayList<String> existingTableNamesLowerCase = new ArrayList<String>();
+                            for (String existingTableName : existingTableNames) {
+                                existingTableNamesLowerCase.add(existingTableName.toLowerCase());
+                            }
+
+                            if(existingTableNamesLowerCase.contains(tableName.toLowerCase())) {
                                 JOptionPane.showMessageDialog(form, "Invalid table name. A table with that name already exists in this service.",
                                         "Error creating the table", JOptionPane.ERROR_MESSAGE);
                                 return;

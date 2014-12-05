@@ -324,7 +324,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory {
 
                     ArrayList<String> existingTables = new ArrayList<String>();
                     for (Table table : item.getTables())
-                        existingTables.add(table.getName().toLowerCase());
+                        existingTables.add(table.getName());
 
                     form.setExistingTableNames(existingTables);
 
