@@ -59,6 +59,7 @@ public class RolesConfigurable extends SearchableConfigurable.Parent.Abstract {
                 new RoleEndpointsPanel(module, waProjManager, windowsAzureRole),
                 new EnvVarsPanel(module, waProjManager, windowsAzureRole),
                 new LoadBalancingPanel(waProjManager, windowsAzureRole),
+                new LocalStoragePanel(module, waProjManager, windowsAzureRole),
                 new ServerConfigurationConfigurable(module, waProjManager, windowsAzureRole),
                 new SSLOffloadingPanel(module, waProjManager, windowsAzureRole)};
     }
