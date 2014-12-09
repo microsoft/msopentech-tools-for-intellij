@@ -17,6 +17,7 @@ package com.microsoftopentechnologies.intellij.helpers;
 
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.util.io.FileUtil;
+import com.microsoftopentechnologies.intellij.forms.OpenSSLFinderForm;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIHelper;
 import org.w3c.dom.Document;
@@ -36,20 +37,6 @@ import java.io.*;
 
 public class OpenSSLHelper {
     public static final String PASSWORD = "Java6NeedsPwd";
-
-    public static boolean existsOpenSSL() throws AzureCmdException {
-        boolean result = false;
-        String path = getOpenSSLPath();
-
-        if (path != null && !path.isEmpty()) {
-            try {
-                result = new File(path).exists();
-            } catch (Throwable ignored) {
-            }
-        }
-
-        return result;
-    }
 
     public static String processCertificate(String xmlPublishSettings) throws AzureCmdException {
         try {
@@ -85,7 +72,9 @@ public class OpenSSLHelper {
                 pfxOutputStream.close();
 
                 String path = getOpenSSLPath();
-                if (!path.endsWith(File.separator)) {
+                if (path == null || path.isEmpty()) {
+                    throw new Exception("Please configure a valid OpenSSL executable location.");
+                } else if (!path.endsWith(File.separator)) {
                     path = path + File.separator;
                 }
 
@@ -127,24 +116,62 @@ public class OpenSSLHelper {
     }
 
     private static String getOpenSSLPath() {
-        PropertiesComponent propertiesComponent = PropertiesComponent.getInstance();
+        PropertiesComponent pc = PropertiesComponent.getInstance();
+        String opendSSLlPath = pc.getValue("MSOpenSSLPath", "");
 
-        if (propertiesComponent.isValueSet("MSOpenSSLPath")) {
-            return propertiesComponent.getValue("MSOpenSSLPath");
-        } else {
-            try {
-                String mOsVersion = System.getProperty("os.name");
-                String osName = mOsVersion.split(" ")[0];
+        if (!validOpenSSLPath(opendSSLlPath)) {
+            opendSSLlPath = getOpenSSLPathFromEnvironment();
 
-                String cmd = osName.equals("Windows") ? "where openssl" : "which openssl";
-                Process p = Runtime.getRuntime().exec(cmd);
-                BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            if (!validOpenSSLPath(opendSSLlPath)) {
+                opendSSLlPath = promptForOpenSSLPath(pc);
 
-                return new File(reader.readLine()).getParent();
-            } catch (Throwable e) {
-                return null;
+                if (!validOpenSSLPath(opendSSLlPath)) {
+                    opendSSLlPath = null;
+                }
             }
         }
+
+        return opendSSLlPath;
+    }
+
+    private static String getOpenSSLPathFromEnvironment() {
+        String osslPath = null;
+
+        try {
+            String mOsVersion = System.getProperty("os.name");
+            String osName = mOsVersion.split(" ")[0];
+
+            String cmd = osName.equals("Windows") ? "where openssl" : "which openssl";
+            Process p = Runtime.getRuntime().exec(cmd);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
+
+            osslPath = new File(reader.readLine()).getParent();
+        } catch (Throwable ignored) {
+        }
+
+        return osslPath;
+    }
+
+    private static String promptForOpenSSLPath(PropertiesComponent pc) {
+        OpenSSLFinderForm openSSLFinderForm = new OpenSSLFinderForm();
+        openSSLFinderForm.setModal(true);
+        UIHelper.packAndCenterJDialog(openSSLFinderForm);
+        openSSLFinderForm.setVisible(true);
+
+        return pc.getValue("MSOpenSSLPath", "");
+    }
+
+    private static boolean validOpenSSLPath(String osslPath) {
+        boolean result = false;
+
+        if (osslPath != null && !osslPath.isEmpty()) {
+            try {
+                result = new File(osslPath).exists();
+            } catch (Throwable ignored) {
+            }
+        }
+
+        return result;
     }
 
     private static void runCommand(String[] cmd, File path) throws AzureCmdException, IOException, InterruptedException {

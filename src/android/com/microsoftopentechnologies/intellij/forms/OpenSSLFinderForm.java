@@ -89,9 +89,9 @@ public class OpenSSLFinderForm extends JDialog {
                 FileChooser.chooseFile(fileChooserDescriptor, null, null, new Consumer<VirtualFile>() {
                     @Override
                     public void consume(VirtualFile virtualFile) {
-                        if (virtualFile != null)
+                        if (virtualFile != null) {
                             txtFile.setText(virtualFile.getParent().getPath());
-
+                        }
                     }
                 });
             }
@@ -100,12 +100,11 @@ public class OpenSSLFinderForm extends JDialog {
 
 
     private void onOK() {
-
         if (txtFile.getText() == null || txtFile.getText().isEmpty()) {
             JOptionPane.showMessageDialog(this, "Must select the OpenSSL executable location.", "OpenSSL", JOptionPane.ERROR_MESSAGE);
         } else {
-            PropertiesComponent propertiesComponent = PropertiesComponent.getInstance();
-            propertiesComponent.setValue("MSOpenSSLPath", txtFile.getText());
+            PropertiesComponent pc = PropertiesComponent.getInstance();
+            pc.setValue("MSOpenSSLPath", txtFile.getText());
 
             dispose();
         }

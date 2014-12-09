@@ -27,16 +27,10 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectLocator;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.*;
-import com.microsoftopentechnologies.intellij.forms.OpenSSLFinderForm;
-import com.microsoftopentechnologies.intellij.helpers.AndroidStudioHelper;
-import com.microsoftopentechnologies.intellij.helpers.OpenSSLHelper;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
-import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.wizards.activityConfiguration.AddServiceWizard;
 import org.jetbrains.annotations.NotNull;
 
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.util.Collection;
 
 public class AzureServiceComponent implements ProjectComponent {
@@ -59,40 +53,16 @@ public class AzureServiceComponent implements ProjectComponent {
     }
 
     public void initComponent() {
-        try {
-            ApplicationInfo.getInstance();
+        ApplicationInfo.getInstance();
+        final PropertiesComponent pc = PropertiesComponent.getInstance(mProject);
+        pc.setValue("pluginenabled", String.valueOf(true));
 
-            final PropertiesComponent pc = PropertiesComponent.getInstance(mProject);
-
-            if (OpenSSLHelper.existsOpenSSL()) {
-                pc.setValue("pluginenabled", String.valueOf(true));
-            } else {
-                OpenSSLFinderForm openSSLFinderForm = new OpenSSLFinderForm();
-                openSSLFinderForm.setModal(true);
-                UIHelper.packAndCenterJDialog(openSSLFinderForm);
-                openSSLFinderForm.setVisible(true);
-                openSSLFinderForm.addWindowListener(new WindowAdapter() {
-                    @Override
-                    public void windowClosed(WindowEvent windowEvent) {
-                        try {
-                            pc.setValue("pluginenabled", String.valueOf(OpenSSLHelper.existsOpenSSL()));
-                        } catch (AzureCmdException e) {
-                            UIHelper.showException("Error initializing Microsoft Services plugin", e);
-                        }
-                    }
-                });
+        synchronized (vflCount) {
+            if (vflCount.equals(0)) {
+                VirtualFileManager.getInstance().addVirtualFileListener(vfl);
             }
 
-
-            synchronized (vflCount) {
-                if (vflCount.equals(0)) {
-                    VirtualFileManager.getInstance().addVirtualFileListener(vfl);
-                }
-
-                vflCount++;
-            }
-        } catch (AzureCmdException e) {
-            UIHelper.showException("Error initializing Microsoft Services plugin", e);
+            vflCount++;
         }
     }
 
