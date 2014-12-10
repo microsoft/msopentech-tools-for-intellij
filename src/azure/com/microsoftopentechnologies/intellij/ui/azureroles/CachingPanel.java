@@ -50,6 +50,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.table.TableCellEditor;
 
 import java.awt.event.*;
 import java.util.*;
@@ -62,6 +63,14 @@ public class CachingPanel extends BaseConfigurable implements SearchableConfigur
      * Default cache memory size.
      */
     private final static int CACH_DFLTVAL = 30;
+
+    private enum BACKUP_OPTIONS {
+        Yes, No
+    }
+
+    private enum EXPIRATION_TYPE {
+        NeverExpires, Absolute, SlidingWindow
+    }
 
     private JPanel contentPane;
     private JCheckBox cacheCheck;
@@ -117,14 +126,11 @@ public class CachingPanel extends BaseConfigurable implements SearchableConfigur
             cacheCheck.setSelected(false);
             setEnableCaching(false);
         }
-        if (mapCache == null) {
-            mapCache = new HashMap<String,
-                    WindowsAzureNamedCache>();
-        }
         try {
             mapCache = waRole.getNamedCaches();
         } catch (WindowsAzureInvalidProjectOperationException e) {
             PluginUtil.displayErrorDialogAndLog(message("cachErrTtl"), message("cachGetErMsg"), e);
+            mapCache = new HashMap<String, WindowsAzureNamedCache>();
         }
         init();
     }
@@ -248,12 +254,7 @@ public class CachingPanel extends BaseConfigurable implements SearchableConfigur
                     setKey("");
                     setBlobUrl("");
                 }
-				/*
-				 *  Necessary to refresh table
-				 *  to show or remove default
-				 *  named cache added by PML.
-				 */
-//                tableViewer.refresh();
+                tblCache.getListTableModel().setItems(new ArrayList<WindowsAzureNamedCache>(mapCache.values()));
             }
         };
     }
@@ -502,7 +503,8 @@ public class CachingPanel extends BaseConfigurable implements SearchableConfigur
             if (choice == Messages.YES) {
                 WindowsAzureNamedCache cachToDel = tblCache.getSelectedObject();
                 cachToDel.delete();
-//                tableViewer.refresh();
+                tblCache.getListTableModel().setItems(new ArrayList<WindowsAzureNamedCache>(mapCache.values()));
+                setModified(true);
             }
         } catch (WindowsAzureInvalidProjectOperationException e) {
             PluginUtil.displayErrorDialogAndLog(message("cachErrTtl"), message("cachDelErMsg"), e);
@@ -549,25 +551,32 @@ public class CachingPanel extends BaseConfigurable implements SearchableConfigur
         public void setValue(WindowsAzureNamedCache cache, String modifiedVal) {
             try {
                 WARCachingUtilMethods.modifyCacheName(cache, modifiedVal, mapCache);
+                setModified(true);
             } catch (Exception e) {
                 PluginUtil.displayErrorDialog(message("cachNameErrTtl"), e.getMessage());
             }
         }
     };
 
-    private final ColumnInfo<WindowsAzureNamedCache, String> HIGH_AVAILABILITY = new ColumnInfo<WindowsAzureNamedCache, String>(message("colBkps")) {
-        public String valueOf(WindowsAzureNamedCache object) {
+    private final ColumnInfo<WindowsAzureNamedCache, BACKUP_OPTIONS> HIGH_AVAILABILITY =
+            new ColumnInfo<WindowsAzureNamedCache, BACKUP_OPTIONS>(message("colBkps")) {
+        public BACKUP_OPTIONS valueOf(WindowsAzureNamedCache object) {
             if (object.getBackups()) {
-                return message("cachBckYes");
+                return BACKUP_OPTIONS.Yes;
             } else {
-                return message("cachBckNo");
+                return BACKUP_OPTIONS.No;
             }
         }
 
         @Override
-        public void setValue(WindowsAzureNamedCache cache, String modifiedVal) {
+        public TableCellEditor getEditor(final WindowsAzureNamedCache cache) {
+            return ComboBoxTableCellEditor.INSTANCE;
+        }
+
+        @Override
+        public void setValue(WindowsAzureNamedCache cache, BACKUP_OPTIONS modifiedVal) {
             try {
-                if (modifiedVal.toString().equals("0")) {
+                if (modifiedVal.toString().equals(message("cachBckYes"))) {
 				/*
 				 * If user selects backup option
 				 * then check virtual machine instances > 2
@@ -589,32 +598,37 @@ public class CachingPanel extends BaseConfigurable implements SearchableConfigur
                     } else {
                         cache.setBackups(true);
                     }
-                } else if (modifiedVal.toString().equals("1")) {
+                } else if (modifiedVal.toString().equals(message("cachBckNo"))) {
                     cache.setBackups(false);
                 }
+                setModified(true);
             } catch (Exception e) {
                 PluginUtil.displayErrorDialogAndLog(message("cachErrTtl"), message("cachSetErrMsg"), e);
             }
         }
     };
 
-    private final ColumnInfo<WindowsAzureNamedCache, String> EXPIRATION = new ColumnInfo<WindowsAzureNamedCache, String>(message("colExp")) {
-        public String valueOf(WindowsAzureNamedCache cache) {
-            String expPolStr;
+    private final ColumnInfo<WindowsAzureNamedCache, EXPIRATION_TYPE> EXPIRATION = new ColumnInfo<WindowsAzureNamedCache, EXPIRATION_TYPE>(message("colExp")) {
+        public EXPIRATION_TYPE valueOf(WindowsAzureNamedCache cache) {
             if (cache.getExpirationPolicy().equals(WindowsAzureCacheExpirationPolicy.NEVER_EXPIRES)) {
-                expPolStr = message("expPolNvrExp");
+                return EXPIRATION_TYPE.NeverExpires;
             } else if (cache.getExpirationPolicy().equals(WindowsAzureCacheExpirationPolicy.ABSOLUTE)) {
-                expPolStr = message("expPolAbs");
+                return EXPIRATION_TYPE.Absolute;
             } else {
-                expPolStr = message("expPolSlWn");
+                return EXPIRATION_TYPE.SlidingWindow;
             }
-            return expPolStr;
         }
 
         @Override
-        public void setValue(WindowsAzureNamedCache cache, String modifiedVal) {
+        public TableCellEditor getEditor(final WindowsAzureNamedCache cache) {
+            return ComboBoxTableCellEditor.INSTANCE;
+        }
+
+        @Override
+        public void setValue(WindowsAzureNamedCache cache, EXPIRATION_TYPE modifiedVal) {
             try {
-                WARCachingUtilMethods.modifyExpirationPol(cache, modifiedVal.toString());
+                WARCachingUtilMethods.modifyExpirationPol(cache, String.valueOf(modifiedVal.ordinal()));
+                setModified(true);
             } catch (Exception e) {
                 PluginUtil.displayErrorDialog(message("cachNameErrTtl"), e.getMessage());
             }
@@ -640,6 +654,7 @@ public class CachingPanel extends BaseConfigurable implements SearchableConfigur
                 Boolean isVallidMtl = WARCachingUtilMethods.validateMtl(modifiedVal);
                 if (isVallidMtl) {
                     cache.setMinutesToLive(Integer.parseInt(modifiedVal));
+                    setModified(true);
                 } else {
                     PluginUtil.displayErrorDialog(message("cachMtlErrTtl"), message("cachMtlErrMsg"));
                 }
