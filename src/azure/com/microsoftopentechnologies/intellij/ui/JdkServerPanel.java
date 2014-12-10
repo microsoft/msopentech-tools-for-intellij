@@ -247,6 +247,7 @@ public class JdkServerPanel {
             if (srvSrcPath != null && srvName != null) {
                 serverCheckBox.setSelected(true);
                 setEnableServer(true);
+                isManualUpdate = false;
                 serverType.setSelectedItem(srvName);
                 serverPath.setText(srvSrcPath);
                 // Server download group
@@ -267,7 +268,7 @@ public class JdkServerPanel {
                     serverUrl.setText(srvUrl);
                     // Update server home text box
                     if (waProjManager.getPackageType().equals(WindowsAzurePackageType.LOCAL)) {
-                        serverPath.setText(waRole.getServerCloudHome());
+                        serverHomeDir.setText(waRole.getServerCloudHome());
                     } else {
                         serverHomeDir.setText(waRole.getRuntimeEnv(waRole.getRuntimeEnvName(message("typeSrvHm"))));
                     }
@@ -283,6 +284,8 @@ public class JdkServerPanel {
             }
         } catch (WindowsAzureInvalidProjectOperationException e) {
             PluginUtil.displayErrorDialogAndLog(message("srvErrTtl"), message("getSrvBothErrMsg"), e);
+        } finally {
+            isManualUpdate = true;
         }
         if (jdkCheckBox.isSelected()) {
             serverCheckBox.setEnabled(true);
