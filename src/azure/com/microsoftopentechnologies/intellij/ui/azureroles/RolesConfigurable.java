@@ -54,7 +54,9 @@ public class RolesConfigurable extends SearchableConfigurable.Parent.Abstract {
     @Override
     protected Configurable[] buildConfigurables() {
         Project project = module.getProject();
-        return new Configurable[] {new CertificatesPanel(module, waProjManager, windowsAzureRole),
+        return new Configurable[] {
+                new CachingPanel(module, waProjManager, windowsAzureRole),
+                new CertificatesPanel(module, waProjManager, windowsAzureRole),
                 new ComponentsPanel(project, waProjManager, windowsAzureRole), new DebuggingPanel(project, waProjManager, windowsAzureRole),
                 new RoleEndpointsPanel(module, waProjManager, windowsAzureRole),
                 new EnvVarsPanel(module, waProjManager, windowsAzureRole),

@@ -19,6 +19,7 @@ package com.microsoftopentechnologies.intellij.ui.util;
 
 import com.microsoftopentechnologies.intellij.ui.messages.AzureBundle;
 import com.microsoftopentechnologies.intellij.util.WAHelper;
+import com.microsoftopentechnologies.storageregistry.StorageAccountRegistry;
 import com.microsoftopentechnologies.storageregistry.StorageRegistryUtilMethods;
 
 import javax.swing.*;
@@ -57,6 +58,21 @@ public class JdkSrvConfig {
             combo.setSelectedItem(valToSet);
         }
         return combo;
+    }
+
+    /**
+     * Method returns blob endpoint URL from storage registry
+     * according to account name selected in combo box.
+     * @param combo
+     * @return
+     */
+    public static String getBlobEndpointUrl(JComboBox combo) {
+        String url = "";
+        int strgAccIndex = combo.getSelectedIndex();
+        if (strgAccIndex > 0 && !combo.getSelectedItem().toString().isEmpty()) {
+            url = StorageAccountRegistry.getStrgList().get(strgAccIndex - 1).getStrgUrl();
+        }
+        return url;
     }
 
     /**
