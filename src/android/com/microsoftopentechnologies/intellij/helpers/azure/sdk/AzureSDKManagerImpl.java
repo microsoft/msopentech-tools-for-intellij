@@ -15,6 +15,8 @@
  */
 package com.microsoftopentechnologies.intellij.helpers.azure.sdk;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
 import com.microsoft.windowsazure.core.OperationStatusResponse;
 import com.microsoft.windowsazure.exception.ServiceException;
 import com.microsoft.windowsazure.management.compute.ComputeManagementClient;
@@ -99,6 +101,17 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         }
 
         return vmList;
+    }
+
+    @Override
+    public VirtualMachine getVirtualMachineByServiceName(@NotNull String subscriptionId, @NotNull final String serviceName) throws AzureCmdException {
+        List<VirtualMachine> vmList = getVirtualMachines(subscriptionId);
+        return Iterables.tryFind(vmList, new Predicate<VirtualMachine>() {
+            @Override
+            public boolean apply(@Nullable VirtualMachine virtualMachine) {
+                return serviceName.equals(virtualMachine.getServiceName());
+            }
+        }).orNull();
     }
 
     @Override

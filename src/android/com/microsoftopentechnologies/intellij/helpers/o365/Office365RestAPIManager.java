@@ -27,6 +27,9 @@ import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.project.Project;
 import com.microsoft.directoryservices.*;
 import com.microsoft.directoryservices.odata.*;
+import com.microsoft.services.odata.ODataCollectionFetcher;
+import com.microsoft.services.odata.ODataEntityFetcher;
+import com.microsoft.services.odata.ODataOperations;
 import com.microsoft.services.odata.impl.http.CredentialsFactoryImpl;
 import com.microsoftopentechnologies.intellij.components.MSOpenTechTools;
 import com.microsoftopentechnologies.intellij.components.PluginSettings;
@@ -591,7 +594,7 @@ public class Office365RestAPIManager implements Office365Manager {
         });
     }
 
-    private <E extends DirectoryObject, F extends ODataEntityFetcher<E, ? extends DirectoryObjectOperations>, O>
+    private <E extends DirectoryObject, F extends ODataEntityFetcher<E, ? extends DirectoryObjectOperations>, O extends ODataOperations>
             ListenableFuture<List<E>> getAllObjects(final ODataCollectionFetcher<E, F, O> fetcher) {
 
         return Futures.transform(fetcher.read(), new AsyncFunction<List<E>, List<E>>() {
