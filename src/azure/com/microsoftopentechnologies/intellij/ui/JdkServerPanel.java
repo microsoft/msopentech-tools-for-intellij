@@ -141,7 +141,7 @@ public class JdkServerPanel {
 
     public void setModified(boolean modified) {
         this.modified = modified;
-        applicationsTab.setModified(false);
+        applicationsTab.setModified(modified);
     }
 
     public ApplicationsTab getApplicationsTab() {
@@ -407,6 +407,7 @@ public class JdkServerPanel {
                     if (customDownloadServer.isSelected() || uploadLocalServer.isSelected()) {
                         updateServerHome(serverPath.getText());
                     }
+                    modified = true;
 //                handlePageComplete();
                 }
             }
