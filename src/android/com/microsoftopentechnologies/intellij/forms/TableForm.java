@@ -16,6 +16,8 @@
 
 package com.microsoftopentechnologies.intellij.forms;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
@@ -120,8 +122,8 @@ public class TableForm extends JDialog {
         cancelButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-            form.setVisible(false);
-            form.dispose();
+                form.setVisible(false);
+                form.dispose();
             }
         });
 
@@ -139,7 +141,7 @@ public class TableForm extends JDialog {
                             tablePermissions.setRead(((PermissionItem) readPermissionComboBox.getSelectedItem()).getType());
                             tablePermissions.setInsert(((PermissionItem) insertPermisssionComboBox.getSelectedItem()).getType());
 
-                            String tableName = tableNameTextField.getText().trim();
+                            final String tableName = tableNameTextField.getText().trim();
 
                             if(!tableName.matches("^[A-Za-z][A-Za-z0-9_]+")) {
                                 JOptionPane.showMessageDialog(form, "Invalid table name. Table name must start with a letter, \n" +
@@ -147,13 +149,14 @@ public class TableForm extends JDialog {
                                 return;
                             }
 
+                            int tableNameIndex = Iterables.indexOf(existingTableNames, new Predicate<String>() {
+                                @Override
+                                public boolean apply(String name) {
+                                    return tableName.equalsIgnoreCase(name);
+                                }
+                            });
 
-                            ArrayList<String> existingTableNamesLowerCase = new ArrayList<String>();
-                            for (String existingTableName : existingTableNames) {
-                                existingTableNamesLowerCase.add(existingTableName.toLowerCase());
-                            }
-
-                            if(existingTableNamesLowerCase.contains(tableName.toLowerCase())) {
+                            if(tableNameIndex != -1) {
                                 JOptionPane.showMessageDialog(form, "Invalid table name. A table with that name already exists in this service.",
                                         "Error creating the table", JOptionPane.ERROR_MESSAGE);
                                 return;
