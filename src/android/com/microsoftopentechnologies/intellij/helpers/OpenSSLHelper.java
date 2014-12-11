@@ -13,11 +13,11 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-
 package com.microsoftopentechnologies.intellij.helpers;
 
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.util.io.FileUtil;
+import com.microsoftopentechnologies.intellij.forms.OpenSSLFinderForm;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIHelper;
 import org.w3c.dom.Document;
@@ -36,42 +36,10 @@ import javax.xml.xpath.XPathConstants;
 import java.io.*;
 
 public class OpenSSLHelper {
-    public static String PASSWORD = "Java6NeedsPwd";
-    String path;
-
-    public static boolean existsOpenSSL() throws AzureCmdException {
-        String path = getOpenSSLPath();
-        return (path != null && !path.isEmpty());
-    }
-
-    private static String getOpenSSLPath() {
-
-        PropertiesComponent propertiesComponent = PropertiesComponent.getInstance();
-
-        if (propertiesComponent.isValueSet("MSOpenSSLPath")) {
-            return propertiesComponent.getValue("MSOpenSSLPath");
-        } else {
-            try {
-                String mOsVersion = System.getProperty("os.name");
-                String osName = mOsVersion.split(" ")[0];
-
-                String cmd = osName.equals("Windows") ? "where openssl" : "which openssl";
-                Process p = Runtime.getRuntime().exec(cmd);
-                BufferedReader reader = new BufferedReader(new InputStreamReader(
-                        p.getInputStream()));
-
-
-                return new File(reader.readLine()).getParent();
-
-            } catch (Throwable e) {
-                return null;
-            }
-        }
-    }
+    public static final String PASSWORD = "Java6NeedsPwd";
 
     public static String processCertificate(String xmlPublishSettings) throws AzureCmdException {
         try {
-
             Node publishProfileNode = ((NodeList) AzureRestAPIHelper.getXMLValue(xmlPublishSettings, "/PublishData/PublishProfile", XPathConstants.NODESET)).item(0);
             String version = AzureRestAPIHelper.getAttributeValue(publishProfileNode, "SchemaVersion");
 
@@ -82,7 +50,6 @@ public class OpenSSLHelper {
             Document ownerDocument = null;
 
             for (int i = 0; i != subscriptionList.getLength(); i++) {
-
                 //Gets the pfx info
                 Element node = (Element) subscriptionList.item(i);
                 ownerDocument = node.getOwnerDocument();
@@ -105,21 +72,17 @@ public class OpenSSLHelper {
                 pfxOutputStream.close();
 
                 String path = getOpenSSLPath();
-                if (!path.endsWith(File.separator)) {
+                if (path == null || path.isEmpty()) {
+                    throw new Exception("Please configure a valid OpenSSL executable location.");
+                } else if (!path.endsWith(File.separator)) {
                     path = path + File.separator;
                 }
 
-                String mOsVersion = System.getProperty("os.name");
-                String osName = mOsVersion.split(" ")[0];
-
-                String optionalQuotes = osName.equals("Windows") ? "\"" : "";
-
-
                 //Export to pem with OpenSSL
-                runCommand(optionalQuotes + path + "openssl" + optionalQuotes + " pkcs12 -in temp.pfx -out temp.pem -nodes -password pass:", tmpPath);
+                runCommand(new String[]{path + "openssl", "pkcs12", "-in", "temp.pfx", "-out", "temp.pem", "-nodes", "-password", "pass:"}, tmpPath);
 
                 //Export to pfx again and change password
-                runCommand(optionalQuotes + path + "openssl" + optionalQuotes + " pkcs12 -export -out temppwd.pfx -in temp.pem -password pass:" + PASSWORD, tmpPath);
+                runCommand(new String[]{path + "openssl", "pkcs12", "-export", "-out", "temppwd.pfx", "-in", "temp.pem", "-password", "pass:" + PASSWORD}, tmpPath);
 
                 //Read file and replace pfx with password protected pfx
                 File pwdPfxFile = new File(tmpPath.getPath() + File.separator + "temppwd.pfx");
@@ -130,15 +93,16 @@ public class OpenSSLHelper {
 
                 FileUtil.delete(tmpPath);
 
-
                 node.setAttribute("ManagementCertificate", new BASE64Encoder().encode(buf).replace("\r", "").replace("\n", ""));
 
-                if (isFirstVersion)
+                if (isFirstVersion) {
                     node.setAttribute("ServiceManagementUrl", AzureRestAPIHelper.getAttributeValue(publishProfileNode, "Url"));
+                }
             }
 
-            if (ownerDocument == null)
+            if (ownerDocument == null) {
                 return null;
+            }
 
             Transformer tf = TransformerFactory.newInstance().newTransformer();
             Writer out = new StringWriter();
@@ -146,13 +110,71 @@ public class OpenSSLHelper {
             tf.transform(new DOMSource(ownerDocument), new StreamResult(out));
 
             return out.toString();
-
         } catch (Exception ex) {
             throw new AzureCmdException("Error processing publish settings file.", ex.getMessage());
         }
     }
 
-    private static void runCommand(String cmd, File path) throws AzureCmdException, IOException, InterruptedException {
+    private static String getOpenSSLPath() {
+        PropertiesComponent pc = PropertiesComponent.getInstance();
+        String opendSSLlPath = pc.getValue("MSOpenSSLPath", "");
+
+        if (!validOpenSSLPath(opendSSLlPath)) {
+            opendSSLlPath = getOpenSSLPathFromEnvironment();
+
+            if (!validOpenSSLPath(opendSSLlPath)) {
+                opendSSLlPath = promptForOpenSSLPath(pc);
+
+                if (!validOpenSSLPath(opendSSLlPath)) {
+                    opendSSLlPath = null;
+                }
+            }
+        }
+
+        return opendSSLlPath;
+    }
+
+    private static String getOpenSSLPathFromEnvironment() {
+        String osslPath = null;
+
+        try {
+            String mOsVersion = System.getProperty("os.name");
+            String osName = mOsVersion.split(" ")[0];
+
+            String cmd = osName.equals("Windows") ? "where openssl" : "which openssl";
+            Process p = Runtime.getRuntime().exec(cmd);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
+
+            osslPath = new File(reader.readLine()).getParent();
+        } catch (Throwable ignored) {
+        }
+
+        return osslPath;
+    }
+
+    private static String promptForOpenSSLPath(PropertiesComponent pc) {
+        OpenSSLFinderForm openSSLFinderForm = new OpenSSLFinderForm();
+        openSSLFinderForm.setModal(true);
+        UIHelper.packAndCenterJDialog(openSSLFinderForm);
+        openSSLFinderForm.setVisible(true);
+
+        return pc.getValue("MSOpenSSLPath", "");
+    }
+
+    private static boolean validOpenSSLPath(String osslPath) {
+        boolean result = false;
+
+        if (osslPath != null && !osslPath.isEmpty()) {
+            try {
+                result = new File(osslPath).exists();
+            } catch (Throwable ignored) {
+            }
+        }
+
+        return result;
+    }
+
+    private static void runCommand(String[] cmd, File path) throws AzureCmdException, IOException, InterruptedException {
         final Process p;
 
         Runtime runtime = Runtime.getRuntime();
@@ -169,8 +191,5 @@ public class OpenSSLHelper {
 
             throw ex;
         }
-
     }
-
-
 }

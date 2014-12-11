@@ -24,6 +24,5 @@ import com.intellij.openapi.application.ApplicationManager;
 public class ClearConfigAction extends AnAction {
     public void actionPerformed(AnActionEvent e) {
         PropertiesComponent.getInstance().unsetValue("MSOpenSSLPath");
-        ApplicationManager.getApplication().restart();
     }
 }

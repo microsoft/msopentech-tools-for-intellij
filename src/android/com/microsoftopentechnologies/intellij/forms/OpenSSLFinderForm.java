@@ -13,7 +13,6 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-
 package com.microsoftopentechnologies.intellij.forms;
 
 import com.intellij.ide.util.PropertiesComponent;
@@ -73,7 +72,7 @@ public class OpenSSLFinderForm extends JDialog {
                     @Override
                     public boolean isFileVisible(VirtualFile file, boolean showHiddenFiles) {
                         try {
-                            return file.isDirectory() || file.getName().toLowerCase().contains("openssl");
+                            return file.isDirectory() || file.getNameWithoutExtension().toLowerCase().equals("openssl");
                         } catch (Throwable t) {
                             return super.isFileVisible(file, showHiddenFiles);
                         }
@@ -81,17 +80,18 @@ public class OpenSSLFinderForm extends JDialog {
 
                     @Override
                     public boolean isFileSelectable(VirtualFile file) {
-                        return file.getName().toLowerCase().contains("openssl");
+                        return file.getNameWithoutExtension().toLowerCase().equals("openssl");
                     }
                 };
+
                 fileChooserDescriptor.setTitle("Choose OpenSSL executable");
 
                 FileChooser.chooseFile(fileChooserDescriptor, null, null, new Consumer<VirtualFile>() {
                     @Override
                     public void consume(VirtualFile virtualFile) {
-                        if (virtualFile != null)
+                        if (virtualFile != null) {
                             txtFile.setText(virtualFile.getParent().getPath());
-
+                        }
                     }
                 });
             }
@@ -100,12 +100,11 @@ public class OpenSSLFinderForm extends JDialog {
 
 
     private void onOK() {
-
-        if (txtFile.getText() == null || txtFile.getText().isEmpty())
+        if (txtFile.getText() == null || txtFile.getText().isEmpty()) {
             JOptionPane.showMessageDialog(this, "Must select the OpenSSL executable location.", "OpenSSL", JOptionPane.ERROR_MESSAGE);
-        else {
-            PropertiesComponent propertiesComponent = PropertiesComponent.getInstance();
-            propertiesComponent.setValue("MSOpenSSLPath", txtFile.getText());
+        } else {
+            PropertiesComponent pc = PropertiesComponent.getInstance();
+            pc.setValue("MSOpenSSLPath", txtFile.getText());
 
             dispose();
         }
@@ -115,6 +114,4 @@ public class OpenSSLFinderForm extends JDialog {
 // add your code here if necessary
         dispose();
     }
-
-
 }
