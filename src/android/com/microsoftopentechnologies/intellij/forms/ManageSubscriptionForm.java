@@ -42,36 +42,23 @@ import java.util.ArrayList;
 import java.util.Vector;
 
 public class ManageSubscriptionForm extends JDialog {
-    private Project project;
     private JPanel mainPanel;
     private JTable subscriptionTable;
-    private JButton addSubscriptionButton;
+    private JButton signInButton;
     private JButton removeButton;
-    private JButton okButton;
-    private JButton cancelButton;
+    private JButton importSubscriptionButton;
+    private JButton closeButton;
     private ArrayList<Subscription> subscriptionList;
     private JPopupMenu addSubscriptionMenu;
     private final int MENU_ITEM_HEIGHT = 25;
-    private DialogResult dialogResult;
 
-    public DialogResult getDialogResult() {
-        return dialogResult;
-    }
-
-    public enum DialogResult {
-        OK,
-        CANCEL
-    }
-
-    public ManageSubscriptionForm(Project project) {
-        this.project = project;
+    public ManageSubscriptionForm(final Project project) {
         final ManageSubscriptionForm form = this;
         this.setTitle("Manage subscriptions");
         this.setModal(true);
         this.setContentPane(mainPanel);
 
         this.setResizable(false);
-        getRootPane().setDefaultButton(okButton);
 
         final ReadOnlyCellTableModel model = new ReadOnlyCellTableModel();
         model.addColumn("Name");
@@ -79,108 +66,7 @@ public class ManageSubscriptionForm extends JDialog {
 
         subscriptionTable.setModel(model);
 
-        // initialize the popup menu for the "Add Subscription" button
-        initSubscriptionMenu();
-
-        addSubscriptionButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                addSubscriptionMenu.pack();
-                addSubscriptionMenu.setPopupSize(addSubscriptionButton.getWidth(),
-                        MENU_ITEM_HEIGHT * addSubscriptionMenu.getComponentCount());
-                addSubscriptionMenu.show(addSubscriptionButton, 0, addSubscriptionButton.getHeight());
-            }
-        });
-
-        removeButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                int res = JOptionPane.showConfirmDialog(form, "Are you sure you would like to clear all subscriptions?",
-                        "Clear Subscriptions",
-                        JOptionPane.YES_NO_OPTION,
-                        JOptionPane.INFORMATION_MESSAGE);
-
-                if (res == JOptionPane.YES_OPTION) {
-                    try {
-                        AzureManager apiManager = AzureRestAPIManager.getManager();
-                        apiManager.clearAuthenticationTokens();
-                        apiManager.clearSubscriptions();
-                        apiManager.setAuthenticationMode(AzureAuthenticationMode.Unknown);
-                    } catch (AzureCmdException t) {
-                        UIHelper.showException("Error clearing user subscriptions", t);
-                    }
-
-                    ReadOnlyCellTableModel model = (ReadOnlyCellTableModel) subscriptionTable.getModel();
-                    while (model.getRowCount() > 0) {
-                        model.removeRow(0);
-                    }
-
-                    removeButton.setEnabled(false);
-                }
-            }
-        });
-
-        removeButton.setEnabled(false);
-
-        okButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                onOk();
-            }
-        });
-
-        cancelButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                onCancel();
-            }
-        });
-
-        // call onCancel() when cross is clicked
-        setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
-        addWindowListener(new WindowAdapter() {
-            public void windowClosing(WindowEvent e) {
-                onCancel();
-            }
-        });
-
-        ApplicationManager.getApplication().invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                loadList();
-            }
-        });
-    }
-
-    private void onOk() {
-        // check if we have any subscriptions added
-        if (subscriptionTable.getModel().getRowCount() == 0) {
-            JOptionPane.showMessageDialog(this,
-                    "Please Sign In/Import your Azure subscription(s).",
-                    "Manage Azure Subscriptions",
-                    JOptionPane.INFORMATION_MESSAGE);
-            return;
-        }
-
-        dialogResult = DialogResult.OK;
-        dispose();
-    }
-
-    private void onCancel() {
-        dialogResult = DialogResult.CANCEL;
-        dispose();
-    }
-
-    private void initSubscriptionMenu() {
-        addSubscriptionMenu = new JPopupMenu();
-        JMenuItem signInItem = new JMenuItem("Sign In...");
-        signInItem.setMnemonic(KeyEvent.VK_S);
-        JMenuItem importItem = new JMenuItem("Import...");
-        importItem.setMnemonic(KeyEvent.VK_I);
-        addSubscriptionMenu.add(signInItem);
-        addSubscriptionMenu.add(importItem);
-
-        signInItem.addActionListener(new ActionListener() {
+        signInButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
@@ -232,7 +118,37 @@ public class ManageSubscriptionForm extends JDialog {
             }
         });
 
-        importItem.addActionListener(new ActionListener() {
+        removeButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                int res = JOptionPane.showConfirmDialog(form, "Are you sure you would like to clear all subscriptions?",
+                        "Clear Subscriptions",
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.INFORMATION_MESSAGE);
+
+                if (res == JOptionPane.YES_OPTION) {
+                    try {
+                        AzureManager apiManager = AzureRestAPIManager.getManager();
+                        apiManager.clearAuthenticationTokens();
+                        apiManager.clearSubscriptions();
+                        apiManager.setAuthenticationMode(AzureAuthenticationMode.Unknown);
+                    } catch (AzureCmdException t) {
+                        UIHelper.showException("Error clearing user subscriptions", t);
+                    }
+
+                    ReadOnlyCellTableModel model = (ReadOnlyCellTableModel) subscriptionTable.getModel();
+                    while (model.getRowCount() > 0) {
+                        model.removeRow(0);
+                    }
+
+                    removeButton.setEnabled(false);
+                }
+            }
+        });
+
+        removeButton.setEnabled(false);
+
+        importSubscriptionButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 ImportSubscriptionForm isf = new ImportSubscriptionForm();
@@ -246,6 +162,34 @@ public class ManageSubscriptionForm extends JDialog {
                 isf.setVisible(true);
             }
         });
+
+        closeButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                onCancel();
+            }
+        });
+
+        // call onCancel() when cross is clicked
+        setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+        addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent e) {
+                onCancel();
+            }
+        });
+
+        ApplicationManager.getApplication().invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                loadList();
+            }
+        });
+    }
+
+
+    private void onCancel() {
+
+        dispose();
     }
 
     private void loadList() {
