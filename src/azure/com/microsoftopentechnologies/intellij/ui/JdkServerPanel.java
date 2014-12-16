@@ -889,7 +889,7 @@ public class JdkServerPanel {
         values.put("jdkDwnldChecked", String.valueOf(customDownloadJdk.isSelected()));
         values.put("jdkAutoDwnldChecked", String.valueOf(uploadLocalJdk.isSelected()));
         values.put("jdkThrdPartyChecked" , String.valueOf(thirdPartyJdk.isSelected()));
-        values.put("jdkName" , thirdPartyJdkName.getSelectedItem().toString());
+        values.put("jdkName" , thirdPartyJdkName.getSelectedItem() == null ? "" : (String) thirdPartyJdkName.getSelectedItem());
         values.put("jdkUrl" , jdkUrl.getText());
         values.put("jdkKey" , AzureWizardModel.getAccessKey(storageAccountJdk));
         values.put("javaHome", javaHome.getText());
