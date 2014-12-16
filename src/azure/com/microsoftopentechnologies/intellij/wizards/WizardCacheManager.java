@@ -16,6 +16,8 @@
 package com.microsoftopentechnologies.intellij.wizards;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.util.*;
@@ -51,6 +53,7 @@ import com.microsoftopentechnologies.model.StorageServices;
 import com.microsoftopentechnologies.model.Subscription;
 import com.microsoftopentechnologies.rest.WindowsAzureServiceManagement;
 import com.microsoftopentechnologies.rest.WindowsAzureStorageServices;
+import com.microsoftopentechnologies.wacommonutil.FileUtil;
 import com.microsoftopentechnologies.wacommonutil.PreferenceSetUtil;
 
 import static com.microsoftopentechnologies.intellij.AzurePlugin.log;
@@ -74,6 +77,7 @@ public final class WizardCacheManager {
 	private static RemoteDesktopDescriptor remoteDesktopDescriptor;
 	private static CertificateUploadList certList;
 	private static boolean displayHttpsLink = false;
+	private static Map<String, String> publishSettingsPerSubscriptionMap = new HashMap<String, String>();
 
 	public static WizardCacheManager getInstrance() {
 		return INSTANCE;
@@ -165,6 +169,10 @@ public final class WizardCacheManager {
 
 	public static PublishData findPublishDataBySubscriptionId(String subscriptionId) {
         return WizardCacheManagerUtilMethods.findPublishDataBySubscriptionId(subscriptionId, PUBLISHS);
+	}
+
+	public static String findSubscriptionNameBySubscriptionId(String subscriptionId) {
+		return WizardCacheManagerUtilMethods.findSubscriptionNameBySubscriptionId(subscriptionId, PUBLISHS);
 	}
 
 	public static void removeSubscription(String subscriptionId) {
@@ -373,6 +381,19 @@ public final class WizardCacheManager {
                     WindowsAzureRestUtils.loadConfiguration(subscription.getId(), url) :
                     WindowsAzureRestUtils.getConfiguration(publishSettingsFile, subscription.getId());
             configurationPerSubscription.put(subscription.getId(), configuration);
+			if (publishSettingsFile != null) {
+				//copy file to user home
+				String outFile = System.getProperty("user.home") + File.separator + ".azure" + File.separator + publishSettingsFile.getName();
+				try {
+					// copy file to user home
+					FileUtil.writeFile(new FileInputStream(publishSettingsFile), new FileOutputStream(outFile));
+					// put an entry into global cache
+					publishSettingsPerSubscriptionMap.put(subscription.getId(), outFile);
+				} catch (IOException e) {
+					// Ignore error
+					e.printStackTrace();
+				}
+			}
         }
         publishData.setConfigurationPerSubscription(configurationPerSubscription);
 
@@ -528,5 +549,17 @@ public final class WizardCacheManager {
 
 	private static String checkSchemaVersionAndReturnUrl() {
         return WizardCacheManagerUtilMethods.checkSchemaVersionAndReturnUrl(currentPublishData);
+	}
+
+	public static String getPublishSettingsPath(String subscriptionID) {
+		return publishSettingsPerSubscriptionMap.get(subscriptionID);
+	}
+
+	public static Map<String, String> getPublishSettingsPerSubscription() {
+		return publishSettingsPerSubscriptionMap;
+	}
+
+	public static void addPublishSettingsPerSubscription(Map<String, String> publishSettingsPerSubscription) {
+		publishSettingsPerSubscriptionMap.putAll(publishSettingsPerSubscription);
 	}
 }

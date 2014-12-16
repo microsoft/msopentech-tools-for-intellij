@@ -15,9 +15,11 @@
  */
 package com.microsoftopentechnologies.intellij.ui;
 
+import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.interopbridges.tools.windowsazure.WindowsAzureCertificate;
 import com.microsoftopentechnologies.intellij.ui.util.UIUtils;
 import org.jetbrains.annotations.Nullable;
@@ -44,7 +46,18 @@ public class PfxPwdDialog extends DialogWrapper {
 
     @Override
     protected void init() {
-        txtPfxPath.addActionListener(UIUtils.createFileChooserListener(txtPfxPath, null, FileChooserDescriptorFactory.createSingleLocalFileDescriptor()));
+        FileChooserDescriptor fileChooserDescriptor = new FileChooserDescriptor(true, false, false, false, false, false) {
+            @Override
+            public boolean isFileVisible(VirtualFile file, boolean showHiddenFiles) {
+                return file.isDirectory() || (file.getExtension() != null && (file.getExtension().equals("pfx") || file.getExtension().equals("PFX")));
+            }
+
+            @Override
+            public boolean isFileSelectable(VirtualFile file) {
+                return (file.getExtension() != null && (file.getExtension().equals("pfx") || file.getExtension().equals("PFX")));
+            }
+        };
+        txtPfxPath.addActionListener(UIUtils.createFileChooserListener(txtPfxPath, null, fileChooserDescriptor));
         pfxInputMsg.setText(String.format(message("pfxInputMsg"), cert.getName()));
         super.init();
     }

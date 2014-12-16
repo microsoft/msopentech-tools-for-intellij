@@ -21,7 +21,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.util.xmlb.XmlSerializerUtil;
 import com.microsoftopentechnologies.deploy.tasks.LoadingAccoutListener;
 import com.microsoftopentechnologies.deploy.util.PublishData;
-import com.microsoftopentechnologies.deploy.util.WizardCache;
 import com.microsoftopentechnologies.exception.RestAPIException;
 import com.microsoftopentechnologies.storageregistry.StorageAccount;
 import com.microsoftopentechnologies.storageregistry.StorageAccountRegistry;
@@ -157,46 +156,6 @@ public class AzureSettings implements PersistentStateComponent<AzureSettings.Sta
             e.printStackTrace();
         }
     }
-
-    public void saveWizardCache(String moduleName, WizardCache cacheObj) {
-        try {
-            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-            ObjectOutput output = new ObjectOutputStream(buffer);
-            try {
-                output.writeObject(cacheObj);
-            } catch (Exception e) {
-                output.close();
-            }
-            myState.deployCache.put(moduleName, new String(Base64.encode(buffer.toByteArray())));
-        } catch (Exception e) {
-            log(message("err"), e);
-        }
-    }
-
-    public WizardCache loadWizardCache(String moduleName) {
-        WizardCache cacheObj = null;
-        try {
-            if (myState.deployCache.keySet().contains(moduleName)) {
-                String wizardCache = myState.deployCache.get(moduleName);
-                if (wizardCache != null) {
-                    byte[] data = Base64.decode(wizardCache.getBytes());
-                    if (data != null) {
-                        ByteArrayInputStream buffer = new ByteArrayInputStream(data);
-                        ObjectInput input = new ObjectInputStream(buffer);
-                        try {
-                            cacheObj = (WizardCache) input.readObject();
-                        } catch (Exception e) {
-                            input.close();
-                        }
-                    }
-                }
-            }
-        } catch (Exception e) {
-            log(message("err"), e);
-        }
-        return cacheObj;
-    }
-
 
     public boolean isSubscriptionLoaded() {
         return subscriptionLoaded;

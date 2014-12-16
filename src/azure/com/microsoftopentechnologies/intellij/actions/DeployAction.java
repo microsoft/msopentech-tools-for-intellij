@@ -34,7 +34,6 @@ import com.microsoft.windowsazure.management.storage.models.StorageAccountCreate
 import com.microsoftopentechnologies.deploy.deploy.DeploymentEventArgs;
 import com.microsoftopentechnologies.deploy.deploy.DeploymentEventListener;
 import com.microsoftopentechnologies.deploy.model.*;
-import com.microsoftopentechnologies.deploy.util.WizardCache;
 import com.microsoftopentechnologies.deploy.wizard.ConfigurationEventArgs;
 import com.microsoftopentechnologies.exception.DeploymentException;
 import com.microsoftopentechnologies.intellij.AzurePlugin;
@@ -88,6 +87,9 @@ public class DeployAction extends AnAction {
             try {
                 String modulePath = PluginUtil.getModulePath(module);
                 WindowsAzureProjectManager waProjManager = WindowsAzureProjectManager.load(new File(modulePath));
+
+                // Update global properties in package.xml
+                updateGlobalPropertiesinPackage(waProjManager);
 
                 // Configure or remove remote access settings
                 boolean status = handleRDPSettings(waProjManager, deployDialog, modulePath);
@@ -166,13 +168,6 @@ public class DeployAction extends AnAction {
 
                 waProjManager = WindowsAzureProjectManager.load(new File(modulePath));
 
-                // Cache selected subscription, cloud service & storage account
-                WizardCache cacheObj = new WizardCache(
-                        WizardCacheManager.getCurrentPublishData().getCurrentSubscription().getName(),
-                        WizardCacheManager.getCurentHostedService().getServiceName(),
-                        WizardCacheManager.getCurrentStorageAcount().getServiceName());
-                AzureSettings.getSafeInstance(module.getProject()).saveWizardCache(module.getName(), cacheObj);
-
                 WAAutoStorageConfTask autoStorageConfJob = new WAAutoStorageConfTask(module, waProjManager, event.getDataContext());
                 autoStorageConfJob.queue();
             } catch (Exception e) {
@@ -180,8 +175,18 @@ public class DeployAction extends AnAction {
                 return;
             }
             return;
-
         }
+    }
+
+    private void updateGlobalPropertiesinPackage(WindowsAzureProjectManager waProjManager) throws WindowsAzureInvalidProjectOperationException {
+        String currentSubscriptionID = WizardCacheManager.getCurrentPublishData().getCurrentSubscription().getSubscriptionID();
+        waProjManager.setPublishSubscriptionId(currentSubscriptionID);
+        waProjManager.setPublishSettingsPath(WizardCacheManager.getPublishSettingsPath(currentSubscriptionID));
+        waProjManager.setPublishCloudServiceName(WizardCacheManager.getCurentHostedService().getServiceName());
+        waProjManager.setPublishRegion(WizardCacheManager.getCurentHostedService().getProperties().getLocation());
+        waProjManager.setPublishStorageAccountName(WizardCacheManager.getCurrentStorageAcount().getServiceName());
+        waProjManager.setPublishDeploymentSlot(DeploymentSlot.valueOf(WizardCacheManager.getCurrentDeplyState()));
+        waProjManager.setPublishOverwritePreviousDeployment(Boolean.parseBoolean(WizardCacheManager.getUnpublish()));
     }
 
     private class WindowsAzureBuildProjectTask extends Task.Backgroundable {

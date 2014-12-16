@@ -15,6 +15,7 @@
  */
 package com.microsoftopentechnologies.intellij.ui;
 
+import com.microsoftopentechnologies.intellij.AzurePlugin;
 import com.microsoftopentechnologies.intellij.runnable.AccountActionRunnable;
 import com.microsoftopentechnologies.intellij.runnable.CacheAccountWithProgressBar;
 import com.microsoftopentechnologies.intellij.runnable.LoadAccountWithProgressBar;
@@ -35,7 +36,6 @@ import com.microsoftopentechnologies.model.StorageService;
 import com.microsoftopentechnologies.model.StorageServices;
 import com.microsoftopentechnologies.model.Subscription;
 import com.microsoftopentechnologies.deploy.util.PublishData;
-import com.microsoftopentechnologies.deploy.util.WizardCache;
 import com.microsoftopentechnologies.intellij.AzureSettings;
 import com.microsoftopentechnologies.intellij.ui.components.DefaultDialogWrapper;
 import com.microsoftopentechnologies.intellij.ui.util.UIUtils;
@@ -117,7 +117,6 @@ public class DeployWizardDialog extends WindowsAzurePage {
             UIUtils.populateSubscriptionCombo(subscriptionCombo);
             if ((subscriptionCombo.getSelectedItem() != null)) {
                 loadDefaultWizardValues();
-                unpublishChBox.setSelected(true);
             }
         }
 
@@ -473,23 +472,59 @@ public class DeployWizardDialog extends WindowsAzurePage {
             userName.setText("");
             setEnableRemAccess(false);
         }
+        /*
+		 * Non windows OS then disable components,
+		 * but keep values as it is
+		 */
+        if (!AzurePlugin.IS_WINDOWS) {
+            userName.setEnabled(false);
+            userPassword.setEnabled(false);
+            confirmPassword.setEnabled(false);
+            userPasswordLbl.setEnabled(false);
+            confirmPasswordLbl.setEnabled(false);
+            conToDplyChkBtn.setEnabled(false);
+        }
     }
 
     private void loadDefaultWizardValues() {
-        WizardCache cacheObj = AzureSettings.getSafeInstance(myModule.getProject()).loadWizardCache(myModule.getName());
-        if (cacheObj != null
-                && !cacheObj.getSubName().isEmpty()
-                && !cacheObj.getServiceName().isEmpty()
-                && !cacheObj.getStorageName().isEmpty()) {
-            UIUtils.selectByText(subscriptionCombo, cacheObj.getSubName());
-            publishData = UIUtils.changeCurrentSubAsPerCombo(subscriptionCombo);
-            if (publishData != null) {
-                populateStorageAccounts();
-                populateHostedServices();
-                setComponentState((subscriptionCombo.getSelectedItem() != null));
-                UIUtils.selectByText(hostedServiceCombo, cacheObj.getServiceName());
-                UIUtils.selectByText(storageAccountCmb, cacheObj.getStorageName());
+        try {
+            loadProject();
+            // Get global properties from package.xml
+            String subId = waProjManager.getPublishSubscriptionId();
+            String cloudServiceName = waProjManager.getPublishCloudServiceName();
+            String storageAccName = waProjManager.getPublishStorageAccountName();
+
+            if (subId != null && !subId.isEmpty()) {
+                String subName = WizardCacheManager.findSubscriptionNameBySubscriptionId(subId);
+                if (subName != null && !subName.isEmpty()) {
+                    UIUtils.selectByText(subscriptionCombo, subName);
+                    publishData = UIUtils.changeCurrentSubAsPerCombo(subscriptionCombo);
+                    if (publishData != null) {
+                        populateStorageAccounts();
+                        populateHostedServices();
+                        setComponentState(subscriptionCombo.getSelectedItem() != null);
+                        UIUtils.selectByText(hostedServiceCombo, cloudServiceName);
+                        UIUtils.selectByText(storageAccountCmb, storageAccName);
+                    }
+                }
             }
+            try {
+                String deploymentSlot = waProjManager.getPublishDeploymentSlot().toString();
+                if (deploymentSlot != null && !deploymentSlot.isEmpty()) {
+                    UIUtils.selectByText(deployStateCmb, deploymentSlot);
+                }
+            } catch (Exception e) {
+                // ignore.
+                // Mostly it would be IllegalArgumentException if valid deployment string not specified
+            }
+            try {
+                boolean overwriteDeployment = waProjManager.getPublishOverwritePreviousDeployment();
+                unpublishChBox.setSelected(overwriteDeployment);
+            } catch (Exception e) {
+                // ignore
+            }
+        } catch (Exception e) {
+            log(message("error"), e);
         }
     }
 

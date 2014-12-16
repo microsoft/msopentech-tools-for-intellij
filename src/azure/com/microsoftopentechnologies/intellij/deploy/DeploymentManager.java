@@ -211,7 +211,8 @@ public final class DeploymentManager {
                     Messages.showInfoMessage("<html>Deployment can be accessed at:<br><a href=\"" + url + "\">" + url + "</a></html>", "Deployment Completed");
                 }
             });
-			if (deploymentDesc.isStartRdpOnDeploy()) {
+			// RDP prompt will come only on windows
+			if (deploymentDesc.isStartRdpOnDeploy() && AzurePlugin.IS_WINDOWS) {
                 String pluginFolder = String.format("%s%s%s", PathManager.getPluginsPath(), File.separator, AzurePlugin.PLUGIN_ID);
 				WindowsAzureRestUtils.getInstance().launchRDP(deployment, deploymentDesc.getRemoteDesktopDescriptor().getUserName(), pluginFolder);
 			}

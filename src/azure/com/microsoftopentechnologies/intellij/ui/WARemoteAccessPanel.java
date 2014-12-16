@@ -163,6 +163,16 @@ public class WARemoteAccessPanel implements AzureAbstractPanel {
         if (isInconsistent) {
             PluginUtil.displayErrorDialog(message("remAccErTxtTitle"), message("remAccDataInc"));
         }
+        /*
+         * Non windows OS then disable components,
+         * but keep values as it is
+         */
+        if (!AzurePlugin.IS_WINDOWS) {
+            setComponentStatus(false);
+            if (!remoteChkBtn.isSelected()) {
+                remoteChkBtn.setEnabled(false);
+            }
+        }
     }
 
     public String getDisplayName() {

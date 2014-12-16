@@ -165,12 +165,14 @@ public class CertificateDialog extends DialogWrapper {
         FileChooserDescriptor fileChooserDescriptor = new FileChooserDescriptor(true, false, false, false, false, false) {
             @Override
             public boolean isFileVisible(VirtualFile file, boolean showHiddenFiles) {
-                return file.isDirectory() || (file.getExtension() != null && (file.getExtension().equals("pfx") || file.getExtension().equals("cer")));
+                return file.isDirectory() || (file.getExtension() != null && (file.getExtension().equals("pfx") || file.getExtension().equals("pfx") ||
+                        file.getExtension().equals("cer") || file.getExtension().equals(".CER")));
             }
 
             @Override
             public boolean isFileSelectable(VirtualFile file) {
-                return (file.getExtension() != null && (file.getExtension().equals("pfx") || file.getExtension().equals("cer")));
+                return (file.getExtension() != null && (file.getExtension().equals("pfx") || file.getExtension().equals("pfx") ||
+                        file.getExtension().equals("cer") || file.getExtension().equals(".CER")));
             }
         };
         fileChooserDescriptor.setTitle("Select Certificate");
@@ -182,7 +184,7 @@ public class CertificateDialog extends DialogWrapper {
                     String path = virtualFile.getPath();
                     String password = null;
                     boolean proceed = true;
-                    if (path.endsWith(".pfx")) {
+                    if (path.endsWith(".pfx") || path.endsWith(".PFX")) {
                         SimplePfxPwdDlg dlg = new SimplePfxPwdDlg(path);
                         dlg.show();
                         if (dlg.isOK()) {
