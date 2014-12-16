@@ -15,7 +15,6 @@
  */
 package com.microsoftopentechnologies.intellij.components;
 
-import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.CommandProcessor;
@@ -34,7 +33,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Collection;
 
 public class AzureServiceComponent implements ProjectComponent {
-    private Project mProject;
     private static String MOBILE_SERVICE_CODE = "//010fa0c4-5af1-4f81-95c1-720d9fab8d96";
     private static String NOTIFICATION_HUBS_CODE = "//46cca6b7-ff7d-4e05-9ef2-d7eb4798222e";
     private static String NOTIFICATION_HUBS_MOBILE_SERVICE_CODE = "//657555dc-6167-466a-9536-071307770d46";
@@ -48,14 +46,14 @@ public class AzureServiceComponent implements ProjectComponent {
     private static VirtualFileListener vfl = getVirtualFileListener();
     private static Integer vflCount = 0;
 
+    private Project mProject;
+
     public AzureServiceComponent(Project project) {
         mProject = project;
     }
 
     public void initComponent() {
         ApplicationInfo.getInstance();
-        final PropertiesComponent pc = PropertiesComponent.getInstance(mProject);
-        pc.setValue("pluginenabled", String.valueOf(true));
 
         synchronized (vflCount) {
             if (vflCount.equals(0)) {
