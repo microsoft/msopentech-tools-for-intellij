@@ -17,7 +17,6 @@
 package com.microsoftopentechnologies.intellij.components;
 
 import com.intellij.icons.AllIcons;
-import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
@@ -67,149 +66,144 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory {
 
         final JComponent toolWindowComponent = toolWindow.getComponent();
 
-        PropertiesComponent pc = PropertiesComponent.getInstance(project);
-        final boolean enabled = Boolean.parseBoolean(pc.getValue("pluginenabled"));
-        if (enabled) {
+        final Tree tree = new Tree();
 
-            final Tree tree = new Tree();
+        tree.addMouseListener(new MouseListener() {
+            @Override
+            public void mouseClicked(MouseEvent mouseEvent) {
+            }
 
-            tree.addMouseListener(new MouseListener() {
-                @Override
-                public void mouseClicked(MouseEvent mouseEvent) {
-                }
+            @Override
+            public void mousePressed(MouseEvent mouseEvent) {
+                int selRow = tree.getRowForLocation(mouseEvent.getX(), mouseEvent.getY());
+                TreePath selPath = tree.getPathForLocation(mouseEvent.getX(), mouseEvent.getY());
 
-                @Override
-                public void mousePressed(MouseEvent mouseEvent) {
-                    int selRow = tree.getRowForLocation(mouseEvent.getX(), mouseEvent.getY());
-                    TreePath selPath = tree.getPathForLocation(mouseEvent.getX(), mouseEvent.getY());
+                if (selPath != null) {
+                    if (selRow != -1 && SwingUtilities.isLeftMouseButton(mouseEvent)) {
+                        DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) selPath.getLastPathComponent();
 
-                    if (selPath != null) {
-                        if (selRow != -1 && SwingUtilities.isLeftMouseButton(mouseEvent)) {
+                        if (selectedNode != null) {
+                            loadServiceTree(project, tree, selectedNode);
+                        }
+
+                    }
+
+                    if (SwingUtilities.isRightMouseButton(mouseEvent) || mouseEvent.isPopupTrigger()) {
+                        if (selRow != -1) {
                             DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) selPath.getLastPathComponent();
 
                             if (selectedNode != null) {
-                                loadServiceTree(project, tree, selectedNode);
-                            }
 
-                        }
+                                if (selectedNode.getUserObject() instanceof Subscription) {
 
-                        if (SwingUtilities.isRightMouseButton(mouseEvent) || mouseEvent.isPopupTrigger()) {
-                            if (selRow != -1) {
-                                DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) selPath.getLastPathComponent();
+                                    JBPopupMenu menu = new JBPopupMenu();
+                                    JMenuItem mi = new JMenuItem("Create Service");
+                                    mi.addActionListener(new ActionListener() {
+                                        @Override
+                                        public void actionPerformed(ActionEvent actionEvent) {
+                                            CreateNewServiceForm form = new CreateNewServiceForm();
+                                            form.setServiceCreated(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    ApplicationManager.getApplication().invokeLater(new Runnable() {
+                                                        @Override
+                                                        public void run() {
+                                                            loadTree(project, tree);
+                                                        }
+                                                    });
+                                                }
+                                            });
 
-                                if (selectedNode != null) {
+                                            form.setModal(true);
+                                            UIHelper.packAndCenterJDialog(form);
+                                            form.setVisible(true);
+                                        }
+                                    });
+                                    mi.setIconTextGap(16);
+                                    menu.add(mi);
 
-                                    if (selectedNode.getUserObject() instanceof Subscription) {
+                                    menu.show(mouseEvent.getComponent(), mouseEvent.getX(), mouseEvent.getY());
+                                } else if (selectedNode.getUserObject() instanceof MobileServiceTreeItem) {
+                                    MobileServiceTreeItem selectedObject = (MobileServiceTreeItem) selectedNode.getUserObject();
 
-                                        JBPopupMenu menu = new JBPopupMenu();
-                                        JMenuItem mi = new JMenuItem("Create Service");
-                                        mi.addActionListener(new ActionListener() {
-                                            @Override
-                                            public void actionPerformed(ActionEvent actionEvent) {
-                                                CreateNewServiceForm form = new CreateNewServiceForm();
-                                                form.setServiceCreated(new Runnable() {
-                                                    @Override
-                                                    public void run() {
-                                                        ApplicationManager.getApplication().invokeLater(new Runnable() {
-                                                            @Override
-                                                            public void run() {
-                                                                loadTree(project, tree);
-                                                            }
-                                                        });
-                                                    }
-                                                });
-
-                                                form.setModal(true);
-                                                UIHelper.packAndCenterJDialog(form);
-                                                form.setVisible(true);
-                                            }
-                                        });
+                                    JBPopupMenu menu = new JBPopupMenu();
+                                    for (JBMenuItem mi : getMenuItems(project, selectedObject, selectedNode, tree)) {
                                         mi.setIconTextGap(16);
                                         menu.add(mi);
-
-                                        menu.show(mouseEvent.getComponent(), mouseEvent.getX(), mouseEvent.getY());
-                                    } else if (selectedNode.getUserObject() instanceof MobileServiceTreeItem) {
-                                        MobileServiceTreeItem selectedObject = (MobileServiceTreeItem) selectedNode.getUserObject();
-
-                                        JBPopupMenu menu = new JBPopupMenu();
-                                        for (JBMenuItem mi : getMenuItems(project, selectedObject, selectedNode, tree)) {
-                                            mi.setIconTextGap(16);
-                                            menu.add(mi);
-                                        }
-
-                                        menu.show(mouseEvent.getComponent(), mouseEvent.getX(), mouseEvent.getY());
                                     }
-                                }
 
+                                    menu.show(mouseEvent.getComponent(), mouseEvent.getX(), mouseEvent.getY());
+                                }
                             }
+
                         }
                     }
                 }
-
-                @Override
-                public void mouseReleased(MouseEvent mouseEvent) {
-                }
-
-                @Override
-                public void mouseEntered(MouseEvent mouseEvent) {
-                }
-
-                @Override
-                public void mouseExited(MouseEvent mouseEvent) {
-                }
-            });
-
-            tree.setCellRenderer(UIHelper.getTreeNodeRenderer());
-            tree.setRootVisible(false);
-
-            if (toolWindow instanceof ToolWindowEx) {
-                ToolWindowEx toolWindowEx = (ToolWindowEx) toolWindow;
-
-                toolWindowEx.setTitleActions(
-                        new AnAction("Refresh", "Refresh Service List", UIHelper.loadIcon("refresh.png")) {
-                            @Override
-                            public void actionPerformed(AnActionEvent event) {
-                                loadTree(project, tree);
-                            }
-                        },
-                        new AnAction("Manage Subscriptions", "Manage Subscriptions", AllIcons.Ide.Link) {
-                            @Override
-                            public void actionPerformed(AnActionEvent anActionEvent) {
-                                ManageSubscriptionForm form = new ManageSubscriptionForm(anActionEvent.getProject());
-                                UIHelper.packAndCenterJDialog(form);
-                                form.setVisible(true);
-                                loadTree(project, tree);
-                            }
-                        });
-
             }
 
-            GridBagConstraints c = new GridBagConstraints();
-            c.gridx = 0;
-            c.gridy = 0;
-            c.weightx = 1;
-            c.weighty = 1;
-            c.fill = GridBagConstraints.BOTH;
-            c.anchor = GridBagConstraints.NORTHWEST;
+            @Override
+            public void mouseReleased(MouseEvent mouseEvent) {
+            }
 
-            treePanel.add(tree, c);
+            @Override
+            public void mouseEntered(MouseEvent mouseEvent) {
+            }
 
-            c = new GridBagConstraints();
-            c.gridx = 0;
-            c.gridy = 1;
-            c.weightx = 0;
-            c.weighty = 0;
-            c.fill = GridBagConstraints.BOTH;
-            c.anchor = GridBagConstraints.CENTER;
-            treePanel.add(loading, c);
+            @Override
+            public void mouseExited(MouseEvent mouseEvent) {
+            }
+        });
 
-            tree.setVisible(false);
-            loading.setVisible(false);
+        tree.setCellRenderer(UIHelper.getTreeNodeRenderer());
+        tree.setRootVisible(false);
 
-            toolWindowComponent.add(new JBScrollPane(treePanel));
+        if (toolWindow instanceof ToolWindowEx) {
+            ToolWindowEx toolWindowEx = (ToolWindowEx) toolWindow;
 
-            loadTree(project, tree);
+            toolWindowEx.setTitleActions(
+                    new AnAction("Refresh", "Refresh Service List", UIHelper.loadIcon("refresh.png")) {
+                        @Override
+                        public void actionPerformed(AnActionEvent event) {
+                            loadTree(project, tree);
+                        }
+                    },
+                    new AnAction("Manage Subscriptions", "Manage Subscriptions", AllIcons.Ide.Link) {
+                        @Override
+                        public void actionPerformed(AnActionEvent anActionEvent) {
+                            ManageSubscriptionForm form = new ManageSubscriptionForm(anActionEvent.getProject());
+                            UIHelper.packAndCenterJDialog(form);
+                            form.setVisible(true);
+                            loadTree(project, tree);
+                        }
+                    });
+
         }
+
+        GridBagConstraints c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = 0;
+        c.weightx = 1;
+        c.weighty = 1;
+        c.fill = GridBagConstraints.BOTH;
+        c.anchor = GridBagConstraints.NORTHWEST;
+
+        treePanel.add(tree, c);
+
+        c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = 1;
+        c.weightx = 0;
+        c.weighty = 0;
+        c.fill = GridBagConstraints.BOTH;
+        c.anchor = GridBagConstraints.CENTER;
+        treePanel.add(loading, c);
+
+        tree.setVisible(false);
+        loading.setVisible(false);
+
+        toolWindowComponent.add(new JBScrollPane(treePanel));
+
+        loadTree(project, tree);
     }
 
     private void loadServiceTree(Project project, JTree tree, DefaultMutableTreeNode selectedNode) {
