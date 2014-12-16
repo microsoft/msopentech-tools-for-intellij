@@ -227,6 +227,7 @@ public class CachingPanel extends BaseConfigurable implements SearchableConfigur
         return new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
+                setModified(true);
                 if (cacheCheck.isSelected()) {
                     if (message("txtExtraSmallVM").equals(waRole.getVMSize())) {
                         PluginUtil.displayErrorDialog(message("cacheConfTitle"), message("cacheConfErrMsg"));
