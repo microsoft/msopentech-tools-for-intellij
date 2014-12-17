@@ -167,10 +167,10 @@ public class UIHelper {
 
     public static void treeClick(final JTree tree, final DefaultMutableTreeNode selectedNode, final UUID subscriptionId, final String serviceName, final Project mProject) {
 
-        if (selectedNode.getChildCount() == 0 && selectedNode.getUserObject() instanceof MobileServiceTreeItem) {
+        if (selectedNode.getChildCount() == 0 && selectedNode.getUserObject() instanceof ServiceTreeItem) {
 
             //if children not loaded yet or last leaf
-            final MobileServiceTreeItem selectedObject = (MobileServiceTreeItem) selectedNode.getUserObject();
+            final ServiceTreeItem selectedObject = (ServiceTreeItem) selectedNode.getUserObject();
 
             if (!selectedObject.isLoading()) {
                 selectedObject.setLoading(true);

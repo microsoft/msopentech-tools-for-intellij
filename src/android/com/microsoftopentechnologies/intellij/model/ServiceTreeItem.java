@@ -17,7 +17,7 @@
 package com.microsoftopentechnologies.intellij.model;
 
 
-public interface MobileServiceTreeItem {
+public interface ServiceTreeItem {
     boolean isLoading();
     void setLoading(boolean loading);
 }

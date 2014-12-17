@@ -16,7 +16,7 @@
 
 package com.microsoftopentechnologies.intellij.model;
 
-public interface MobileServiceScriptTreeItem extends MobileServiceTreeItem {
+public interface MobileServiceScriptTreeItem extends ServiceTreeItem {
     String getLocalFilePath(String serviceName);
     String getLocalDirPath(String serviceName);
     String getName();

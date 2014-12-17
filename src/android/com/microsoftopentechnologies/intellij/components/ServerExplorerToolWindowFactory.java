@@ -123,8 +123,8 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory {
                                     menu.add(mi);
 
                                     menu.show(mouseEvent.getComponent(), mouseEvent.getX(), mouseEvent.getY());
-                                } else if (selectedNode.getUserObject() instanceof MobileServiceTreeItem) {
-                                    MobileServiceTreeItem selectedObject = (MobileServiceTreeItem) selectedNode.getUserObject();
+                                } else if (selectedNode.getUserObject() instanceof ServiceTreeItem) {
+                                    ServiceTreeItem selectedObject = (ServiceTreeItem) selectedNode.getUserObject();
 
                                     JBPopupMenu menu = new JBPopupMenu();
                                     for (JBMenuItem mi : getMenuItems(project, selectedObject, selectedNode, tree)) {
@@ -289,7 +289,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory {
         }
     }
 
-    private JBMenuItem[] getMenuItems(final Project p, final MobileServiceTreeItem selectedItem, final DefaultMutableTreeNode selectedNode, final JTree tree) {
+    private JBMenuItem[] getMenuItems(final Project p, final ServiceTreeItem selectedItem, final DefaultMutableTreeNode selectedNode, final JTree tree) {
 
         Object[] userObjectPath = selectedNode.getUserObjectPath();
 

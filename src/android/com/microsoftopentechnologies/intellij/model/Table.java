@@ -18,7 +18,7 @@ package com.microsoftopentechnologies.intellij.model;
 
 import java.util.ArrayList;
 
-public class Table implements MobileServiceTreeItem {
+public class Table implements ServiceTreeItem {
     public Table() {
         columns = new ArrayList<Column>();
         scripts = new ArrayList<Script>();

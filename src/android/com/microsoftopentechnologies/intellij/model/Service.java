@@ -19,7 +19,7 @@
 import java.util.ArrayList;
 import java.util.UUID;
 
-public class Service implements MobileServiceTreeItem {
+public class Service implements ServiceTreeItem {
 
     private boolean loading;
 
