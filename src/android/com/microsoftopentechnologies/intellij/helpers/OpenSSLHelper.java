@@ -40,12 +40,12 @@ public class OpenSSLHelper {
 
     public static String processCertificate(String xmlPublishSettings) throws AzureCmdException {
         try {
-            Node publishProfileNode = ((NodeList) AzureRestAPIHelper.getXMLValue(xmlPublishSettings, "/PublishData/PublishProfile", XPathConstants.NODESET)).item(0);
-            String version = AzureRestAPIHelper.getAttributeValue(publishProfileNode, "SchemaVersion");
+            Node publishProfileNode = ((NodeList) XmlHelper.getXMLValue(xmlPublishSettings, "/PublishData/PublishProfile", XPathConstants.NODESET)).item(0);
+            String version = XmlHelper.getAttributeValue(publishProfileNode, "SchemaVersion");
 
             boolean isFirstVersion = (version == null || Float.parseFloat(version) < 2);
 
-            NodeList subscriptionList = (NodeList) AzureRestAPIHelper.getXMLValue(xmlPublishSettings, "//Subscription", XPathConstants.NODESET);
+            NodeList subscriptionList = (NodeList) XmlHelper.getXMLValue(xmlPublishSettings, "//Subscription", XPathConstants.NODESET);
 
             Document ownerDocument = null;
 
@@ -53,7 +53,7 @@ public class OpenSSLHelper {
                 //Gets the pfx info
                 Element node = (Element) subscriptionList.item(i);
                 ownerDocument = node.getOwnerDocument();
-                String pfx = AzureRestAPIHelper.getAttributeValue(isFirstVersion ? publishProfileNode : node, "ManagementCertificate");
+                String pfx = XmlHelper.getAttributeValue(isFirstVersion ? publishProfileNode : node, "ManagementCertificate");
                 byte[] decodedBuffer = new BASE64Decoder().decodeBuffer(pfx);
 
                 //Create pfxFile
@@ -96,7 +96,7 @@ public class OpenSSLHelper {
                 node.setAttribute("ManagementCertificate", new BASE64Encoder().encode(buf).replace("\r", "").replace("\n", ""));
 
                 if (isFirstVersion) {
-                    node.setAttribute("ServiceManagementUrl", AzureRestAPIHelper.getAttributeValue(publishProfileNode, "Url"));
+                    node.setAttribute("ServiceManagementUrl", XmlHelper.getAttributeValue(publishProfileNode, "Url"));
                 }
             }
 

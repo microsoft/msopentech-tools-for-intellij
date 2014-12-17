@@ -35,10 +35,14 @@ import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIManager;
 import com.microsoftopentechnologies.intellij.model.Subscription;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableModel;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.UUID;
 import java.util.Vector;
 
 public class ManageSubscriptionForm extends JDialog {
@@ -49,10 +53,11 @@ public class ManageSubscriptionForm extends JDialog {
     private JButton importSubscriptionButton;
     private JButton closeButton;
     private ArrayList<Subscription> subscriptionList;
-    private JPopupMenu addSubscriptionMenu;
-    private final int MENU_ITEM_HEIGHT = 25;
+    private Project project;
 
     public ManageSubscriptionForm(final Project project) {
+        this.project = project;
+
         final ManageSubscriptionForm form = this;
         this.setTitle("Manage subscriptions");
         this.setModal(true);
@@ -60,11 +65,30 @@ public class ManageSubscriptionForm extends JDialog {
 
         this.setResizable(false);
 
-        final ReadOnlyCellTableModel model = new ReadOnlyCellTableModel();
+        final DefaultTableModel model = new DefaultTableModel() {
+            @Override
+            public boolean isCellEditable(int row, int col) {
+                return (col == 0);
+            }
+
+            public Class<?> getColumnClass(int colIndex) {
+
+                return getValueAt(0, colIndex).getClass();
+
+            }
+        };
+
+        model.addColumn("");
         model.addColumn("Name");
         model.addColumn("Id");
 
+
+
         subscriptionTable.setModel(model);
+
+        TableColumn column = subscriptionTable.getColumnModel().getColumn(0);
+        column.setMinWidth(23);
+        column.setMaxWidth(23);
 
         signInButton.addActionListener(new ActionListener() {
             @Override
@@ -188,20 +212,38 @@ public class ManageSubscriptionForm extends JDialog {
 
 
     private void onCancel() {
+        try {
+            ArrayList<UUID> selectedList = new ArrayList<UUID>();
 
-        dispose();
+            TableModel model = subscriptionTable.getModel();
+
+            for(int i = 0; i < model.getRowCount(); i++) {
+                Boolean selected = (Boolean) model.getValueAt(i, 0);
+                if(selected)
+                    selectedList.add(UUID.fromString(model.getValueAt(i, 2).toString()));
+            }
+
+            AzureRestAPIManager.getManager().setSelectedSubscriptions(selectedList);
+            //Saving the project is necessary to save the changes on the PropertiesComponent
+            project.save();
+
+            dispose();
+        } catch (AzureCmdException e) {
+            UIHelper.showException("Error setting selected subscriptions", e);
+        }
     }
 
     private void loadList() {
         final JDialog form = this;
-        final ReadOnlyCellTableModel model = (ReadOnlyCellTableModel) subscriptionTable.getModel();
+        final DefaultTableModel model = (DefaultTableModel) subscriptionTable.getModel();
 
         while (model.getRowCount() > 0)
             model.removeRow(0);
 
         form.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
-        Vector<String> vector = new Vector<String>();
+        Vector<Object> vector = new Vector<Object>();
+        vector.add("");
         vector.add("(loading... )");
         vector.add("");
         model.addRow(vector);
@@ -214,11 +256,12 @@ public class ManageSubscriptionForm extends JDialog {
                     while (model.getRowCount() > 0)
                         model.removeRow(0);
 
-                    subscriptionList = AzureRestAPIManager.getManager().getSubscriptionList();
+                    subscriptionList = AzureRestAPIManager.getManager().getFullSubscriptionList();
 
                     if (subscriptionList != null && subscriptionList.size() > 0) {
                         for (Subscription subs : subscriptionList) {
-                            Vector<String> row = new Vector<String>();
+                            Vector<Object> row = new Vector<Object>();
+                            row.add(new Boolean(subs.isSelected()));
                             row.add(subs.getName());
                             row.add(subs.getId().toString());
                             model.addRow(row);

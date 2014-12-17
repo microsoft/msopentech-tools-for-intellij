@@ -45,6 +45,7 @@ public class MSOpenTechTools extends ApplicationComponent.Adapter {
     public static class AppSettingsNames {
         public static final String O365_AUTHENTICATION_TOKEN = "com.microsoftopentechnologies.intellij.O365AuthenticationToken";
         public static final String SUBSCRIPTION_FILE = "com.microsoftopentechnologies.intellij.SubscriptionFile";
+        public static final String SELECTED_SUBSCRIPTIONS = "com.microsoftopentechnologies.intellij.SelectedSubscriptions";
         public static final String AZURE_AUTHENTICATION_MODE = "com.microsoftopentechnologies.intellij.AzureAuthenticationMode";
         public static final String AZURE_AUTHENTICATION_TOKEN = "com.microsoftopentechnologies.intellij.AzureAuthenticationToken";
         public static final String CLEAN_TEMP_DATA = "com.microsoftopentechnologies.intellij.CleanTempData";
