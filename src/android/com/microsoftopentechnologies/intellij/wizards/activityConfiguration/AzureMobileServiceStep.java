@@ -134,7 +134,36 @@ public class AzureMobileServiceStep extends WizardStep<AddServiceWizardModel> {
                 UIHelper.packAndCenterJDialog(form);
                 form.setVisible(true);
 
-                fillList();
+                try {
+                    List<Subscription> subscriptionList = AzureRestAPIManager.getManager().getSubscriptionList();
+
+                    if (subscriptionList == null || subscriptionList.size() == 0) {
+                        buttonAddService.setEnabled(false);
+
+                        // clear the mobile services list
+                        final ReadOnlyCellTableModel messageTableModel = new ReadOnlyCellTableModel();
+                        messageTableModel.addColumn("Message");
+                        Vector<String> vector = new Vector<String>();
+                        vector.add("Please sign in/import your Azure subscriptions.");
+                        messageTableModel.addRow(vector);
+
+
+                        mobileServices.setModel(messageTableModel);
+                        } else {
+                            fillList();
+                        }
+                } catch (AzureCmdException e) {
+                    final ReadOnlyCellTableModel messageTableModel = new ReadOnlyCellTableModel();
+                    messageTableModel.addColumn("Message");
+                    Vector<String> vector = new Vector<String>();
+                    vector.add("There has been an error while retrieving the configured Azure subscriptions.");
+                    messageTableModel.addRow(vector);
+                    vector = new Vector<String>();
+                    vector.add("Please retry signing in/importing your Azure subscriptions.");
+                    messageTableModel.addRow(vector);
+
+                    mobileServices.setModel(messageTableModel);
+                }
             }
         });
 

@@ -109,8 +109,7 @@ public class ManageSubscriptionForm extends JDialog {
                             context.dispose();
 
                             if (authenticationResult != null) {
-                                final AzureManager apiManager = AzureRestAPIManager.
-                                        getManager();
+                                final AzureManager apiManager = AzureRestAPIManager.getManager();
                                 apiManager.setAuthenticationMode(AzureAuthenticationMode.ActiveDirectory);
                                 apiManager.setAuthenticationToken(authenticationResult);
 
@@ -120,6 +119,9 @@ public class ManageSubscriptionForm extends JDialog {
                                     public void run() {
                                         try {
                                             apiManager.clearSubscriptions();
+
+                                            refreshSignInCaption();
+
                                         } catch (AzureCmdException e1) {
                                             UIHelper.showException("An error occurred while attempting to " +
                                                     "clear your old subscriptions.", e1);
@@ -160,12 +162,14 @@ public class ManageSubscriptionForm extends JDialog {
                         UIHelper.showException("Error clearing user subscriptions", t);
                     }
 
-                    ReadOnlyCellTableModel model = (ReadOnlyCellTableModel) subscriptionTable.getModel();
+                    DefaultTableModel model = (DefaultTableModel) subscriptionTable.getModel();
                     while (model.getRowCount() > 0) {
                         model.removeRow(0);
                     }
 
                     removeButton.setEnabled(false);
+
+                    refreshSignInCaption();
                 }
             }
         });
@@ -210,6 +214,12 @@ public class ManageSubscriptionForm extends JDialog {
         });
     }
 
+    private void refreshSignInCaption() {
+        boolean isNotSigned = (AzureRestAPIManager.getManager().getAuthenticationToken() == null);
+
+        signInButton.setText(isNotSigned ? "Sign In ..." : "Sign Out");
+    }
+
 
     private void onCancel() {
         try {
@@ -224,8 +234,12 @@ public class ManageSubscriptionForm extends JDialog {
             }
 
             AzureRestAPIManager.getManager().setSelectedSubscriptions(selectedList);
+
+
             //Saving the project is necessary to save the changes on the PropertiesComponent
-            project.save();
+            if(project != null) {
+                project.save();
+            }
 
             dispose();
         } catch (AzureCmdException e) {
@@ -236,6 +250,8 @@ public class ManageSubscriptionForm extends JDialog {
     private void loadList() {
         final JDialog form = this;
         final DefaultTableModel model = (DefaultTableModel) subscriptionTable.getModel();
+
+        refreshSignInCaption();
 
         while (model.getRowCount() > 0)
             model.removeRow(0);
