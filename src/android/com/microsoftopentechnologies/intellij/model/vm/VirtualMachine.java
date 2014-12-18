@@ -16,6 +16,7 @@
 package com.microsoftopentechnologies.intellij.model.vm;
 
 import com.microsoftopentechnologies.intellij.model.ServiceTreeItem;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +32,8 @@ public class VirtualMachine implements ServiceTreeItem {
     private String subscriptionId;
     private List<Endpoint> endpoints;
 
-    public VirtualMachine(String name, String serviceName, String dns, String environment, String size, String status, String subscriptionId) {
+    public VirtualMachine(@NotNull String name, @NotNull String serviceName, @NotNull String dns, @NotNull String environment,
+                          @NotNull String size, @NotNull String status, @NotNull String subscriptionId) {
         this.name = name;
         this.serviceName = serviceName;
         this.dns = dns;
@@ -52,34 +54,42 @@ public class VirtualMachine implements ServiceTreeItem {
         this.loading = loading;
     }
 
+    @NotNull
     public String getName() {
         return name;
     }
 
+    @NotNull
     public String getDns() {
         return dns;
     }
 
+    @NotNull
     public String getEnvironment() {
         return environment;
     }
 
+    @NotNull
     public String getSize() {
         return size;
     }
 
+    @NotNull
     public String getStatus() {
         return status;
     }
 
+    @NotNull
     public String getSubscriptionId() {
         return subscriptionId;
     }
 
+    @NotNull
     public List<Endpoint> getEndpoints() {
         return endpoints;
     }
 
+    @NotNull
     public String getServiceName() {
         return serviceName;
     }

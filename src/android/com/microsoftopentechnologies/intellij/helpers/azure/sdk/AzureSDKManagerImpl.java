@@ -80,16 +80,20 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         try {
             DeploymentGetResponse deployment = client.getDeploymentsOperations().getBySlot(hostedService.getServiceName(), slot);
 
+            if (deployment == null) {
+                return vmList;
+            }
+
             for (Role role : deployment.getRoles()) {
                 if (role.getRoleType() != null
                         && role.getRoleType().equals("PersistentVMRole")) {
                     VirtualMachine vm = new VirtualMachine(
-                            role.getRoleName(),
-                            hostedService.getServiceName(),
-                            deployment.getUri().toString(),
+                            role.getRoleName() != null ? role.getRoleName() : "",
+                            hostedService.getServiceName() != null ? hostedService.getServiceName() : "",
+                            deployment.getUri() != null ? deployment.getUri().toString() : "",
                             slot.toString(),
-                            role.getRoleSize(),
-                            deployment.getStatus().toString(),
+                            role.getRoleSize() != null ? role.getRoleSize() : "",
+                            deployment.getStatus() != null ? deployment.getStatus().toString() : "",
                             subscriptionId);
 
                     vm = loadEndpoints(role, vm);
@@ -120,10 +124,10 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
                     && configurationSet.getInputEndpoints() != null) {
                 for (InputEndpoint inputEndpoint : configurationSet.getInputEndpoints()) {
                     endpoints.add(new Endpoint(
-                            inputEndpoint.getName(),
-                            inputEndpoint.getProtocol(),
-                            inputEndpoint.getLocalPort().intValue(),
-                            inputEndpoint.getPort().intValue()));
+                            inputEndpoint.getName() != null ? inputEndpoint.getName() : "",
+                            inputEndpoint.getProtocol() != null ? inputEndpoint.getProtocol() : "",
+                            inputEndpoint.getLocalPort(),
+                            inputEndpoint.getPort()));
                 }
             }
         }

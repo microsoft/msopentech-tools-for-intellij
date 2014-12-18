@@ -25,7 +25,9 @@ import com.microsoft.windowsazure.management.compute.ComputeManagementService;
 import com.microsoft.windowsazure.management.configuration.ManagementConfiguration;
 import com.microsoftopentechnologies.intellij.components.MSOpenTechTools;
 import com.microsoftopentechnologies.intellij.helpers.OpenSSLHelper;
-import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIHelper;
+import com.microsoftopentechnologies.intellij.helpers.XmlHelper;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -46,11 +48,46 @@ public class AzureSDKHelper {
         public String managementURI;
     }
 
-    public static Configuration getConfiguration(String subscriptionId) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException, ParserConfigurationException, XPathExpressionException, SAXException {
+    @Nullable
+    public static ComputeManagementClient getComputeManagementClient(@NotNull String subscriptionId)
+            throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException, XPathExpressionException, ParserConfigurationException, SAXException {
+        Configuration configuration = getConfiguration(subscriptionId);
+
+        if (configuration == null) {
+            return null;
+        }
+
+        return ComputeManagementService.create(configuration);
+    }
+
+    @Nullable
+    public static ManagementClient getManagementClient(@NotNull String subscriptionId)
+            throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException, XPathExpressionException, ParserConfigurationException, SAXException {
+        Configuration configuration = getConfiguration(subscriptionId);
+
+        if (configuration == null) {
+            return null;
+        }
+
+        return configuration.create(ManagementClient.class);
+    }
+
+    @Nullable
+    private static Configuration getConfiguration(@NotNull String subscriptionId)
+            throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException, ParserConfigurationException, XPathExpressionException, SAXException {
         SubscriptionInfo subscriptionInfo = getSubscriptionInfo(subscriptionId);
+
+        if (subscriptionInfo == null) {
+            return null;
+        }
+
         String keyStorePath = File.createTempFile("azk", null).getPath();
 
-        initKeyStore(subscriptionInfo.base64Certificate, OpenSSLHelper.PASSWORD, keyStorePath, OpenSSLHelper.PASSWORD);
+        initKeyStore(
+                subscriptionInfo.base64Certificate != null ? subscriptionInfo.base64Certificate : "",
+                OpenSSLHelper.PASSWORD,
+                keyStorePath,
+                OpenSSLHelper.PASSWORD);
 
         ClassLoader old = Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(AzureSDKHelper.class.getClassLoader());
@@ -62,15 +99,9 @@ public class AzureSDKHelper {
         }
     }
 
-    public static ComputeManagementClient getComputeManagementClient(String subscriptionId) throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException, XPathExpressionException, ParserConfigurationException, SAXException {
-        return ComputeManagementService.create(getConfiguration(subscriptionId));
-    }
-
-    public static ManagementClient getManagementClient(String subscriptionId) throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException, XPathExpressionException, ParserConfigurationException, SAXException {
-        return getConfiguration(subscriptionId).create(ManagementClient.class);
-    }
-
-    private static SubscriptionInfo getSubscriptionInfo(final String subscriptionId) throws SAXException, ParserConfigurationException, XPathExpressionException, IOException {
+    @Nullable
+    private static SubscriptionInfo getSubscriptionInfo(@NotNull String subscriptionId)
+            throws SAXException, ParserConfigurationException, XPathExpressionException, IOException {
         String publishSettings = PropertiesComponent.getInstance().getValue(MSOpenTechTools.AppSettingsNames.SUBSCRIPTION_FILE, "");
 
         if (publishSettings.isEmpty()) {
@@ -79,10 +110,10 @@ public class AzureSDKHelper {
 
         Node node = null;
 
-        NodeList subsList = (NodeList) AzureRestAPIHelper.getXMLValue(publishSettings, "//PublishData/PublishProfile/Subscription", XPathConstants.NODESET);
+        NodeList subsList = (NodeList) XmlHelper.getXMLValue(publishSettings, "//PublishData/PublishProfile/Subscription", XPathConstants.NODESET);
 
         for (int i = 0; i < subsList.getLength(); i++) {
-            String id = AzureRestAPIHelper.getAttributeValue(subsList.item(i), "Id");
+            String id = XmlHelper.getAttributeValue(subsList.item(i), "Id");
 
             if (id.equals(subscriptionId)) {
                 node = subsList.item(i);
@@ -95,13 +126,14 @@ public class AzureSDKHelper {
         }
 
         SubscriptionInfo subscriptionInfo = new SubscriptionInfo();
-        subscriptionInfo.base64Certificate = AzureRestAPIHelper.getAttributeValue(node, "ManagementCertificate");
-        subscriptionInfo.managementURI = AzureRestAPIHelper.getAttributeValue(node, "ServiceManagementUrl");
+        subscriptionInfo.base64Certificate = XmlHelper.getAttributeValue(node, "ManagementCertificate");
+        subscriptionInfo.managementURI = XmlHelper.getAttributeValue(node, "ServiceManagementUrl");
 
         return subscriptionInfo;
     }
 
-    private static void initKeyStore(String base64Certificate, String certificatePwd, String keyStorePath, String keyStorePwd) throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException {
+    private static void initKeyStore(@NotNull String base64Certificate, @NotNull String certificatePwd, @NotNull String keyStorePath, @NotNull String keyStorePwd)
+            throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException {
         FileOutputStream keyStoreOutputStream = new FileOutputStream(keyStorePath);
 
         try {

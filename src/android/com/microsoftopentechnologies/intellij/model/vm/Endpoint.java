@@ -16,6 +16,7 @@
 package com.microsoftopentechnologies.intellij.model.vm;
 
 import com.microsoftopentechnologies.intellij.model.ServiceTreeItem;
+import org.jetbrains.annotations.NotNull;
 
 public class Endpoint implements ServiceTreeItem {
     private boolean loading;
@@ -24,7 +25,7 @@ public class Endpoint implements ServiceTreeItem {
     private int privatePort;
     private int publicPort;
 
-    public Endpoint(String name, String protocol, int privatePort, int publicPort) {
+    public Endpoint(@NotNull String name, @NotNull String protocol, int privatePort, int publicPort) {
         this.name = name;
         this.protocol = protocol;
         this.privatePort = privatePort;
@@ -41,10 +42,12 @@ public class Endpoint implements ServiceTreeItem {
         this.loading = loading;
     }
 
+    @NotNull
     public String getName() {
         return name;
     }
 
+    @NotNull
     public String getProtocol() {
         return protocol;
     }
