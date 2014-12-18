@@ -29,6 +29,7 @@ import com.microsoftopentechnologies.intellij.ui.util.JdkSrvConfig;
 import com.microsoftopentechnologies.intellij.util.AppCmpntParam;
 import com.microsoftopentechnologies.intellij.util.ParseXML;
 import com.microsoftopentechnologies.intellij.util.PluginUtil;
+import com.microsoftopentechnologies.roleoperations.WizardUtilMethods;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -145,69 +146,8 @@ public class AzureWizardDialog extends WizardDialog<AzureWizardModel> {
             //logic for handling deploy page components and their values.
             if (!depMap.isEmpty()) {
                 File templateFile = new File(depMap.get("tempFile"));
-                // JDK
-                if (depMap.get("jdkChecked").equalsIgnoreCase("true") && !depMap.get("jdkLoc").isEmpty()) {
-                    // Third party JDK selected
-                    if (depMap.get("jdkThrdPartyChecked").equalsIgnoreCase("true")) {
-                        String jdkName = depMap.get("jdkName");
-                        role.setJDKSourcePath(depMap.get("jdkLoc"), templateFile, jdkName);
-                        role.setJDKCloudName(jdkName);
-                    } else {
-                        role.setJDKSourcePath(depMap.get("jdkLoc"), templateFile, "");
-                    }
-
-                    // JDK download group
-                    // By default auto upload will be selected.
-                    String jdkTabUrl = depMap.get("jdkUrl");
-                    if (depMap.get("jdkAutoDwnldChecked").equalsIgnoreCase("true")
-                            || depMap.get("jdkThrdPartyChecked").equalsIgnoreCase("true")) {
-                        if (jdkTabUrl.equalsIgnoreCase(JdkSrvConfig.AUTO_TXT)) {
-                            jdkTabUrl = auto;
-                        }
-                        role.setJDKCloudUploadMode(WARoleComponentCloudUploadMode.auto);
-                    }
-                    role.setJDKCloudURL(jdkTabUrl);
-                    role.setJDKCloudKey(depMap.get("jdkKey"));
-            		/*
-            		 * By default package type is local,
-            		 * hence store JAVA_HOME for cloud.
-            		 */
-                    role.setJDKCloudHome(depMap.get("javaHome"));
-                }
-
-                // Server
-                if (depMap.get("serChecked").equalsIgnoreCase("true")
-                        && !depMap.get("serLoc").isEmpty()
-                        && !depMap.get("servername").isEmpty()) {
-                    String srvName = depMap.get("servername");
-                    String srvPriPort = WindowsAzureProjectManager.getHttpPort(srvName, templateFile);
-                    if (role.isValidEndpoint(AzureBundle.message("httpEp"), WindowsAzureEndpointType.Input, srvPriPort, HTTP_PORT)) {
-                        role.addEndpoint(AzureBundle.message("httpEp"), WindowsAzureEndpointType.Input, srvPriPort, HTTP_PORT);
-                    }
-                    role.setServer(srvName, depMap.get("serLoc"), templateFile);
-
-                    // Server download group
-                    // Add only if Server component added
-                    if (depMap.get("srvDwnldChecked").equalsIgnoreCase("true")
-                            || depMap.get("srvAutoDwnldChecked").equalsIgnoreCase("true")) {
-                        String srvTabUrl = depMap.get("srvUrl");
-                        if (depMap.get("srvAutoDwnldChecked").equalsIgnoreCase("true") && srvTabUrl.equalsIgnoreCase(JdkSrvConfig.AUTO_TXT)) {
-                            srvTabUrl = auto;
-                        }
-                        role.setServerCloudURL(srvTabUrl);
-                        role.setServerCloudKey(depMap.get("srvKey"));
-                		/*
-                		 * By default package type is local,
-                		 * hence store server home directory for cloud.
-                		 */
-                        role.setServerCloudHome(depMap.get("srvHome"));
-                        if (depMap.get("srvAutoDwnldChecked").equalsIgnoreCase("true")) {
-                            role.setServerCloudUploadMode(WARoleComponentCloudUploadMode.auto);
-                        }
-                    }
-                }
-
-                /*
+                WizardUtilMethods.configureJDKServer(role, depMap);
+            	/*
                  * Handling adding server application
                  * without configuring server/JDK.
                  * Always add cloud attributes as
@@ -228,7 +168,6 @@ public class AzureWizardDialog extends WizardDialog<AzureWizardModel> {
             /**
              * Handling for HelloWorld application in plug-in
              */
-//            if (tabPg != null) {
                 if (!myModel.getAppsAsNames().contains(AzureBundle.message("helloWorld"))) {
                     java.util.List<WindowsAzureRoleComponent> waCompList = model.getWaRole().getServerApplications();
                     for (WindowsAzureRoleComponent waComp : waCompList) {
@@ -236,7 +175,6 @@ public class AzureWizardDialog extends WizardDialog<AzureWizardModel> {
                             waComp.delete();
                         }
                     }
-//                }
             }
 
             // Enable Key features

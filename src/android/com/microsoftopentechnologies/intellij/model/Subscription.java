@@ -22,7 +22,7 @@ public class Subscription {
     private UUID id;
     private String name;
     private String managementCertificate;
-    private boolean current;
+    private boolean selected;
     private String tenantId;
 
     public UUID getId() {
@@ -54,19 +54,19 @@ public class Subscription {
         this.managementCertificate = managementCertificate;
     }
 
-    public boolean isCurrent() {
-        return current;
-    }
-
-    public void setCurrent(boolean current) {
-        this.current = current;
-    }
-
     public String getTenantId() {
         return tenantId;
     }
 
     public void setTenantId(String tenantId) {
         this.tenantId = tenantId;
+    }
+
+    public boolean isSelected() {
+        return selected;
+    }
+
+    public void setSelected(boolean selected) {
+        this.selected = selected;
     }
 }

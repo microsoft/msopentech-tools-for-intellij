@@ -186,7 +186,7 @@ public class JdkServerPanel {
                 }
                 String jdkName = waRole.getJDKCloudName();
                 // project may be using deprecated JDK, hence pass to method
-                showThirdPartyJdkNames(true, jdkName);
+                showThirdPartyJdkNames(jdkName);
                 String jdkUrlValue = waRole.getJDKCloudURL();
                 // JDK download group
                 if (jdkUrl != null && !jdkUrlValue.isEmpty()) {
@@ -366,6 +366,8 @@ public class JdkServerPanel {
         jdkPath.getTextField().getDocument().addDocumentListener(createJdkPathListener());
         uploadLocalJdk.addActionListener(createUploadLocalJdkListener());
         uploadLocalJdk.setSelected(true);
+        showThirdPartyJdkNames("");
+        enableThirdPartyJdkCombo(true);
         serverPath.addBrowseFolderListener(new TextBrowseFolderListener(FileChooserDescriptorFactory.createSingleFolderDescriptor()) {
             protected void onFileChoosen(@NotNull VirtualFile chosenFile) {
                 super.onFileChoosen(chosenFile);
@@ -889,7 +891,7 @@ public class JdkServerPanel {
         values.put("jdkDwnldChecked", String.valueOf(customDownloadJdk.isSelected()));
         values.put("jdkAutoDwnldChecked", String.valueOf(uploadLocalJdk.isSelected()));
         values.put("jdkThrdPartyChecked" , String.valueOf(thirdPartyJdk.isSelected()));
-        values.put("jdkName" , thirdPartyJdkName.getSelectedItem().toString());
+        values.put("jdkName" , thirdPartyJdkName.getSelectedItem() == null ? "" : (String) thirdPartyJdkName.getSelectedItem());
         values.put("jdkUrl" , jdkUrl.getText());
         values.put("jdkKey" , AzureWizardModel.getAccessKey(storageAccountJdk));
         values.put("javaHome", javaHome.getText());
@@ -1248,21 +1250,16 @@ public class JdkServerPanel {
     /**
      * Method decides whether to
      * show third party JDK names or not.
-     * @param status
      */
-    public void showThirdPartyJdkNames(Boolean status, String depJdkName) {
-        if (status) {
-            try {
-                String[] thrdPrtJdkArr = WindowsAzureProjectManager.getThirdPartyJdkNames(AzurePlugin.cmpntFile, depJdkName);
-                // check at least one element is present
-                if (thrdPrtJdkArr.length >= 1) {
-                    thirdPartyJdkName.setModel(new DefaultComboBoxModel(thrdPrtJdkArr));
-                }
-            } catch (WindowsAzureInvalidProjectOperationException ex) {
-                log(ex.getMessage(), ex);
+    public void showThirdPartyJdkNames(String depJdkName) {
+        try {
+            String[] thrdPrtJdkArr = WindowsAzureProjectManager.getThirdPartyJdkNames(AzurePlugin.cmpntFile, depJdkName);
+            // check at least one element is present
+            if (thrdPrtJdkArr.length >= 1) {
+                thirdPartyJdkName.setModel(new DefaultComboBoxModel(thrdPrtJdkArr));
             }
-        } else {
-            thirdPartyJdkName.removeAllItems();
+        } catch (WindowsAzureInvalidProjectOperationException ex) {
+            log(ex.getMessage(), ex);
         }
     }
 
@@ -1344,7 +1341,7 @@ public class JdkServerPanel {
             uploadLocalJdk.setText(message("autoDlJdkCldRdBtnLbl"));
         } else {
             uploadLocalJdk.setText(message("noJdkDplyLbl"));
-            showThirdPartyJdkNames(true, "");
+            showThirdPartyJdkNames("");
         }
         storageAccountServer.setEnabled(status);
         storageAccountJdkLabel.setEnabled(status);

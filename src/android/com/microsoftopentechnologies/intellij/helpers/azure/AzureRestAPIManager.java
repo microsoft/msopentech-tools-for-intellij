@@ -23,8 +23,12 @@ import com.microsoftopentechnologies.intellij.components.MSOpenTechTools;
 import com.microsoftopentechnologies.intellij.helpers.CustomJsonSlurper;
 import com.microsoftopentechnologies.intellij.helpers.NoSubscriptionException;
 import com.microsoftopentechnologies.intellij.helpers.StringHelper;
+import com.microsoftopentechnologies.intellij.helpers.XmlHelper;
 import com.microsoftopentechnologies.intellij.helpers.aadauth.AuthenticationResult;
 import com.microsoftopentechnologies.intellij.model.*;
+import org.apache.commons.lang.StringUtils;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 import sun.misc.BASE64Encoder;
@@ -215,6 +219,35 @@ public class AzureRestAPIManager implements AzureManager {
     public ArrayList<Subscription> getSubscriptionList() throws AzureCmdException {
         try {
             AzureAuthenticationMode mode = getAuthenticationMode();
+            ArrayList<Subscription> fullList = null;
+
+            if (mode == AzureAuthenticationMode.SubscriptionSettings) {
+                fullList = getSubscriptionListFromCert();
+            } else if (mode == AzureAuthenticationMode.ActiveDirectory) {
+                fullList = getSubscriptionListFromToken();
+            }
+
+            if(fullList != null) {
+                ArrayList<Subscription> ret = new ArrayList<Subscription>();
+                for (Subscription subscription : fullList) {
+                    if(subscription.isSelected())
+                        ret.add(subscription);
+                }
+
+                return ret;
+            }
+
+            return null;
+        } catch (Exception e) {
+            throw new AzureCmdException("Error getting subscription list", e);
+        }
+    }
+
+
+    @Override
+    public ArrayList<Subscription> getFullSubscriptionList() throws AzureCmdException {
+        try {
+            AzureAuthenticationMode mode = getAuthenticationMode();
 
             if (mode == AzureAuthenticationMode.SubscriptionSettings) {
                 return getSubscriptionListFromCert();
@@ -228,6 +261,49 @@ public class AzureRestAPIManager implements AzureManager {
         }
     }
 
+    public void setSelectedSubscriptions(List<UUID> selectedList) throws AzureCmdException {
+        try {
+            AzureAuthenticationMode mode = getAuthenticationMode();
+
+            if (mode == AzureAuthenticationMode.SubscriptionSettings) {
+                String subscriptionFile = PropertiesComponent.getInstance().getValue(MSOpenTechTools.AppSettingsNames.SUBSCRIPTION_FILE, "");
+
+
+                NodeList subscriptionList = (NodeList) XmlHelper.getXMLValue(subscriptionFile, "//Subscription", XPathConstants.NODESET);
+                for (int i = 0; i < subscriptionList.getLength(); i++) {
+                    UUID id = UUID.fromString(XmlHelper.getAttributeValue(subscriptionList.item(i), "Id"));
+                    Node node = subscriptionList.item(i).getAttributes().getNamedItem("Selected");
+
+                    if(node == null) {
+                        node = subscriptionList.item(i).getOwnerDocument().createAttribute("Selected");
+                    }
+
+                    node.setNodeValue(selectedList.contains(id) ? "true" : "false");
+                    subscriptionList.item(i).getAttributes().setNamedItem(node);
+                }
+
+                if(subscriptionList.getLength() > 0) {
+                    String savedXml = XmlHelper.saveXmlToStreamWriter(subscriptionList.item(0).getOwnerDocument());
+                    PropertiesComponent.getInstance().setValue(MSOpenTechTools.AppSettingsNames.SUBSCRIPTION_FILE, savedXml);
+                }
+            } else if (mode == AzureAuthenticationMode.ActiveDirectory) {
+                for (Subscription subscription : subscriptions) {
+                    subscription.setSelected(selectedList.contains(subscription.getId()));
+                }
+
+                ArrayList<String> selectedIds = new ArrayList<String>();
+                for (UUID uuid : selectedList) {
+                    selectedIds.add(uuid.toString());
+                }
+
+                PropertiesComponent.getInstance().setValue(MSOpenTechTools.AppSettingsNames.SELECTED_SUBSCRIPTIONS, StringUtils.join(selectedIds, ","));
+            }
+
+        } catch (Exception e) {
+            throw new AzureCmdException("Error getting subscription list", e);
+        }
+    }
+
     public ArrayList<Subscription> getSubscriptionListFromCert() throws SAXException, ParserConfigurationException, XPathExpressionException, IOException {
         String subscriptionFile = PropertiesComponent.getInstance().getValue(MSOpenTechTools.AppSettingsNames.SUBSCRIPTION_FILE, "");
 
@@ -235,14 +311,16 @@ public class AzureRestAPIManager implements AzureManager {
             return null;
         }
 
-        NodeList subscriptionList = (NodeList) AzureRestAPIHelper.getXMLValue(subscriptionFile, "//Subscription", XPathConstants.NODESET);
+        NodeList subscriptionList = (NodeList) XmlHelper.getXMLValue(subscriptionFile, "//Subscription", XPathConstants.NODESET);
 
         ArrayList<Subscription> list = new ArrayList<Subscription>();
 
         for (int i = 0; i < subscriptionList.getLength(); i++) {
             Subscription subscription = new Subscription();
-            subscription.setName(AzureRestAPIHelper.getAttributeValue(subscriptionList.item(i), "Name"));
-            subscription.setId(UUID.fromString(AzureRestAPIHelper.getAttributeValue(subscriptionList.item(i), "Id")));
+            subscription.setName(XmlHelper.getAttributeValue(subscriptionList.item(i), "Name"));
+            subscription.setId(UUID.fromString(XmlHelper.getAttributeValue(subscriptionList.item(i), "Id")));
+            String selected = XmlHelper.getAttributeValue(subscriptionList.item(i), "Selected");
+            subscription.setSelected(selected != null && selected.equals("true"));
 
             list.add(subscription);
         }
@@ -251,10 +329,19 @@ public class AzureRestAPIManager implements AzureManager {
     }
 
     public void refreshSubscriptionListFromToken() throws IOException, CertificateException, NoSuchAlgorithmException, UnrecoverableKeyException, ExecutionException, ParserConfigurationException, InterruptedException, AzureCmdException, SAXException, NoSubscriptionException, KeyStoreException, XPathExpressionException, KeyManagementException {
+
+        ArrayList<UUID> selectedIds = new ArrayList<UUID>();
+        String selectedSubscriptions = PropertiesComponent.getInstance().getValue(MSOpenTechTools.AppSettingsNames.SELECTED_SUBSCRIPTIONS, "");
+
+        if(!selectedSubscriptions.isEmpty()) {
+            for (String id : selectedSubscriptions.split(",")) {
+                selectedIds.add(UUID.fromString(id));
+            }
+        }
+
         String subscriptionXml = AzureRestAPIHelper.getRestApiCommand("subscriptions", null);
         PropertiesComponent.getInstance().setValue(MSOpenTechTools.AppSettingsNames.SUBSCRIPTION_FILE, subscriptionXml);
-        NodeList subscriptionList = (NodeList) AzureRestAPIHelper.getXMLValue(
-                subscriptionXml, "//Subscription", XPathConstants.NODESET);
+        NodeList subscriptionList = (NodeList) XmlHelper.getXMLValue(subscriptionXml, "//Subscription", XPathConstants.NODESET);
 
         subscriptionsLock.lock();
 
@@ -263,9 +350,10 @@ public class AzureRestAPIManager implements AzureManager {
 
             for (int i = 0; i < subscriptionList.getLength(); i++) {
                 Subscription subscription = new Subscription();
-                subscription.setName(AzureRestAPIHelper.getChildNodeValue(subscriptionList.item(i), "SubscriptionName"));
-                subscription.setId(UUID.fromString(AzureRestAPIHelper.getChildNodeValue(subscriptionList.item(i), "SubscriptionID")));
-                subscription.setTenantId(AzureRestAPIHelper.getChildNodeValue(subscriptionList.item(i), "AADTenantID"));
+                subscription.setName(XmlHelper.getChildNodeValue(subscriptionList.item(i), "SubscriptionName"));
+                subscription.setId(UUID.fromString(XmlHelper.getChildNodeValue(subscriptionList.item(i), "SubscriptionID")));
+                subscription.setTenantId(XmlHelper.getChildNodeValue(subscriptionList.item(i), "AADTenantID"));
+                subscription.setSelected(selectedIds.contains(subscription.getId()));
 
                 subscriptions.add(subscription);
             }
@@ -396,13 +484,13 @@ public class AzureRestAPIManager implements AzureManager {
             String xml = AzureRestAPIHelper.getRestApiCommand(path, subscriptionId.toString());
 
             List<SqlDb> res = new ArrayList<SqlDb>();
-            NodeList nl = (NodeList) AzureRestAPIHelper.getXMLValue(xml, "//ServiceResource", XPathConstants.NODESET);
+            NodeList nl = (NodeList) XmlHelper.getXMLValue(xml, "//ServiceResource", XPathConstants.NODESET);
 
             for (int i = 0; i != nl.getLength(); i++) {
 
                 SqlDb sqls = new SqlDb();
-                sqls.setName(AzureRestAPIHelper.getChildNodeValue(nl.item(i), "Name"));
-                sqls.setEdition(AzureRestAPIHelper.getChildNodeValue(nl.item(i), "Edition"));
+                sqls.setName(XmlHelper.getChildNodeValue(nl.item(i), "Name"));
+                sqls.setEdition(XmlHelper.getChildNodeValue(nl.item(i), "Edition"));
                 sqls.setServer(server);
                 res.add(sqls);
             }
@@ -421,14 +509,14 @@ public class AzureRestAPIManager implements AzureManager {
 
             List<SqlServer> res = new ArrayList<SqlServer>();
 
-            NodeList nl = (NodeList) AzureRestAPIHelper.getXMLValue(xml, "//Server", XPathConstants.NODESET);
+            NodeList nl = (NodeList) XmlHelper.getXMLValue(xml, "//Server", XPathConstants.NODESET);
 
             for (int i = 0; i != nl.getLength(); i++) {
                 SqlServer sqls = new SqlServer();
 
-                sqls.setAdmin(AzureRestAPIHelper.getChildNodeValue(nl.item(i), "AdministratorLogin"));
-                sqls.setName(AzureRestAPIHelper.getChildNodeValue(nl.item(i), "Name"));
-                sqls.setRegion(AzureRestAPIHelper.getChildNodeValue(nl.item(i), "Location"));
+                sqls.setAdmin(XmlHelper.getChildNodeValue(nl.item(i), "AdministratorLogin"));
+                sqls.setName(XmlHelper.getChildNodeValue(nl.item(i), "Name"));
+                sqls.setRegion(XmlHelper.getChildNodeValue(nl.item(i), "Location"));
                 res.add(sqls);
             }
 
@@ -483,15 +571,15 @@ public class AzureRestAPIManager implements AzureManager {
             AzureRestAPIHelper.postRestApiCommand(path, xmlParameter, subscriptionId.toString(), String.format("/%s/operations/", subscriptionId.toString()), false);
 
             String xml = AzureRestAPIHelper.getRestApiCommand(String.format("/%s/applications/%s", subscriptionId.toString(), serviceName + "mobileservice"), subscriptionId.toString());
-            NodeList statusNode = ((NodeList) AzureRestAPIHelper.getXMLValue(xml, "//Application/State", XPathConstants.NODESET));
+            NodeList statusNode = ((NodeList) XmlHelper.getXMLValue(xml, "//Application/State", XPathConstants.NODESET));
 
             if (statusNode.getLength() > 0 && statusNode.item(0).getTextContent().equals("Healthy")) {
                 return;
             } else {
                 deleteService(subscriptionId, serviceName);
 
-                String errors = ((String) AzureRestAPIHelper.getXMLValue(xml, "//FailureCode[text()]", XPathConstants.STRING));
-                String errorMessage = ((String) AzureRestAPIHelper.getXMLValue(errors, "//Message[text()]", XPathConstants.STRING));
+                String errors = ((String) XmlHelper.getXMLValue(xml, "//FailureCode[text()]", XPathConstants.STRING));
+                String errorMessage = ((String) XmlHelper.getXMLValue(errors, "//Message[text()]", XPathConstants.STRING));
                 throw new AzureCmdException("Error creating service", errorMessage);
             }
         } catch (Throwable t) {

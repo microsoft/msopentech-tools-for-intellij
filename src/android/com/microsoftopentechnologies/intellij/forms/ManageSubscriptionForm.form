@@ -51,11 +51,11 @@ limitations under the License.
       </scrollpane>
       <grid id="a195e" layout-manager="FormLayout">
         <rowspec value="center:d:grow"/>
-        <colspec value="fill:max(d;4px):noGrow"/>
+        <colspec value="fill:132px:noGrow"/>
         <colspec value="left:4dlu:noGrow"/>
+        <colspec value="left:d:noGrow"/>
         <colspec value="fill:max(d;4px):noGrow"/>
-        <colspec value="left:4dlu:noGrow"/>
-        <colspec value="fill:max(d;4px):noGrow"/>
+        <colspec value="fill:d:noGrow"/>
         <colspec value="left:4dlu:noGrow"/>
         <colspec value="fill:d:grow"/>
         <colspec value="left:4dlu:noGrow"/>
@@ -66,43 +66,51 @@ limitations under the License.
         <properties/>
         <border type="none"/>
         <children>
-          <component id="f6bac" class="javax.swing.JButton" binding="addSubscriptionButton">
+          <component id="f6bac" class="javax.swing.JButton" binding="signInButton">
             <constraints>
               <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
               <forms/>
             </constraints>
             <properties>
+              <horizontalAlignment value="2"/>
               <horizontalTextPosition value="2"/>
-              <icon value="com/microsoftopentechnologies/intellij/icons/arrow_down.png"/>
-              <text value="Add Subscription"/>
+              <text value="Sign in ..."/>
             </properties>
           </component>
           <component id="11e4e" class="javax.swing.JButton" binding="removeButton">
             <constraints>
-              <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
+              <grid row="0" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
               <forms/>
             </constraints>
             <properties>
               <text value="Clear Subscriptions"/>
             </properties>
           </component>
-          <component id="8d7bf" class="javax.swing.JButton" binding="okButton" default-binding="true">
-            <constraints>
-              <grid row="0" column="4" row-span="1" col-span="3" vsize-policy="0" hsize-policy="3" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
-              <forms defaultalign-horz="false"/>
-            </constraints>
-            <properties>
-              <horizontalAlignment value="0"/>
-              <text value="OK"/>
-            </properties>
-          </component>
-          <component id="c4714" class="javax.swing.JButton" binding="cancelButton">
+          <component id="c4714" class="javax.swing.JButton" binding="closeButton">
             <constraints>
               <grid row="0" column="8" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
               <forms/>
             </constraints>
             <properties>
-              <text value="Cancel"/>
+              <text value="Close"/>
+            </properties>
+          </component>
+          <hspacer id="69e65">
+            <constraints>
+              <grid row="0" column="6" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+              <forms defaultalign-horz="false"/>
+            </constraints>
+          </hspacer>
+          <component id="8d7bf" class="javax.swing.JButton" binding="importSubscriptionButton">
+            <constraints>
+              <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
+              <forms defaultalign-horz="false"/>
+            </constraints>
+            <properties>
+              <hideActionText value="false"/>
+              <horizontalAlignment value="2"/>
+              <horizontalTextPosition value="2"/>
+              <text value="Import Subscription"/>
             </properties>
           </component>
         </children>

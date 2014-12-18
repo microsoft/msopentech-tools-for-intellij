@@ -23,31 +23,25 @@ import com.microsoftopentechnologies.intellij.components.PluginSettings;
 import com.microsoftopentechnologies.intellij.helpers.NoSubscriptionException;
 import com.microsoftopentechnologies.intellij.helpers.OpenSSLHelper;
 import com.microsoftopentechnologies.intellij.helpers.StringHelper;
+import com.microsoftopentechnologies.intellij.helpers.XmlHelper;
 import com.microsoftopentechnologies.intellij.helpers.aadauth.AuthenticationContext;
 import com.microsoftopentechnologies.intellij.helpers.aadauth.AuthenticationResult;
 import com.microsoftopentechnologies.intellij.helpers.aadauth.PromptValue;
 import com.microsoftopentechnologies.intellij.model.Subscription;
-import org.apache.xerces.dom.DeferredElementImpl;
+
 import org.jetbrains.annotations.Nullable;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import sun.misc.BASE64Decoder;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
-import javax.xml.namespace.QName;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 import javax.xml.xpath.*;
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -70,20 +64,16 @@ public class AzureRestAPIHelper {
 
         String existingXml = PropertiesComponent.getInstance().getValue(MSOpenTechTools.AppSettingsNames.SUBSCRIPTION_FILE);
 
-        NodeList subscriptionList = (NodeList) getXMLValue(existingXml, "//Subscription", XPathConstants.NODESET);
+        NodeList subscriptionList = (NodeList) XmlHelper.getXMLValue(existingXml, "//Subscription", XPathConstants.NODESET);
 
         for (int i = 0; i < subscriptionList.getLength(); i++) {
-            String id = getAttributeValue(subscriptionList.item(i), "Id");
+            String id = XmlHelper.getAttributeValue(subscriptionList.item(i), "Id");
             if (id.equals(subscriptionId))
                 subscriptionList.item(i).getParentNode().removeChild(subscriptionList.item(i));
         }
 
-        TransformerFactory tf = TransformerFactory.newInstance();
-        Transformer transformer = tf.newTransformer();
-        StringWriter writer = new StringWriter();
-        transformer.transform(new DOMSource(subscriptionList.item(0).getOwnerDocument()), new StreamResult(writer));
-
-        PropertiesComponent.getInstance().setValue(MSOpenTechTools.AppSettingsNames.SUBSCRIPTION_FILE, writer.getBuffer().toString());
+        String savedXml = XmlHelper.saveXmlToStreamWriter(subscriptionList.item(0).getOwnerDocument());
+        PropertiesComponent.getInstance().setValue(MSOpenTechTools.AppSettingsNames.SUBSCRIPTION_FILE, savedXml);
     }
 
     public static void importSubscription(File publishSettingsFile) throws AzureCmdException {
@@ -102,8 +92,8 @@ public class AzureRestAPIHelper {
             if (!PropertiesComponent.getInstance().getValue(MSOpenTechTools.AppSettingsNames.SUBSCRIPTION_FILE, "").trim().isEmpty()) {
                 String existingXml = PropertiesComponent.getInstance().getValue(MSOpenTechTools.AppSettingsNames.SUBSCRIPTION_FILE);
 
-                NodeList subscriptionList = (NodeList) getXMLValue(existingXml, "//Subscription", XPathConstants.NODESET);
-                Node newSubscription = ((NodeList) getXMLValue(xml, "//Subscription", XPathConstants.NODESET)).item(0);
+                NodeList subscriptionList = (NodeList) XmlHelper.getXMLValue(existingXml, "//Subscription", XPathConstants.NODESET);
+                Node newSubscription = ((NodeList) XmlHelper.getXMLValue(xml, "//Subscription", XPathConstants.NODESET)).item(0);
 
                 if (subscriptionList.getLength() == 0) {
                     PropertiesComponent.getInstance().setValue(MSOpenTechTools.AppSettingsNames.SUBSCRIPTION_FILE, xml);
@@ -113,8 +103,8 @@ public class AzureRestAPIHelper {
                     Node parentNode = subscriptionList.item(0).getParentNode();
 
                     for (int i = 0; i < subscriptionList.getLength(); i++) {
-                        String newId = getAttributeValue(newSubscription, "Id");
-                        String id = getAttributeValue(subscriptionList.item(i), "Id");
+                        String newId = XmlHelper.getAttributeValue(newSubscription, "Id");
+                        String id = XmlHelper.getAttributeValue(subscriptionList.item(i), "Id");
                         if (id.equals(newId))
                             subscriptionList.item(i).getParentNode().removeChild(subscriptionList.item(i));
                     }
@@ -122,12 +112,9 @@ public class AzureRestAPIHelper {
                     Node newNode = ownerDocument.importNode(newSubscription, true);
                     Node node = parentNode.appendChild(newNode);
 
-                    TransformerFactory tf = TransformerFactory.newInstance();
-                    Transformer transformer = tf.newTransformer();
-                    StringWriter writer = new StringWriter();
-                    transformer.transform(new DOMSource(node.getOwnerDocument()), new StreamResult(writer));
+                    String modifiedXml = XmlHelper.saveXmlToStreamWriter(node.getOwnerDocument());
 
-                    PropertiesComponent.getInstance().setValue(MSOpenTechTools.AppSettingsNames.SUBSCRIPTION_FILE, writer.getBuffer().toString());
+                    PropertiesComponent.getInstance().setValue(MSOpenTechTools.AppSettingsNames.SUBSCRIPTION_FILE, modifiedXml);
                 }
             } else {
                 PropertiesComponent.getInstance().setValue(MSOpenTechTools.AppSettingsNames.SUBSCRIPTION_FILE, xml);
@@ -137,28 +124,6 @@ public class AzureRestAPIHelper {
         } catch (Exception ex) {
             throw new AzureCmdException("Error importing subscription", ex);
         }
-    }
-
-    public static Object getXMLValue(String xml, String xQuery, QName resultType) throws XPathExpressionException, IOException, SAXException, ParserConfigurationException {
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        DocumentBuilder db = dbf.newDocumentBuilder();
-
-        Document doc = db.parse(new InputSource(new StringReader(xml)));
-
-        XPathFactory xPathfactory = XPathFactory.newInstance();
-
-        XPath xPath = xPathfactory.newXPath();
-        XPathExpression xPathExpression = xPath.compile(xQuery);
-        return xPathExpression.evaluate(doc, resultType);
-    }
-
-    public static String getAttributeValue(Node node, String attributeName) {
-        Node n = node.getAttributes().getNamedItem(attributeName);
-        return (n == null) ? null : n.getNodeValue();
-    }
-
-    public static String getChildNodeValue(Node node, String elementName) {
-        return ((DeferredElementImpl) node).getElementsByTagName(elementName).item(0).getTextContent();
     }
 
     public static String getRestApiCommand(String path, String subscriptionId)
@@ -243,7 +208,7 @@ public class AzureRestAPIHelper {
                                 + String.valueOf(responseCode)));
                     } else {
                         String pollres = readStream(sslConnection.getInputStream());
-                        NodeList nl = ((NodeList) getXMLValue(pollres, "//Status", XPathConstants.NODESET));
+                        NodeList nl = ((NodeList) XmlHelper.getXMLValue(pollres, "//Status", XPathConstants.NODESET));
                         if (nl.getLength() > 0) {
                             if (nl.item(0).getTextContent().equals("Succeeded")) {
                                 setResult(true);
@@ -627,12 +592,12 @@ public class AzureRestAPIHelper {
 
         Node node = null;
 
-        NodeList subslist = (NodeList) getXMLValue(
+        NodeList subslist = (NodeList) XmlHelper.getXMLValue(
                 publishSettings,
                 "//PublishData/PublishProfile/Subscription",
                 XPathConstants.NODESET);
         for (int i = 0; i < subslist.getLength(); i++) {
-            String id = getAttributeValue(subslist.item(i), "Id");
+            String id = XmlHelper.getAttributeValue(subslist.item(i), "Id");
             if (id.equals(subscriptionId))
                 node = subslist.item(i);
         }
@@ -640,8 +605,8 @@ public class AzureRestAPIHelper {
         if (node == null)
             return null;
 
-        String pfx = getAttributeValue(node, "ManagementCertificate");
-        String url = getAttributeValue(node, "ServiceManagementUrl");
+        String pfx = XmlHelper.getAttributeValue(node, "ManagementCertificate");
+        String url = XmlHelper.getAttributeValue(node, "ServiceManagementUrl");
 
         byte[] decodeBuffer = new BASE64Decoder().decodeBuffer(pfx);
 
