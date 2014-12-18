@@ -70,6 +70,8 @@ public class JdkServerPanel {
     private JTextField jdkUrl;
     private JComboBox storageAccountJdk;
     private JTextField javaHome;
+    private JLabel lblJavaHome;
+    private JLabel lblNoteJavaHome;
     //Server tab
     private JCheckBox serverCheckBox;
     private TextFieldWithBrowseButton serverPath;
@@ -83,7 +85,7 @@ public class JdkServerPanel {
     private JXHyperlink serverAccountsButton;
     private JLabel jdkUrlLabel;
     private JLabel storageAccountJdkLabel;
-    private JLabel serverHomeDirLabel;
+    private JLabel lblHomeDir;
     private JLabel lblDlNoteUrl;
     private JLabel lblSelect;
     private JLabel lblUrlSrv;
@@ -350,6 +352,8 @@ public class JdkServerPanel {
 //        thirdPartyJdkName = new JComboBox(JdkSrvConfigListener.getThirdPartyJdkNames(true));
         thirdPartyJdk.addActionListener(createThirdPartyJdkListener());
         customDownloadJdk.addActionListener(createCustomDownloadJdkListener());
+//        uploadLocalJdk.setSelected(true);
+        showThirdPartyJdkNames("");
         jdkUrl.getDocument().addDocumentListener(createJdkUrlListener());
         storageAccountJdk.addItemListener(createStorageAccountJdkListener());
         thirdPartyJdkName.addItemListener(createThirdPartyJdkNameListener());
@@ -366,8 +370,7 @@ public class JdkServerPanel {
         jdkPath.getTextField().getDocument().addDocumentListener(createJdkPathListener());
         uploadLocalJdk.addActionListener(createUploadLocalJdkListener());
         uploadLocalJdk.setSelected(true);
-        showThirdPartyJdkNames("");
-        enableThirdPartyJdkCombo(true);
+        setEnableDlGrp(false, false);
         serverPath.addBrowseFolderListener(new TextBrowseFolderListener(FileChooserDescriptorFactory.createSingleFolderDescriptor()) {
             protected void onFileChoosen(@NotNull VirtualFile chosenFile) {
                 super.onFileChoosen(chosenFile);
@@ -1343,12 +1346,17 @@ public class JdkServerPanel {
             uploadLocalJdk.setText(message("noJdkDplyLbl"));
             showThirdPartyJdkNames("");
         }
-        storageAccountServer.setEnabled(status);
-        storageAccountJdkLabel.setEnabled(status);
+        // URL
         jdkUrlLabel.setEnabled(status);
         lblDlNoteUrl.setEnabled(status);
-        javaHome.setEnabled(status);
         jdkUrl.setEnabled(status);
+        // storage account combo
+        storageAccountJdk.setEnabled(status);
+        storageAccountJdkLabel.setEnabled(status);
+        // labels
+        lblJavaHome.setEnabled(status);
+        lblNoteJavaHome.setEnabled(status);
+
         if (status && applyAutoUlParams) {
             // Always disable and auto-generate JDK url and derive Java home.
             jdkUrl.setEditable(false);
@@ -1450,7 +1458,7 @@ public class JdkServerPanel {
         lblKeySrv.setEnabled(status);
         lblUrlSrv.setEnabled(status);
         lblDlNoteUrlSrv.setEnabled(status);
-        serverHomeDirLabel.setEnabled(status);
+        lblHomeDir.setEnabled(status);
         serverUrl.setEnabled(status);
         lblNoteHomeDir.setEnabled(status);
         if (status && applyAutoUlParams) {
