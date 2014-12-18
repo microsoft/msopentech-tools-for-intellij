@@ -17,9 +17,11 @@ package com.microsoftopentechnologies.intellij.helpers.azure.sdk;
 
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.model.vm.VirtualMachine;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
 public interface AzureSDKManager {
-    List<VirtualMachine> getVirtualMachines(String subscriptionId) throws AzureCmdException;
+    @NotNull
+    List<VirtualMachine> getVirtualMachines(@NotNull String subscriptionId) throws AzureCmdException;
 }
