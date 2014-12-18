@@ -18,12 +18,12 @@ package com.microsoftopentechnologies.intellij.forms;
 
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
+import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.project.Project;
 import com.microsoftopentechnologies.intellij.components.MSOpenTechTools;
 import com.microsoftopentechnologies.intellij.components.PluginSettings;
-import com.microsoftopentechnologies.intellij.helpers.ReadOnlyCellTableModel;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.helpers.aadauth.AuthenticationContext;
 import com.microsoftopentechnologies.intellij.helpers.aadauth.AuthenticationResult;
@@ -94,50 +94,57 @@ public class ManageSubscriptionForm extends JDialog {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    PluginSettings settings = MSOpenTechTools.getCurrent().getSettings();
-                    final AuthenticationContext context = new AuthenticationContext(settings.getAdAuthority());
 
-                    Futures.addCallback(context.acquireTokenInteractiveAsync(
-                            settings.getTenantName(),
-                            settings.getAzureServiceManagementUri(),
-                            settings.getClientId(),
-                            settings.getRedirectUri(),
-                            project,
-                            PromptValue.login), new FutureCallback<AuthenticationResult>() {
-                        @Override
-                        public void onSuccess(AuthenticationResult authenticationResult) {
-                            context.dispose();
+                    if(AzureRestAPIManager.getManager().getAuthenticationToken() != null) {
+                        clearSubscriptions();
+                    } else {
 
-                            if (authenticationResult != null) {
-                                final AzureManager apiManager = AzureRestAPIManager.getManager();
-                                apiManager.setAuthenticationMode(AzureAuthenticationMode.ActiveDirectory);
-                                apiManager.setAuthenticationToken(authenticationResult);
 
-                                // load list of subscriptions
-                                ApplicationManager.getApplication().invokeAndWait(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        try {
-                                            apiManager.clearSubscriptions();
+                        PluginSettings settings = MSOpenTechTools.getCurrent().getSettings();
+                        final AuthenticationContext context = new AuthenticationContext(settings.getAdAuthority());
 
-                                            refreshSignInCaption();
+                        Futures.addCallback(context.acquireTokenInteractiveAsync(
+                                settings.getTenantName(),
+                                settings.getAzureServiceManagementUri(),
+                                settings.getClientId(),
+                                settings.getRedirectUri(),
+                                project,
+                                PromptValue.login), new FutureCallback<AuthenticationResult>() {
+                            @Override
+                            public void onSuccess(AuthenticationResult authenticationResult) {
+                                context.dispose();
 
-                                        } catch (AzureCmdException e1) {
-                                            UIHelper.showException("An error occurred while attempting to " +
-                                                    "clear your old subscriptions.", e1);
+                                if (authenticationResult != null) {
+                                    final AzureManager apiManager = AzureRestAPIManager.getManager();
+                                    apiManager.setAuthenticationMode(AzureAuthenticationMode.ActiveDirectory);
+                                    apiManager.setAuthenticationToken(authenticationResult);
+
+                                    // load list of subscriptions
+                                    ApplicationManager.getApplication().invokeAndWait(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            try {
+                                                apiManager.clearSubscriptions();
+
+                                                refreshSignInCaption();
+
+                                            } catch (AzureCmdException e1) {
+                                                UIHelper.showException("An error occurred while attempting to " +
+                                                        "clear your old subscriptions.", e1);
+                                            }
+                                            loadList();
                                         }
-                                        loadList();
-                                    }
-                                }, ModalityState.any());
+                                    }, ModalityState.any());
+                                }
                             }
-                        }
 
-                        @Override
-                        public void onFailure(Throwable throwable) {
-                            context.dispose();
-                            UIHelper.showException("An error occurred while attempting to sign in to your account.", throwable);
-                        }
-                    });
+                            @Override
+                            public void onFailure(Throwable throwable) {
+                                context.dispose();
+                                UIHelper.showException("An error occurred while attempting to sign in to your account.", throwable);
+                            }
+                        });
+                    }
                 } catch (IOException e1) {
                     UIHelper.showException("An error occurred while attempting to sign in to your account.", e1);
                 }
@@ -147,30 +154,7 @@ public class ManageSubscriptionForm extends JDialog {
         removeButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                int res = JOptionPane.showConfirmDialog(form, "Are you sure you would like to clear all subscriptions?",
-                        "Clear Subscriptions",
-                        JOptionPane.YES_NO_OPTION,
-                        JOptionPane.INFORMATION_MESSAGE);
-
-                if (res == JOptionPane.YES_OPTION) {
-                    try {
-                        AzureManager apiManager = AzureRestAPIManager.getManager();
-                        apiManager.clearAuthenticationTokens();
-                        apiManager.clearSubscriptions();
-                        apiManager.setAuthenticationMode(AzureAuthenticationMode.Unknown);
-                    } catch (AzureCmdException t) {
-                        UIHelper.showException("Error clearing user subscriptions", t);
-                    }
-
-                    DefaultTableModel model = (DefaultTableModel) subscriptionTable.getModel();
-                    while (model.getRowCount() > 0) {
-                        model.removeRow(0);
-                    }
-
-                    removeButton.setEnabled(false);
-
-                    refreshSignInCaption();
-                }
+                clearSubscriptions();
             }
         });
 
@@ -220,6 +204,36 @@ public class ManageSubscriptionForm extends JDialog {
         signInButton.setText(isNotSigned ? "Sign In ..." : "Sign Out");
     }
 
+
+    private void clearSubscriptions() {
+        int res = JOptionPane.showConfirmDialog(this, "Are you sure you would like to clear all subscriptions?",
+                "Clear Subscriptions",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.INFORMATION_MESSAGE);
+
+        if (res == JOptionPane.YES_OPTION) {
+            try {
+                AzureManager apiManager = AzureRestAPIManager.getManager();
+                apiManager.clearAuthenticationTokens();
+                apiManager.clearSubscriptions();
+                apiManager.setAuthenticationMode(AzureAuthenticationMode.Unknown);
+            } catch (AzureCmdException t) {
+                UIHelper.showException("Error clearing user subscriptions", t);
+            }
+
+            DefaultTableModel model = (DefaultTableModel) subscriptionTable.getModel();
+            while (model.getRowCount() > 0) {
+                model.removeRow(0);
+            }
+
+            PropertiesComponent.getInstance().setValue(MSOpenTechTools.AppSettingsNames.SELECTED_SUBSCRIPTIONS, "");
+            ApplicationManager.getApplication().saveSettings();
+
+            removeButton.setEnabled(false);
+
+            refreshSignInCaption();
+        }
+    }
 
     private void onCancel() {
         try {
