@@ -43,6 +43,8 @@ public interface AzureManager {
 
     ArrayList<Subscription> getSubscriptionList() throws AzureCmdException;
 
+    ArrayList<Subscription> getFullSubscriptionList() throws AzureCmdException;
+
     AzureAuthenticationMode getAuthenticationMode();
 
     void setAuthenticationMode(AzureAuthenticationMode azureAuthenticationMode);
@@ -104,4 +106,6 @@ public interface AzureManager {
     List<LogEntry> listLog(UUID subscriptionId, String serviceName) throws AzureCmdException, ParseException;
 
     List<String> getLocations(UUID subscriptionId) throws AzureCmdException;
+
+    void setSelectedSubscriptions(List<UUID> selectedList) throws AzureCmdException;
 }
