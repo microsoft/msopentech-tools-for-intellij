@@ -35,6 +35,7 @@ import com.microsoftopentechnologies.intellij.forms.*;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIManager;
+import com.microsoftopentechnologies.intellij.helpers.azure.AzureTreeLoader;
 import com.microsoftopentechnologies.intellij.model.*;
 import org.jetbrains.annotations.NotNull;
 
@@ -78,65 +79,62 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory {
                 int selRow = tree.getRowForLocation(mouseEvent.getX(), mouseEvent.getY());
                 TreePath selPath = tree.getPathForLocation(mouseEvent.getX(), mouseEvent.getY());
 
-                if (selPath != null) {
-                    if (selRow != -1 && SwingUtilities.isLeftMouseButton(mouseEvent)) {
-                        DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) selPath.getLastPathComponent();
+                if (selPath != null && selRow != -1) {
+                    DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) selPath.getLastPathComponent();
+                    if (selectedNode != null) {
 
-                        if (selectedNode != null) {
-                            loadServiceTree(project, tree, selectedNode);
+                        AzureTreeLoader azureTreeLoader = new AzureTreeLoader(project, tree);
+
+                        if (SwingUtilities.isLeftMouseButton(mouseEvent)) {
+                            azureTreeLoader.treeClick(selectedNode);
                         }
 
-                    }
 
-                    if (SwingUtilities.isRightMouseButton(mouseEvent) || mouseEvent.isPopupTrigger()) {
-                        if (selRow != -1) {
-                            DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) selPath.getLastPathComponent();
+                        if (SwingUtilities.isRightMouseButton(mouseEvent) || mouseEvent.isPopupTrigger()) {
+                            if (selectedNode.getUserObject() instanceof Subscription) {
 
-                            if (selectedNode != null) {
+                                JBPopupMenu menu = new JBPopupMenu();
+                                JMenuItem mi = new JMenuItem("Create Service");
+                                mi.addActionListener(new ActionListener() {
+                                    @Override
+                                    public void actionPerformed(ActionEvent actionEvent) {
+                                        CreateNewServiceForm form = new CreateNewServiceForm();
+                                        form.setServiceCreated(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                ApplicationManager.getApplication().invokeLater(new Runnable() {
+                                                    @Override
+                                                    public void run() {
+                                                        loadTree(project, tree);
+                                                    }
+                                                });
+                                            }
+                                        });
 
-                                if (selectedNode.getUserObject() instanceof Subscription) {
+                                        form.setModal(true);
+                                        UIHelper.packAndCenterJDialog(form);
+                                        form.setVisible(true);
+                                    }
+                                });
+                                mi.setIconTextGap(16);
+                                menu.add(mi);
 
-                                    JBPopupMenu menu = new JBPopupMenu();
-                                    JMenuItem mi = new JMenuItem("Create Service");
-                                    mi.addActionListener(new ActionListener() {
-                                        @Override
-                                        public void actionPerformed(ActionEvent actionEvent) {
-                                            CreateNewServiceForm form = new CreateNewServiceForm();
-                                            form.setServiceCreated(new Runnable() {
-                                                @Override
-                                                public void run() {
-                                                    ApplicationManager.getApplication().invokeLater(new Runnable() {
-                                                        @Override
-                                                        public void run() {
-                                                            loadTree(project, tree);
-                                                        }
-                                                    });
-                                                }
-                                            });
+                                menu.show(mouseEvent.getComponent(), mouseEvent.getX(), mouseEvent.getY());
 
-                                            form.setModal(true);
-                                            UIHelper.packAndCenterJDialog(form);
-                                            form.setVisible(true);
-                                        }
-                                    });
+                            } else if (selectedNode.getUserObject() instanceof ServiceTreeItem) {
+                                ServiceTreeItem selectedObject = (ServiceTreeItem) selectedNode.getUserObject();
+
+                                JBPopupMenu menu = new JBPopupMenu();
+                                for (JBMenuItem mi : azureTreeLoader.getMenuItems(project, selectedObject, selectedNode, tree)) {
                                     mi.setIconTextGap(16);
                                     menu.add(mi);
-
-                                    menu.show(mouseEvent.getComponent(), mouseEvent.getX(), mouseEvent.getY());
-                                } else if (selectedNode.getUserObject() instanceof ServiceTreeItem) {
-                                    ServiceTreeItem selectedObject = (ServiceTreeItem) selectedNode.getUserObject();
-
-                                    JBPopupMenu menu = new JBPopupMenu();
-                                    for (JBMenuItem mi : getMenuItems(project, selectedObject, selectedNode, tree)) {
-                                        mi.setIconTextGap(16);
-                                        menu.add(mi);
-                                    }
-
-                                    menu.show(mouseEvent.getComponent(), mouseEvent.getX(), mouseEvent.getY());
                                 }
-                            }
 
+                                menu.show(mouseEvent.getComponent(), mouseEvent.getX(), mouseEvent.getY());
+                            }
                         }
+
+
                     }
                 }
             }
@@ -154,7 +152,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory {
             }
         });
 
-        tree.setCellRenderer(UIHelper.getTreeNodeRenderer());
+        tree.setCellRenderer(AzureTreeLoader.getTreeNodeRenderer());
         tree.setRootVisible(false);
 
         if (toolWindow instanceof ToolWindowEx) {
@@ -206,18 +204,6 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory {
         loadTree(project, tree);
     }
 
-    private void loadServiceTree(Project project, JTree tree, DefaultMutableTreeNode selectedNode) {
-        Object[] userObjectPath = selectedNode.getUserObjectPath();
-
-        if (userObjectPath.length > 2) {
-            Subscription subscription = (Subscription) userObjectPath[1];
-            Service service = (Service) userObjectPath[2];
-
-            UIHelper.treeClick(tree, selectedNode, subscription.getId(), service.getName(), project);
-        }
-    }
-
-
     private void loadTree(Project project, final JTree tree) {
         final ServerExplorerToolWindowFactory toolWindowFactory = this;
 
@@ -232,342 +218,46 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory {
             tree.setVisible(false);
             loading.setVisible(true);
 
-            ProgressManager.getInstance().run(new Task.Backgroundable(project, "Loading Mobile Services data...", false) {
+            ProgressManager.getInstance().run(new Task.Backgroundable(project, "Loading Subscriptions...", false) {
                 @Override
                 public void run(@NotNull ProgressIndicator progressIndicator) {
                     try {
                         progressIndicator.setIndeterminate(true);
 
                         final ArrayList<Subscription> subscriptionList = AzureRestAPIManager.getManager().getSubscriptionList();
-                        final HashMap<String, List<Service>> services = new HashMap<String, List<Service>>();
 
-                        if (subscriptionList == null) {
-                            toolWindowFactory.isRefreshEnabled = true;
+                        ApplicationManager.getApplication().invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                for (Subscription subscription : subscriptionList) {
 
-                            ApplicationManager.getApplication().invokeLater(new Runnable() {
-                                @Override
-                                public void run() {
-                                    loading.setVisible(false);
-                                    tree.setVisible(true);
-                                }
-                            });
-                        } else {
-                            for (Subscription subscription : subscriptionList) {
-                                services.put(subscription.getId().toString(), AzureRestAPIManager.getManager().getServiceList(subscription.getId()));
-                            }
+                                    DefaultMutableTreeNode subscriptionNode = new DefaultMutableTreeNode(subscription.getName());
+                                    subscriptionNode.setUserObject(subscription);
+                                    root.add(subscriptionNode);
+                                    model.reload(root);
 
-                            ApplicationManager.getApplication().invokeLater(new Runnable() {
-                                @Override
-                                public void run() {
-                                    loading.setVisible(false);
-                                    tree.setVisible(true);
-
-                                    for (Subscription subscription : subscriptionList) {
-
-                                        DefaultMutableTreeNode subscriptionNode = new DefaultMutableTreeNode(subscription.getName());
-                                        subscriptionNode.setUserObject(subscription);
-                                        root.add(subscriptionNode);
-                                        model.reload(root);
-
-                                        for (Service service : services.get(subscription.getId().toString())) {
-
-                                            DefaultMutableTreeNode serviceTree = new DefaultMutableTreeNode(service.getName());
-                                            serviceTree.setUserObject(service);
-                                            subscriptionNode.add(serviceTree);
-                                            model.reload(subscriptionNode);
-                                        }
+                                    for (AzureType type : AzureType.values()) {
+                                        DefaultMutableTreeNode serviceTree = new DefaultMutableTreeNode(type.toString());
+                                        serviceTree.setUserObject(type);
+                                        subscriptionNode.add(serviceTree);
+                                        model.reload(subscriptionNode);
                                     }
-                                    toolWindowFactory.isRefreshEnabled = true;
+
                                 }
-                            });
-                        }
+                                toolWindowFactory.isRefreshEnabled = true;
+                                loading.setVisible(false);
+                                tree.setVisible(true);
+                            }
+                        });
+
                     } catch (AzureCmdException e) {
                         UIHelper.showException("Error querying mobile services data", e);
                     }
                 }
             });
+
         }
     }
 
-    private JBMenuItem[] getMenuItems(final Project p, final ServiceTreeItem selectedItem, final DefaultMutableTreeNode selectedNode, final JTree tree) {
-
-        Object[] userObjectPath = selectedNode.getUserObjectPath();
-
-        Subscription subscription = (Subscription) userObjectPath[1];
-        Service service = (Service) userObjectPath[2];
-
-        final String serviceName = service.getName();
-        final String subscriptionId = subscription.getId().toString();
-
-        if (selectedItem instanceof Service) {
-            JBMenuItem newTableMenuItem = new JBMenuItem("Create table");
-            JBMenuItem newAPIMenuItem = new JBMenuItem("Create API");
-            JBMenuItem newJobMenuItem = new JBMenuItem("Create new job");
-            JBMenuItem showLog = new JBMenuItem("Show log");
-            JBMenuItem refresh = new JBMenuItem("Refresh");
-
-            final Service item = (Service) selectedItem;
-
-            newTableMenuItem.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent actionEvent) {
-                    TableForm form = new TableForm();
-                    form.setServiceName(item.getName());
-                    form.setSubscriptionId(item.getSubcriptionId());
-                    form.setProject(p);
-
-                    ArrayList<String> existingTables = new ArrayList<String>();
-                    for (Table table : item.getTables())
-                        existingTables.add(table.getName());
-
-                    form.setExistingTableNames(existingTables);
-
-                    form.setAfterSave(new Runnable() {
-                        @Override
-                        public void run() {
-                            selectedNode.removeAllChildren();
-                            loadServiceTree(p, tree, selectedNode);
-                        }
-                    });
-
-                    UIHelper.packAndCenterJDialog(form);
-                    form.setVisible(true);
-                }
-            });
-
-            newAPIMenuItem.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent actionEvent) {
-                    CustomAPIForm form = new CustomAPIForm();
-                    form.setServiceName(item.getName());
-                    form.setSubscriptionId(item.getSubcriptionId());
-                    form.setProject(p);
-
-                    form.setAfterSave(new Runnable() {
-                        @Override
-                        public void run() {
-                            selectedNode.removeAllChildren();
-                            loadServiceTree(p, tree, selectedNode);
-                        }
-                    });
-
-                    UIHelper.packAndCenterJDialog(form);
-                    form.setVisible(true);
-                }
-            });
-
-            newJobMenuItem.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent actionEvent) {
-                    JobForm form = new JobForm();
-                    form.setServiceName(item.getName());
-                    form.setSubscriptionId(item.getSubcriptionId());
-                    form.setTitle("Create new Job");
-
-                    form.setAfterSave(new Runnable() {
-                        @Override
-                        public void run() {
-                            selectedNode.removeAllChildren();
-                            loadServiceTree(p, tree, selectedNode);
-                        }
-                    });
-
-                    UIHelper.packAndCenterJDialog(form);
-                    form.setVisible(true);
-                }
-            });
-
-            showLog.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent actionEvent) {
-                    final ViewLogForm form = new ViewLogForm();
-
-                    ApplicationManager.getApplication().invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            form.queryLog(item.getSubcriptionId(), item.getName());
-                        }
-                    });
-
-                    UIHelper.packAndCenterJDialog(form);
-                    form.setVisible(true);
-
-                }
-            });
-
-            refresh.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent actionEvent) {
-                    selectedNode.removeAllChildren();
-                    loadServiceTree(p, tree, selectedNode);
-                }
-            });
-
-            return new JBMenuItem[]{
-                    newTableMenuItem,
-                    newAPIMenuItem,
-                    newJobMenuItem,
-                    showLog,
-                    refresh
-            };
-        }
-
-        if (selectedItem instanceof Table) {
-
-
-            JBMenuItem editTable = new JBMenuItem("Edit Table");
-
-            final Table table = (Table) selectedItem;
-
-            editTable.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent actionEvent) {
-
-                    ProgressManager.getInstance().run(new Task.Backgroundable(p, "Loading table info", false) {
-                        @Override
-                        public void run(@NotNull ProgressIndicator progressIndicator) {
-                            try {
-                                final Table selectedTable = AzureRestAPIManager.getManager().showTableDetails(UUID.fromString(subscriptionId), serviceName, table.getName());
-
-                                ApplicationManager.getApplication().invokeLater(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        TableForm form = new TableForm();
-                                        form.setServiceName(serviceName);
-                                        form.setSubscriptionId(UUID.fromString(subscriptionId));
-                                        form.setEditingTable(selectedTable);
-                                        form.setProject(p);
-                                        UIHelper.packAndCenterJDialog(form);
-                                        form.setVisible(true);
-                                    }
-                                });
-
-                            } catch (Throwable ex) {
-                                UIHelper.showException("Error creating table", ex);
-                            }
-
-                        }
-                    });
-
-                }
-            });
-
-            return new JBMenuItem[]{editTable};
-        }
-
-        if (selectedItem instanceof Script) {
-            JBMenuItem uploadScript = new JBMenuItem("Update script");
-
-            final Script script = (Script) selectedItem;
-            uploadScript.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent actionEvent) {
-                    ApplicationManager.getApplication().runWriteAction(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                UIHelper.saveScript(p, selectedNode, script, serviceName, subscriptionId);
-                            } catch (AzureCmdException e) {
-                                UIHelper.showException("Error uploading script:", e);
-                            }
-                        }
-                    });
-                }
-            });
-
-            return new JBMenuItem[]{
-                    uploadScript
-            };
-        }
-
-
-        if (selectedItem instanceof CustomAPI) {
-            final CustomAPI customAPI = (CustomAPI) selectedItem;
-
-            JBMenuItem uploadAPI = new JBMenuItem("Update Custom API");
-            JBMenuItem editAPI = new JBMenuItem("Edit Custom API");
-
-            uploadAPI.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent actionEvent) {
-                    try {
-                        UIHelper.saveCustomAPI(p, customAPI, serviceName, subscriptionId);
-                    } catch (AzureCmdException e) {
-                        UIHelper.showException("Error uploading script:", e);
-                    }
-                }
-            });
-
-            editAPI.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent actionEvent) {
-                    final CustomAPIForm form = new CustomAPIForm();
-                    form.setEditingCustomAPI(customAPI);
-                    form.setServiceName(serviceName);
-
-                    form.setSubscriptionId(UUID.fromString(subscriptionId));
-                    form.setProject(p);
-                    form.setAfterSave(new Runnable() {
-                        @Override
-                        public void run() {
-                            selectedNode.setUserObject(form.getEditingCustomAPI());
-                        }
-                    });
-                    UIHelper.packAndCenterJDialog(form);
-                    form.setVisible(true);
-                }
-            });
-
-            return new JBMenuItem[]{
-                    uploadAPI,
-                    editAPI,
-            };
-        }
-
-
-        if (selectedItem instanceof Job) {
-            final Job job = (Job) selectedItem;
-
-            JBMenuItem uploadJob = new JBMenuItem("Update job");
-            JBMenuItem editJob = new JBMenuItem("Edit job");
-
-            uploadJob.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent actionEvent) {
-                    try {
-                        UIHelper.saveJob(p, job, serviceName, subscriptionId);
-                    } catch (AzureCmdException e) {
-                        UIHelper.showException("Error uploading script:", e);
-                    }
-                }
-            });
-
-            editJob.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent actionEvent) {
-                    final JobForm form = new JobForm();
-                    form.setJob(job);
-                    form.setServiceName(serviceName);
-                    form.setTitle("Edit job");
-                    form.setSubscriptionId(UUID.fromString(subscriptionId));
-                    form.setAfterSave(new Runnable() {
-                        @Override
-                        public void run() {
-                            selectedNode.setUserObject(form.getEditingJob());
-                        }
-                    });
-                    form.pack();
-                    form.setVisible(true);
-                }
-            });
-
-            return new JBMenuItem[]{
-                    uploadJob,
-                    editJob,
-            };
-        }
-
-        return null;
-    }
 
 }

@@ -93,4 +93,10 @@ public class VirtualMachine implements ServiceTreeItem {
     public String getServiceName() {
         return serviceName;
     }
+
+    @Override
+    public String toString(){
+        return name + (loading ? " (loading...)" : "");
+    }
+
 }

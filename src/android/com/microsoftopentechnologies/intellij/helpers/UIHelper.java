@@ -44,16 +44,6 @@ import java.io.StringWriter;
 import java.util.UUID;
 
 public class UIHelper {
-    private static JTree mProjectTree;
-
-    public static void setProjectTree(JTree projectTree) {
-        mProjectTree = projectTree;
-    }
-
-    public static JTree getProjectTree() {
-        return mProjectTree;
-    }
-
     public static void packAndCenterJDialog(JDialog form) {
         form.pack();
         form.setLocation(
@@ -115,117 +105,12 @@ public class UIHelper {
         });
     }
 
-    public static NodeRenderer getTreeNodeRenderer() {
-        return new NodeRenderer() {
-            private ImageIcon serviceImg = loadIcon("service.png");
-            private ImageIcon tableImg = loadIcon("table.png");
-            private ImageIcon scriptImg = loadIcon("script.png");
-            private ImageIcon customAPIImg = loadIcon("api.png");
-            private ImageIcon jobImg = loadIcon("job.png");
-
-            @Override
-            protected void doPaint(Graphics2D g) {
-                super.doPaint(g);
-                setOpaque(false);
-            }
-
-            @Override
-            public void customizeCellRenderer(JTree jTree,
-                                              Object value,
-                                              boolean selected,
-                                              boolean expanded,
-                                              boolean isLeaf,
-                                              int row,
-                                              boolean focused) {
-
-                super.customizeCellRenderer(jTree, value, selected,
-                        expanded, isLeaf, row, focused);
-
-                if (value instanceof DefaultMutableTreeNode) {
-                    Object data = ((DefaultMutableTreeNode) value).getUserObject();
-
-                    if (data instanceof Table) {
-                        setIcon(tableImg);
-                    } else if (data instanceof Script) {
-                        setIcon(scriptImg);
-                    } else if (data instanceof Service) {
-                        setIcon(serviceImg);
-                    } else if (data instanceof CustomAPI) {
-                        setIcon(customAPIImg);
-                    } else if (data instanceof Job) {
-                        setIcon(jobImg);
-                    }
-                }
-            }
-        };
-    }
 
     public static ImageIcon loadIcon(String name) {
         java.net.URL url = UIHelper.class.getResource("/com/microsoftopentechnologies/intellij/icons/" + name);
         return new ImageIcon(url);
     }
 
-    public static void treeClick(final JTree tree, final DefaultMutableTreeNode selectedNode, final UUID subscriptionId, final String serviceName, final Project mProject) {
-
-        if (selectedNode.getChildCount() == 0 && selectedNode.getUserObject() instanceof ServiceTreeItem) {
-
-            //if children not loaded yet or last leaf
-            final ServiceTreeItem selectedObject = (ServiceTreeItem) selectedNode.getUserObject();
-
-            if (!selectedObject.isLoading()) {
-                selectedObject.setLoading(true);
-                DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
-                model.reload(selectedNode);
-
-                ProgressManager.getInstance().run(new Task.Backgroundable(mProject, "Loading Mobile Services data...", false) {
-                    @Override
-                    public void run(@NotNull ProgressIndicator progressIndicator) {
-
-
-                        AzureTreeLoader atl = new AzureTreeLoader(subscriptionId, serviceName, mProject, tree, progressIndicator);
-
-                        if (selectedObject instanceof Service) {
-                            progressIndicator.setIndeterminate(true);
-                            progressIndicator.setText("Checking service");
-
-                            if (AzureRestAPIHelper.existsMobileService(serviceName))
-                                atl.serviceLoader(selectedNode);
-                            else {
-
-                                ApplicationManager.getApplication().invokeLater(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        selectedObject.setLoading(false);
-                                        DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
-                                        model.reload(selectedNode);
-
-                                        JOptionPane.showMessageDialog(tree,
-                                                "The mobile service " + serviceName +
-                                                        " could not be reached. Please try again after some time.",
-                                                "Microsoft Services Plugin",
-                                                JOptionPane.ERROR_MESSAGE);
-                                    }
-                                });
-                            }
-                        } else if (selectedObject instanceof Table)
-                            atl.tableLoader((Table) selectedObject, selectedNode);
-                        else if (selectedObject instanceof MobileServiceScriptTreeItem)
-                            atl.scriptLoader((MobileServiceScriptTreeItem) selectedObject, selectedNode);
-
-                        ApplicationManager.getApplication().invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                selectedObject.setLoading(false);
-                                DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
-                                model.reload(selectedNode);
-                            }
-                        });
-
-                    }
-                });
-            }
-        }
-    }
 
     public static void saveScript(Project project, final DefaultMutableTreeNode selectedNode, final Script script, final String serviceName, final String subscriptionId) throws AzureCmdException {
         VirtualFile editorFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(new File(script.getLocalFilePath(serviceName)));
