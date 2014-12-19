@@ -109,7 +109,6 @@ public class JdkServerPanel {
     private String finalAsName;
     private String finalJdkPath;
     private boolean isManualUpdate = true;
-    private int currentTab = 0;
     private boolean modified;
 
     public JdkServerPanel(Project project, WindowsAzureRole waRole, WindowsAzureProjectManager waProjManager) {
@@ -320,28 +319,6 @@ public class JdkServerPanel {
     }
 
 //    @Override
-//    public WizardStep onNext(final AzureWizardModel model) {
-//        int currentTab = settingsPane.getSelectedIndex();
-//        if (currentTab == 2) {
-//            return super.onNext(model);
-//        } else {
-//            settingsPane.setSelectedIndex(++currentTab);
-//            return this;
-//        }
-//    }
-
-//    @Override
-//    public WizardStep onPrevious(final AzureWizardModel model) {
-//        int currentTab = settingsPane.getSelectedIndex();
-//        if (currentTab == 0) {
-//            return super.onPrevious(model);
-//        } else {
-//            settingsPane.setSelectedIndex(--currentTab);
-//            return this;
-//        }
-//    }
-
-//    @Override
 //    public JComponent prepare(final WizardNavigationState state) {
 //        rootPanel.revalidate();
 //        state.FINISH.setEnabled(true);
@@ -370,7 +347,6 @@ public class JdkServerPanel {
             @Override
             public void stateChanged(ChangeEvent e) {
                 if (isManualUpdate && createAccLicenseAggDlg() && (waProjManager == null || configureJdkCloudDeployment())) {
-                    currentTab = settingsPane.getSelectedIndex();
                 } else {
                     try {
                         isManualUpdate = false;
@@ -378,7 +354,6 @@ public class JdkServerPanel {
                     } finally {
                         isManualUpdate = true;
                     }
-                    currentTab = 0;
                 }
             }
         });
