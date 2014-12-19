@@ -32,4 +32,7 @@ public interface AzureSDKManager {
     void restartVirtualMachine(@NotNull VirtualMachine vm) throws AzureCmdException;
 
     void deleteVirtualMachine(@NotNull VirtualMachine vm, boolean deleteFromStorage) throws AzureCmdException;
+
+    @NotNull
+    byte[] downloadRDP(@NotNull VirtualMachine vm) throws AzureCmdException;
 }

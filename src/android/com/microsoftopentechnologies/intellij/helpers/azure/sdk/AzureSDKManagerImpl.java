@@ -267,6 +267,43 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     }
 
     @NotNull
+    @Override
+    public byte[] downloadRDP(@NotNull VirtualMachine vm) throws AzureCmdException {
+        ComputeManagementClient client = null;
+
+        try {
+            client = AzureSDKHelper.getComputeManagementClient(vm.getSubscriptionId());
+
+            if (client == null) {
+                throw new Exception("Unable to instantiate Compute Management client");
+            }
+
+            VirtualMachineOperations vmo = client.getVirtualMachinesOperations();
+
+            if (vmo == null) {
+                throw new Exception("Unable to retrieve Virtual Machine information");
+            }
+
+            VirtualMachineGetRemoteDesktopFileResponse vmgrdfr = vmo.getRemoteDesktopFile(vm.getServiceName(), vm.getDeploymentName(), vm.getName());
+
+            if (vmgrdfr == null || vmgrdfr.getRemoteDesktopFile() == null) {
+                throw new Exception("Unable to retrieve RDP information");
+            }
+
+            return vmgrdfr.getRemoteDesktopFile();
+        } catch (Throwable t) {
+            throw new AzureCmdException("Error downloading the RDP file", t);
+        } finally {
+            if (client != null) {
+                try {
+                    client.close();
+                } catch (IOException ignored) {
+                }
+            }
+        }
+    }
+
+    @NotNull
     private static List<VirtualMachine> processDeploymentSlot(@NotNull ComputeManagementClient client, @NotNull String subscriptionId, @NotNull String serviceName,
                                                               @NotNull DeploymentSlot slot, @NotNull List<VirtualMachine> vmList)
             throws Exception {
