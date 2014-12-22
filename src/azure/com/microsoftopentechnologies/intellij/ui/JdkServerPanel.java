@@ -41,6 +41,8 @@ import org.jdesktop.swingx.JXHyperlink;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.event.*;
@@ -70,6 +72,8 @@ public class JdkServerPanel {
     private JTextField jdkUrl;
     private JComboBox storageAccountJdk;
     private JTextField javaHome;
+    private JLabel lblJavaHome;
+    private JLabel lblNoteJavaHome;
     //Server tab
     private JCheckBox serverCheckBox;
     private TextFieldWithBrowseButton serverPath;
@@ -83,7 +87,7 @@ public class JdkServerPanel {
     private JXHyperlink serverAccountsButton;
     private JLabel jdkUrlLabel;
     private JLabel storageAccountJdkLabel;
-    private JLabel serverHomeDirLabel;
+    private JLabel lblHomeDir;
     private JLabel lblDlNoteUrl;
     private JLabel lblSelect;
     private JLabel lblUrlSrv;
@@ -177,6 +181,7 @@ public class JdkServerPanel {
             if (jdkSrcPath == null) {
                 setEnableJDK(false);
                 setEnableDlGrp(false, false);
+                uploadLocalJdk.setSelected(true);
             } else {
                 if (jdkSrcPath.isEmpty()) {
                     setEnableJDK(false);
@@ -314,28 +319,6 @@ public class JdkServerPanel {
     }
 
 //    @Override
-//    public WizardStep onNext(final AzureWizardModel model) {
-//        int currentTab = settingsPane.getSelectedIndex();
-//        if (currentTab == 2) {
-//            return super.onNext(model);
-//        } else {
-//            settingsPane.setSelectedIndex(++currentTab);
-//            return this;
-//        }
-//    }
-
-//    @Override
-//    public WizardStep onPrevious(final AzureWizardModel model) {
-//        int currentTab = settingsPane.getSelectedIndex();
-//        if (currentTab == 0) {
-//            return super.onPrevious(model);
-//        } else {
-//            settingsPane.setSelectedIndex(--currentTab);
-//            return this;
-//        }
-//    }
-
-//    @Override
 //    public JComponent prepare(final WizardNavigationState state) {
 //        rootPanel.revalidate();
 //        state.FINISH.setEnabled(true);
@@ -350,6 +333,8 @@ public class JdkServerPanel {
 //        thirdPartyJdkName = new JComboBox(JdkSrvConfigListener.getThirdPartyJdkNames(true));
         thirdPartyJdk.addActionListener(createThirdPartyJdkListener());
         customDownloadJdk.addActionListener(createCustomDownloadJdkListener());
+//        uploadLocalJdk.setSelected(true);
+        showThirdPartyJdkNames("");
         jdkUrl.getDocument().addDocumentListener(createJdkUrlListener());
         storageAccountJdk.addItemListener(createStorageAccountJdkListener());
         thirdPartyJdkName.addItemListener(createThirdPartyJdkNameListener());
@@ -358,6 +343,20 @@ public class JdkServerPanel {
         storageAccountServer.addItemListener(createStorageAccountServerListener());
         serverUrl.getDocument().addDocumentListener(createServerUrlListener());
         checkSDKPresenceAndEnable();
+        settingsPane.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                if (isManualUpdate && createAccLicenseAggDlg() && (waProjManager == null || configureJdkCloudDeployment())) {
+                } else {
+                    try {
+                        isManualUpdate = false;
+                        settingsPane.setSelectedIndex(0);
+                    } finally {
+                        isManualUpdate = true;
+                    }
+                }
+            }
+        });
     }
 
     public void initForWizard() {
@@ -366,8 +365,7 @@ public class JdkServerPanel {
         jdkPath.getTextField().getDocument().addDocumentListener(createJdkPathListener());
         uploadLocalJdk.addActionListener(createUploadLocalJdkListener());
         uploadLocalJdk.setSelected(true);
-        showThirdPartyJdkNames("");
-        enableThirdPartyJdkCombo(true);
+        setEnableDlGrp(false, false);
         serverPath.addBrowseFolderListener(new TextBrowseFolderListener(FileChooserDescriptorFactory.createSingleFolderDescriptor()) {
             protected void onFileChoosen(@NotNull VirtualFile chosenFile) {
                 super.onFileChoosen(chosenFile);
@@ -877,6 +875,7 @@ public class JdkServerPanel {
                     thirdPartyJdkBtnSelected(message("dlNtLblDir"));
                     jdkPrevName = (String) thirdPartyJdkName.getSelectedItem();
                     serverCheckBox.setEnabled(true);
+                    accepted = false;
                 }
             }
         };
@@ -1343,12 +1342,17 @@ public class JdkServerPanel {
             uploadLocalJdk.setText(message("noJdkDplyLbl"));
             showThirdPartyJdkNames("");
         }
-        storageAccountServer.setEnabled(status);
-        storageAccountJdkLabel.setEnabled(status);
+        // URL
         jdkUrlLabel.setEnabled(status);
         lblDlNoteUrl.setEnabled(status);
-        javaHome.setEnabled(status);
         jdkUrl.setEnabled(status);
+        // storage account combo
+        storageAccountJdk.setEnabled(status);
+        storageAccountJdkLabel.setEnabled(status);
+        // labels
+        lblJavaHome.setEnabled(status);
+        lblNoteJavaHome.setEnabled(status);
+
         if (status && applyAutoUlParams) {
             // Always disable and auto-generate JDK url and derive Java home.
             jdkUrl.setEditable(false);
@@ -1450,7 +1454,7 @@ public class JdkServerPanel {
         lblKeySrv.setEnabled(status);
         lblUrlSrv.setEnabled(status);
         lblDlNoteUrlSrv.setEnabled(status);
-        serverHomeDirLabel.setEnabled(status);
+        lblHomeDir.setEnabled(status);
         serverUrl.setEnabled(status);
         lblNoteHomeDir.setEnabled(status);
         if (status && applyAutoUlParams) {
@@ -1799,16 +1803,11 @@ public class JdkServerPanel {
             throw new ConfigurationException(validationInfo.message);
         }
         if (jdkCheckBox.isSelected()) {
-                /*
-				 * Check if third party JDK is selected
-				 * then license is accepted or not.
-				 */
-            boolean tempAccepted = true;
-            if (thirdPartyJdk.isSelected() && !accepted) {
-                tempAccepted = createAccLicenseAggDlg();
-                accepted = tempAccepted;
-            }
-            if (tempAccepted) {
+            /*
+			 * Check if third party JDK is selected
+			 * then license is accepted or not.
+			 */
+            if (createAccLicenseAggDlg()) {
                 okToProceed = configureJdkCloudDeployment();
             } else {
                 okToProceed = false;
@@ -1826,17 +1825,22 @@ public class JdkServerPanel {
     }
 
     public boolean createAccLicenseAggDlg() {
-        String jdkName = (String) thirdPartyJdkName.getSelectedItem();
-        StringBuilder sb = new StringBuilder("<html>").append(String.format(message("aggMsg"), jdkName));
-        String url = "";
-        try {
-            url = WindowsAzureProjectManager.getLicenseUrl(jdkName, AzurePlugin.cmpntFile);
-        } catch (WindowsAzureInvalidProjectOperationException e) {
-            log(e.getMessage(), e);
+        if (!accepted && thirdPartyJdk.isSelected()) {
+            String jdkName = (String) thirdPartyJdkName.getSelectedItem();
+            StringBuilder sb = new StringBuilder("<html>").append(String.format(message("aggMsg"), jdkName));
+            String url = "";
+            try {
+                url = WindowsAzureProjectManager.getLicenseUrl(jdkName, AzurePlugin.cmpntFile);
+            } catch (WindowsAzureInvalidProjectOperationException e) {
+                log(e.getMessage(), e);
+            }
+            sb.append(String.format(message("aggLnk"), url, url)).append("</html>");
+            boolean result = Messages.showYesNoDialog(project, sb.toString(), message("aggTtl"), message("acptBtn"), "Cancel", null) == Messages.YES;
+            accepted = result;
+            return result;
+        } else {
+            return true;
         }
-        sb.append(String.format(message("aggLnk"), url, url)).append("</html>");
-
-        return Messages.showYesNoDialog(project, sb.toString(), message("aggTtl"), message("acptBtn"), "Cancel", null) == Messages.YES;
     }
 
     /**
@@ -1994,12 +1998,7 @@ public class JdkServerPanel {
                         isJdkValid = false;
                         throw new ConfigurationException(message("jvHomeErMsg"), message("genErrTitle"));
                     } else {
-                        boolean tempAccepted = true;
-                        if (thirdPartyJdk.isSelected() && !accepted) {
-                            tempAccepted = createAccLicenseAggDlg();
-                            accepted = tempAccepted;
-                        }
-                        if (tempAccepted) {
+                        if (createAccLicenseAggDlg()) {
                             isJdkValid = configureJdkCloudDeployment();
                         } else {
                             isJdkValid = false;

@@ -27,17 +27,20 @@ public class VirtualMachine implements ServiceTreeItem {
     private String serviceName;
     private String dns;
     private String environment;
+    private String deploymentName;
     private String size;
     private String status;
     private String subscriptionId;
     private List<Endpoint> endpoints;
 
     public VirtualMachine(@NotNull String name, @NotNull String serviceName, @NotNull String dns, @NotNull String environment,
-                          @NotNull String size, @NotNull String status, @NotNull String subscriptionId) {
+                          @NotNull String deploymentName, @NotNull String size, @NotNull String status,
+                          @NotNull String subscriptionId) {
         this.name = name;
         this.serviceName = serviceName;
         this.dns = dns;
         this.environment = environment;
+        this.deploymentName = deploymentName;
         this.size = size;
         this.status = status;
         this.subscriptionId = subscriptionId;
@@ -60,6 +63,11 @@ public class VirtualMachine implements ServiceTreeItem {
     }
 
     @NotNull
+    public String getServiceName() {
+        return serviceName;
+    }
+
+    @NotNull
     public String getDns() {
         return dns;
     }
@@ -67,6 +75,10 @@ public class VirtualMachine implements ServiceTreeItem {
     @NotNull
     public String getEnvironment() {
         return environment;
+    }
+
+    public String getDeploymentName() {
+        return deploymentName;
     }
 
     @NotNull
@@ -98,5 +110,4 @@ public class VirtualMachine implements ServiceTreeItem {
     public String toString(){
         return name + (loading ? " (loading...)" : "");
     }
-
 }

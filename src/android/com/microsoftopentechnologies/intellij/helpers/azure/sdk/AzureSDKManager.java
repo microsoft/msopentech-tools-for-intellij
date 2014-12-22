@@ -24,4 +24,15 @@ import java.util.List;
 public interface AzureSDKManager {
     @NotNull
     List<VirtualMachine> getVirtualMachines(@NotNull String subscriptionId) throws AzureCmdException;
+
+    void startVirtualMachine(@NotNull VirtualMachine vm) throws AzureCmdException;
+
+    void shutdownVirtualMachine(@NotNull VirtualMachine vm, boolean deallocate) throws AzureCmdException;
+
+    void restartVirtualMachine(@NotNull VirtualMachine vm) throws AzureCmdException;
+
+    void deleteVirtualMachine(@NotNull VirtualMachine vm, boolean deleteFromStorage) throws AzureCmdException;
+
+    @NotNull
+    byte[] downloadRDP(@NotNull VirtualMachine vm) throws AzureCmdException;
 }

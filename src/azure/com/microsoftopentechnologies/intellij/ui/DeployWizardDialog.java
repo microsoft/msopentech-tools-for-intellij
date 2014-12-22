@@ -119,9 +119,8 @@ public class DeployWizardDialog extends WindowsAzurePage {
                 loadDefaultWizardValues();
             }
         }
-
-        populateStorageAccounts();
         storageAccountCmb.addItemListener(createStorageAccountListener());
+        populateStorageAccounts();
         newStorageAccountBtn.addActionListener(createNewStorageAccountListener());
 
         hostedServiceCombo.addItemListener(createHostedServiceComboListener());
@@ -300,7 +299,7 @@ public class DeployWizardDialog extends WindowsAzurePage {
         return new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
-                if (storageAccountCmb.getSelectedItem() != null) {
+                if (e.getStateChange() == ItemEvent.SELECTED && storageAccountCmb.getSelectedItem() != null) {
                     currentStorageAccount = ((ElementWrapper<StorageService>) storageAccountCmb.getSelectedItem()).getValue();
                 }
 //                setPageComplete(validatePageComplete());
