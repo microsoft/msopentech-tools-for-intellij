@@ -125,15 +125,17 @@ public class AzureTreeLoader {
 
         final UUID mSubscriptionId = getParentSubscription(selectedNode).getId();
 
-        selectedObject.setLoading(true);
-        selectedNode.setUserObject(selectedObject);
-        DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
-        model.reload(selectedNode);
+
 
         ApplicationManager.getApplication().invokeLater(new Runnable() {
 
             @Override
             public void run() {
+                selectedObject.setLoading(true);
+                selectedNode.setUserObject(selectedObject);
+                DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
+                model.reload(selectedNode);
+
                 switch (selectedObject) {
                     case MobileServices:
 
@@ -617,7 +619,7 @@ public class AzureTreeLoader {
         JBMenuItem restartVM = new JBMenuItem("Restart");
         JBMenuItem shutdownVM = new JBMenuItem("Shutdown");
         JBMenuItem startVM = new JBMenuItem("Start");
-        JBMenuItem refreshVM = new JBMenuItem("Refresh");
+        final JBMenuItem refreshVM = new JBMenuItem("Refresh");
 
 
         shutdownVM.setEnabled(!virtualMachine.isLoading() && virtualMachine.getStatus().equals("Running"));
@@ -630,10 +632,26 @@ public class AzureTreeLoader {
         refreshVM.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                ApplicationManager.getApplication().invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        treeClick(selectedNode);
+
+
+
+                ProgressManager.getInstance().run(new Task.Backgroundable(p, "Refreshing VM", false) {
+
+                    public void run(@NotNull ProgressIndicator progressIndicator) {
+                        try {
+                            final VirtualMachine machine = refreshVM(virtualMachine, subscriptionId);
+
+                            ApplicationManager.getApplication().invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    selectedNode.setUserObject(machine);
+                                    DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
+                                    model.reload(selectedNode);
+                                }
+                            });
+                        } catch(AzureCmdException ex) {
+                            UIHelper.showException("Error deleting virtual machine", ex);
+                        }
                     }
                 });
             }
