@@ -216,6 +216,11 @@ public class AzureTreeLoader {
                 for (Endpoint endpoint : selectedObject.getEndpoints()) {
                     DefaultMutableTreeNode endpointNode = new DefaultMutableTreeNode(endpoint.getName());
                     endpointNode.setUserObject(endpoint);
+
+                    endpointNode.add(new DefaultMutableTreeNode("Protocol: " + endpoint.getProtocol()));
+                    endpointNode.add(new DefaultMutableTreeNode("Public Port: " + endpoint.getPublicPort()));
+                    endpointNode.add(new DefaultMutableTreeNode("Private Port: " + endpoint.getPrivatePort()));
+
                     selectedNode.add(endpointNode);
                 }
 
@@ -549,9 +554,9 @@ public class AzureTreeLoader {
         Object[] userObjectPath = selectedNode.getUserObjectPath();
 
         Subscription subscription = (Subscription) userObjectPath[1];
-        Service service = (Service) userObjectPath[2];
+//        Service service = (Service) userObjectPath[2];
 
-        final String serviceName = service.getName();
+  //      final String serviceName = service.getName();
         final String subscriptionId = subscription.getId().toString();
 
         if (selectedItem instanceof Service) {
@@ -668,7 +673,8 @@ public class AzureTreeLoader {
         }
 
         if (selectedItem instanceof Table) {
-
+            Service service = (Service) userObjectPath[2];
+            final String serviceName = service.getName();
 
             JBMenuItem editTable = new JBMenuItem("Edit Table");
 
@@ -711,6 +717,9 @@ public class AzureTreeLoader {
         }
 
         if (selectedItem instanceof Script) {
+            Service service = (Service) userObjectPath[2];
+            final String serviceName = service.getName();
+
             JBMenuItem uploadScript = new JBMenuItem("Update script");
 
             final Script script = (Script) selectedItem;
@@ -737,6 +746,9 @@ public class AzureTreeLoader {
 
 
         if (selectedItem instanceof CustomAPI) {
+            Service service = (Service) userObjectPath[2];
+            final String serviceName = service.getName();
+
             final CustomAPI customAPI = (CustomAPI) selectedItem;
 
             JBMenuItem uploadAPI = new JBMenuItem("Update Custom API");
@@ -781,6 +793,9 @@ public class AzureTreeLoader {
 
 
         if (selectedItem instanceof Job) {
+            Service service = (Service) userObjectPath[2];
+            final String serviceName = service.getName();
+
             final Job job = (Job) selectedItem;
 
             JBMenuItem uploadJob = new JBMenuItem("Update job");
