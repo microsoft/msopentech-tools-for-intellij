@@ -31,6 +31,7 @@ import com.microsoftopentechnologies.intellij.forms.JobForm;
 import com.microsoftopentechnologies.intellij.forms.TableForm;
 import com.microsoftopentechnologies.intellij.forms.ViewLogForm;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
+import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManager;
 import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerImpl;
 import com.microsoftopentechnologies.intellij.model.*;
 import com.microsoftopentechnologies.intellij.model.vm.Endpoint;
@@ -38,15 +39,14 @@ import com.microsoftopentechnologies.intellij.model.vm.VirtualMachine;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileFilter;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.InputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -57,7 +57,7 @@ public class AzureTreeLoader {
     private JTree tree;
     private ProgressIndicator progressIndicator;
 
-    public AzureTreeLoader(Project project, JTree jTree){
+    public AzureTreeLoader(Project project, JTree jTree) {
         mProject = project;
         tree = jTree;
 
@@ -83,18 +83,16 @@ public class AzureTreeLoader {
 
                         atl.progressIndicator = progressIndicator;
 
-                        if(selectedObject instanceof AzureType) {
+                        if (selectedObject instanceof AzureType) {
                             azureTypeLoader((AzureType) selectedObject, selectedNode);
                         } else if (selectedObject instanceof Service) {
-                            serviceLoader((Service) selectedObject ,selectedNode);
+                            serviceLoader((Service) selectedObject, selectedNode);
                         } else if (selectedObject instanceof VirtualMachine) {
                             vmLoader((VirtualMachine) selectedObject, selectedNode);
                         } else if (selectedObject instanceof Table)
                             tableLoader((Table) selectedObject, selectedNode);
                         else if (selectedObject instanceof MobileServiceScriptTreeItem)
                             scriptLoader((MobileServiceScriptTreeItem) selectedObject, selectedNode);
-
-
 
 
                     }
@@ -106,7 +104,7 @@ public class AzureTreeLoader {
 
     private Service getParentService(DefaultMutableTreeNode selectedNode) {
         for (Object obj : selectedNode.getUserObjectPath()) {
-            if(obj instanceof Service) {
+            if (obj instanceof Service) {
                 return (Service) obj;
             }
         }
@@ -115,7 +113,7 @@ public class AzureTreeLoader {
 
     private Subscription getParentSubscription(DefaultMutableTreeNode selectedNode) {
         for (Object obj : selectedNode.getUserObjectPath()) {
-            if(obj instanceof Subscription) {
+            if (obj instanceof Subscription) {
                 return (Subscription) obj;
             }
         }
@@ -127,11 +125,16 @@ public class AzureTreeLoader {
 
         final UUID mSubscriptionId = getParentSubscription(selectedNode).getId();
 
+        selectedObject.setLoading(true);
+        selectedNode.setUserObject(selectedObject);
+        DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
+        model.reload(selectedNode);
+
         ApplicationManager.getApplication().invokeLater(new Runnable() {
 
             @Override
             public void run() {
-                switch(selectedObject) {
+                switch (selectedObject) {
                     case MobileServices:
 
                         ProgressManager.getInstance().run(new Task.Backgroundable(mProject, "Loading mobile services...", false) {
@@ -153,6 +156,7 @@ public class AzureTreeLoader {
                                                 selectedNode.add(serviceTree);
 
                                                 selectedObject.setLoading(false);
+                                                selectedNode.setUserObject(selectedObject);
                                                 DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
                                                 model.reload(selectedNode);
                                             }
@@ -186,6 +190,7 @@ public class AzureTreeLoader {
                                                 selectedNode.add(serviceTree);
 
                                                 selectedObject.setLoading(false);
+                                                selectedNode.setUserObject(selectedObject);
                                                 DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
                                                 model.reload(selectedNode);
                                             }
@@ -231,7 +236,7 @@ public class AzureTreeLoader {
         });
     }
 
-    private void serviceLoader(final Service selectedObject, final DefaultMutableTreeNode selectedNode){
+    private void serviceLoader(final Service selectedObject, final DefaultMutableTreeNode selectedNode) {
         try {
             progressIndicator.setIndeterminate(true);
             progressIndicator.setText("Checking service");
@@ -286,6 +291,11 @@ public class AzureTreeLoader {
                         }
 
                         selectedNode.add(jobRootNode);
+
+                        selectedObject.setLoading(false);
+                        DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
+                        model.reload(selectedNode);
+
                     }
                 });
             } else {
@@ -312,7 +322,7 @@ public class AzureTreeLoader {
 
 
     private void tableLoader(final Table table, final DefaultMutableTreeNode selectedNode) {
-        try{
+        try {
             UUID mSubscriptionId = getParentSubscription(selectedNode).getId();
 
             String serviceName = getParentService(selectedNode).getName();
@@ -355,6 +365,10 @@ public class AzureTreeLoader {
 
                     selectedNode.add(scripts);
                     selectedNode.add(columns);
+
+                    table.setLoading(false);
+                    DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
+                    model.reload(selectedNode);
 
                 }
             });
@@ -554,194 +568,24 @@ public class AzureTreeLoader {
         Object[] userObjectPath = selectedNode.getUserObjectPath();
 
         Subscription subscription = (Subscription) userObjectPath[1];
-//        Service service = (Service) userObjectPath[2];
-
-  //      final String serviceName = service.getName();
         final String subscriptionId = subscription.getId().toString();
 
         if (selectedItem instanceof Service) {
-            JBMenuItem newTableMenuItem = new JBMenuItem("Create table");
-            JBMenuItem newAPIMenuItem = new JBMenuItem("Create API");
-            JBMenuItem newJobMenuItem = new JBMenuItem("Create new job");
-            JBMenuItem showLog = new JBMenuItem("Show log");
-            JBMenuItem refresh = new JBMenuItem("Refresh");
-
-            final Service item = (Service) selectedItem;
-
-            newTableMenuItem.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent actionEvent) {
-                    TableForm form = new TableForm();
-                    form.setServiceName(item.getName());
-                    form.setSubscriptionId(item.getSubcriptionId());
-                    form.setProject(p);
-
-                    ArrayList<String> existingTables = new ArrayList<String>();
-                    for (Table table : item.getTables())
-                        existingTables.add(table.getName());
-
-                    form.setExistingTableNames(existingTables);
-
-                    form.setAfterSave(new Runnable() {
-                        @Override
-                        public void run() {
-                            selectedNode.removeAllChildren();
-                            treeClick(selectedNode);
-                        }
-                    });
-
-                    UIHelper.packAndCenterJDialog(form);
-                    form.setVisible(true);
-                }
-            });
-
-            newAPIMenuItem.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent actionEvent) {
-                    CustomAPIForm form = new CustomAPIForm();
-                    form.setServiceName(item.getName());
-                    form.setSubscriptionId(item.getSubcriptionId());
-                    form.setProject(p);
-
-                    form.setAfterSave(new Runnable() {
-                        @Override
-                        public void run() {
-                            selectedNode.removeAllChildren();
-                            treeClick(selectedNode);
-                        }
-                    });
-
-                    UIHelper.packAndCenterJDialog(form);
-                    form.setVisible(true);
-                }
-            });
-
-            newJobMenuItem.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent actionEvent) {
-                    JobForm form = new JobForm();
-                    form.setServiceName(item.getName());
-                    form.setSubscriptionId(item.getSubcriptionId());
-                    form.setTitle("Create new Job");
-
-                    form.setAfterSave(new Runnable() {
-                        @Override
-                        public void run() {
-                            selectedNode.removeAllChildren();
-                            treeClick(selectedNode);
-                        }
-                    });
-
-                    UIHelper.packAndCenterJDialog(form);
-                    form.setVisible(true);
-                }
-            });
-
-            showLog.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent actionEvent) {
-                    final ViewLogForm form = new ViewLogForm();
-
-                    ApplicationManager.getApplication().invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            form.queryLog(item.getSubcriptionId(), item.getName());
-                        }
-                    });
-
-                    UIHelper.packAndCenterJDialog(form);
-                    form.setVisible(true);
-
-                }
-            });
-
-            refresh.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent actionEvent) {
-                    selectedNode.removeAllChildren();
-                    treeClick(selectedNode);
-                }
-            });
-
-            return new JBMenuItem[]{
-                    newTableMenuItem,
-                    newAPIMenuItem,
-                    newJobMenuItem,
-                    showLog,
-                    refresh
-            };
+            return getServiceMenuItems(p, (Service) selectedItem, selectedNode);
         }
 
         if (selectedItem instanceof Table) {
             Service service = (Service) userObjectPath[2];
             final String serviceName = service.getName();
 
-            JBMenuItem editTable = new JBMenuItem("Edit Table");
-
-            final Table table = (Table) selectedItem;
-
-            editTable.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent actionEvent) {
-
-                    ProgressManager.getInstance().run(new Task.Backgroundable(p, "Loading table info", false) {
-                        @Override
-                        public void run(@NotNull ProgressIndicator progressIndicator) {
-                            try {
-                                final Table selectedTable = AzureRestAPIManager.getManager().showTableDetails(UUID.fromString(subscriptionId), serviceName, table.getName());
-
-                                ApplicationManager.getApplication().invokeLater(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        TableForm form = new TableForm();
-                                        form.setServiceName(serviceName);
-                                        form.setSubscriptionId(UUID.fromString(subscriptionId));
-                                        form.setEditingTable(selectedTable);
-                                        form.setProject(p);
-                                        UIHelper.packAndCenterJDialog(form);
-                                        form.setVisible(true);
-                                    }
-                                });
-
-                            } catch (Throwable ex) {
-                                UIHelper.showException("Error creating table", ex);
-                            }
-
-                        }
-                    });
-
-                }
-            });
-
-            return new JBMenuItem[]{editTable};
+            return getTableMenuItems(p, (Table) selectedItem, subscriptionId, serviceName);
         }
 
         if (selectedItem instanceof Script) {
             Service service = (Service) userObjectPath[2];
             final String serviceName = service.getName();
 
-            JBMenuItem uploadScript = new JBMenuItem("Update script");
-
-            final Script script = (Script) selectedItem;
-            uploadScript.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent actionEvent) {
-                    ApplicationManager.getApplication().runWriteAction(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                UIHelper.saveScript(p, selectedNode, script, serviceName, subscriptionId);
-                            } catch (AzureCmdException e) {
-                                UIHelper.showException("Error uploading script:", e);
-                            }
-                        }
-                    });
-                }
-            });
-
-            return new JBMenuItem[]{
-                    uploadScript
-            };
+            return getScriptMenuItems(p, (Script) selectedItem, selectedNode, subscriptionId, serviceName);
         }
 
 
@@ -749,46 +593,7 @@ public class AzureTreeLoader {
             Service service = (Service) userObjectPath[2];
             final String serviceName = service.getName();
 
-            final CustomAPI customAPI = (CustomAPI) selectedItem;
-
-            JBMenuItem uploadAPI = new JBMenuItem("Update Custom API");
-            JBMenuItem editAPI = new JBMenuItem("Edit Custom API");
-
-            uploadAPI.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent actionEvent) {
-                    try {
-                        UIHelper.saveCustomAPI(p, customAPI, serviceName, subscriptionId);
-                    } catch (AzureCmdException e) {
-                        UIHelper.showException("Error uploading script:", e);
-                    }
-                }
-            });
-
-            editAPI.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent actionEvent) {
-                    final CustomAPIForm form = new CustomAPIForm();
-                    form.setEditingCustomAPI(customAPI);
-                    form.setServiceName(serviceName);
-
-                    form.setSubscriptionId(UUID.fromString(subscriptionId));
-                    form.setProject(p);
-                    form.setAfterSave(new Runnable() {
-                        @Override
-                        public void run() {
-                            selectedNode.setUserObject(form.getEditingCustomAPI());
-                        }
-                    });
-                    UIHelper.packAndCenterJDialog(form);
-                    form.setVisible(true);
-                }
-            });
-
-            return new JBMenuItem[]{
-                    uploadAPI,
-                    editAPI,
-            };
+            return getCustomAPIMenuItems(p, (CustomAPI) selectedItem, selectedNode, subscriptionId, serviceName);
         }
 
 
@@ -796,48 +601,521 @@ public class AzureTreeLoader {
             Service service = (Service) userObjectPath[2];
             final String serviceName = service.getName();
 
-            final Job job = (Job) selectedItem;
+            return getJobMenuItems(p, (Job) selectedItem, selectedNode, subscriptionId, serviceName);
+        }
 
-            JBMenuItem uploadJob = new JBMenuItem("Update job");
-            JBMenuItem editJob = new JBMenuItem("Edit job");
-
-            uploadJob.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent actionEvent) {
-                    try {
-                        UIHelper.saveJob(p, job, serviceName, subscriptionId);
-                    } catch (AzureCmdException e) {
-                        UIHelper.showException("Error uploading script:", e);
-                    }
-                }
-            });
-
-            editJob.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent actionEvent) {
-                    final JobForm form = new JobForm();
-                    form.setJob(job);
-                    form.setServiceName(serviceName);
-                    form.setTitle("Edit job");
-                    form.setSubscriptionId(UUID.fromString(subscriptionId));
-                    form.setAfterSave(new Runnable() {
-                        @Override
-                        public void run() {
-                            selectedNode.setUserObject(form.getEditingJob());
-                        }
-                    });
-                    form.pack();
-                    form.setVisible(true);
-                }
-            });
-
-            return new JBMenuItem[]{
-                    uploadJob,
-                    editJob,
-            };
+        if (selectedItem instanceof VirtualMachine) {
+            return getVMMenuItems(p, (VirtualMachine) selectedItem, selectedNode, subscriptionId);
         }
 
         return null;
+    }
+
+    private JBMenuItem[] getVMMenuItems(final Project p, final VirtualMachine virtualMachine, final DefaultMutableTreeNode selectedNode, final String subscriptionId) {
+        JBMenuItem deleteVM = new JBMenuItem("Delete");
+        JBMenuItem downloadVM = new JBMenuItem("Download RDP file");
+        JBMenuItem restartVM = new JBMenuItem("Restart");
+        JBMenuItem shutdownVM = new JBMenuItem("Shutdown");
+        JBMenuItem startVM = new JBMenuItem("Start");
+        JBMenuItem refreshVM = new JBMenuItem("Refresh");
+
+
+        shutdownVM.setEnabled(!virtualMachine.isLoading() && virtualMachine.getStatus().equals("Running"));
+        startVM.setEnabled(!virtualMachine.isLoading() && !virtualMachine.getStatus().equals("Running"));
+        restartVM.setEnabled(!virtualMachine.isLoading() && virtualMachine.getStatus().equals("Running"));
+        deleteVM.setEnabled(!virtualMachine.isLoading());
+        downloadVM.setEnabled(!virtualMachine.isLoading());
+        refreshVM.setEnabled(!virtualMachine.isLoading());
+
+        refreshVM.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                ApplicationManager.getApplication().invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        treeClick(selectedNode);
+                    }
+                });
+            }
+        });
+
+        deleteVM.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                final int optionDialog = JOptionPane.showOptionDialog(null,
+                        "This operation will delete virtual machine " + virtualMachine.getName() + ". The associated disks will not be deleted from your storage account. Are you sure you want to continue?",
+                        "Service explorer",
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.QUESTION_MESSAGE,
+                        null,
+                        new String[]{"Yes", "No"},
+                        null);
+
+                virtualMachine.setLoading(true);
+                DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
+                model.reload(selectedNode);
+
+                if (optionDialog == JOptionPane.YES_OPTION) {
+                    ProgressManager.getInstance().run(new Task.Backgroundable(p, "Deleting VM", false) {
+
+                        @Override
+                        public void run(@NotNull ProgressIndicator progressIndicator) {
+
+                            try {
+                                AzureSDKManagerImpl.getManager().deleteVirtualMachine(virtualMachine, false);
+
+
+                                ApplicationManager.getApplication().invokeLater(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        DefaultMutableTreeNode list = (DefaultMutableTreeNode) selectedNode.getParent();
+                                        list.removeAllChildren();
+
+                                        treeClick(list);
+                                    }
+                                });
+                            } catch (AzureCmdException ex) {
+                                UIHelper.showException("Error deleting virtual machine", ex);
+                            }
+
+                        }
+                    });
+                }
+            }
+        });
+
+        downloadVM.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                try {
+                    JFileChooser saveFile = new JFileChooser();
+                    saveFile.setDialogTitle("Save RDP file");
+                    if (saveFile.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
+                        File rdpFile = saveFile.getSelectedFile();
+
+                        if (!rdpFile.exists()) {
+                            rdpFile.createNewFile();
+                        }
+
+                        FileOutputStream fileOutputStream = new FileOutputStream(rdpFile);
+                        fileOutputStream.write(AzureSDKManagerImpl.getManager().downloadRDP(virtualMachine));
+                        fileOutputStream.flush();
+                        fileOutputStream.close();
+                    }
+                } catch (Exception ex) {
+                    UIHelper.showException("Error downloading RDP file:", ex);
+                }
+
+            }
+        });
+
+        shutdownVM.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                final int optionDialog = JOptionPane.showOptionDialog(null,
+                        "This operation will result in losing the VIP that was assigned to this virtual machine. Are you sure that you want to shut down virtual machine " + virtualMachine.getName() + "?",
+                        "Service explorer",
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.QUESTION_MESSAGE,
+                        null,
+                        new String[]{"Yes", "No"},
+                        null);
+
+                virtualMachine.setLoading(true);
+                DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
+                model.reload(selectedNode);
+
+                if (optionDialog == JOptionPane.YES_OPTION) {
+                    ProgressManager.getInstance().run(new Task.Backgroundable(p, "Shutting down VM", false) {
+
+                        @Override
+                        public void run(@NotNull ProgressIndicator progressIndicator) {
+
+                            try {
+
+                                AzureSDKManagerImpl.getManager().shutdownVirtualMachine(virtualMachine, true);
+                                final VirtualMachine machine = refreshVM(virtualMachine, subscriptionId);
+
+                                ApplicationManager.getApplication().invokeLater(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        selectedNode.setUserObject(machine);
+                                        DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
+                                        model.reload(selectedNode);
+                                    }
+                                });
+                            } catch (AzureCmdException ex) {
+                                UIHelper.showException("Error shutting down virtual machine", ex);
+                            }
+
+                        }
+                    });
+                }
+            }
+        });
+
+
+        startVM.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                final int optionDialog = JOptionPane.showOptionDialog(null,
+                        "Are you sure you want to start the virtual machine " + virtualMachine.getName() + "?",
+                        "Service explorer",
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.QUESTION_MESSAGE,
+                        null,
+                        new String[]{"Yes", "No"},
+                        null);
+
+                virtualMachine.setLoading(true);
+                DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
+                model.reload(selectedNode);
+
+                if (optionDialog == JOptionPane.YES_OPTION) {
+                    ProgressManager.getInstance().run(new Task.Backgroundable(p, "Starting VM", false) {
+
+                        @Override
+                        public void run(@NotNull ProgressIndicator progressIndicator) {
+
+                            try {
+                                AzureSDKManagerImpl.getManager().startVirtualMachine(virtualMachine);
+                                final VirtualMachine machine = refreshVM(virtualMachine, subscriptionId);
+
+                                ApplicationManager.getApplication().invokeLater(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        selectedNode.setUserObject(machine);
+                                        DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
+                                        model.reload(selectedNode);
+
+                                    }
+                                });
+                            } catch (AzureCmdException ex) {
+                                UIHelper.showException("Error starting virtual machine", ex);
+                            }
+
+                        }
+                    });
+                }
+            }
+        });
+
+        restartVM.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                final int optionDialog = JOptionPane.showOptionDialog(null,
+                        "Are you sure you want to restart the virtual machine " + virtualMachine.getName() + "?",
+                        "Service explorer",
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.QUESTION_MESSAGE,
+                        null,
+                        new String[]{"Yes", "No"},
+                        null);
+
+                virtualMachine.setLoading(true);
+                DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
+                model.reload(selectedNode);
+
+                if (optionDialog == JOptionPane.YES_OPTION) {
+                    ProgressManager.getInstance().run(new Task.Backgroundable(p, "Restarting VM", false) {
+
+                        @Override
+                        public void run(@NotNull ProgressIndicator progressIndicator) {
+
+                            try {
+                                AzureSDKManagerImpl.getManager().restartVirtualMachine(virtualMachine);
+                                final VirtualMachine machine = refreshVM(virtualMachine, subscriptionId);
+
+                                ApplicationManager.getApplication().invokeLater(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        selectedNode.setUserObject(machine);
+                                        DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
+                                        model.reload(selectedNode);
+                                    }
+                                });
+                            } catch (AzureCmdException ex) {
+                                UIHelper.showException("Error restarting virtual machine", ex);
+                            }
+
+                        }
+                    });
+                }
+            }
+        });
+
+        return new JBMenuItem[]{
+                refreshVM,
+                deleteVM,
+                downloadVM,
+                shutdownVM,
+                startVM,
+                restartVM
+        };
+    }
+
+    private JBMenuItem[] getJobMenuItems(final Project p, Job selectedItem, final DefaultMutableTreeNode selectedNode, final String subscriptionId, final String serviceName) {
+        final Job job = selectedItem;
+
+        JBMenuItem uploadJob = new JBMenuItem("Update job");
+        JBMenuItem editJob = new JBMenuItem("Edit job");
+
+        uploadJob.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                try {
+                    UIHelper.saveJob(p, job, serviceName, subscriptionId);
+                } catch (AzureCmdException e) {
+                    UIHelper.showException("Error uploading script:", e);
+                }
+            }
+        });
+
+        editJob.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                final JobForm form = new JobForm();
+                form.setJob(job);
+                form.setServiceName(serviceName);
+                form.setTitle("Edit job");
+                form.setSubscriptionId(UUID.fromString(subscriptionId));
+                form.setAfterSave(new Runnable() {
+                    @Override
+                    public void run() {
+                        selectedNode.setUserObject(form.getEditingJob());
+                    }
+                });
+                form.pack();
+                form.setVisible(true);
+            }
+        });
+
+        return new JBMenuItem[]{
+                uploadJob,
+                editJob,
+        };
+    }
+
+    private JBMenuItem[] getCustomAPIMenuItems(final Project p, CustomAPI selectedItem, final DefaultMutableTreeNode selectedNode, final String subscriptionId, final String serviceName) {
+        final CustomAPI customAPI = selectedItem;
+
+        JBMenuItem uploadAPI = new JBMenuItem("Update Custom API");
+        JBMenuItem editAPI = new JBMenuItem("Edit Custom API");
+
+        uploadAPI.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                try {
+                    UIHelper.saveCustomAPI(p, customAPI, serviceName, subscriptionId);
+                } catch (AzureCmdException e) {
+                    UIHelper.showException("Error uploading script:", e);
+                }
+            }
+        });
+
+        editAPI.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                final CustomAPIForm form = new CustomAPIForm();
+                form.setEditingCustomAPI(customAPI);
+                form.setServiceName(serviceName);
+
+                form.setSubscriptionId(UUID.fromString(subscriptionId));
+                form.setProject(p);
+                form.setAfterSave(new Runnable() {
+                    @Override
+                    public void run() {
+                        selectedNode.setUserObject(form.getEditingCustomAPI());
+                    }
+                });
+                UIHelper.packAndCenterJDialog(form);
+                form.setVisible(true);
+            }
+        });
+
+        return new JBMenuItem[]{
+                uploadAPI,
+                editAPI,
+        };
+    }
+
+    private JBMenuItem[] getScriptMenuItems(final Project p, Script selectedItem, final DefaultMutableTreeNode selectedNode, final String subscriptionId, final String serviceName) {
+        JBMenuItem uploadScript = new JBMenuItem("Update script");
+
+        final Script script = selectedItem;
+        uploadScript.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                ApplicationManager.getApplication().runWriteAction(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            UIHelper.saveScript(p, selectedNode, script, serviceName, subscriptionId);
+                        } catch (AzureCmdException e) {
+                            UIHelper.showException("Error uploading script:", e);
+                        }
+                    }
+                });
+            }
+        });
+
+        return new JBMenuItem[]{
+                uploadScript
+        };
+    }
+
+    private JBMenuItem[] getTableMenuItems(final Project p, Table selectedItem, final String subscriptionId, final String serviceName) {
+        JBMenuItem editTable = new JBMenuItem("Edit Table");
+
+        final Table table = selectedItem;
+
+        editTable.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+
+                ProgressManager.getInstance().run(new Task.Backgroundable(p, "Loading table info", false) {
+                    @Override
+                    public void run(@NotNull ProgressIndicator progressIndicator) {
+                        try {
+                            final Table selectedTable = AzureRestAPIManager.getManager().showTableDetails(UUID.fromString(subscriptionId), serviceName, table.getName());
+
+                            ApplicationManager.getApplication().invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    TableForm form = new TableForm();
+                                    form.setServiceName(serviceName);
+                                    form.setSubscriptionId(UUID.fromString(subscriptionId));
+                                    form.setEditingTable(selectedTable);
+                                    form.setProject(p);
+                                    UIHelper.packAndCenterJDialog(form);
+                                    form.setVisible(true);
+                                }
+                            });
+
+                        } catch (Throwable ex) {
+                            UIHelper.showException("Error creating table", ex);
+                        }
+
+                    }
+                });
+
+            }
+        });
+
+        return new JBMenuItem[]{editTable};
+    }
+
+    private JBMenuItem[] getServiceMenuItems(final Project p, Service selectedItem, final DefaultMutableTreeNode selectedNode) {
+        JBMenuItem newTableMenuItem = new JBMenuItem("Create table");
+        JBMenuItem newAPIMenuItem = new JBMenuItem("Create API");
+        JBMenuItem newJobMenuItem = new JBMenuItem("Create new job");
+        JBMenuItem showLog = new JBMenuItem("Show log");
+        JBMenuItem refresh = new JBMenuItem("Refresh");
+
+        final Service item = selectedItem;
+
+        newTableMenuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                TableForm form = new TableForm();
+                form.setServiceName(item.getName());
+                form.setSubscriptionId(item.getSubcriptionId());
+                form.setProject(p);
+
+                ArrayList<String> existingTables = new ArrayList<String>();
+                for (Table table : item.getTables())
+                    existingTables.add(table.getName());
+
+                form.setExistingTableNames(existingTables);
+
+                form.setAfterSave(new Runnable() {
+                    @Override
+                    public void run() {
+                        selectedNode.removeAllChildren();
+                        treeClick(selectedNode);
+                    }
+                });
+
+                UIHelper.packAndCenterJDialog(form);
+                form.setVisible(true);
+            }
+        });
+
+        newAPIMenuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                CustomAPIForm form = new CustomAPIForm();
+                form.setServiceName(item.getName());
+                form.setSubscriptionId(item.getSubcriptionId());
+                form.setProject(p);
+
+                form.setAfterSave(new Runnable() {
+                    @Override
+                    public void run() {
+                        selectedNode.removeAllChildren();
+                        treeClick(selectedNode);
+                    }
+                });
+
+                UIHelper.packAndCenterJDialog(form);
+                form.setVisible(true);
+            }
+        });
+
+        newJobMenuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                JobForm form = new JobForm();
+                form.setServiceName(item.getName());
+                form.setSubscriptionId(item.getSubcriptionId());
+                form.setTitle("Create new Job");
+
+                form.setAfterSave(new Runnable() {
+                    @Override
+                    public void run() {
+                        selectedNode.removeAllChildren();
+                        treeClick(selectedNode);
+                    }
+                });
+
+                UIHelper.packAndCenterJDialog(form);
+                form.setVisible(true);
+            }
+        });
+
+        showLog.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                final ViewLogForm form = new ViewLogForm();
+
+                ApplicationManager.getApplication().invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        form.queryLog(item.getSubcriptionId(), item.getName());
+                    }
+                });
+
+                UIHelper.packAndCenterJDialog(form);
+                form.setVisible(true);
+
+            }
+        });
+
+        refresh.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                selectedNode.removeAllChildren();
+                treeClick(selectedNode);
+            }
+        });
+
+        return new JBMenuItem[]{
+                newTableMenuItem,
+                newAPIMenuItem,
+                newJobMenuItem,
+                showLog,
+                refresh
+        };
     }
 
     public static NodeRenderer getTreeNodeRenderer() {
@@ -887,7 +1165,7 @@ public class AzureTreeLoader {
                         setIcon(jobImg);
                     } else if (data instanceof AzureType) {
 
-                        switch((AzureType)data) {
+                        switch ((AzureType) data) {
                             case MobileServices:
                                 setIcon(msImg);
                                 break;
@@ -898,9 +1176,9 @@ public class AzureTreeLoader {
 
                     } else if (data instanceof VirtualMachine) {
                         VirtualMachine virtualMachine = (VirtualMachine) data;
-                        if(virtualMachine.getStatus().equals("Running"))
+                        if (virtualMachine.getStatus().equals("Running"))
                             setIcon(vmRunImg);
-                        else if(virtualMachine.getStatus().equals("Suspended"))
+                        else if (virtualMachine.getStatus().equals("Suspended"))
                             setIcon(vmStopImg);
                         else
                             setIcon(vmWaitImg);
@@ -912,5 +1190,14 @@ public class AzureTreeLoader {
         };
     }
 
+    @NotNull
+    private VirtualMachine refreshVM(VirtualMachine virtualMachine, String subscriptionId) throws AzureCmdException {
+        for (VirtualMachine vm : AzureSDKManagerImpl.getManager().getVirtualMachines(subscriptionId)) {
+            if(vm.getServiceName().equals(virtualMachine.getServiceName())) {
+                return vm;
+            }
+        }
 
+        return virtualMachine;
+    }
 }

@@ -125,12 +125,15 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory {
                                 ServiceTreeItem selectedObject = (ServiceTreeItem) selectedNode.getUserObject();
 
                                 JBPopupMenu menu = new JBPopupMenu();
-                                for (JBMenuItem mi : azureTreeLoader.getMenuItems(project, selectedObject, selectedNode, tree)) {
-                                    mi.setIconTextGap(16);
-                                    menu.add(mi);
-                                }
+                                JBMenuItem[] menuItems = azureTreeLoader.getMenuItems(project, selectedObject, selectedNode, tree);
+                                if(menuItems != null) {
+                                    for (JBMenuItem mi :menuItems) {
+                                        mi.setIconTextGap(16);
+                                        menu.add(mi);
+                                    }
 
-                                menu.show(mouseEvent.getComponent(), mouseEvent.getX(), mouseEvent.getY());
+                                    menu.show(mouseEvent.getComponent(), mouseEvent.getX(), mouseEvent.getY());
+                                }
                             }
                         }
 
