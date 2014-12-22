@@ -5,7 +5,7 @@
  *  you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *	 http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  *  distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,8 +16,32 @@
 
 package com.microsoftopentechnologies.intellij.model;
 
+public enum AzureType implements ServiceTreeItem {
 
-public interface MobileServiceTreeItem {
-    boolean isLoading();
-    void setLoading(boolean loading);
+    MobileServices ,
+    VirtualMachines ;
+
+    private boolean loading;
+
+    @Override
+    public void setLoading(boolean loading) {
+        this.loading = loading;
+    }
+
+    @Override
+    public boolean isLoading() {
+        return loading;
+    }
+
+    @Override
+    public String toString() {
+        switch (this) {
+            case MobileServices:
+                return "Mobile Services";
+            case VirtualMachines:
+                return "Virtual Machines";
+        }
+        return null;
+    }
+
 }
