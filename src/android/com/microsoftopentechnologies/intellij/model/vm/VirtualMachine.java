@@ -101,11 +101,6 @@ public class VirtualMachine implements ServiceTreeItem {
         return endpoints;
     }
 
-    @NotNull
-    public String getServiceName() {
-        return serviceName;
-    }
-
     @Override
     public String toString(){
         return name + (loading ? " (loading...)" : "");

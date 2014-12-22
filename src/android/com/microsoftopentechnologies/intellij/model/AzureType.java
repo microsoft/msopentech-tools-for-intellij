@@ -17,40 +17,31 @@
 package com.microsoftopentechnologies.intellij.model;
 
 public enum AzureType implements ServiceTreeItem {
-    MobileServices {
-        @Override
-        public void setLoading(boolean loading) {
-            this.loading = loading;
+
+    MobileServices ,
+    VirtualMachines ;
+
+    private boolean loading;
+
+    @Override
+    public void setLoading(boolean loading) {
+        this.loading = loading;
+    }
+
+    @Override
+    public boolean isLoading() {
+        return loading;
+    }
+
+    @Override
+    public String toString() {
+        switch (this) {
+            case MobileServices:
+                return "Mobile Services";
+            case VirtualMachines:
+                return "Virtual Machines";
         }
-
-        @Override
-        public boolean isLoading() {
-            return loading;
-        }
-
-        private boolean loading;
-
-        @Override
-        public String toString() { return "Mobile Services"; }
-
-
-    } ,
-    VirtualMachines {
-
-        @Override
-        public void setLoading(boolean loading) {
-            this.loading = loading;
-        }
-
-        @Override
-        public boolean isLoading() {
-            return loading;
-        }
-
-        private boolean loading;
-
-        @Override
-        public String toString() { return "Virtual Machines"; }
-    } ,
+        return null;
+    }
 
 }

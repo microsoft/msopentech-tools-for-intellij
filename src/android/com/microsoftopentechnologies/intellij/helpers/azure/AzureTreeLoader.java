@@ -173,7 +173,7 @@ public class AzureTreeLoader {
                                 try {
                                     progressIndicator.setIndeterminate(true);
 
-                                    final List<VirtualMachine> virtualMachines = new AzureSDKManagerImpl().getVirtualMachines(mSubscriptionId.toString());
+                                    final List<VirtualMachine> virtualMachines = AzureSDKManagerImpl.getManager().getVirtualMachines(mSubscriptionId.toString());
 
                                     ApplicationManager.getApplication().invokeLater(new Runnable() {
                                         @Override
