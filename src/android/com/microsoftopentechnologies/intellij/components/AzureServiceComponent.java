@@ -83,7 +83,7 @@ public class AzureServiceComponent implements ProjectComponent {
     }
 
     public void projectClosed() {
-        UIHelper.setProjectTree(null);
+
     }
 
     private static VirtualFileListener getVirtualFileListener() {

@@ -100,4 +100,9 @@ public class VirtualMachine implements ServiceTreeItem {
     public List<Endpoint> getEndpoints() {
         return endpoints;
     }
+
+    @Override
+    public String toString(){
+        return name + (loading ? " (loading...)" : "");
+    }
 }

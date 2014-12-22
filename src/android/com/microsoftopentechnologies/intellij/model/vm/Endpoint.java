@@ -59,4 +59,10 @@ public class Endpoint implements ServiceTreeItem {
     public int getPublicPort() {
         return publicPort;
     }
+
+    @Override
+    public String toString(){
+        return name + (loading ? " (loading...)" : "");
+    }
+
 }
