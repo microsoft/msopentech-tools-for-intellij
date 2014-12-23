@@ -17,17 +17,17 @@ package com.microsoftopentechnologies.intellij.runnable;
 
 import com.microsoftopentechnologies.intellij.wizards.WizardCacheManager;
 import com.microsoftopentechnologies.deploy.util.PublishData;
+import com.microsoftopentechnologies.intellij.util.PluginUtil;
 
 import java.io.File;
 
-import static com.microsoftopentechnologies.intellij.AzurePlugin.log;
-import static com.microsoftopentechnologies.intellij.ui.messages.AzureBundle.message;
-
 public class CacheAccountWithProgressBar extends AccountActionRunnable {
     private final File publishSettingsFile;
+	private String message;
 
 	public CacheAccountWithProgressBar(File publishSettingsFile, PublishData data, String message) {
         super(data);
+		this.message = message;
         this.publishSettingsFile = publishSettingsFile;
 	}
 
@@ -36,7 +36,7 @@ public class CacheAccountWithProgressBar extends AccountActionRunnable {
 		try {
 			WizardCacheManager.cachePublishData(publishSettingsFile, data, this);
 		} catch (Exception e) {
-			log(message("error"), e);
-		}	
+            PluginUtil.displayErrorDialogInAWTAndLog(message, e.getMessage(), e);
+		}
 	}
 }

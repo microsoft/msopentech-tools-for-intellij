@@ -49,13 +49,8 @@ public class ImportSubscriptionDialog extends DialogWrapper {
         setTitle(AzureBundle.message("impSubDlgTtl"));
         FileChooserDescriptor fileChooserDescriptor = new FileChooserDescriptor(true, false, false, false, false, false) {
             @Override
-            public boolean isFileVisible(VirtualFile file, boolean showHiddenFiles) {
-                return file.isDirectory() || (file.getExtension() != null && file.getExtension().equals("publishsettings"));
-            }
-
-            @Override
             public boolean isFileSelectable(VirtualFile file) {
-                return (file.getExtension() != null && file.getExtension().equals("publishsettings"));
+                return !file.isDirectory();
             }
         };
         publishSettingsPath.addActionListener(UIUtils.createFileChooserListener(publishSettingsPath, null, fileChooserDescriptor));

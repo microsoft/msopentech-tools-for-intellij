@@ -178,22 +178,7 @@ public class UIUtils {
             PluginUtil.displayErrorDialog(message("importDlgTitle"), String.format(message("importDlgMsg"), file.getName(), message("failedToParse")));
             return null;
         }
-        String subscriptionId;
-        try {
-            subscriptionId = installPublishSettings(file, data.getSubscriptionIds().get(0), null);
-        } catch (Exception e) {
-            String errorMessage;
-            Throwable cause = e.getCause();
-            if (e instanceof RuntimeException && cause != null && cause instanceof ClassNotFoundException
-                    && "Could not create keystore from publishsettings file.Make sure java versions less than 1.7 has bouncycastle jar in classpath"
-                    .equals(e.getMessage())) {
-                errorMessage = message("importDlgMsgJavaVersion");
-            } else {
-                errorMessage = message("importDlgMsg");
-            }
-            PluginUtil.displayErrorDialog(message("importDlgTitle"), String.format(errorMessage, file.getName(), message("failedToParse")));
-            return null;
-        }
+        String subscriptionId = data.getSubscriptionIds().get(0);
         if (WizardCacheManager.findPublishDataBySubscriptionId(subscriptionId) != null) {
             PluginUtil.displayInfoDialog(message("loadingCred"), message("credentialsExist"));
         }
@@ -242,31 +227,6 @@ public class UIUtils {
         }
         publishData.setPublishProfile(profile);
         return publishData;
-    }
-
-    public static String installPublishSettings(File file, String subscriptionId, String password) throws Exception {
-        if (password == null && file.getName().endsWith(message("publishSettExt"))) {
-            log(Thread.currentThread().getContextClassLoader().getClass().getName());
-            // Get current context class loader
-            ClassLoader contextLoader = Thread.currentThread().getContextClassLoader();
-            try {
-                // Change context classloader to class context loader
-                Thread.currentThread().setContextClassLoader(WindowsAzureRestUtils.class.getClassLoader());
-                Configuration configuration = PublishSettingsLoader.createManagementConfiguration(file.getPath(), subscriptionId);
-                // Call Azure API and reset back the context loader
-                Thread.currentThread().setContextClassLoader(contextLoader);
-                String sId = (String) configuration.getProperty(ManagementConfiguration.SUBSCRIPTION_ID);
-                log("SubscriptionId is: " + sId);
-                return sId;
-            } catch (Exception ex) {
-                log(message("error"), ex);
-                throw ex;
-            } finally {
-                // Call Azure API and reset back the context loader
-                Thread.currentThread().setContextClassLoader(contextLoader);
-            }
-        }
-        return null;
     }
 
     /**

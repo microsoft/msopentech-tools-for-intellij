@@ -372,12 +372,7 @@ public class DeployWizardDialog extends WindowsAzurePage {
     private void importBtn(String fileName) {
         if (fileName != null && !fileName.isEmpty()) {
             File file = new File(fileName);
-            PublishData publishDataToCache = null;
-            if (file.getName().endsWith(message("publishSettExt"))) {
-                publishDataToCache = handlePublishSettings(file);
-            }/* else {
-                publishDataToCache = handlePfx(file);
-            }*/
+            PublishData publishDataToCache = MethodUtils.handlePublishSettings(file, myModule.getProject());
             if (publishDataToCache == null) {
                 return;
             }
@@ -401,37 +396,6 @@ public class DeployWizardDialog extends WindowsAzurePage {
 //            // Make centralized storage registry.
 //            MethodUtils.prepareListFromPublishData();
         }
-    }
-
-    private PublishData handlePublishSettings(File file) {
-        PublishData data = UIUtils.createPublishDataObj(file);
-		/*
-		 * If data is equal to null,
-		 * then publish settings file already exists.
-		 * So don't load information again.
-		 */
-        if (data != null) {
-            AccountActionRunnable settings = new CacheAccountWithProgressBar(file, data, null);
-            doLoad(file, settings);
-        }
-        return data;
-    }
-
-    private void doLoad(File file, AccountActionRunnable settings) {
-        ProgressManager.getInstance().runProcessWithProgressSynchronously(settings, "Loading Account Settings...", true, myModule.getProject());
-//        try {
-//            getContainer().run(true, true, settings);
-        AzureSettings.getSafeInstance(myModule.getProject()).savePublishDatas();
-//        } catch (InvocationTargetException e) {
-//            String message = null;
-//            if (e.getMessage() == null) {
-//                message = message("genericErrorWhileLoadingCred");
-//            } else {
-//                message = e.getMessage();
-//            }
-//            PluginUtil.displayErrorDialog(null, message("importDlgTitle"), String.format(message("importDlgMsg"), file.getName(), message));
-//        } catch (InterruptedException e) {
-//        }
     }
 
     /**

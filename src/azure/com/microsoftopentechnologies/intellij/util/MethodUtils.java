@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.List;
 
 import com.microsoftopentechnologies.intellij.runnable.AccountActionRunnable;
+import com.microsoftopentechnologies.intellij.runnable.CacheAccountWithProgressBar;
 import com.microsoftopentechnologies.intellij.runnable.LoadAccountWithProgressBar;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
@@ -35,7 +36,6 @@ import com.microsoftopentechnologies.intellij.ui.util.UIUtils;
 import com.microsoftopentechnologies.storageregistry.StorageAccount;
 import com.microsoftopentechnologies.storageregistry.StorageAccountRegistry;
 
-import com.microsoftopentechnologies.intellij.runnable.CacheAccountWithProgressWindow;
 import com.microsoftopentechnologies.intellij.wizards.WizardCacheManager;
 import org.jetbrains.annotations.NotNull;
 
@@ -56,10 +56,7 @@ public class MethodUtils {
 	public static void handleFile(String fileName, Project project) {
 		if (fileName != null && !fileName.isEmpty()) {
 			File file = new File(fileName);
-			PublishData publishDataToCache = null;
-			if (file.getName().endsWith(message("publishSettExt"))) {
-				publishDataToCache = handlePublishSettings(file, project);
-			}
+			PublishData publishDataToCache = handlePublishSettings(file, project);
 			if (publishDataToCache == null) {
 				return;
 			}
@@ -80,7 +77,7 @@ public class MethodUtils {
 		 * So don't load information again.
 		 */
 		if (data != null) {
-            AccountActionRunnable settings = new CacheAccountWithProgressWindow(file, data, message("loadingCred"));
+            AccountActionRunnable settings = new CacheAccountWithProgressBar(file, data, message("loadingCred"));
             ProgressManager.getInstance().runProcessWithProgressSynchronously(settings, "Loading Account Settings...", true, project);
             AzureSettings.getSafeInstance(project).savePublishDatas();
 		}
