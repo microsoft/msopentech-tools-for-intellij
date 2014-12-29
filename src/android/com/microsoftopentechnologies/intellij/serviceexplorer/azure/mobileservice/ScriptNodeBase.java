@@ -58,6 +58,9 @@ public class ScriptNodeBase extends Node {
 
         if (!fileIsEditing) {
             try {
+                // mark node as undergoing a "load"
+                setLoading(true);
+
                 File temppath = new File(script.getLocalDirPath(mobileService.getName()));
                 temppath.mkdirs();
 
@@ -94,6 +97,9 @@ public class ScriptNodeBase extends Node {
                                 }
                             } catch (Throwable e) {
                                 UIHelper.showException("Error writing temporal editable file:", e);
+                            }
+                            finally {
+                                setLoading(false);
                             }
                         }
                     });
@@ -137,6 +143,9 @@ public class ScriptNodeBase extends Node {
                                 } catch (Throwable e) {
                                     UIHelper.showException("Error writing temporal editable file:", e);
                                 }
+                                finally {
+                                    setLoading(false);
+                                }
                             }
                         });
                     } else {
@@ -144,7 +153,12 @@ public class ScriptNodeBase extends Node {
                         ApplicationManager.getApplication().runReadAction(new Runnable() {
                             @Override
                             public void run() {
-                                openFile(finalEditfile, script);
+                                try {
+                                    openFile(finalEditfile, script);
+                                }
+                                finally {
+                                    setLoading(false);
+                                }
                             }
                         });
                     }
@@ -152,6 +166,7 @@ public class ScriptNodeBase extends Node {
             }
             catch (Throwable e) {
                 UIHelper.showException("Error writing temporal editable file:", e);
+                setLoading(false);
             }
         }
     }

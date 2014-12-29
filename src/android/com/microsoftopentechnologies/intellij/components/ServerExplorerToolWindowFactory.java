@@ -322,7 +322,6 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
                             azureServiceModule.load();
                         }
                     });
-
         }
     }
 }

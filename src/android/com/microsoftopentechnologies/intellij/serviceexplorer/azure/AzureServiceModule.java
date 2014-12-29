@@ -17,9 +17,15 @@
 package com.microsoftopentechnologies.intellij.serviceexplorer.azure;
 
 import com.intellij.openapi.project.Project;
+import com.microsoftopentechnologies.intellij.forms.ManageSubscriptionForm;
+import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.serviceexplorer.Node;
+import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionEvent;
+import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionListener;
 import com.microsoftopentechnologies.intellij.serviceexplorer.azure.mobileservice.MobileServiceModule;
 import com.microsoftopentechnologies.intellij.serviceexplorer.azure.vm.VMServiceModule;
+
+import java.util.Map;
 
 public class AzureServiceModule extends Node {
     private static final String AZURE_SERVICE_MODULE_ID = AzureServiceModule.class.getName();
@@ -37,6 +43,23 @@ public class AzureServiceModule extends Node {
 
     public AzureServiceModule(Node parent, String iconPath, Object data) {
         super(AZURE_SERVICE_MODULE_ID, BASE_MODULE_NAME, parent, iconPath, true);
+    }
+
+    @Override
+    protected Map<String, Class<? extends NodeActionListener>> initActions() {
+        // register the "manage subscriptions" action
+        addAction("Manage subscriptions", new ManageSubscriptionsAction());
+        return null;
+    }
+
+    public class ManageSubscriptionsAction extends NodeActionListener {
+        @Override
+        public void actionPerformed(NodeActionEvent e) {
+            ManageSubscriptionForm form = new ManageSubscriptionForm(getProject());
+            UIHelper.packAndCenterJDialog(form);
+            form.setVisible(true);
+            load();
+        }
     }
 
     @Override
