@@ -37,7 +37,7 @@ public class VMServiceModule extends Node {
 
     @Override
     protected void refreshItems() throws AzureCmdException {
-        // remove all child mobile service nodes
+        // remove all child nodes
         removeAllChildNodes();
 
         // load all VMs

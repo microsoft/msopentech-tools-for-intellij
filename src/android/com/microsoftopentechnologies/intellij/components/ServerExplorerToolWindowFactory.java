@@ -107,7 +107,11 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
 
         // delegate click to the node's click action if this is a left button click
         if(SwingUtilities.isLeftMouseButton(e)) {
-            node.getClickAction().fireNodeActionEvent();
+            // if the node in question is in a "loading" state then we
+            // do not propagate the click event to it
+            if(!node.isLoading()) {
+                node.getClickAction().fireNodeActionEvent();
+            }
         }
         // for right click show the context menu populated with all the
         // actions from the node
