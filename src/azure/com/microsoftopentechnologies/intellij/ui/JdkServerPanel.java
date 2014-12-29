@@ -365,7 +365,7 @@ public class JdkServerPanel {
         jdkPath.getTextField().getDocument().addDocumentListener(createJdkPathListener());
         uploadLocalJdk.addActionListener(createUploadLocalJdkListener());
         uploadLocalJdk.setSelected(true);
-        setEnableDlGrp(false, false);
+        jdkChkBoxUnChecked();
         serverPath.addBrowseFolderListener(new TextBrowseFolderListener(FileChooserDescriptorFactory.createSingleFolderDescriptor()) {
             protected void onFileChoosen(@NotNull VirtualFile chosenFile) {
                 super.onFileChoosen(chosenFile);
