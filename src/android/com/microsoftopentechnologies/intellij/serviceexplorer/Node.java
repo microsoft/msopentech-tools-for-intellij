@@ -50,6 +50,11 @@ public class Node {
     protected NodeAction clickAction = new NodeAction(this, CLICK_ACTION);
     protected List<NodeAction> nodeActions = new ArrayList<NodeAction>();
 
+    // marks this node as being in a "loading" state; one consequence of
+    // setting this to true is that all actions associated with this node
+    // get disabled automatically
+    protected boolean loading = false;
+
     protected PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
     public Node(String id, String name) {
@@ -61,24 +66,6 @@ public class Node {
         this.name = name;
         this.parent = parent;
         this.iconPath = iconPath;
-
-        // add the refresh node action
-        if(hasRefreshAction) {
-            addAction("Refresh", new NodeActionListener() {
-                @Override
-                public void actionPerformed(NodeActionEvent e) {
-                    Futures.addCallback(load(), new FutureCallback<List<Node>>() {
-                        @Override
-                        public void onSuccess(List<Node> nodes) {}
-
-                        @Override
-                        public void onFailure(Throwable throwable) {
-                            UIHelper.showException("An error occurred while refreshing the service.", throwable);
-                        }
-                    });
-                }
-            });
-        }
 
         // add the click action handler
         addClickActionListener(new NodeActionListener() {
@@ -112,6 +99,24 @@ public class Node {
                     UIHelper.showException(e.getMessage(), e);
                 }
             }
+        }
+
+        // add the refresh node action
+        if(hasRefreshAction) {
+            addAction("Refresh", new NodeActionListener() {
+                @Override
+                public void actionPerformed(NodeActionEvent e) {
+                    Futures.addCallback(load(), new FutureCallback<List<Node>>() {
+                        @Override
+                        public void onSuccess(List<Node> nodes) {}
+
+                        @Override
+                        public void onFailure(Throwable throwable) {
+                            UIHelper.showException("An error occurred while refreshing the service.", throwable);
+                        }
+                    });
+                }
+            });
         }
     }
 
@@ -308,8 +313,14 @@ public class Node {
     // delegates to "refreshItems" *synchronously* and completes the Future
     // with the result of calling getChildNodes.
     protected void refreshItems(SettableFuture<List<Node>> future) throws AzureCmdException {
-        refreshItems();
-        future.set(getChildNodes());
+        setLoading(true);
+        try {
+            refreshItems();
+            future.set(getChildNodes());
+        }
+        finally {
+            setLoading(false);
+        }
     }
 
     protected void runAsBackground(Runnable runnable) {
@@ -354,6 +365,14 @@ public class Node {
         });
 
         return future;
+    }
+
+    public boolean isLoading() {
+        return loading;
+    }
+
+    public void setLoading(boolean loading) {
+        this.loading = loading;
     }
 
     class BackgroundLoader extends Task.Backgroundable {

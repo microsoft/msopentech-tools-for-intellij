@@ -56,7 +56,10 @@ public class NodeAction {
     }
 
     public boolean isEnabled() {
-        return enabled;
+        // if the node to which this action is attached is in a
+        // "loading" state then we disable the action regardless
+        // of what "enabled" is
+        return !node.isLoading() && enabled;
     }
 
     public void setEnabled(boolean enabled) {

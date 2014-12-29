@@ -27,9 +27,4 @@ public class TableColumnNode extends Node {
         super(column.getName(), column.toString(), parent, ICON_PATH, false);
         this.column = column;
     }
-
-    @Override
-    protected void refreshItems() {
-        // TODO:
-    }
 }

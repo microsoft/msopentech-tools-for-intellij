@@ -130,6 +130,9 @@ public class ObservableList<E> extends ForwardingList<E> {
     }
 
     public void removeAllChangeListeners() {
+        // we remove items from the collection one by one instead
+        // of simply calling "clear" because we want the "remove" event
+        // to fire for each item that's removed
         while(!changeListeners.isEmpty()) {
             changeListeners.remove(0);
         }

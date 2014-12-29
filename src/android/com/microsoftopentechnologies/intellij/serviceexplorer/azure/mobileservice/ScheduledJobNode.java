@@ -50,11 +50,6 @@ public class ScheduledJobNode extends ScriptNodeBase {
     }
 
     @Override
-    protected void refreshItems() {
-        // TODO:
-    }
-
-    @Override
     protected Map<String, Class<? extends NodeActionListener>> initActions() {
         // register actions
         return ImmutableMap.of(
