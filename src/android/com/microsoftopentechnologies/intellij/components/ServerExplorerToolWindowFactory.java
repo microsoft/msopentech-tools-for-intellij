@@ -17,147 +17,292 @@
 package com.microsoftopentechnologies.intellij.components;
 
 import com.intellij.icons.AllIcons;
+import com.intellij.ide.util.treeView.NodeRenderer;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.progress.ProgressIndicator;
-import com.intellij.openapi.progress.ProgressManager;
-import com.intellij.openapi.progress.Task;
+import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.JBMenuItem;
-import com.intellij.openapi.ui.JBPopupMenu;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.openapi.wm.ex.ToolWindowEx;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.treeStructure.Tree;
-import com.microsoftopentechnologies.intellij.forms.*;
+import com.microsoftopentechnologies.intellij.forms.ManageSubscriptionForm;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
-import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIManager;
-import com.microsoftopentechnologies.intellij.helpers.azure.AzureTreeLoader;
-import com.microsoftopentechnologies.intellij.model.*;
+import com.microsoftopentechnologies.intellij.helpers.collections.ListChangeListener;
+import com.microsoftopentechnologies.intellij.helpers.collections.ListChangedEvent;
+import com.microsoftopentechnologies.intellij.helpers.collections.ObservableList;
+import com.microsoftopentechnologies.intellij.serviceexplorer.azure.AzureServiceModule;
+import com.microsoftopentechnologies.intellij.serviceexplorer.Node;
+import com.microsoftopentechnologies.intellij.serviceexplorer.NodeAction;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreePath;
+import javax.swing.tree.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.net.URL;
+import java.util.Collection;
 
-public class ServerExplorerToolWindowFactory implements ToolWindowFactory {
-    private boolean isRefreshEnabled;
-    private JPanel treePanel;
-    private JLabel loading;
+public class ServerExplorerToolWindowFactory implements ToolWindowFactory, PropertyChangeListener {
+    private JTree tree;
+    private AzureServiceModule azureServiceModule;
+    private DefaultTreeModel treeModel;
 
     @Override
-    public void createToolWindowContent(final Project project, final ToolWindow toolWindow) {
-        isRefreshEnabled = true;
+    public void createToolWindowContent(@NotNull final Project project, @NotNull final ToolWindow toolWindow) {
+        // initialize azure service module
+        azureServiceModule = new AzureServiceModule(project);
 
-        treePanel = new JPanel(new GridBagLayout());
-        loading = new JLabel("Loading services...");
+        // initialize with all the service modules
+        treeModel = new DefaultTreeModel(initRoot());
 
-        final JComponent toolWindowComponent = toolWindow.getComponent();
+        // initialize tree
+        tree = new Tree(treeModel);
+        tree.setRootVisible(false);
+        tree.setCellRenderer(new NodeTreeCellRenderer());
+        tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 
-        final Tree tree = new Tree();
-
-        tree.addMouseListener(new MouseListener() {
+        // add a click handler for the tree
+        tree.addMouseListener(new MouseAdapter() {
             @Override
-            public void mouseClicked(MouseEvent mouseEvent) {
-            }
-
-            @Override
-            public void mousePressed(MouseEvent mouseEvent) {
-                int selRow = tree.getRowForLocation(mouseEvent.getX(), mouseEvent.getY());
-                TreePath selPath = tree.getPathForLocation(mouseEvent.getX(), mouseEvent.getY());
-
-                if (selPath != null && selRow != -1) {
-                    DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) selPath.getLastPathComponent();
-                    if (selectedNode != null) {
-
-                        AzureTreeLoader azureTreeLoader = new AzureTreeLoader(project, tree);
-
-                        if (SwingUtilities.isLeftMouseButton(mouseEvent)) {
-                            azureTreeLoader.treeClick(selectedNode);
-                        }
-
-
-                        if (SwingUtilities.isRightMouseButton(mouseEvent) || mouseEvent.isPopupTrigger()) {
-                            if (selectedNode.getUserObject() instanceof Subscription) {
-
-                                JBPopupMenu menu = new JBPopupMenu();
-                                JMenuItem mi = new JMenuItem("Create Service");
-                                mi.addActionListener(new ActionListener() {
-                                    @Override
-                                    public void actionPerformed(ActionEvent actionEvent) {
-                                        CreateNewServiceForm form = new CreateNewServiceForm();
-                                        form.setServiceCreated(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                ApplicationManager.getApplication().invokeLater(new Runnable() {
-                                                    @Override
-                                                    public void run() {
-                                                        loadTree(project, tree);
-                                                    }
-                                                });
-                                            }
-                                        });
-
-                                        form.setModal(true);
-                                        UIHelper.packAndCenterJDialog(form);
-                                        form.setVisible(true);
-                                    }
-                                });
-                                mi.setIconTextGap(16);
-                                menu.add(mi);
-
-                                menu.show(mouseEvent.getComponent(), mouseEvent.getX(), mouseEvent.getY());
-
-                            } else if (selectedNode.getUserObject() instanceof ServiceTreeItem) {
-                                ServiceTreeItem selectedObject = (ServiceTreeItem) selectedNode.getUserObject();
-
-                                JBPopupMenu menu = new JBPopupMenu();
-                                JBMenuItem[] menuItems = azureTreeLoader.getMenuItems(project, selectedObject, selectedNode, tree);
-                                if(menuItems != null) {
-                                    for (JBMenuItem mi :menuItems) {
-                                        mi.setIconTextGap(16);
-                                        menu.add(mi);
-                                    }
-
-                                    menu.show(mouseEvent.getComponent(), mouseEvent.getX(), mouseEvent.getY());
-                                }
-                            }
-                        }
-
-
-                    }
-                }
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent mouseEvent) {
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent mouseEvent) {
-            }
-
-            @Override
-            public void mouseExited(MouseEvent mouseEvent) {
+            public void mousePressed(MouseEvent e) {
+                treeMousePressed(e);
             }
         });
 
-        tree.setCellRenderer(AzureTreeLoader.getTreeNodeRenderer());
-        tree.setRootVisible(false);
+        // add the tree to the window
+        toolWindow.getComponent().add(new JBScrollPane(tree));
 
+        // setup toolbar icons
+        addToolbarItems(toolWindow);
+    }
+
+    private DefaultMutableTreeNode initRoot() {
+        DefaultMutableTreeNode root = new DefaultMutableTreeNode();
+
+        // add the azure service root service module
+        root.add(createTreeNode(azureServiceModule));
+
+        // kick-off asynchronous load of child nodes on all the modules
+        azureServiceModule.load();
+
+        return root;
+    }
+
+    private void treeMousePressed(MouseEvent e) {
+        // get the tree node associated with this mouse click
+        TreePath treePath = tree.getPathForLocation(e.getX(), e.getY());
+        if(treePath == null)
+            return;
+
+        DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode)treePath.getLastPathComponent();
+        Node node = (Node)treeNode.getUserObject();
+
+        // delegate click to the node's click action if this is a left button click
+        if(SwingUtilities.isLeftMouseButton(e)) {
+            // if the node in question is in a "loading" state then we
+            // do not propagate the click event to it
+            if(!node.isLoading()) {
+                node.getClickAction().fireNodeActionEvent();
+            }
+        }
+        // for right click show the context menu populated with all the
+        // actions from the node
+        else if(SwingUtilities.isRightMouseButton(e) || e.isPopupTrigger()) {
+            if(node.hasNodeActions()) {
+                // select the node which was right-clicked
+                tree.getSelectionModel().setSelectionPath(treePath);
+
+                JPopupMenu menu = createPopupMenuForNode(node);
+                menu.show(e.getComponent(), e.getX(), e.getY());
+            }
+        }
+    }
+
+    private JPopupMenu createPopupMenuForNode(Node node) {
+        JPopupMenu menu = new JPopupMenu();
+
+        for(final NodeAction nodeAction : node.getNodeActions()) {
+            JMenuItem menuItem = new JMenuItem(nodeAction.getName());
+            menuItem.setIconTextGap(16);
+            menuItem.setEnabled(nodeAction.isEnabled());
+
+            // delegate the menu item click to the node action's listeners
+            menuItem.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    nodeAction.fireNodeActionEvent();
+                }
+            });
+
+            menu.add(menuItem);
+        }
+
+        return menu;
+    }
+
+    private DefaultMutableTreeNode createTreeNode(Node node) {
+        DefaultMutableTreeNode treeNode = new DefaultMutableTreeNode(node, true);
+
+        // associate the DefaultMutableTreeNode with the Node via it's "viewData"
+        // property; this allows us to quickly retrieve the DefaultMutableTreeNode
+        // object associated with a Node
+        node.setViewData(treeNode);
+
+        // listen for property change events on the node
+        node.addPropertyChangeListener(this);
+
+        // listen for structure changes on the node, i.e. when child nodes are
+        // added or removed
+        node.getChildNodes().addChangeListener(new NodeListChangeListener(treeNode));
+
+        // create child tree nodes for each child node
+        if(node.hasChildNodes()) {
+            for (Node childNode : node.getChildNodes()) {
+                treeNode.add(createTreeNode(childNode));
+            }
+        }
+
+        return treeNode;
+    }
+
+    private void removeEventHandlers(Node node) {
+        node.removePropertyChangeListener(this);
+
+        ObservableList<Node> childNodes = node.getChildNodes();
+        childNodes.removeAllChangeListeners();
+
+        if(node.hasChildNodes()) {
+            // this remove call should cause the NodeListChangeListener object
+            // registered on it's child nodes to fire which should recursively
+            // clean up event handlers on it's children
+            node.removeAllChildNodes();
+        }
+    }
+
+    @Override
+    public void propertyChange(final PropertyChangeEvent evt) {
+        // if we are not running on the dispatch thread then switch
+        // to dispatch thread
+        if(!ApplicationManager.getApplication().isDispatchThread()) {
+            ApplicationManager.getApplication().invokeAndWait(new Runnable() {
+                @Override
+                public void run() {
+                    propertyChange(evt);
+                }
+            }, ModalityState.any());
+
+            return;
+        }
+
+        // this event is fired whenever a property on a node in the
+        // model changes; we respond by triggering a node change
+        // event in the tree's model
+        Node node = (Node)evt.getSource();
+
+        // the treeModel object can be null before it is initialized
+        // from createToolWindowContent; we ignore property change
+        // notifications till we have a valid model object
+        if(treeModel != null) {
+            treeModel.nodeChanged((TreeNode) node.getViewData());
+        }
+    }
+
+    private class NodeListChangeListener implements ListChangeListener {
+        private DefaultMutableTreeNode treeNode;
+
+        public NodeListChangeListener(DefaultMutableTreeNode treeNode) {
+            this.treeNode = treeNode;
+        }
+
+        @Override
+        public void listChanged(final ListChangedEvent e) {
+            // if we are not running on the dispatch thread then switch
+            // to dispatch thread
+            if(!ApplicationManager.getApplication().isDispatchThread()) {
+                ApplicationManager.getApplication().invokeAndWait(new Runnable() {
+                    @Override
+                    public void run() {
+                        listChanged(e);
+                    }
+                }, ModalityState.any());
+
+                return;
+            }
+
+            switch (e.getAction()) {
+                case add:
+                    // create child tree nodes for the new nodes
+                    for(Node childNode : (Collection<Node>)e.getNewItems()) {
+                        treeNode.add(createTreeNode(childNode));
+                    }
+                    break;
+                case remove:
+                    // unregister all event handlers recursively and remove
+                    // child nodes from the tree
+                    for(Node childNode : (Collection<Node>)e.getOldItems()) {
+                        removeEventHandlers(childNode);
+
+                        // remove this node from the tree
+                        treeNode.remove((MutableTreeNode) childNode.getViewData());
+                    }
+                    break;
+            }
+
+            treeModel.reload(treeNode);
+        }
+    }
+
+    private class NodeTreeCellRenderer extends NodeRenderer {
+        @Override
+        protected void doPaint(Graphics2D g) {
+            super.doPaint(g);
+            setOpaque(false);
+        }
+
+        @Override
+        public void customizeCellRenderer(JTree jTree,
+                                          Object value,
+                                          boolean selected,
+                                          boolean expanded,
+                                          boolean isLeaf,
+                                          int row,
+                                          boolean focused) {
+            super.customizeCellRenderer(tree, value, selected, expanded, isLeaf, row, focused);
+
+            // if the node has an icon set then we use that
+            DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode)value;
+            Node node = (Node)treeNode.getUserObject();
+
+            // "node" can be null if it's the root node which we keep hidden to simulate
+            // a multi-root tree control
+            if(node == null) {
+                return;
+            }
+
+            String iconPath = node.getIconPath();
+            if(iconPath != null && !iconPath.isEmpty()) {
+                setIcon(loadIcon(iconPath));
+            }
+
+            // setup a tooltip
+            setToolTipText(node.getName());
+        }
+
+        private ImageIcon loadIcon(String iconPath) {
+            URL url = NodeTreeCellRenderer.class.getResource("/com/microsoftopentechnologies/intellij/icons/" + iconPath);
+            return new ImageIcon(url);
+        }
+    }
+
+    private void addToolbarItems(ToolWindow toolWindow) {
         if (toolWindow instanceof ToolWindowEx) {
             ToolWindowEx toolWindowEx = (ToolWindowEx) toolWindow;
 
@@ -165,7 +310,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory {
                     new AnAction("Refresh", "Refresh Service List", UIHelper.loadIcon("refresh.png")) {
                         @Override
                         public void actionPerformed(AnActionEvent event) {
-                            loadTree(project, tree);
+                            azureServiceModule.load();
                         }
                     },
                     new AnAction("Manage Subscriptions", "Manage Subscriptions", AllIcons.Ide.Link) {
@@ -174,93 +319,9 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory {
                             ManageSubscriptionForm form = new ManageSubscriptionForm(anActionEvent.getProject());
                             UIHelper.packAndCenterJDialog(form);
                             form.setVisible(true);
-                            loadTree(project, tree);
+                            azureServiceModule.load();
                         }
                     });
-
-        }
-
-        GridBagConstraints c = new GridBagConstraints();
-        c.gridx = 0;
-        c.gridy = 0;
-        c.weightx = 1;
-        c.weighty = 1;
-        c.fill = GridBagConstraints.BOTH;
-        c.anchor = GridBagConstraints.NORTHWEST;
-
-        treePanel.add(tree, c);
-
-        c = new GridBagConstraints();
-        c.gridx = 0;
-        c.gridy = 1;
-        c.weightx = 0;
-        c.weighty = 0;
-        c.fill = GridBagConstraints.BOTH;
-        c.anchor = GridBagConstraints.CENTER;
-        treePanel.add(loading, c);
-
-        tree.setVisible(false);
-        loading.setVisible(false);
-
-        toolWindowComponent.add(new JBScrollPane(treePanel));
-
-        loadTree(project, tree);
-    }
-
-    private void loadTree(Project project, final JTree tree) {
-        final ServerExplorerToolWindowFactory toolWindowFactory = this;
-
-        if (isRefreshEnabled) {
-            toolWindowFactory.isRefreshEnabled = false;
-
-            final DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
-            final DefaultMutableTreeNode root = (DefaultMutableTreeNode) tree.getModel().getRoot();
-            root.removeAllChildren();
-            model.reload(root);
-
-            tree.setVisible(false);
-            loading.setVisible(true);
-
-            ProgressManager.getInstance().run(new Task.Backgroundable(project, "Loading Subscriptions...", false) {
-                @Override
-                public void run(@NotNull ProgressIndicator progressIndicator) {
-                    try {
-                        progressIndicator.setIndeterminate(true);
-
-                        final ArrayList<Subscription> subscriptionList = AzureRestAPIManager.getManager().getSubscriptionList();
-
-                        ApplicationManager.getApplication().invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                for (Subscription subscription : subscriptionList) {
-
-                                    DefaultMutableTreeNode subscriptionNode = new DefaultMutableTreeNode(subscription.getName());
-                                    subscriptionNode.setUserObject(subscription);
-                                    root.add(subscriptionNode);
-                                    model.reload(root);
-
-                                    for (AzureType type : AzureType.values()) {
-                                        DefaultMutableTreeNode serviceTree = new DefaultMutableTreeNode(type.toString());
-                                        serviceTree.setUserObject(type);
-                                        subscriptionNode.add(serviceTree);
-                                        model.reload(subscriptionNode);
-                                    }
-
-                                }
-                                toolWindowFactory.isRefreshEnabled = true;
-                                loading.setVisible(false);
-                                tree.setVisible(true);
-                            }
-                        });
-
-                    } catch (AzureCmdException e) {
-                        UIHelper.showException("Error querying mobile services data", e);
-                    }
-                }
-            });
-
         }
     }
-
-
 }

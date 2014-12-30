@@ -15,7 +15,6 @@
  */
 package com.microsoftopentechnologies.intellij.helpers;
 
-import com.intellij.ide.util.treeView.NodeRenderer;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
@@ -28,15 +27,12 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoftopentechnologies.intellij.forms.ErrorMessageForm;
 import com.microsoftopentechnologies.intellij.forms.ImportSubscriptionForm;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIManager;
-import com.microsoftopentechnologies.intellij.helpers.azure.AzureTreeLoader;
 import com.microsoftopentechnologies.intellij.model.*;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
 import java.awt.*;
 import java.io.File;
 import java.io.PrintWriter;
