@@ -297,11 +297,18 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
                 throw new Exception("Unable to retrieve Virtual Machine information");
             }
 
-            VirtualMachineGetRemoteDesktopFileResponse vmgrdfr = vmo.getRemoteDesktopFile(vm.getServiceName(), vm.getDeploymentName(), vm.getName());
+            VirtualMachineGetRemoteDesktopFileResponse vmgrdfr = vmo.getRemoteDesktopFile(
+                    vm.getServiceName(),
+                    vm.getDeploymentName(),
+                    vm.getName());
+
+            if (vmgrdfr == null) {
+                throw new Exception("Unable to retrieve RDP information");
+            }
 
             byte[] remoteDesktopFile = vmgrdfr.getRemoteDesktopFile();
 
-            if (vmgrdfr == null || remoteDesktopFile == null) {
+            if (remoteDesktopFile == null) {
                 throw new Exception("Unable to retrieve RDP information");
             }
 
