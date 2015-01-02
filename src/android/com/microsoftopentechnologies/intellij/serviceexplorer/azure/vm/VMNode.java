@@ -13,7 +13,6 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-
 package com.microsoftopentechnologies.intellij.serviceexplorer.azure.vm;
 
 import com.google.common.collect.ImmutableMap;
@@ -57,9 +56,9 @@ public class VMNode extends Node {
 
     private String getVMIconPath() {
         String status = virtualMachine.getStatus();
-        if(status.equals(VM_STATUS_RUNNING))
+        if (status.equals(VM_STATUS_RUNNING))
             return RUN_ICON_PATH;
-        if(status.equals(VM_STATUS_SUSPENDED))
+        if (status.equals(VM_STATUS_SUSPENDED))
             return STOP_ICON_PATH;
         return WAIT_ICON_PATH;
     }
@@ -67,8 +66,7 @@ public class VMNode extends Node {
     @Override
     protected void refreshItems() throws AzureCmdException {
         // update vm name and status icon
-        virtualMachine = AzureSDKManagerImpl.getManager().getVirtualMachineByServiceName(
-                virtualMachine.getSubscriptionId(), virtualMachine.getServiceName());
+        virtualMachine = AzureSDKManagerImpl.getManager().refreshVirtualMachineInformation(virtualMachine);
 
         refreshItemsInternal();
     }
@@ -80,7 +78,8 @@ public class VMNode extends Node {
 
         // load up the endpoint nodes
         removeAllChildNodes();
-        for(Endpoint endpoint : virtualMachine.getEndpoints()) {
+
+        for (Endpoint endpoint : virtualMachine.getEndpoints()) {
             VMEndpointNode vmEndPoint = new VMEndpointNode(this, endpoint);
             addChildNode(vmEndPoint);
             vmEndPoint.refreshItems();
@@ -136,7 +135,6 @@ public class VMNode extends Node {
                         } catch (AzureCmdException ex) {
                             UIHelper.showException("Error deleting virtual machine", ex);
                         }
-
                     }
                 });
             }

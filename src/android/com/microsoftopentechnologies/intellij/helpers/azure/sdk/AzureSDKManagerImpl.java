@@ -15,8 +15,6 @@
  */
 package com.microsoftopentechnologies.intellij.helpers.azure.sdk;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
 import com.microsoft.windowsazure.core.OperationStatusResponse;
 import com.microsoft.windowsazure.exception.ServiceException;
 import com.microsoft.windowsazure.management.compute.ComputeManagementClient;
@@ -104,14 +102,53 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     }
 
     @Override
-    public VirtualMachine getVirtualMachineByServiceName(@NotNull String subscriptionId, @NotNull final String serviceName) throws AzureCmdException {
-        List<VirtualMachine> vmList = getVirtualMachines(subscriptionId);
-        return Iterables.tryFind(vmList, new Predicate<VirtualMachine>() {
-            @Override
-            public boolean apply(@Nullable VirtualMachine virtualMachine) {
-                return serviceName.equals(virtualMachine.getServiceName());
+    @NotNull
+    public VirtualMachine refreshVirtualMachineInformation(@NotNull VirtualMachine vm) throws AzureCmdException {
+        ComputeManagementClient client = null;
+
+        try {
+            client = AzureSDKHelper.getComputeManagementClient(vm.getSubscriptionId());
+
+            if (client == null) {
+                throw new Exception("Unable to instantiate Compute Management client");
             }
-        }).orNull();
+
+            VirtualMachineOperations vmo = client.getVirtualMachinesOperations();
+
+            if (vmo == null) {
+                throw new Exception("Unable to retrieve Virtual Machines information");
+            }
+
+            VirtualMachineGetResponse vmgr = vmo.get(vm.getServiceName(), vm.getDeploymentName(), vm.getName());
+
+            if (vmgr == null) {
+                throw new Exception("Unable to retrieve Virtual Machine information");
+            }
+
+            DeploymentGetResponse deployment = getDeployment(client, vm.getServiceName(), vm.getDeploymentName());
+
+            if (deployment == null) {
+                throw new Exception("Invalid Virtual Machine information. No Deployment matches the VM data.");
+            }
+
+            vm.setDns(deployment.getUri() != null ? deployment.getUri().toString() : "");
+            vm.setEnvironment(deployment.getDeploymentSlot() != null ? deployment.getDeploymentSlot().toString() : "");
+            vm.setSize(vmgr.getRoleSize() != null ? vmgr.getRoleSize() : "");
+            vm.setStatus(deployment.getStatus() != null ? deployment.getStatus().toString() : "");
+
+            vm = refreshEndpoints(vmgr, vm);
+        } catch (Throwable t) {
+            throw new AzureCmdException("Error starting the VM", t);
+        } finally {
+            if (client != null) {
+                try {
+                    client.close();
+                } catch (IOException ignored) {
+                }
+            }
+        }
+
+        return vm;
     }
 
     @Override
@@ -405,9 +442,25 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
             return vm;
         }
 
+        return loadEndpoints(vm, role.getConfigurationSets());
+    }
+
+    @NotNull
+    private static VirtualMachine refreshEndpoints(@NotNull VirtualMachineGetResponse vmgr, @NotNull VirtualMachine vm) {
+        vm.getEndpoints().clear();
+
+        if (vmgr.getConfigurationSets() == null) {
+            return vm;
+        }
+
+        return loadEndpoints(vm, vmgr.getConfigurationSets());
+    }
+
+    @NotNull
+    private static VirtualMachine loadEndpoints(@NotNull VirtualMachine vm, @NotNull List<ConfigurationSet> configurationSets) {
         List<Endpoint> endpoints = vm.getEndpoints();
 
-        for (ConfigurationSet configurationSet : role.getConfigurationSets()) {
+        for (ConfigurationSet configurationSet : configurationSets) {
             if (configurationSet.getConfigurationSetType() != null
                     && configurationSet.getConfigurationSetType().equals(NETWORK_CONFIGURATION)
                     && configurationSet.getInputEndpoints() != null) {
