@@ -25,7 +25,8 @@ public interface AzureSDKManager {
     @NotNull
     List<VirtualMachine> getVirtualMachines(@NotNull String subscriptionId) throws AzureCmdException;
 
-    VirtualMachine getVirtualMachineByServiceName(@NotNull String subscriptionId, @NotNull String serviceName) throws AzureCmdException;
+    @NotNull
+    VirtualMachine refreshVirtualMachineInformation(@NotNull VirtualMachine vm) throws AzureCmdException;
 
     void startVirtualMachine(@NotNull VirtualMachine vm) throws AzureCmdException;
 

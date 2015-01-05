@@ -15,8 +15,6 @@
  */
 package com.microsoftopentechnologies.intellij.helpers.azure.sdk;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
 import com.microsoft.windowsazure.core.OperationStatusResponse;
 import com.microsoft.windowsazure.exception.ServiceException;
 import com.microsoft.windowsazure.management.compute.ComputeManagementClient;
@@ -104,14 +102,61 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     }
 
     @Override
-    public VirtualMachine getVirtualMachineByServiceName(@NotNull String subscriptionId, @NotNull final String serviceName) throws AzureCmdException {
-        List<VirtualMachine> vmList = getVirtualMachines(subscriptionId);
-        return Iterables.tryFind(vmList, new Predicate<VirtualMachine>() {
-            @Override
-            public boolean apply(@Nullable VirtualMachine virtualMachine) {
-                return serviceName.equals(virtualMachine.getServiceName());
+    @NotNull
+    public VirtualMachine refreshVirtualMachineInformation(@NotNull VirtualMachine vm) throws AzureCmdException {
+        ComputeManagementClient client = null;
+
+        try {
+            client = AzureSDKHelper.getComputeManagementClient(vm.getSubscriptionId());
+
+            if (client == null) {
+                throw new Exception("Unable to instantiate Compute Management client");
             }
-        }).orNull();
+
+            DeploymentGetResponse deployment = getDeployment(client, vm.getServiceName(), vm.getDeploymentName());
+
+            if (deployment == null) {
+                throw new Exception("Invalid Virtual Machine information. No Deployment matches the VM data.");
+            }
+
+            ArrayList<Role> roles = deployment.getRoles();
+
+            if (roles == null) {
+                throw new Exception("Invalid Virtual Machine information. No Roles match the VM data.");
+            }
+
+            Role vmRole = null;
+
+            for (Role role : roles) {
+                if (PERSISTENT_VM_ROLE.equals(role.getRoleType()) && vm.getName().equals(role.getRoleName())) {
+                    vmRole = role;
+                    break;
+                }
+            }
+
+            if (vmRole == null) {
+                throw new Exception("Invalid Virtual Machine information. No Roles match the VM data.");
+            }
+
+            vm.setDns(deployment.getUri() != null ? deployment.getUri().toString() : "");
+            vm.setEnvironment(deployment.getDeploymentSlot() != null ? deployment.getDeploymentSlot().toString() : "");
+            vm.setSize(vmRole.getRoleSize() != null ? vmRole.getRoleSize() : "");
+            vm.setStatus(deployment.getStatus() != null ? deployment.getStatus().toString() : "");
+
+            vm.getEndpoints().clear();
+            vm = loadEndpoints(vmRole, vm);
+        } catch (Throwable t) {
+            throw new AzureCmdException("Error starting the VM", t);
+        } finally {
+            if (client != null) {
+                try {
+                    client.close();
+                } catch (IOException ignored) {
+                }
+            }
+        }
+
+        return vm;
     }
 
     @Override
