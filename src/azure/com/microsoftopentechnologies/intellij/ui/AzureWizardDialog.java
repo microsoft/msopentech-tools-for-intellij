@@ -23,13 +23,12 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.ui.wizard.WizardDialog;
 import com.interopbridges.tools.windowsazure.*;
+import com.microsoftopentechnologies.azurecommons.roleoperations.WizardUtilMethods;
 import com.microsoftopentechnologies.intellij.module.AzureModuleBuilder;
 import com.microsoftopentechnologies.intellij.ui.messages.AzureBundle;
-import com.microsoftopentechnologies.intellij.ui.util.JdkSrvConfig;
 import com.microsoftopentechnologies.intellij.util.AppCmpntParam;
 import com.microsoftopentechnologies.intellij.util.ParseXML;
 import com.microsoftopentechnologies.intellij.util.PluginUtil;
-import com.microsoftopentechnologies.roleoperations.WizardUtilMethods;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;

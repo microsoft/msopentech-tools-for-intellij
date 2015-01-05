@@ -16,7 +16,10 @@
 
 package com.microsoftopentechnologies.intellij.ui.util;
 
-import com.microsoftopentechnologies.intellij.rest.WindowsAzureRestUtils;
+import com.microsoftopentechnologies.azurecommons.deploy.util.PublishData;
+import com.microsoftopentechnologies.azurecommons.roleoperations.JdkSrvConfigUtilMethods;
+import com.microsoftopentechnologies.azurecommons.storageregistry.StorageRegistryUtilMethods;
+import com.microsoftopentechnologies.azuremanagementutil.model.Subscription;
 import com.microsoftopentechnologies.intellij.wizards.WizardCacheManager;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
@@ -28,16 +31,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.Consumer;
 import com.interopbridges.tools.windowsazure.WindowsAzureInvalidProjectOperationException;
 import com.interopbridges.tools.windowsazure.WindowsAzureProjectManager;
-import com.microsoft.windowsazure.Configuration;
-import com.microsoft.windowsazure.management.configuration.ManagementConfiguration;
-import com.microsoft.windowsazure.management.configuration.PublishSettingsLoader;
-import com.microsoftopentechnologies.model.Subscription;
-import com.microsoftopentechnologies.deploy.util.PublishData;
-import com.microsoftopentechnologies.deploy.util.PublishProfile;
 import com.microsoftopentechnologies.intellij.util.PluginUtil;
-import com.microsoftopentechnologies.roleoperations.JdkSrvConfigUtilMethods;
-import com.microsoftopentechnologies.storageregistry.StorageRegistryUtilMethods;
-import com.microsoftopentechnologies.util.Base64;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -173,7 +167,7 @@ public class UIUtils {
     public static PublishData createPublishDataObj(File file) {
         PublishData data;
         try {
-            data = parse(file);
+            data = com.microsoftopentechnologies.azurecommons.deploy.util.UIUtils.parse(file);
         } catch (JAXBException e) {
             PluginUtil.displayErrorDialog(message("importDlgTitle"), String.format(message("importDlgMsg"), file.getName(), message("failedToParse")));
             return null;
@@ -184,49 +178,6 @@ public class UIUtils {
         }
         data.setCurrentSubscription(data.getPublishProfile().getSubscriptions().get(0));
         return data;
-    }
-
-    public static PublishData parse(File file) throws JAXBException {
-        PublishData publishData = null;
-        try {
-            JAXBContext context = JAXBContext.newInstance(PublishData.class);
-            publishData = (PublishData) context.createUnmarshaller().unmarshal(file);
-        } catch (JAXBException e) {
-            log(message("error"), e);
-            throw e;
-        }
-        return publishData;
-    }
-
-    public static PublishData parsePfx(File file) throws Exception {
-        PublishData publishData = new PublishData();
-
-        PublishProfile profile = new PublishProfile();
-        FileInputStream input = null;
-        DataInputStream dis = null;
-
-        byte[] buff = new byte[(int) file.length()];
-        try {
-            input = new FileInputStream(file);
-            dis = new DataInputStream(input);
-            dis.readFully(buff);
-            profile.setManagementCertificate(Base64.encode(buff)); //$NON-NLS-1$
-        } catch (FileNotFoundException e) {
-            log(message("error"), e);
-            throw e;
-        } catch (IOException e) {
-            log(message("error"), e);
-            throw e;
-        } finally {
-            if (input != null) {
-                input.close();
-            }
-            if (dis != null) {
-                dis.close();
-            }
-        }
-        publishData.setPublishProfile(profile);
-        return publishData;
     }
 
     /**

@@ -19,6 +19,12 @@ import java.io.File;
 import java.util.Collection;
 import java.util.List;
 
+import com.microsoftopentechnologies.azurecommons.deploy.util.PublishData;
+import com.microsoftopentechnologies.azurecommons.storageregistry.StorageAccount;
+import com.microsoftopentechnologies.azurecommons.storageregistry.StorageAccountRegistry;
+import com.microsoftopentechnologies.azuremanagementutil.model.StorageService;
+import com.microsoftopentechnologies.azuremanagementutil.model.StorageServices;
+import com.microsoftopentechnologies.azuremanagementutil.model.Subscription;
 import com.microsoftopentechnologies.intellij.runnable.AccountActionRunnable;
 import com.microsoftopentechnologies.intellij.runnable.CacheAccountWithProgressBar;
 import com.microsoftopentechnologies.intellij.runnable.LoadAccountWithProgressBar;
@@ -27,14 +33,8 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator;
 import com.intellij.openapi.project.Project;
-import com.microsoftopentechnologies.model.StorageService;
-import com.microsoftopentechnologies.model.StorageServices;
-import com.microsoftopentechnologies.model.Subscription;
-import com.microsoftopentechnologies.deploy.util.PublishData;
 import com.microsoftopentechnologies.intellij.AzureSettings;
 import com.microsoftopentechnologies.intellij.ui.util.UIUtils;
-import com.microsoftopentechnologies.storageregistry.StorageAccount;
-import com.microsoftopentechnologies.storageregistry.StorageAccountRegistry;
 
 import com.microsoftopentechnologies.intellij.wizards.WizardCacheManager;
 import org.jetbrains.annotations.NotNull;

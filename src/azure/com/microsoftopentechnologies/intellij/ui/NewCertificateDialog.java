@@ -23,11 +23,11 @@ import com.intellij.openapi.ui.*;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileWrapper;
+import com.microsoftopentechnologies.azurecommons.util.WAEclipseHelperMethods;
+import com.microsoftopentechnologies.azurecommons.wacommonutil.CerPfxUtil;
+import com.microsoftopentechnologies.azurecommons.wacommonutil.Utils;
 import com.microsoftopentechnologies.intellij.util.PluginUtil;
-import com.microsoftopentechnologies.util.WAEclipseHelperMethods;
 import com.microsoftopentechnologies.wacommon.commoncontrols.NewCertificateDialogData;
-import com.microsoftopentechnologies.wacommonutil.CerPfxUtil;
-import com.microsoftopentechnologies.wacommonutil.Utils;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;

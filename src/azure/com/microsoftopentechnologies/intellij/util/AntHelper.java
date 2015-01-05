@@ -26,7 +26,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.ArrayUtil;
 import com.interopbridges.tools.windowsazure.WindowsAzureInvalidProjectOperationException;
 import com.interopbridges.tools.windowsazure.WindowsAzureProjectManager;
-import com.microsoftopentechnologies.deploy.model.AutoUpldCmpnts;
+import com.microsoftopentechnologies.azurecommons.deploy.model.AutoUpldCmpnts;
 import com.microsoftopentechnologies.intellij.AzurePlugin;
 import com.microsoftopentechnologies.intellij.actions.DeployAction;
 

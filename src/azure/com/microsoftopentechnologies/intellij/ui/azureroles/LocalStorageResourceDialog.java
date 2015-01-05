@@ -7,9 +7,9 @@ import com.interopbridges.tools.windowsazure.WindowsAzureInvalidProjectOperation
 import com.interopbridges.tools.windowsazure.WindowsAzureLocalStorage;
 import com.interopbridges.tools.windowsazure.WindowsAzureProjectManager;
 import com.interopbridges.tools.windowsazure.WindowsAzureRole;
-import com.microsoftopentechnologies.exception.AzureCommonsException;
+import com.microsoftopentechnologies.azurecommons.exception.AzureCommonsException;
+import com.microsoftopentechnologies.azurecommons.roleoperations.LocalStrgResDialogUtilMethods;
 import com.microsoftopentechnologies.intellij.util.PluginUtil;
-import com.microsoftopentechnologies.roleoperations.LocalStrgResDialogUtilMethods;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;

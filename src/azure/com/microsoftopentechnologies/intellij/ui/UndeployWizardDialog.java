@@ -15,6 +15,8 @@
  */
 package com.microsoftopentechnologies.intellij.ui;
 
+import com.microsoftopentechnologies.azurecommons.deploy.util.PublishData;
+import com.microsoftopentechnologies.azuremanagementutil.model.Subscription;
 import com.microsoftopentechnologies.intellij.runnable.FetchDeploymentsForHostedServiceWithProgressWindow;
 import com.microsoftopentechnologies.intellij.runnable.LoadAccountWithProgressBar;
 import com.microsoftopentechnologies.intellij.wizards.WizardCacheManager;
@@ -25,8 +27,6 @@ import com.intellij.openapi.ui.TitlePanel;
 import com.microsoft.windowsazure.management.compute.models.DeploymentStatus;
 import com.microsoft.windowsazure.management.compute.models.HostedServiceGetDetailedResponse;
 import com.microsoft.windowsazure.management.compute.models.HostedServiceGetDetailedResponse.Deployment;
-import com.microsoftopentechnologies.model.Subscription;
-import com.microsoftopentechnologies.deploy.util.PublishData;
 import com.microsoftopentechnologies.intellij.AzureSettings;
 import com.microsoftopentechnologies.intellij.ui.util.UIUtils;
 import com.microsoft.windowsazure.management.compute.models.HostedServiceListResponse.HostedService;

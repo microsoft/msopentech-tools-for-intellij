@@ -15,16 +15,16 @@
  */
 package com.microsoftopentechnologies.intellij.ui;
 
+import com.microsoftopentechnologies.azurecommons.preference.StorageAccPrefPageTableElement;
+import com.microsoftopentechnologies.azurecommons.preference.StorageAccPrefPageTableElements;
+import com.microsoftopentechnologies.azurecommons.storageregistry.StorageAccount;
+import com.microsoftopentechnologies.azurecommons.storageregistry.StorageAccountRegistry;
+import com.microsoftopentechnologies.azurecommons.storageregistry.StorageRegistryUtilMethods;
 import com.microsoftopentechnologies.intellij.util.MethodUtils;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.microsoftopentechnologies.intellij.AzureSettings;
-import com.microsoftopentechnologies.preference.StorageAccPrefPageTableElement;
-import com.microsoftopentechnologies.preference.StorageAccPrefPageTableElements;
-import com.microsoftopentechnologies.storageregistry.StorageAccount;
-import com.microsoftopentechnologies.storageregistry.StorageAccountRegistry;
-import com.microsoftopentechnologies.storageregistry.StorageRegistryUtilMethods;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;

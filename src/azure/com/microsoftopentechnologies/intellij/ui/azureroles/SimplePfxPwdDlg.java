@@ -18,8 +18,8 @@ package com.microsoftopentechnologies.intellij.ui.azureroles;
 
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.ValidationInfo;
+import com.microsoftopentechnologies.azurecommons.wacommonutil.CerPfxUtil;
 import com.microsoftopentechnologies.intellij.util.PluginUtil;
-import com.microsoftopentechnologies.wacommonutil.CerPfxUtil;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;

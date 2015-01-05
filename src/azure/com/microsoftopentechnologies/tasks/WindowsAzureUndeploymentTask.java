@@ -15,13 +15,13 @@
  */
 package com.microsoftopentechnologies.tasks;
 
+import com.microsoftopentechnologies.azurecommons.deploy.DeploymentEventArgs;
+import com.microsoftopentechnologies.azurecommons.deploy.DeploymentEventListener;
+import com.microsoftopentechnologies.azurecommons.exception.RestAPIException;
 import com.microsoftopentechnologies.intellij.deploy.DeploymentManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.Task;
-import com.microsoftopentechnologies.deploy.deploy.DeploymentEventArgs;
-import com.microsoftopentechnologies.deploy.deploy.DeploymentEventListener;
-import com.microsoftopentechnologies.exception.RestAPIException;
 import com.microsoftopentechnologies.intellij.AzurePlugin;
 import com.microsoftopentechnologies.wacommon.utils.WACommonException;
 import org.jetbrains.annotations.NotNull;

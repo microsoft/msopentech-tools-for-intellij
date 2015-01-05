@@ -19,9 +19,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
-import com.microsoftopentechnologies.deploy.tasks.AccountCachingExceptionEvent;
-import com.microsoftopentechnologies.deploy.tasks.LoadingAccoutListener;
-import com.microsoftopentechnologies.deploy.util.PublishData;
+import com.microsoftopentechnologies.azurecommons.deploy.tasks.AccountCachingExceptionEvent;
+import com.microsoftopentechnologies.azurecommons.deploy.tasks.LoadingAccoutListener;
+import com.microsoftopentechnologies.azurecommons.deploy.util.PublishData;
 import com.microsoftopentechnologies.intellij.util.PluginUtil;
 
 import static com.microsoftopentechnologies.intellij.ui.messages.AzureBundle.message;

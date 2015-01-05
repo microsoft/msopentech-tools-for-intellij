@@ -17,10 +17,10 @@
 package com.microsoftopentechnologies.intellij.ui.util;
 
 
+import com.microsoftopentechnologies.azurecommons.storageregistry.StorageAccountRegistry;
+import com.microsoftopentechnologies.azurecommons.storageregistry.StorageRegistryUtilMethods;
 import com.microsoftopentechnologies.intellij.ui.messages.AzureBundle;
 import com.microsoftopentechnologies.intellij.util.WAHelper;
-import com.microsoftopentechnologies.storageregistry.StorageAccountRegistry;
-import com.microsoftopentechnologies.storageregistry.StorageRegistryUtilMethods;
 
 import javax.swing.*;
 import java.io.File;

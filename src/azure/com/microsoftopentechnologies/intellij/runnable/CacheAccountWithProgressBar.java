@@ -15,8 +15,8 @@
  */
 package com.microsoftopentechnologies.intellij.runnable;
 
+import com.microsoftopentechnologies.azurecommons.deploy.util.PublishData;
 import com.microsoftopentechnologies.intellij.wizards.WizardCacheManager;
-import com.microsoftopentechnologies.deploy.util.PublishData;
 import com.microsoftopentechnologies.intellij.util.PluginUtil;
 
 import java.io.File;

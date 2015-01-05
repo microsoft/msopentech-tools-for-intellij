@@ -22,13 +22,13 @@ import com.intellij.openapi.ui.ValidationInfo;
 import com.interopbridges.tools.windowsazure.WindowsAzureInvalidProjectOperationException;
 import com.interopbridges.tools.windowsazure.WindowsAzureProjectManager;
 import com.michaelbaranov.microba.calendar.DatePicker;
+import com.microsoftopentechnologies.azurecommons.util.WAEclipseHelperMethods;
+import com.microsoftopentechnologies.azurecommons.wacommonutil.CerPfxUtil;
+import com.microsoftopentechnologies.azurecommons.wacommonutil.EncUtilHelper;
 import com.microsoftopentechnologies.intellij.AzurePlugin;
 import com.microsoftopentechnologies.intellij.ui.util.UIUtils;
 import com.microsoftopentechnologies.intellij.util.PluginUtil;
-import com.microsoftopentechnologies.util.WAEclipseHelperMethods;
 import com.microsoftopentechnologies.wacommon.commoncontrols.NewCertificateDialogData;
-import com.microsoftopentechnologies.wacommonutil.CerPfxUtil;
-import com.microsoftopentechnologies.wacommonutil.EncUtilHelper;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;

@@ -17,13 +17,13 @@ package com.microsoftopentechnologies.intellij.ui;
 
 import javax.swing.*;
 
+import com.microsoftopentechnologies.azurecommons.deploy.propertypages.SubscriptionPropertyPageTableElement;
+import com.microsoftopentechnologies.azurecommons.deploy.util.PublishData;
+import com.microsoftopentechnologies.azuremanagementutil.model.Subscription;
 import com.microsoftopentechnologies.intellij.util.MethodUtils;
 import com.microsoftopentechnologies.intellij.wizards.WizardCacheManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ValidationInfo;
-import com.microsoftopentechnologies.model.Subscription;
-import com.microsoftopentechnologies.deploy.propertypages.SubscriptionPropertyPageTableElement;
-import com.microsoftopentechnologies.deploy.util.PublishData;
 import com.microsoftopentechnologies.intellij.AzureSettings;
 
 import javax.swing.event.ListSelectionEvent;

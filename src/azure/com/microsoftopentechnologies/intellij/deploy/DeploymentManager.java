@@ -29,26 +29,26 @@ import com.microsoft.windowsazure.core.OperationStatus;
 import com.microsoft.windowsazure.core.OperationStatusResponse;
 import com.microsoft.windowsazure.management.compute.models.*;
 import com.microsoft.windowsazure.management.storage.models.StorageAccountCreateParameters;
+import com.microsoftopentechnologies.azurecommons.deploy.DeploymentEventArgs;
+import com.microsoftopentechnologies.azurecommons.storageregistry.StorageAccount;
+import com.microsoftopentechnologies.azurecommons.storageregistry.StorageAccountRegistry;
+import com.microsoftopentechnologies.azuremanagementutil.model.InstanceStatus;
+import com.microsoftopentechnologies.azuremanagementutil.model.StorageService;
+import com.microsoftopentechnologies.azuremanagementutil.rest.WindowsAzureRestUtils;
 
-import com.microsoftopentechnologies.deploy.deploy.DeploymentEventArgs;
-import com.microsoftopentechnologies.deploy.deploy.DeploymentManagerUtilMethods;
-import com.microsoftopentechnologies.deploy.model.*;
-import com.microsoftopentechnologies.exception.DeploymentException;
-import com.microsoftopentechnologies.exception.RestAPIException;
+import com.microsoftopentechnologies.azurecommons.deploy.DeploymentManagerUtilMethods;
+import com.microsoftopentechnologies.azurecommons.deploy.model.CertificateUpload;
+import com.microsoftopentechnologies.azurecommons.deploy.model.DeployDescriptor;
+import com.microsoftopentechnologies.azurecommons.exception.DeploymentException;
+import com.microsoftopentechnologies.azurecommons.exception.RestAPIException;
+import com.microsoftopentechnologies.azuremanagementutil.model.Notifier;
+import com.microsoftopentechnologies.azuremanagementutil.rest.WindowsAzureServiceManagement;
+import com.microsoftopentechnologies.azuremanagementutil.rest.WindowsAzureStorageServices;
 import com.microsoftopentechnologies.intellij.AzurePlugin;
 import com.microsoftopentechnologies.intellij.AzureSettings;
 import com.microsoftopentechnologies.intellij.util.PluginUtil;
-import com.microsoftopentechnologies.model.InstanceStatus;
-import com.microsoftopentechnologies.model.Notifier;
-import com.microsoftopentechnologies.model.StorageService;
-import com.microsoftopentechnologies.rest.WindowsAzureRestUtils;
-import com.microsoftopentechnologies.rest.WindowsAzureServiceManagement;
-import com.microsoftopentechnologies.rest.WindowsAzureStorageServices;
-import com.microsoftopentechnologies.storageregistry.StorageAccount;
-import com.microsoftopentechnologies.storageregistry.StorageAccountRegistry;
 
 import com.microsoft.windowsazure.management.compute.models.HostedServiceListResponse.HostedService;
-//import com.gigaspaces.azure.views.WindowsAzureActivityLogView;
 import com.microsoftopentechnologies.intellij.wizards.WizardCacheManager;
 import com.interopbridges.tools.windowsazure.WindowsAzureInvalidProjectOperationException;
 import com.interopbridges.tools.windowsazure.WindowsAzurePackageType;
@@ -159,11 +159,11 @@ public final class DeploymentManager {
 			notifyProgress(deploymentDesc.getDeploymentId(), null, 20, OperationStatus.InProgress, message("uploadingServicePackage"));
 
 			DeploymentManagerUtilMethods.uploadPackageService(
-                    WizardCacheManager.createStorageServiceHelper(),
-                    deploymentDesc.getCspkgFile(),
-                    targetCspckgName,
-                    message("eclipseDeployContainer").toLowerCase(),
-                    deploymentDesc, notifier);
+					WizardCacheManager.createStorageServiceHelper(),
+					deploymentDesc.getCspkgFile(),
+					targetCspckgName,
+					message("eclipseDeployContainer").toLowerCase(),
+					deploymentDesc, notifier);
 
 			notifyProgress(deploymentDesc.getDeploymentId(), null, 20, OperationStatus.InProgress, message("creatingDeployment"));
 
@@ -382,12 +382,8 @@ public final class DeploymentManager {
 //		});
 	}
 
-	public void undeploy(final String serviceName,
-			final String deplymentName,
-			final String deploymentState)
-					throws WACommonException,
-					RestAPIException,
-					InterruptedException {
+	public void undeploy(final String serviceName, final String deplymentName, final String deploymentState)
+			throws WACommonException, RestAPIException, InterruptedException {
 //		Display.getDefault().syncExec(new Runnable() {
 //			@Override
 //			public void run() {

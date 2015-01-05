@@ -19,8 +19,8 @@ import javax.swing.event.EventListenerList;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
-import com.microsoftopentechnologies.deploy.wizard.ConfigurationEventArgs;
-import com.microsoftopentechnologies.deploy.wizard.ConfigurationEventListener;
+import com.microsoftopentechnologies.azurecommons.deploy.wizard.ConfigurationEventArgs;
+import com.microsoftopentechnologies.azurecommons.deploy.wizard.ConfigurationEventListener;
 
 public abstract class WindowsAzurePage extends DialogWrapper {
 

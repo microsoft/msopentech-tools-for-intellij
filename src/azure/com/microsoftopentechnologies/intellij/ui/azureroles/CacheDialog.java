@@ -7,9 +7,9 @@ import com.interopbridges.tools.windowsazure.WindowsAzureCacheExpirationPolicy;
 import com.interopbridges.tools.windowsazure.WindowsAzureInvalidProjectOperationException;
 import com.interopbridges.tools.windowsazure.WindowsAzureNamedCache;
 import com.interopbridges.tools.windowsazure.WindowsAzureRole;
-import com.microsoftopentechnologies.exception.AzureCommonsException;
+import com.microsoftopentechnologies.azurecommons.exception.AzureCommonsException;
+import com.microsoftopentechnologies.azurecommons.roleoperations.CacheDialogUtilMethods;
 import com.microsoftopentechnologies.intellij.util.PluginUtil;
-import com.microsoftopentechnologies.roleoperations.CacheDialogUtilMethods;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;

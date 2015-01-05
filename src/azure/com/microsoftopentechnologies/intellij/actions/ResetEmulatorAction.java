@@ -19,10 +19,10 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.interopbridges.tools.windowsazure.WindowsAzureInvalidProjectOperationException;
 import com.interopbridges.tools.windowsazure.WindowsAzureProjectManager;
+import com.microsoftopentechnologies.azurecommons.wacommonutil.FileUtil;
 import com.microsoftopentechnologies.intellij.AzurePlugin;
 import com.microsoftopentechnologies.intellij.util.PluginUtil;
 import com.microsoftopentechnologies.intellij.util.WAHelper;
-import com.microsoftopentechnologies.wacommonutil.FileUtil;
 
 import java.io.*;
 import java.util.Enumeration;

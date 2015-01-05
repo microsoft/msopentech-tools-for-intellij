@@ -17,9 +17,9 @@
 package com.microsoftopentechnologies.intellij.runnable;
 
 import com.microsoft.windowsazure.management.compute.models.HostedServiceGetDetailedResponse;
+import com.microsoftopentechnologies.azurecommons.deploy.tasks.AccountCachingExceptionEvent;
+import com.microsoftopentechnologies.azurecommons.deploy.util.PublishData;
 import com.microsoftopentechnologies.intellij.wizards.WizardCacheManager;
-import com.microsoftopentechnologies.deploy.tasks.AccountCachingExceptionEvent;
-import com.microsoftopentechnologies.deploy.util.PublishData;
 
 import static com.microsoftopentechnologies.intellij.ui.messages.AzureBundle.message;
 import static com.microsoftopentechnologies.intellij.AzurePlugin.log;

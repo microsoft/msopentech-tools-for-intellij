@@ -16,9 +16,9 @@
 package com.microsoftopentechnologies.intellij.ui;
 
 import com.intellij.openapi.ui.ValidationInfo;
+import com.microsoftopentechnologies.azurecommons.wacommonutil.PreferenceSetUtil;
 import com.microsoftopentechnologies.intellij.AzurePlugin;
 import com.microsoftopentechnologies.intellij.util.PluginUtil;
-import com.microsoftopentechnologies.wacommonutil.PreferenceSetUtil;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;

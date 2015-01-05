@@ -15,6 +15,21 @@
  */
 package com.microsoftopentechnologies.intellij.actions;
 
+import com.microsoftopentechnologies.azurecommons.deploy.DeploymentEventArgs;
+import com.microsoftopentechnologies.azurecommons.deploy.DeploymentEventListener;
+import com.microsoftopentechnologies.azurecommons.deploy.model.AutoUpldCmpnts;
+import com.microsoftopentechnologies.azurecommons.deploy.model.CertificateUpload;
+import com.microsoftopentechnologies.azurecommons.deploy.model.CertificateUploadList;
+import com.microsoftopentechnologies.azurecommons.deploy.model.RemoteDesktopDescriptor;
+import com.microsoftopentechnologies.azurecommons.deploy.wizard.ConfigurationEventArgs;
+import com.microsoftopentechnologies.azurecommons.exception.DeploymentException;
+import com.microsoftopentechnologies.azurecommons.roleoperations.JdkSrvConfigUtilMethods;
+import com.microsoftopentechnologies.azurecommons.storageregistry.StorageAccount;
+import com.microsoftopentechnologies.azurecommons.storageregistry.StorageAccountRegistry;
+import com.microsoftopentechnologies.azurecommons.wacommonutil.CerPfxUtil;
+import com.microsoftopentechnologies.azurecommons.wacommonutil.EncUtilHelper;
+import com.microsoftopentechnologies.azurecommons.wacommonutil.PreferenceSetUtil;
+import com.microsoftopentechnologies.azuremanagementutil.model.StorageService;
 import com.microsoftopentechnologies.intellij.deploy.*;
 import com.microsoftopentechnologies.intellij.util.AntHelper;
 import com.microsoftopentechnologies.intellij.wizards.WizardCacheManager;
@@ -31,11 +46,6 @@ import com.interopbridges.tools.windowsazure.*;
 import com.microsoft.windowsazure.management.compute.models.HostedServiceListResponse;
 import com.microsoft.windowsazure.management.compute.models.ServiceCertificateListResponse;
 import com.microsoft.windowsazure.management.storage.models.StorageAccountCreateParameters;
-import com.microsoftopentechnologies.deploy.deploy.DeploymentEventArgs;
-import com.microsoftopentechnologies.deploy.deploy.DeploymentEventListener;
-import com.microsoftopentechnologies.deploy.model.*;
-import com.microsoftopentechnologies.deploy.wizard.ConfigurationEventArgs;
-import com.microsoftopentechnologies.exception.DeploymentException;
 import com.microsoftopentechnologies.intellij.AzurePlugin;
 import com.microsoftopentechnologies.intellij.AzureSettings;
 import com.microsoftopentechnologies.intellij.module.AzureModuleType;
@@ -43,14 +53,7 @@ import com.microsoftopentechnologies.intellij.ui.DeployWizardDialog;
 import com.microsoftopentechnologies.intellij.ui.PfxPwdDialog;
 import com.microsoftopentechnologies.intellij.ui.messages.AzureBundle;
 import com.microsoftopentechnologies.intellij.util.PluginUtil;
-import com.microsoftopentechnologies.model.StorageService;
-import com.microsoftopentechnologies.roleoperations.JdkSrvConfigUtilMethods;
-import com.microsoftopentechnologies.storageregistry.StorageAccount;
-import com.microsoftopentechnologies.storageregistry.StorageAccountRegistry;
 import com.microsoftopentechnologies.wacommon.utils.WACommonException;
-import com.microsoftopentechnologies.wacommonutil.CerPfxUtil;
-import com.microsoftopentechnologies.wacommonutil.EncUtilHelper;
-import com.microsoftopentechnologies.wacommonutil.PreferenceSetUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

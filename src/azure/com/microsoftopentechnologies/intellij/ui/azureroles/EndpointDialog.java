@@ -22,9 +22,9 @@ import com.interopbridges.tools.windowsazure.WindowsAzureEndpoint;
 import com.interopbridges.tools.windowsazure.WindowsAzureEndpointType;
 import com.interopbridges.tools.windowsazure.WindowsAzureInvalidProjectOperationException;
 import com.interopbridges.tools.windowsazure.WindowsAzureRole;
+import com.microsoftopentechnologies.azurecommons.roleoperations.WAEndpointDialogUtilMethods;
+import com.microsoftopentechnologies.azurecommons.util.WAEclipseHelperMethods;
 import com.microsoftopentechnologies.intellij.util.PluginUtil;
-import com.microsoftopentechnologies.roleoperations.WAEndpointDialogUtilMethods;
-import com.microsoftopentechnologies.util.WAEclipseHelperMethods;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;

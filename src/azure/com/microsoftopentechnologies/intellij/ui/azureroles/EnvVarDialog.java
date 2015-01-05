@@ -3,9 +3,9 @@ package com.microsoftopentechnologies.intellij.ui.azureroles;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.interopbridges.tools.windowsazure.WindowsAzureRole;
-import com.microsoftopentechnologies.exception.AzureCommonsException;
+import com.microsoftopentechnologies.azurecommons.exception.AzureCommonsException;
+import com.microsoftopentechnologies.azurecommons.roleoperations.WAEnvVarDialogUtilMethods;
 import com.microsoftopentechnologies.intellij.util.PluginUtil;
-import com.microsoftopentechnologies.roleoperations.WAEnvVarDialogUtilMethods;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;

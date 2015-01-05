@@ -15,6 +15,9 @@
  */
 package com.microsoftopentechnologies.intellij.ui;
 
+import com.microsoftopentechnologies.azurecommons.deploy.util.PublishData;
+import com.microsoftopentechnologies.azuremanagementutil.model.StorageService;
+import com.microsoftopentechnologies.azuremanagementutil.model.Subscription;
 import com.microsoftopentechnologies.intellij.runnable.NewStorageAccountWithProgressWindow;
 import com.microsoftopentechnologies.intellij.wizards.WizardCacheManager;
 import com.intellij.openapi.progress.ProgressManager;
@@ -24,9 +27,6 @@ import com.intellij.openapi.ui.TitlePanel;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.microsoft.windowsazure.management.models.LocationsListResponse;
 import com.microsoft.windowsazure.management.storage.models.StorageAccountCreateParameters;
-import com.microsoftopentechnologies.model.StorageService;
-import com.microsoftopentechnologies.model.Subscription;
-import com.microsoftopentechnologies.deploy.util.PublishData;
 import com.microsoftopentechnologies.intellij.ui.util.UIUtils;
 import com.microsoftopentechnologies.intellij.util.PluginUtil;
 import com.microsoftopentechnologies.intellij.ui.util.UIUtils.ElementWrapper;

@@ -22,13 +22,13 @@ import com.intellij.openapi.application.PathManager;
 import com.intellij.openapi.module.Module;
 import com.interopbridges.tools.windowsazure.WindowsAzurePackageType;
 import com.interopbridges.tools.windowsazure.WindowsAzureProjectManager;
+import com.microsoftopentechnologies.azurecommons.wacommonutil.PreferenceSetUtil;
 import com.microsoftopentechnologies.intellij.AzurePlugin;
 import com.microsoftopentechnologies.intellij.module.AzureModuleType;
 import com.microsoftopentechnologies.intellij.ui.messages.AzureBundle;
 import com.microsoftopentechnologies.intellij.util.AntHelper;
 import com.microsoftopentechnologies.intellij.util.PluginUtil;
 import com.microsoftopentechnologies.wacommon.utils.WACommonException;
-import com.microsoftopentechnologies.wacommonutil.PreferenceSetUtil;
 
 import java.io.File;
 

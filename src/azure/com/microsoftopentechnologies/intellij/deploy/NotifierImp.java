@@ -15,8 +15,8 @@
  */
 package com.microsoftopentechnologies.intellij.deploy;
 
-import com.microsoftopentechnologies.deploy.deploy.UploadProgressEventArgs;
-import com.microsoftopentechnologies.model.Notifier;
+import com.microsoftopentechnologies.azurecommons.deploy.UploadProgressEventArgs;
+import com.microsoftopentechnologies.azuremanagementutil.model.Notifier;
 
 import java.util.concurrent.atomic.AtomicInteger;
 

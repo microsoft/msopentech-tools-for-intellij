@@ -16,18 +16,18 @@
 
 package com.microsoftopentechnologies.intellij.ui;
 
+import com.microsoftopentechnologies.azurecommons.storageregistry.StorageAccount;
+import com.microsoftopentechnologies.azurecommons.storageregistry.StorageAccountRegistry;
+import com.microsoftopentechnologies.azurecommons.storageregistry.StorageRegistryUtilMethods;
+import com.microsoftopentechnologies.azurecommons.util.WAEclipseHelperMethods;
+import com.microsoftopentechnologies.azurecommons.wacommonutil.PreferenceSetUtil;
+import com.microsoftopentechnologies.azuremanagementutil.model.StorageService;
 import com.microsoftopentechnologies.intellij.wizards.WizardCacheManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.TitlePanel;
 import com.intellij.openapi.ui.ValidationInfo;
-import com.microsoftopentechnologies.model.StorageService;
 import com.microsoftopentechnologies.intellij.AzurePlugin;
-import com.microsoftopentechnologies.storageregistry.StorageAccount;
-import com.microsoftopentechnologies.storageregistry.StorageAccountRegistry;
-import com.microsoftopentechnologies.storageregistry.StorageRegistryUtilMethods;
-import com.microsoftopentechnologies.util.WAEclipseHelperMethods;
-import com.microsoftopentechnologies.wacommonutil.PreferenceSetUtil;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;

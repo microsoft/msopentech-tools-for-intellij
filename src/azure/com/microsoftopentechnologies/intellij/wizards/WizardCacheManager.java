@@ -28,6 +28,24 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import com.microsoftopentechnologies.azurecommons.deploy.model.CertificateUpload;
+import com.microsoftopentechnologies.azurecommons.deploy.model.CertificateUploadList;
+import com.microsoftopentechnologies.azurecommons.deploy.model.DeployDescriptor;
+import com.microsoftopentechnologies.azurecommons.deploy.model.RemoteDesktopDescriptor;
+import com.microsoftopentechnologies.azurecommons.deploy.tasks.*;
+import com.microsoftopentechnologies.azurecommons.deploy.util.PublishData;
+import com.microsoftopentechnologies.azurecommons.deploy.wizard.ConfigurationEventArgs;
+import com.microsoftopentechnologies.azurecommons.deploy.wizard.ConfigurationEventListener;
+import com.microsoftopentechnologies.azurecommons.deploy.wizard.WizardCacheManagerUtilMethods;
+import com.microsoftopentechnologies.azurecommons.exception.RestAPIException;
+import com.microsoftopentechnologies.azurecommons.wacommonutil.FileUtil;
+import com.microsoftopentechnologies.azurecommons.wacommonutil.PreferenceSetUtil;
+import com.microsoftopentechnologies.azuremanagementutil.model.KeyName;
+import com.microsoftopentechnologies.azuremanagementutil.model.StorageService;
+import com.microsoftopentechnologies.azuremanagementutil.model.StorageServices;
+import com.microsoftopentechnologies.azuremanagementutil.model.Subscription;
+import com.microsoftopentechnologies.azuremanagementutil.rest.WindowsAzureServiceManagement;
+import com.microsoftopentechnologies.azuremanagementutil.rest.WindowsAzureStorageServices;
 import com.microsoftopentechnologies.intellij.rest.*;
 import com.microsoft.windowsazure.Configuration;
 
@@ -38,23 +56,8 @@ import com.microsoft.windowsazure.management.storage.models.StorageAccountCreate
 import com.microsoft.windowsazure.management.compute.models.ServiceCertificateListResponse.Certificate;
 import com.microsoft.windowsazure.management.compute.models.HostedServiceListResponse.HostedService;
 import com.interopbridges.tools.windowsazure.WindowsAzurePackageType;
-import com.microsoftopentechnologies.deploy.model.*;
-import com.microsoftopentechnologies.deploy.tasks.*;
-import com.microsoftopentechnologies.deploy.util.PublishData;
-import com.microsoftopentechnologies.deploy.wizard.ConfigurationEventArgs;
-import com.microsoftopentechnologies.deploy.wizard.ConfigurationEventListener;
-import com.microsoftopentechnologies.deploy.wizard.WizardCacheManagerUtilMethods;
-import com.microsoftopentechnologies.exception.RestAPIException;
 import com.microsoftopentechnologies.intellij.AzurePlugin;
 import com.microsoftopentechnologies.intellij.ui.components.WindowsAzurePage;
-import com.microsoftopentechnologies.model.KeyName;
-import com.microsoftopentechnologies.model.StorageService;
-import com.microsoftopentechnologies.model.StorageServices;
-import com.microsoftopentechnologies.model.Subscription;
-import com.microsoftopentechnologies.rest.WindowsAzureServiceManagement;
-import com.microsoftopentechnologies.rest.WindowsAzureStorageServices;
-import com.microsoftopentechnologies.wacommonutil.FileUtil;
-import com.microsoftopentechnologies.wacommonutil.PreferenceSetUtil;
 
 import static com.microsoftopentechnologies.intellij.AzurePlugin.log;
 import static com.microsoftopentechnologies.intellij.ui.messages.AzureBundle.message;

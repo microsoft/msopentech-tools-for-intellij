@@ -16,10 +16,10 @@
 package com.microsoftopentechnologies.intellij.runnable;
 
 import com.microsoft.windowsazure.management.storage.models.StorageAccountCreateParameters;
+import com.microsoftopentechnologies.azurecommons.deploy.tasks.AccountCachingExceptionEvent;
+import com.microsoftopentechnologies.azurecommons.deploy.util.PublishData;
+import com.microsoftopentechnologies.azuremanagementutil.model.StorageService;
 import com.microsoftopentechnologies.intellij.wizards.WizardCacheManager;
-import com.microsoftopentechnologies.deploy.tasks.AccountCachingExceptionEvent;
-import com.microsoftopentechnologies.model.StorageService;
-import com.microsoftopentechnologies.deploy.util.PublishData;
 
 import static com.microsoftopentechnologies.intellij.ui.messages.AzureBundle.message;
 import static com.microsoftopentechnologies.intellij.AzurePlugin.log;

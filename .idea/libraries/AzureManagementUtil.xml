@@ -1,9 +1,0 @@
-<component name="libraryTable">
-  <library name="AzureManagementUtil">
-    <CLASSES>
-      <root url="jar://$PROJECT_DIR$/lib/AzureManagementUtil.jar!/" />
-    </CLASSES>
-    <JAVADOC />
-    <SOURCES />
-  </library>
-</component>

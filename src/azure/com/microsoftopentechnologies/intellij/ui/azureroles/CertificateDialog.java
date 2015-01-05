@@ -25,12 +25,12 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.Consumer;
 import com.interopbridges.tools.windowsazure.WindowsAzureCertificate;
 import com.interopbridges.tools.windowsazure.WindowsAzureRole;
-import com.microsoftopentechnologies.exception.AzureCommonsException;
+import com.microsoftopentechnologies.azurecommons.exception.AzureCommonsException;
+import com.microsoftopentechnologies.azurecommons.roleoperations.CertificateDialogUtilMethods;
+import com.microsoftopentechnologies.azurecommons.wacommonutil.CerPfxUtil;
 import com.microsoftopentechnologies.intellij.ui.NewCertificateDialog;
 import com.microsoftopentechnologies.intellij.util.PluginUtil;
-import com.microsoftopentechnologies.roleoperations.CertificateDialogUtilMethods;
 import com.microsoftopentechnologies.wacommon.commoncontrols.NewCertificateDialogData;
-import com.microsoftopentechnologies.wacommonutil.CerPfxUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

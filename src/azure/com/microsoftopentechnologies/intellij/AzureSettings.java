@@ -15,15 +15,15 @@
  */
 package com.microsoftopentechnologies.intellij;
 
+import com.microsoftopentechnologies.azurecommons.deploy.tasks.LoadingAccoutListener;
+import com.microsoftopentechnologies.azurecommons.deploy.util.PublishData;
+import com.microsoftopentechnologies.azurecommons.exception.RestAPIException;
+import com.microsoftopentechnologies.azurecommons.storageregistry.StorageAccount;
+import com.microsoftopentechnologies.azurecommons.storageregistry.StorageAccountRegistry;
 import com.microsoftopentechnologies.intellij.wizards.WizardCacheManager;
 import com.intellij.openapi.components.*;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.xmlb.XmlSerializerUtil;
-import com.microsoftopentechnologies.deploy.tasks.LoadingAccoutListener;
-import com.microsoftopentechnologies.deploy.util.PublishData;
-import com.microsoftopentechnologies.exception.RestAPIException;
-import com.microsoftopentechnologies.storageregistry.StorageAccount;
-import com.microsoftopentechnologies.storageregistry.StorageAccountRegistry;
 import org.apache.xmlbeans.impl.util.Base64;
 
 import java.io.*;

@@ -19,11 +19,11 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.microsoftopentechnologies.azurecommons.wacommonutil.PreferenceSetUtil;
 import com.microsoftopentechnologies.intellij.AzurePlugin;
 import com.microsoftopentechnologies.intellij.ui.messages.AzureBundle;
 import com.microsoftopentechnologies.intellij.ui.util.UIUtils;
 import com.microsoftopentechnologies.intellij.util.PluginUtil;
-import com.microsoftopentechnologies.wacommonutil.PreferenceSetUtil;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;

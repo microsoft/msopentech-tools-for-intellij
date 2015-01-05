@@ -21,10 +21,10 @@ import com.intellij.ui.wizard.WizardModel;
 import com.interopbridges.tools.windowsazure.WindowsAzureInvalidProjectOperationException;
 import com.interopbridges.tools.windowsazure.WindowsAzureProjectManager;
 import com.interopbridges.tools.windowsazure.WindowsAzureRole;
+import com.microsoftopentechnologies.azurecommons.storageregistry.StorageAccountRegistry;
 import com.microsoftopentechnologies.intellij.ui.components.AzureWizardStep;
 import com.microsoftopentechnologies.intellij.ui.messages.AzureBundle;
 import com.microsoftopentechnologies.intellij.util.AppCmpntParam;
-import com.microsoftopentechnologies.storageregistry.StorageAccountRegistry;
 
 import javax.swing.*;
 import java.util.ArrayList;
