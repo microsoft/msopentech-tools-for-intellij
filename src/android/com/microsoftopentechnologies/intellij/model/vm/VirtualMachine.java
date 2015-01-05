@@ -72,9 +72,17 @@ public class VirtualMachine implements ServiceTreeItem {
         return dns;
     }
 
+    public void setDns(@NotNull String dns) {
+        this.dns = dns;
+    }
+
     @NotNull
     public String getEnvironment() {
         return environment;
+    }
+
+    public void setEnvironment(@NotNull String environment) {
+        this.environment = environment;
     }
 
     public String getDeploymentName() {
@@ -86,9 +94,17 @@ public class VirtualMachine implements ServiceTreeItem {
         return size;
     }
 
+    public void setSize(@NotNull String size) {
+        this.size = size;
+    }
+
     @NotNull
     public String getStatus() {
         return status;
+    }
+
+    public void setStatus(@NotNull String status) {
+        this.status = status;
     }
 
     @NotNull
@@ -102,7 +118,7 @@ public class VirtualMachine implements ServiceTreeItem {
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         return name + (loading ? " (loading...)" : "");
     }
 }
