@@ -113,30 +113,38 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
                 throw new Exception("Unable to instantiate Compute Management client");
             }
 
-            VirtualMachineOperations vmo = client.getVirtualMachinesOperations();
-
-            if (vmo == null) {
-                throw new Exception("Unable to retrieve Virtual Machines information");
-            }
-
-            VirtualMachineGetResponse vmgr = vmo.get(vm.getServiceName(), vm.getDeploymentName(), vm.getName());
-
-            if (vmgr == null) {
-                throw new Exception("Unable to retrieve Virtual Machine information");
-            }
-
             DeploymentGetResponse deployment = getDeployment(client, vm.getServiceName(), vm.getDeploymentName());
 
             if (deployment == null) {
                 throw new Exception("Invalid Virtual Machine information. No Deployment matches the VM data.");
             }
 
+            ArrayList<Role> roles = deployment.getRoles();
+
+            if (roles == null) {
+                throw new Exception("Invalid Virtual Machine information. No Roles match the VM data.");
+            }
+
+            Role vmRole = null;
+
+            for (Role role : roles) {
+                if (PERSISTENT_VM_ROLE.equals(role.getRoleType()) && vm.getName().equals(role.getRoleName())) {
+                    vmRole = role;
+                    break;
+                }
+            }
+
+            if (vmRole == null) {
+                throw new Exception("Invalid Virtual Machine information. No Roles match the VM data.");
+            }
+
             vm.setDns(deployment.getUri() != null ? deployment.getUri().toString() : "");
             vm.setEnvironment(deployment.getDeploymentSlot() != null ? deployment.getDeploymentSlot().toString() : "");
-            vm.setSize(vmgr.getRoleSize() != null ? vmgr.getRoleSize() : "");
+            vm.setSize(vmRole.getRoleSize() != null ? vmRole.getRoleSize() : "");
             vm.setStatus(deployment.getStatus() != null ? deployment.getStatus().toString() : "");
 
-            vm = refreshEndpoints(vmgr, vm);
+            vm.getEndpoints().clear();
+            vm = loadEndpoints(vmRole, vm);
         } catch (Throwable t) {
             throw new AzureCmdException("Error starting the VM", t);
         } finally {
@@ -442,25 +450,9 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
             return vm;
         }
 
-        return loadEndpoints(vm, role.getConfigurationSets());
-    }
-
-    @NotNull
-    private static VirtualMachine refreshEndpoints(@NotNull VirtualMachineGetResponse vmgr, @NotNull VirtualMachine vm) {
-        vm.getEndpoints().clear();
-
-        if (vmgr.getConfigurationSets() == null) {
-            return vm;
-        }
-
-        return loadEndpoints(vm, vmgr.getConfigurationSets());
-    }
-
-    @NotNull
-    private static VirtualMachine loadEndpoints(@NotNull VirtualMachine vm, @NotNull List<ConfigurationSet> configurationSets) {
         List<Endpoint> endpoints = vm.getEndpoints();
 
-        for (ConfigurationSet configurationSet : configurationSets) {
+        for (ConfigurationSet configurationSet : role.getConfigurationSets()) {
             if (configurationSet.getConfigurationSetType() != null
                     && configurationSet.getConfigurationSetType().equals(NETWORK_CONFIGURATION)
                     && configurationSet.getInputEndpoints() != null) {
