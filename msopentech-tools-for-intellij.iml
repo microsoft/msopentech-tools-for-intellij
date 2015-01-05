@@ -11,13 +11,11 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="AzureCommons" level="project" />
-    <orderEntry type="library" name="AzureManagementUtil" level="project" />
     <orderEntry type="library" name="ProjectManagerLibrary" level="project" />
-    <orderEntry type="library" name="com.microsoft.azure:azure-core:0.6.0" level="project" />
-    <orderEntry type="library" name="com.microsoft.azure:azure-management-compute:0.6.0" level="project" />
-    <orderEntry type="library" name="com.microsoft.azure:azure-management-storage:0.6.0" level="project" />
-    <orderEntry type="library" name="com.microsoft.azure:azure-management:0.6.0" level="project" />
-    <orderEntry type="library" name="com.microsoft.azure:azure-storage:1.2.0" level="project" />
+    <orderEntry type="library" name="com.microsoft.azure:azure-core:0.7.0" level="project" />
+    <orderEntry type="library" name="com.microsoft.azure:azure-management-compute:0.7.0" level="project" />
+    <orderEntry type="library" name="com.microsoft.azure:azure-management-storage:0.7.0" level="project" />
+    <orderEntry type="library" name="com.microsoft.azure:azure-management:0.7.0" level="project" />
     <orderEntry type="library" name="com.nimbusds:nimbus-jose-jwt:2.11.0" level="project" />
     <orderEntry type="library" name="org.apache.httpcomponents:fluent-hc:4.3.5" level="project" />
     <orderEntry type="library" name="org.apache.httpcomponents:httpclient-cache:4.3.5" level="project" />
@@ -26,5 +24,7 @@
     <orderEntry type="library" scope="PROVIDED" name="antIntegration" level="project" />
     <orderEntry type="library" name="com.google.guava:guava:18.0" level="project" />
     <orderEntry type="library" name="azure-graph-api" level="project" />
+    <orderEntry type="library" name="com.microsoft.azure:azure-storage:1.3.1" level="project" />
+    <orderEntry type="library" name=".cspack" level="project" />
   </component>
 </module>
