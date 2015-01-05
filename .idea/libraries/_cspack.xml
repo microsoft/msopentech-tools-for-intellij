@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name=".cspack">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/.cspack.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
