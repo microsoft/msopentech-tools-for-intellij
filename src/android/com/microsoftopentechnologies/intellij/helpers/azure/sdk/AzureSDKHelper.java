@@ -24,8 +24,13 @@ import com.microsoft.windowsazure.management.compute.ComputeManagementClient;
 import com.microsoft.windowsazure.management.compute.ComputeManagementService;
 import com.microsoft.windowsazure.management.configuration.ManagementConfiguration;
 import com.microsoftopentechnologies.intellij.components.MSOpenTechTools;
+import com.microsoftopentechnologies.intellij.helpers.NoSubscriptionException;
 import com.microsoftopentechnologies.intellij.helpers.OpenSSLHelper;
 import com.microsoftopentechnologies.intellij.helpers.XmlHelper;
+import com.microsoftopentechnologies.intellij.helpers.azure.AzureAuthenticationMode;
+import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
+import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIManager;
+import com.microsoftopentechnologies.intellij.model.Subscription;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.w3c.dom.Node;
@@ -37,10 +42,9 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import java.io.*;
 import java.net.URI;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
+import java.security.*;
 import java.security.cert.CertificateException;
+import java.util.concurrent.ExecutionException;
 
 public class AzureSDKHelper {
     private static class SubscriptionInfo {
@@ -57,7 +61,15 @@ public class AzureSDKHelper {
             return null;
         }
 
-        return ComputeManagementService.create(configuration);
+        ComputeManagementClient client = ComputeManagementService.create(configuration);
+
+        // add a request filter for tacking on the A/D auth token if the current authentication
+        // mode is active directory
+        if(AzureRestAPIManager.getManager().getAuthenticationMode() == AzureAuthenticationMode.ActiveDirectory) {
+            return client.withRequestFilterFirst(new AuthTokenRequestFilter(subscriptionId));
+        }
+
+        return client;
     }
 
     @Nullable
@@ -69,13 +81,61 @@ public class AzureSDKHelper {
             return null;
         }
 
-        return configuration.create(ManagementClient.class);
+        ManagementClient client = configuration.create(ManagementClient.class);
+
+        // add a request filter for tacking on the A/D auth token if the current authentication
+        // mode is active directory
+        if(AzureRestAPIManager.getManager().getAuthenticationMode() == AzureAuthenticationMode.ActiveDirectory) {
+            return client.withRequestFilterFirst(new AuthTokenRequestFilter(subscriptionId));
+        }
+
+        return client;
+    }
+
+    private static Configuration getConfiguration(@NotNull String subscriptionId) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, XPathExpressionException, SAXException, ParserConfigurationException, IOException {
+        switch (AzureRestAPIManager.getManager().getAuthenticationMode()) {
+            case SubscriptionSettings:
+                return getConfigurationFromPublishSettings(subscriptionId);
+            case ActiveDirectory:
+                return getConfigurationFromAuthToken(subscriptionId);
+        }
+
+        return null;
+    }
+
+    private static Configuration getConfigurationFromAuthToken(@NotNull String subscriptionId) throws SAXException, ParserConfigurationException, XPathExpressionException, IOException {
+
+        // NOTE: This implementation has to be considered as somewhat hacky. It relies on certain
+        // internal implementation details of the Azure SDK for Java. For example we supply null
+        // values for the key store location and password and specify a key store type value
+        // though it will not be used. We also supply a no-op "credential provider". Ideally we want
+        // the SDK to directly support the scenario we need.
+
+        SubscriptionInfo subscriptionInfo = getSubscriptionInfoFromToken(subscriptionId);
+        ClassLoader old = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread().setContextClassLoader(AzureSDKHelper.class.getClassLoader());
+
+        try {
+            // create a default configuration object
+            Configuration configuration = ManagementConfiguration.configure(
+                    URI.create(subscriptionInfo.managementURI),
+                    subscriptionId, null, null, KeyStoreType.pkcs12);
+
+            // replace the credential provider with a custom one that does nothing
+            configuration.setProperty(
+                    ManagementConfiguration.SUBSCRIPTION_CLOUD_CREDENTIALS,
+                    new EmptyCloudCredentials(subscriptionId));
+
+            return configuration;
+        } finally {
+            Thread.currentThread().setContextClassLoader(old);
+        }
     }
 
     @Nullable
-    private static Configuration getConfiguration(@NotNull String subscriptionId)
+    private static Configuration getConfigurationFromPublishSettings(@NotNull String subscriptionId)
             throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException, ParserConfigurationException, XPathExpressionException, SAXException {
-        SubscriptionInfo subscriptionInfo = getSubscriptionInfo(subscriptionId);
+        SubscriptionInfo subscriptionInfo = getSubscriptionInfoFromPublishSettings(subscriptionId);
 
         if (subscriptionInfo == null) {
             return null;
@@ -99,8 +159,14 @@ public class AzureSDKHelper {
         }
     }
 
+    private static SubscriptionInfo getSubscriptionInfoFromToken(@NotNull String subscriptionId) {
+        SubscriptionInfo subscriptionInfo = new SubscriptionInfo();
+        subscriptionInfo.managementURI = MSOpenTechTools.getCurrent().getSettings().getAzureServiceManagementUri();
+        return subscriptionInfo;
+    }
+
     @Nullable
-    private static SubscriptionInfo getSubscriptionInfo(@NotNull String subscriptionId)
+    private static SubscriptionInfo getSubscriptionInfoFromPublishSettings(@NotNull String subscriptionId)
             throws SAXException, ParserConfigurationException, XPathExpressionException, IOException {
         String publishSettings = PropertiesComponent.getInstance().getValue(MSOpenTechTools.AppSettingsNames.SUBSCRIPTION_FILE, "");
 

@@ -393,19 +393,22 @@ public class Node {
             Futures.addCallback(future, new FutureCallback<List<Node>>() {
                 @Override
                 public void onSuccess(List<Node> nodes) {
-                    updateName();
+                    updateName(null);
                 }
 
                 @Override
                 public void onFailure(Throwable throwable) {
-                    updateName();
+                    updateName(throwable);
                 }
 
-                private void updateName() {
+                private void updateName(final Throwable throwable) {
                     ApplicationManager.getApplication().invokeLater(new Runnable() {
                         @Override
                         public void run() {
                             setName(nodeName);
+                            if(throwable != null) {
+                                UIHelper.showException("An error occurred while loading " + getName() + ".", throwable);
+                            }
                         }
                     });
                 }

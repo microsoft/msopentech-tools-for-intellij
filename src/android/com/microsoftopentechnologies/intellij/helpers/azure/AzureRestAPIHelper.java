@@ -442,7 +442,7 @@ public class AzureRestAPIHelper {
         }
     }
 
-    private static AuthenticationResult acquireTokenInteractive(
+    public static AuthenticationResult acquireTokenInteractive(
             String subscriptionId, AzureManager apiManager) throws IOException, CertificateException, NoSuchAlgorithmException, UnrecoverableKeyException, ExecutionException, ParserConfigurationException, InterruptedException, XPathExpressionException, SAXException, KeyManagementException, KeyStoreException, AzureCmdException, NoSubscriptionException {
 
         PluginSettings settings = MSOpenTechTools.getCurrent().getSettings();
