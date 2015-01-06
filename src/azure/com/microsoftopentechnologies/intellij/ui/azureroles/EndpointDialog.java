@@ -99,7 +99,26 @@ public class EndpointDialog extends DialogWrapper {
             txtPrivatePort.setText(AUTO);
         }
         enableControlsDependingOnEnpointType((WindowsAzureEndpointType) comboType.getSelectedItem());
+        txtPrivatePort.addFocusListener(createPortFocusListener());
+        txtPrivatePortRangeEnd.addFocusListener(createPortFocusListener());
         super.init();
+    }
+
+    private FocusListener createPortFocusListener() {
+        return new FocusListener() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                JTextField field = (JTextField) e.getComponent();
+                if (field.getText().equalsIgnoreCase(AUTO)) {
+                    field.setText("");
+                }
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                focusLostMethod();
+            }
+        };
     }
 
     private ItemListener createComboTypeListener() {
@@ -123,6 +142,16 @@ public class EndpointDialog extends DialogWrapper {
                 }
             }
         };
+    }
+
+
+
+    private void focusLostMethod() {
+        String text = txtPrivatePort.getText();
+        if ((text.isEmpty() || text.equalsIgnoreCase("*")) && txtPrivatePortRangeEnd.getText().isEmpty()
+                && !(comboType.getSelectedItem() == WindowsAzureEndpointType.InstanceInput)) {
+            txtPrivatePort.setText(AUTO);
+        }
     }
 
     /**

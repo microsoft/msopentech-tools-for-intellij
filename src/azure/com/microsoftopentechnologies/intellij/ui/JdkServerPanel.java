@@ -1150,15 +1150,6 @@ public class JdkServerPanel {
                 if (uploadLocalServer.isSelected()) {
                     // server auto upload radio button selected
                     configureAutoUploadServerSettings(waRole, message("dlNtLblDirSrv"));
-                } else {
-					/*
-					 * server auto upload radio button unselected
-					 * and deploy button selected.
-					 */
-                    if (customDownloadServer.isSelected()) {
-                        serverUrl.setText(getUrl(storageAccountServer));
-                        return;
-                    }
                 }
 //                handlePageComplete();
             }
@@ -1171,6 +1162,11 @@ public class JdkServerPanel {
             public void actionPerformed(ActionEvent e) {
                 if (customDownloadServer.isSelected()) {
                     srvDeployBtnSelected(waRole, message("dlNtLblDirSrv"));
+                    /*
+					 * server auto upload radio button unselected
+					 * and deploy button selected.
+					 */
+                    serverUrl.setText(getUrl(storageAccountServer));
                 }
 //                handlePageComplete();
             }
