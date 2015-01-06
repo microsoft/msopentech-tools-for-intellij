@@ -24,13 +24,10 @@ import com.microsoft.windowsazure.management.compute.ComputeManagementClient;
 import com.microsoft.windowsazure.management.compute.ComputeManagementService;
 import com.microsoft.windowsazure.management.configuration.ManagementConfiguration;
 import com.microsoftopentechnologies.intellij.components.MSOpenTechTools;
-import com.microsoftopentechnologies.intellij.helpers.NoSubscriptionException;
 import com.microsoftopentechnologies.intellij.helpers.OpenSSLHelper;
 import com.microsoftopentechnologies.intellij.helpers.XmlHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureAuthenticationMode;
-import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIManager;
-import com.microsoftopentechnologies.intellij.model.Subscription;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.w3c.dom.Node;
@@ -44,7 +41,6 @@ import java.io.*;
 import java.net.URI;
 import java.security.*;
 import java.security.cert.CertificateException;
-import java.util.concurrent.ExecutionException;
 
 public class AzureSDKHelper {
     private static class SubscriptionInfo {

@@ -16,6 +16,7 @@
 
 package com.microsoftopentechnologies.intellij.helpers.azure.sdk;
 
+import com.microsoft.windowsazure.core.pipeline.apache.ApacheConfigurationProperties;
 import com.microsoft.windowsazure.credentials.SubscriptionCloudCredentials;
 
 import java.util.Map;
@@ -34,7 +35,7 @@ public class EmptyCloudCredentials extends SubscriptionCloudCredentials {
 
     @Override
     public <T> void applyConfig(String profile, Map<String, Object> properties) {
-        // we do nothing here; this is after all an *empty* cloud credential
-        // implementation!
+        // all of our logic is in the AuthTokenRequestFilter and the AzureSDKManagerADAuthDecorator
+        // classes; this is a "token" cloud credentials implementation (pun intended).
     }
 }

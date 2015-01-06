@@ -23,7 +23,9 @@ import com.microsoft.windowsazure.management.compute.HostedServiceOperations;
 import com.microsoft.windowsazure.management.compute.VirtualMachineOperations;
 import com.microsoft.windowsazure.management.compute.models.*;
 import com.microsoft.windowsazure.management.compute.models.HostedServiceListResponse.HostedService;
+import com.microsoftopentechnologies.intellij.helpers.azure.AzureAuthenticationMode;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
+import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIManager;
 import com.microsoftopentechnologies.intellij.model.vm.Endpoint;
 import com.microsoftopentechnologies.intellij.model.vm.VirtualMachine;
 import org.jetbrains.annotations.NotNull;
@@ -38,6 +40,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     private static final String NETWORK_CONFIGURATION = "NetworkConfiguration";
 
     private static AzureSDKManager apiManager;
+    private static AzureSDKManager apiManagerADAuth;
 
     private AzureSDKManagerImpl() {
     }
@@ -46,6 +49,12 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     public static AzureSDKManager getManager() {
         if (apiManager == null) {
             apiManager = new AzureSDKManagerImpl();
+            apiManagerADAuth = new AzureSDKManagerADAuthDecorator(apiManager);
+        }
+
+        AzureAuthenticationMode authenticationMode = AzureRestAPIManager.getManager().getAuthenticationMode();
+        if(authenticationMode == AzureAuthenticationMode.ActiveDirectory) {
+            return apiManagerADAuth;
         }
 
         return apiManager;

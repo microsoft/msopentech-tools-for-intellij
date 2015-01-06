@@ -559,7 +559,7 @@ public class AzureRestAPIHelper {
                 version);
     }
 
-    private static String getTenantName(String subscriptionId) throws IOException, CertificateException, NoSuchAlgorithmException, UnrecoverableKeyException, ExecutionException, ParserConfigurationException, InterruptedException, SAXException, AzureCmdException, NoSubscriptionException, KeyStoreException, XPathExpressionException, KeyManagementException {
+    public static String getTenantName(String subscriptionId) throws IOException, CertificateException, NoSuchAlgorithmException, UnrecoverableKeyException, ExecutionException, ParserConfigurationException, InterruptedException, SAXException, AzureCmdException, NoSubscriptionException, KeyStoreException, XPathExpressionException, KeyManagementException {
         // get tenant id from subscription if this request is for an
         // azure subscription
         String tenantName = MSOpenTechTools.getCurrent().getSettings().getTenantName();
