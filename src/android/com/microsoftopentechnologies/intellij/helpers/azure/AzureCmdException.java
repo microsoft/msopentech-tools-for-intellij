@@ -28,7 +28,7 @@ public class AzureCmdException extends Exception {
     }
 
     public AzureCmdException(String message, Throwable throwable) {
-        super(message);
+        super(message, throwable);
 
         if (throwable instanceof AzureCmdException) {
             mErrorLog = ((AzureCmdException) throwable).getErrorLog();

@@ -442,7 +442,7 @@ public class AzureRestAPIHelper {
         }
     }
 
-    private static AuthenticationResult acquireTokenInteractive(
+    public static AuthenticationResult acquireTokenInteractive(
             String subscriptionId, AzureManager apiManager) throws IOException, CertificateException, NoSuchAlgorithmException, UnrecoverableKeyException, ExecutionException, ParserConfigurationException, InterruptedException, XPathExpressionException, SAXException, KeyManagementException, KeyStoreException, AzureCmdException, NoSubscriptionException {
 
         PluginSettings settings = MSOpenTechTools.getCurrent().getSettings();
@@ -559,7 +559,7 @@ public class AzureRestAPIHelper {
                 version);
     }
 
-    private static String getTenantName(String subscriptionId) throws IOException, CertificateException, NoSuchAlgorithmException, UnrecoverableKeyException, ExecutionException, ParserConfigurationException, InterruptedException, SAXException, AzureCmdException, NoSubscriptionException, KeyStoreException, XPathExpressionException, KeyManagementException {
+    public static String getTenantName(String subscriptionId) throws IOException, CertificateException, NoSuchAlgorithmException, UnrecoverableKeyException, ExecutionException, ParserConfigurationException, InterruptedException, SAXException, AzureCmdException, NoSubscriptionException, KeyStoreException, XPathExpressionException, KeyManagementException {
         // get tenant id from subscription if this request is for an
         // azure subscription
         String tenantName = MSOpenTechTools.getCurrent().getSettings().getTenantName();
