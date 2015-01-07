@@ -17,6 +17,7 @@ package com.microsoftopentechnologies.intellij.helpers.azure.sdk;
 
 import com.intellij.ide.util.PropertiesComponent;
 import com.microsoft.windowsazure.Configuration;
+import com.microsoft.windowsazure.core.pipeline.apache.ApacheConfigurationProperties;
 import com.microsoft.windowsazure.core.utils.Base64;
 import com.microsoft.windowsazure.core.utils.KeyStoreType;
 import com.microsoft.windowsazure.management.ManagementClient;
@@ -128,6 +129,17 @@ public class AzureSDKHelper {
                         ManagementConfiguration.SUBSCRIPTION_CLOUD_CREDENTIALS,
                         new EmptyCloudCredentials(subscriptionId));
             }
+
+            // remove the SSL connection factory in case one was added; this is needed
+            // in the case when the user switches from subscription based auth to A/D
+            // sign-in because in that scenario the CertificateCloudCredentials class
+            // would have added an SSL connection factory object to the configuration
+            // object which would then be used when making the SSL call to the Azure
+            // service management API. This tells us that the configuration object is
+            // reused across calls to ManagementConfiguration.configure. The SSL connection
+            // factory object so configured will attempt to use certificate based auth
+            // which will fail since we don't have a certificate handy when using A/D auth.
+            configuration.getProperties().remove(ApacheConfigurationProperties.PROPERTY_SSL_CONNECTION_SOCKET_FACTORY);
 
             return configuration;
         } finally {
