@@ -17,6 +17,7 @@ package com.microsoftopentechnologies.intellij.helpers.azure.sdk;
 
 import com.microsoft.windowsazure.core.OperationStatusResponse;
 import com.microsoft.windowsazure.exception.ServiceException;
+import com.microsoft.windowsazure.management.AffinityGroupOperations;
 import com.microsoft.windowsazure.management.LocationOperations;
 import com.microsoft.windowsazure.management.ManagementClient;
 import com.microsoft.windowsazure.management.RoleSizeOperations;
@@ -25,6 +26,7 @@ import com.microsoft.windowsazure.management.compute.models.*;
 import com.microsoft.windowsazure.management.compute.models.HostedServiceListResponse.HostedService;
 import com.microsoft.windowsazure.management.compute.models.VirtualMachineOSImageListResponse.VirtualMachineOSImage;
 import com.microsoft.windowsazure.management.compute.models.VirtualMachineVMImageListResponse.VirtualMachineVMImage;
+import com.microsoft.windowsazure.management.models.AffinityGroupListResponse;
 import com.microsoft.windowsazure.management.models.LocationsListResponse;
 import com.microsoft.windowsazure.management.models.RoleSizeListResponse;
 import com.microsoft.windowsazure.management.models.RoleSizeListResponse.RoleSize;
@@ -360,7 +362,30 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
 
             return locationList;
         } catch (Throwable t) {
-            throw new AzureCmdException("Error retrieving the VM Size list", t);
+            throw new AzureCmdException("Error retrieving the Location list", t);
+        } finally {
+            if (client != null) {
+                try {
+                    client.close();
+                } catch (IOException ignored) {
+                }
+            }
+        }
+    }
+
+    @NotNull
+    @Override
+    public List<AffinityGroup> getAffinityGroups(@NotNull String subscriptionId) throws AzureCmdException {
+        List<AffinityGroup> affinityGroupList = new ArrayList<AffinityGroup>();
+        ManagementClient client = null;
+
+        try {
+            client = getManagementClient(subscriptionId);
+            affinityGroupList = loadAffinityGroups(client, affinityGroupList);
+
+            return affinityGroupList;
+        } catch (Throwable t) {
+            throw new AzureCmdException("Error retrieving the Affinity Group list", t);
         } finally {
             if (client != null) {
                 try {
@@ -473,6 +498,20 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
 
         return lo;
     }
+
+
+    @NotNull
+    private static AffinityGroupOperations getAffinityGroupOperations(@NotNull ManagementClient client)
+            throws Exception {
+        AffinityGroupOperations ago = client.getAffinityGroupsOperations();
+
+        if (ago == null) {
+            throw new Exception("Unable to retrieve Affinity Groups information");
+        }
+
+        return ago;
+    }
+
 
     @Nullable
     private static DeploymentGetResponse getDeployment(@NotNull ComputeManagementClient client, @NotNull String serviceName,
@@ -716,15 +755,39 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         }
 
         if (llr.getLocations() != null) {
-            for (LocationsListResponse.Location rs : llr.getLocations()) {
+            for (LocationsListResponse.Location location : llr.getLocations()) {
                 locationList.add(
                         new Location(
-                                rs.getName() != null ? rs.getName() : "",
-                                rs.getDisplayName() != null ? rs.getDisplayName() : ""
+                                location.getName() != null ? location.getName() : "",
+                                location.getDisplayName() != null ? location.getDisplayName() : ""
                         ));
             }
         }
 
         return locationList;
+    }
+
+    @NotNull
+    private static List<AffinityGroup> loadAffinityGroups(@NotNull ManagementClient client,
+                                                          @NotNull List<AffinityGroup> affinityGroupList)
+            throws Exception {
+        AffinityGroupListResponse aglr = getAffinityGroupOperations(client).list();
+
+        if (aglr == null) {
+            throw new Exception("Unable to retrieve Affinity Groups information");
+        }
+
+        if (aglr.getAffinityGroups() != null) {
+            for (AffinityGroupListResponse.AffinityGroup ag : aglr.getAffinityGroups()) {
+                affinityGroupList.add(
+                        new AffinityGroup(
+                                ag.getName() != null ? ag.getName() : "",
+                                ag.getLabel() != null ? ag.getLabel() : "",
+                                ag.getLocation() != null ? ag.getLocation() : ""
+                        ));
+            }
+        }
+
+        return affinityGroupList;
     }
 }

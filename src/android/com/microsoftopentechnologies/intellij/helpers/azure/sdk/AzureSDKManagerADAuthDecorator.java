@@ -25,10 +25,7 @@ import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureManager;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIManager;
-import com.microsoftopentechnologies.intellij.model.vm.Location;
-import com.microsoftopentechnologies.intellij.model.vm.VirtualMachine;
-import com.microsoftopentechnologies.intellij.model.vm.VirtualMachineImage;
-import com.microsoftopentechnologies.intellij.model.vm.VirtualMachineSize;
+import com.microsoftopentechnologies.intellij.model.vm.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.net.HttpURLConnection;
@@ -206,6 +203,17 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
             @Override
             public List<Location> run() throws AzureCmdException {
                 return sdkManager.getLocations(subscriptionId);
+            }
+        });
+    }
+
+    @NotNull
+    @Override
+    public List<AffinityGroup> getAffinityGroups(@NotNull final String subscriptionId) throws AzureCmdException {
+        return runWithRetry(subscriptionId, new Func0<List<AffinityGroup>>() {
+            @Override
+            public List<AffinityGroup> run() throws AzureCmdException {
+                return sdkManager.getAffinityGroups(subscriptionId);
             }
         });
     }

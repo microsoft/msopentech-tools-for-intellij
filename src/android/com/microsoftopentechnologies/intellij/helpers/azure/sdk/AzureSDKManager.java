@@ -16,10 +16,7 @@
 package com.microsoftopentechnologies.intellij.helpers.azure.sdk;
 
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.intellij.model.vm.Location;
-import com.microsoftopentechnologies.intellij.model.vm.VirtualMachine;
-import com.microsoftopentechnologies.intellij.model.vm.VirtualMachineImage;
-import com.microsoftopentechnologies.intellij.model.vm.VirtualMachineSize;
+import com.microsoftopentechnologies.intellij.model.vm.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -50,4 +47,7 @@ public interface AzureSDKManager {
 
     @NotNull
     List<Location> getLocations(@NotNull String subscriptionId) throws AzureCmdException;
+
+    @NotNull
+    List<AffinityGroup> getAffinityGroups(@NotNull String subscriptionId) throws AzureCmdException;
 }
