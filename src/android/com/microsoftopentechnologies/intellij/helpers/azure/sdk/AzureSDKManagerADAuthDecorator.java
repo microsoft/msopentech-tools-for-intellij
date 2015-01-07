@@ -25,8 +25,10 @@ import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureManager;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIManager;
+import com.microsoftopentechnologies.intellij.model.vm.Location;
 import com.microsoftopentechnologies.intellij.model.vm.VirtualMachine;
 import com.microsoftopentechnologies.intellij.model.vm.VirtualMachineImage;
+import com.microsoftopentechnologies.intellij.model.vm.VirtualMachineSize;
 import org.jetbrains.annotations.NotNull;
 
 import java.net.HttpURLConnection;
@@ -182,6 +184,28 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
             @Override
             public List<VirtualMachineImage> run() throws AzureCmdException {
                 return sdkManager.getVirtualMachineImages(subscriptionId);
+            }
+        });
+    }
+
+    @NotNull
+    @Override
+    public List<VirtualMachineSize> getVirtualMachineSizes(@NotNull final String subscriptionId) throws AzureCmdException {
+        return runWithRetry(subscriptionId, new Func0<List<VirtualMachineSize>>() {
+            @Override
+            public List<VirtualMachineSize> run() throws AzureCmdException {
+                return sdkManager.getVirtualMachineSizes(subscriptionId);
+            }
+        });
+    }
+
+    @NotNull
+    @Override
+    public List<Location> getLocations(@NotNull final String subscriptionId) throws AzureCmdException {
+        return runWithRetry(subscriptionId, new Func0<List<Location>>() {
+            @Override
+            public List<Location> run() throws AzureCmdException {
+                return sdkManager.getLocations(subscriptionId);
             }
         });
     }

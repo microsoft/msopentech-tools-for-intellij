@@ -17,17 +17,21 @@ package com.microsoftopentechnologies.intellij.helpers.azure.sdk;
 
 import com.microsoft.windowsazure.core.OperationStatusResponse;
 import com.microsoft.windowsazure.exception.ServiceException;
+import com.microsoft.windowsazure.management.LocationOperations;
+import com.microsoft.windowsazure.management.ManagementClient;
+import com.microsoft.windowsazure.management.RoleSizeOperations;
 import com.microsoft.windowsazure.management.compute.*;
 import com.microsoft.windowsazure.management.compute.models.*;
 import com.microsoft.windowsazure.management.compute.models.HostedServiceListResponse.HostedService;
 import com.microsoft.windowsazure.management.compute.models.VirtualMachineOSImageListResponse.VirtualMachineOSImage;
 import com.microsoft.windowsazure.management.compute.models.VirtualMachineVMImageListResponse.VirtualMachineVMImage;
+import com.microsoft.windowsazure.management.models.LocationsListResponse;
+import com.microsoft.windowsazure.management.models.RoleSizeListResponse;
+import com.microsoft.windowsazure.management.models.RoleSizeListResponse.RoleSize;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureAuthenticationMode;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIManager;
-import com.microsoftopentechnologies.intellij.model.vm.Endpoint;
-import com.microsoftopentechnologies.intellij.model.vm.VirtualMachine;
-import com.microsoftopentechnologies.intellij.model.vm.VirtualMachineImage;
+import com.microsoftopentechnologies.intellij.model.vm.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -322,11 +326,68 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     }
 
     @NotNull
+    @Override
+    public List<VirtualMachineSize> getVirtualMachineSizes(@NotNull String subscriptionId) throws AzureCmdException {
+        List<VirtualMachineSize> vmSizeList = new ArrayList<VirtualMachineSize>();
+        ManagementClient client = null;
+
+        try {
+            client = getManagementClient(subscriptionId);
+            vmSizeList = loadVMSizes(client, vmSizeList);
+
+            return vmSizeList;
+        } catch (Throwable t) {
+            throw new AzureCmdException("Error retrieving the VM Size list", t);
+        } finally {
+            if (client != null) {
+                try {
+                    client.close();
+                } catch (IOException ignored) {
+                }
+            }
+        }
+    }
+
+    @NotNull
+    @Override
+    public List<Location> getLocations(@NotNull String subscriptionId) throws AzureCmdException {
+        List<Location> locationList = new ArrayList<Location>();
+        ManagementClient client = null;
+
+        try {
+            client = getManagementClient(subscriptionId);
+            locationList = loadLocations(client, locationList);
+
+            return locationList;
+        } catch (Throwable t) {
+            throw new AzureCmdException("Error retrieving the VM Size list", t);
+        } finally {
+            if (client != null) {
+                try {
+                    client.close();
+                } catch (IOException ignored) {
+                }
+            }
+        }
+    }
+
+    @NotNull
     private static ComputeManagementClient getComputeManagementClient(@NotNull String subscriptionId) throws Exception {
         ComputeManagementClient client = AzureSDKHelper.getComputeManagementClient(subscriptionId);
 
         if (client == null) {
             throw new Exception("Unable to instantiate Compute Management client");
+        }
+
+        return client;
+    }
+
+    @NotNull
+    private static ManagementClient getManagementClient(@NotNull String subscriptionId) throws Exception {
+        ManagementClient client = AzureSDKHelper.getManagementClient(subscriptionId);
+
+        if (client == null) {
+            throw new Exception("Unable to instantiate Management client");
         }
 
         return client;
@@ -387,6 +448,30 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         }
 
         return vmvmio;
+    }
+
+    @NotNull
+    private static RoleSizeOperations getRoleSizeOperations(@NotNull ManagementClient client)
+            throws Exception {
+        RoleSizeOperations rso = client.getRoleSizesOperations();
+
+        if (rso == null) {
+            throw new Exception("Unable to retrieve Role Sizes information");
+        }
+
+        return rso;
+    }
+
+    @NotNull
+    private static LocationOperations getLocationsOperations(@NotNull ManagementClient client)
+            throws Exception {
+        LocationOperations lo = client.getLocationsOperations();
+
+        if (lo == null) {
+            throw new Exception("Unable to retrieve Locations information");
+        }
+
+        return lo;
     }
 
     @Nullable
@@ -555,6 +640,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
                                 osImage.getEula() != null ? osImage.getEula() : "",
                                 osImage.getPrivacyUri() != null ? osImage.getPrivacyUri().toString() : "",
                                 osImage.getPricingDetailUri() != null ? osImage.getPricingDetailUri().toString() : "",
+                                osImage.getRecommendedVMSize() != null ? osImage.getRecommendedVMSize() : "",
                                 osImage.isShowInGui() != null ? osImage.isShowInGui() : false));
             }
         }
@@ -586,10 +672,59 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
                                 vmImage.getEula() != null ? vmImage.getEula() : "",
                                 vmImage.getPrivacyUri() != null ? vmImage.getPrivacyUri().toString() : "",
                                 vmImage.getPricingDetailLink() != null ? vmImage.getPricingDetailLink().toString() : "",
+                                vmImage.getRecommendedVMSize() != null ? vmImage.getRecommendedVMSize() : "",
                                 vmImage.isShowInGui() != null ? vmImage.isShowInGui() : false));
             }
         }
 
         return vmImageList;
+    }
+
+    @NotNull
+    private static List<VirtualMachineSize> loadVMSizes(@NotNull ManagementClient client,
+                                                        @NotNull List<VirtualMachineSize> vmSizeList)
+            throws Exception {
+        RoleSizeListResponse rslr = getRoleSizeOperations(client).list();
+
+        if (rslr == null) {
+            throw new Exception("Unable to retrieve Role Sizes information");
+        }
+
+        if (rslr.getRoleSizes() != null) {
+            for (RoleSize rs : rslr.getRoleSizes()) {
+                if (rs.isSupportedByVirtualMachines()) {
+                    vmSizeList.add(
+                            new VirtualMachineSize(
+                                    rs.getName() != null ? rs.getName() : "",
+                                    rs.getLabel() != null ? rs.getLabel() : ""
+                            ));
+                }
+            }
+        }
+
+        return vmSizeList;
+    }
+
+    @NotNull
+    private static List<Location> loadLocations(@NotNull ManagementClient client,
+                                                @NotNull List<Location> locationList)
+            throws Exception {
+        LocationsListResponse llr = getLocationsOperations(client).list();
+
+        if (llr == null) {
+            throw new Exception("Unable to retrieve Locations information");
+        }
+
+        if (llr.getLocations() != null) {
+            for (LocationsListResponse.Location rs : llr.getLocations()) {
+                locationList.add(
+                        new Location(
+                                rs.getName() != null ? rs.getName() : "",
+                                rs.getDisplayName() != null ? rs.getDisplayName() : ""
+                        ));
+            }
+        }
+
+        return locationList;
     }
 }
