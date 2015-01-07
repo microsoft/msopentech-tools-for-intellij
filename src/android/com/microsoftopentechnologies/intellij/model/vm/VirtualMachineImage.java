@@ -33,12 +33,14 @@ public class VirtualMachineImage implements ServiceTreeItem {
     private String eulaUri;
     private String privacyUri;
     private String pricingUri;
+    private String recommendedVMSize;
     private boolean showInGui;
 
     public VirtualMachineImage(@NotNull String name, @NotNull String category, @NotNull String publisherName,
                                @NotNull Calendar publishedDate, @NotNull String label, @NotNull String description,
                                @NotNull String operatingSystemType, @NotNull String location, @NotNull String eulaUri,
-                               @NotNull String privacyUri, @NotNull String pricingUri, boolean showInGui) {
+                               @NotNull String privacyUri, @NotNull String pricingUri, @NotNull String recommendedVMSize,
+                               boolean showInGui) {
         this.name = name;
         this.category = category;
         this.publisherName = publisherName;
@@ -50,6 +52,7 @@ public class VirtualMachineImage implements ServiceTreeItem {
         this.eulaUri = eulaUri;
         this.privacyUri = privacyUri;
         this.pricingUri = pricingUri;
+        this.recommendedVMSize = recommendedVMSize;
         this.showInGui = showInGui;
     }
 
@@ -118,12 +121,16 @@ public class VirtualMachineImage implements ServiceTreeItem {
         return pricingUri;
     }
 
+    public String getRecommendedVMSize() {
+        return recommendedVMSize;
+    }
+
     public boolean isShowInGui() {
         return showInGui;
     }
 
     @Override
     public String toString() {
-        return name + (loading ? " (loading...)" : "");
+        return label + (loading ? " (loading...)" : "");
     }
 }
