@@ -1,28 +1,19 @@
 <component name="libraryTable">
   <library name="azure-graph-api">
     <CLASSES>
-      <root url="jar://$PROJECT_DIR$/lib/graph/directory-services-0.11.0.jar!/" />
-      <root url="jar://$PROJECT_DIR$/lib/graph/odata-engine-helpers-0.9.3.jar!/" />
-      <root url="jar://$PROJECT_DIR$/lib/graph/odata-engine-interfaces-0.9.3.jar!/" />
-      <root url="jar://$PROJECT_DIR$/lib/graph/odata-engine-java-desktop-impl-0.9.3.jar!/" />
-      <root url="jar://$PROJECT_DIR$/lib/graph/odata-engine-java-impl-0.9.3.jar!/" />
-      <root url="jar://$PROJECT_DIR$/lib/graph/odata-engine-core-0.11.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/graph/directory-services-0.11.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/graph/odata-engine-core-0.11.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/graph/odata-engine-jvm-impl-0.11.1.jar!/" />
     </CLASSES>
     <JAVADOC>
-      <root url="jar://$PROJECT_DIR$/lib/graph/directory-services-0.11.0-javadoc.jar!/" />
-      <root url="jar://$PROJECT_DIR$/lib/graph/odata-engine-helpers-0.9.3-javadoc.jar!/" />
-      <root url="jar://$PROJECT_DIR$/lib/graph/odata-engine-interfaces-0.9.3-javadoc.jar!/" />
-      <root url="jar://$PROJECT_DIR$/lib/graph/odata-engine-java-desktop-impl-0.9.3-javadoc.jar!/" />
-      <root url="jar://$PROJECT_DIR$/lib/graph/odata-engine-java-impl-0.9.3-javadoc.jar!/" />
-      <root url="jar://$PROJECT_DIR$/lib/graph/odata-engine-core-0.11.0-javadoc.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/graph/directory-services-0.11.1-javadoc.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/graph/odata-engine-core-0.11.1-javadoc.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/graph/odata-engine-jvm-impl-0.11.1-javadoc.jar!/" />
     </JAVADOC>
     <SOURCES>
-      <root url="jar://$PROJECT_DIR$/lib/graph/directory-services-0.11.0-sources.jar!/" />
-      <root url="jar://$PROJECT_DIR$/lib/graph/odata-engine-helpers-0.9.3-sources.jar!/" />
-      <root url="jar://$PROJECT_DIR$/lib/graph/odata-engine-interfaces-0.9.3-sources.jar!/" />
-      <root url="jar://$PROJECT_DIR$/lib/graph/odata-engine-java-desktop-impl-0.9.3-sources.jar!/" />
-      <root url="jar://$PROJECT_DIR$/lib/graph/odata-engine-java-impl-0.9.3-sources.jar!/" />
-      <root url="jar://$PROJECT_DIR$/lib/graph/odata-engine-core-0.11.0-sources.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/graph/directory-services-0.11.1-sources.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/graph/odata-engine-core-0.11.1-sources.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/graph/odata-engine-jvm-impl-0.11.1-sources.jar!/" />
     </SOURCES>
   </library>
 </component>

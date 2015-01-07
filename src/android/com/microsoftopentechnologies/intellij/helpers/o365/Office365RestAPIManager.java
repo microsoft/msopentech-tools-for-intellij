@@ -20,17 +20,17 @@ import com.google.common.base.*;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
-import com.google.common.collect.UnmodifiableIterator;
 import com.google.common.util.concurrent.*;
 import com.google.gson.Gson;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.project.Project;
 import com.microsoft.directoryservices.*;
-import com.microsoft.directoryservices.odata.*;
+import com.microsoft.directoryservices.odata.ApplicationFetcher;
+import com.microsoft.directoryservices.odata.DirectoryClient;
+import com.microsoft.directoryservices.odata.DirectoryObjectOperations;
 import com.microsoft.services.odata.ODataCollectionFetcher;
 import com.microsoft.services.odata.ODataEntityFetcher;
 import com.microsoft.services.odata.ODataOperations;
-import com.microsoft.services.odata.impl.http.CredentialsFactoryImpl;
 import com.microsoftopentechnologies.intellij.components.MSOpenTechTools;
 import com.microsoftopentechnologies.intellij.components.PluginSettings;
 import com.microsoftopentechnologies.intellij.helpers.StringHelper;
@@ -46,7 +46,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -105,7 +107,7 @@ public class Office365RestAPIManager implements Office365Manager {
         // much all other state needs to be reset
         resetState();
 
-        if(token != null) {
+        if (token != null) {
             Gson gson = new Gson();
             String json = gson.toJson(token, AuthenticationResult.class);
             PropertiesComponent.getInstance().setValue(MSOpenTechTools.AppSettingsNames.O365_AUTHENTICATION_TOKEN, json);
@@ -122,9 +124,9 @@ public class Office365RestAPIManager implements Office365Manager {
 
     @Override
     public AuthenticationResult getAuthenticationToken() {
-        if(authenticationToken == null) {
+        if (authenticationToken == null) {
             String json = PropertiesComponent.getInstance().getValue(MSOpenTechTools.AppSettingsNames.O365_AUTHENTICATION_TOKEN);
-            if(!StringHelper.isNullOrWhiteSpace(json)) {
+            if (!StringHelper.isNullOrWhiteSpace(json)) {
                 Gson gson = new Gson();
                 setAuthenticationToken(gson.fromJson(json, AuthenticationResult.class));
             }
@@ -146,8 +148,7 @@ public class Office365RestAPIManager implements Office365Manager {
                     null,
                     PromptValue.login);
             setAuthenticationToken(future.get());
-        }
-        finally {
+        } finally {
             if (context != null) {
                 context.dispose();
             }
@@ -155,7 +156,7 @@ public class Office365RestAPIManager implements Office365Manager {
     }
 
     private String getGraphApiUri() throws ParseException {
-        if(graphApiUri == null) {
+        if (graphApiUri == null) {
             PluginSettings settings = MSOpenTechTools.getCurrent().getSettings();
             setGraphApiUri(GRAPH_API_URI_TEMPLATE.
                     replace("{base_uri}", settings.getGraphApiUri()).
@@ -173,12 +174,9 @@ public class Office365RestAPIManager implements Office365Manager {
     }
 
     private DirectoryClient getDirectoryClient() throws ParseException {
-        if(directoryDataServiceClient == null) {
-            CredentialsFactoryImpl credentialsFactory = new CredentialsFactoryImpl();
-            credentialsFactory.setCredentials(new ADCredentials(getAuthenticationToken()));
+        if (directoryDataServiceClient == null) {
 
-            PluginDependencyResolver dependencyResolver = new PluginDependencyResolver();
-            dependencyResolver.setCredentialsFactory(credentialsFactory);
+            PluginDependencyResolver dependencyResolver = new PluginDependencyResolver(getAuthenticationToken().getAccessToken());
             setDirectoryDataServiceClient(new DirectoryClient(getGraphApiUri(), dependencyResolver));
         }
 
@@ -252,7 +250,7 @@ public class Office365RestAPIManager implements Office365Manager {
         AuthenticationResult token = getAuthenticationToken();
         refreshTokenLock.lock();
         try {
-            if(AuthenticationResult.equals(token, getAuthenticationToken())) {
+            if (AuthenticationResult.equals(token, getAuthenticationToken())) {
                 context = new AuthenticationContext(settings.getAdAuthority());
                 setAuthenticationToken(context.acquireTokenByRefreshToken(
                         getAuthenticationToken(),
@@ -266,13 +264,12 @@ public class Office365RestAPIManager implements Office365Manager {
         } catch (ParseException e) {
             wrappedFuture.setException(e);
             return;
-        }
-        finally {
+        } finally {
             // we release the lock before we do anything else as
             // we don't want a lock leaking in case the statements
             // following throw
             refreshTokenLock.unlock();
-            if(context != null) {
+            if (context != null) {
                 context.dispose();
             }
         }
@@ -285,14 +282,13 @@ public class Office365RestAPIManager implements Office365Manager {
 
             @Override
             public void onFailure(Throwable throwable) {
-                if(isErrorUnauthorized(throwable)) {
+                if (isErrorUnauthorized(throwable)) {
                     try {
                         requestWithInteractiveToken(requestCallback, wrappedFuture);
                     } catch (ParseException e) {
                         wrappedFuture.setException(throwable);
                     }
-                }
-                else {
+                } else {
                     wrappedFuture.setException(throwable);
                 }
             }
@@ -309,7 +305,7 @@ public class Office365RestAPIManager implements Office365Manager {
 
             @Override
             public void onFailure(Throwable throwable) {
-                if(isErrorUnauthorized(throwable)) {
+                if (isErrorUnauthorized(throwable)) {
                     try {
                         requestWithRefreshToken(requestCallback, wrappedFuture);
                     } catch (ParseException e) {
@@ -372,7 +368,7 @@ public class Office365RestAPIManager implements Office365Manager {
                             @Override
                             public ListenableFuture<List<ServicePermissionEntry>> apply(List<ServicePrincipal> servicePrincipals) throws Exception {
 
-                                for(final ServicePrincipal servicePrincipal : servicePrincipals) {
+                                for (final ServicePrincipal servicePrincipal : servicePrincipals) {
                                     // lookup this service principal in app's list of resources; if it's not found add an entry
                                     ServicePermissionEntry servicePermissionEntry = Iterables.find(servicePermissions, new Predicate<ServicePermissionEntry>() {
                                         @Override
@@ -381,7 +377,7 @@ public class Office365RestAPIManager implements Office365Manager {
                                         }
                                     }, null);
 
-                                    if(servicePermissionEntry == null) {
+                                    if (servicePermissionEntry == null) {
                                         servicePermissions.add(servicePermissionEntry = new ServicePermissionEntry(
                                                 new Office365Service(),
                                                 new Office365PermissionList()
@@ -394,7 +390,7 @@ public class Office365RestAPIManager implements Office365Manager {
                                     service.setName(servicePrincipal.getdisplayName());
 
                                     List<OAuth2Permission> permissions = servicePrincipal.getoauth2Permissions();
-                                    for(final OAuth2Permission permission : permissions) {
+                                    for (final OAuth2Permission permission : permissions) {
                                         // lookup permission in permissionList
                                         Office365Permission office365Permission = Iterables.find(permissionList, new Predicate<Office365Permission>() {
                                             @Override
@@ -403,7 +399,7 @@ public class Office365RestAPIManager implements Office365Manager {
                                             }
                                         }, null);
 
-                                        if(office365Permission == null) {
+                                        if (office365Permission == null) {
                                             permissionList.add(office365Permission = new Office365Permission());
                                             office365Permission.setEnabled(false);
                                         }
@@ -445,11 +441,11 @@ public class Office365RestAPIManager implements Office365Manager {
             String[] filterAppIds) {
 
         List<ServicePermissionEntry> entryList = Lists.newArrayList();
-        if(requiredResourceAccesses == null) {
+        if (requiredResourceAccesses == null) {
             return entryList;
         }
 
-        for(final RequiredResourceAccess requiredResourceAccess : requiredResourceAccesses) {
+        for (final RequiredResourceAccess requiredResourceAccess : requiredResourceAccesses) {
             // we're interested in this resource only if it is one of the app id's in "filterAppIds"
             boolean isO365Resource = Iterators.any(Iterators.forArray(filterAppIds), new Predicate<String>() {
                 @Override
@@ -457,7 +453,7 @@ public class Office365RestAPIManager implements Office365Manager {
                     return requiredResourceAccess.getresourceAppId().equals(appId);
                 }
             });
-            if(!isO365Resource) {
+            if (!isO365Resource) {
                 continue;
             }
 
@@ -467,10 +463,10 @@ public class Office365RestAPIManager implements Office365Manager {
 
             service.setId(requiredResourceAccess.getresourceAppId());
             List<ResourceAccess> resourceAccesses = requiredResourceAccess.getresourceAccess();
-            if(resourceAccesses == null) {
+            if (resourceAccesses == null) {
                 continue;
             }
-            for(ResourceAccess resourceAccess : resourceAccesses) {
+            for (ResourceAccess resourceAccess : resourceAccesses) {
                 Office365Permission permission = new Office365Permission(
                         resourceAccess.getid().toString(),
                         "", "",
@@ -486,11 +482,11 @@ public class Office365RestAPIManager implements Office365Manager {
     @Override
     public ListenableFuture<Application> setO365PermissionsForApp(Application application, List<ServicePermissionEntry> permissionEntryList) throws ParseException {
         List<RequiredResourceAccess> requiredResourceAccesses = application.getrequiredResourceAccess();
-        if(requiredResourceAccesses == null) {
+        if (requiredResourceAccesses == null) {
             application.setrequiredResourceAccess(requiredResourceAccesses = Lists.newArrayList());
         }
 
-        for(ServicePermissionEntry permissionEntry : permissionEntryList) {
+        for (ServicePermissionEntry permissionEntry : permissionEntryList) {
             final Office365Service service = permissionEntry.getKey();
 
             // filter permissions for enabled permissions
@@ -520,13 +516,13 @@ public class Office365RestAPIManager implements Office365Manager {
                 }
             }, null);
 
-            if(requiredResourceAccess == null && !resourceAccessList.isEmpty()) {
+            if (requiredResourceAccess == null && !resourceAccessList.isEmpty()) {
                 requiredResourceAccesses.add(requiredResourceAccess = new RequiredResourceAccess());
                 requiredResourceAccess.setresourceAppId(service.getId());
             }
 
-            if(requiredResourceAccess != null) {
-                if(resourceAccessList.isEmpty()) {
+            if (requiredResourceAccess != null) {
+                if (resourceAccessList.isEmpty()) {
                     // remove requiredResourceAccess from requiredResourceAccesses
                     requiredResourceAccesses.remove(requiredResourceAccess);
                 } else {
@@ -595,7 +591,7 @@ public class Office365RestAPIManager implements Office365Manager {
     }
 
     private <E extends DirectoryObject, F extends ODataEntityFetcher<E, ? extends DirectoryObjectOperations>, O extends ODataOperations>
-            ListenableFuture<List<E>> getAllObjects(final ODataCollectionFetcher<E, F, O> fetcher) {
+    ListenableFuture<List<E>> getAllObjects(final ODataCollectionFetcher<E, F, O> fetcher) {
 
         return Futures.transform(fetcher.read(), new AsyncFunction<List<E>, List<E>>() {
             @Override
@@ -622,7 +618,7 @@ public class Office365RestAPIManager implements Office365Manager {
                         return Futures.transform(getServicePrincipalsForApp(application), new AsyncFunction<List<ServicePrincipal>, Application>() {
                             @Override
                             public ListenableFuture<Application> apply(List<ServicePrincipal> servicePrincipals) throws Exception {
-                                if(servicePrincipals.size() == 0) {
+                                if (servicePrincipals.size() == 0) {
                                     return createServicePrincipalForApp(application);
                                 }
 
@@ -637,7 +633,8 @@ public class Office365RestAPIManager implements Office365Manager {
 
     private ListenableFuture<Application> createServicePrincipalForApp(final Application application) throws ParseException {
         ServicePrincipal servicePrincipal = new ServicePrincipal();
-        servicePrincipal.setappId(application.getappId());;
+        servicePrincipal.setappId(application.getappId());
+        ;
         servicePrincipal.setaccountEnabled(true);
 
         return Futures.transform(getDirectoryClient().getservicePrincipals().add(servicePrincipal), new AsyncFunction<ServicePrincipal, Application>() {
@@ -651,7 +648,7 @@ public class Office365RestAPIManager implements Office365Manager {
     @Override
     public ListenableFuture<Application> getApplicationForProject(Project project) throws ParseException {
         final String appId = PropertiesComponent.getInstance(project).getValue(PROJECT_APP_ID);
-        if(StringHelper.isNullOrWhiteSpace(appId)) {
+        if (StringHelper.isNullOrWhiteSpace(appId)) {
             return Futures.immediateFuture(null);
         }
 
@@ -679,9 +676,9 @@ public class Office365RestAPIManager implements Office365Manager {
             @Override
             public ListenableFuture<List<ServicePrincipal>> execute() throws ParseException {
                 return getDirectoryClient().
-                                getservicePrincipals().
-                                filter("appId eq '" + application.getappId() + "'").
-                                read();
+                        getservicePrincipals().
+                        filter("appId eq '" + application.getappId() + "'").
+                        read();
             }
         });
     }
@@ -692,7 +689,7 @@ public class Office365RestAPIManager implements Office365Manager {
             @Override
             public ListenableFuture<List<ServicePrincipal>> execute() throws ParseException {
                 @SuppressWarnings("unchecked")
-                ListenableFuture<List<ServicePrincipal>>[] futures = new ListenableFuture[] {
+                ListenableFuture<List<ServicePrincipal>>[] futures = new ListenableFuture[]{
                         getServicePrincipalsForApp(application),
                         getServicePrincipalsForO365()
                 };
@@ -788,15 +785,15 @@ public class Office365RestAPIManager implements Office365Manager {
     }
 
     private String getTenantDomain() throws ParseException {
-        if(authenticationToken == null) {
+        if (authenticationToken == null) {
             throw new IllegalStateException("authenticationToken is null");
         }
 
-        if(tenantDomain == null) {
+        if (tenantDomain == null) {
             String upn = authenticationToken.getUserInfo().getUpn();
-            if(!StringHelper.isNullOrWhiteSpace(upn)) {
+            if (!StringHelper.isNullOrWhiteSpace(upn)) {
                 ArrayList<String> tokens = Lists.newArrayList(Splitter.on('@').split(upn));
-                if(tokens.size() != 2) {
+                if (tokens.size() != 2) {
                     throw new ParseException("Invalid UPN format in authentication token.", 0);
                 }
 
