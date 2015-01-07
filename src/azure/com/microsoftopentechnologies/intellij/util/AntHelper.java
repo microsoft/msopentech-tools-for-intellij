@@ -70,15 +70,13 @@ public class AntHelper {
                 }, ModalityState.defaultModalityState());
     }
 
-    public static AntBuildListener createDeployListener(final Module myModule, final List<AutoUpldCmpnts> mdfdCmpntList, final List<String> roleMdfdCache,
-                                                        final boolean isError) {
+    public static AntBuildListener createDeployListener(final Module myModule, final List<AutoUpldCmpnts> mdfdCmpntList, final List<String> roleMdfdCache) {
         return new AntBuildListener() {
             @Override
             public void buildFinished(int state, int errorCount) {
-                if (!isError) {
-                    WindowsAzureProjectManager waProjManager = null;
+                if (state == AntBuildListener.FINISHED_SUCCESSFULLY) {
                     try {
-                        waProjManager = WindowsAzureProjectManager.load(new File(PluginUtil.getModulePath(myModule)));
+                        WindowsAzureProjectManager waProjManager = WindowsAzureProjectManager.load(new File(PluginUtil.getModulePath(myModule)));
                     /*
                      * Build job is completed.
 					 * If component's url settings done before build then,

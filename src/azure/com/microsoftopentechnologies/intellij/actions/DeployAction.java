@@ -196,7 +196,6 @@ public class DeployAction extends AnAction {
 
         private WindowsAzureProjectManager waProjManager;
         private Module myModule;
-        private boolean isError = false;
         private DataContext dataContext;
 
         public WindowsAzureBuildProjectTask(@NotNull final Module module, WindowsAzureProjectManager manager, DataContext dataContext) {
@@ -213,17 +212,11 @@ public class DeployAction extends AnAction {
                 waProjManager.save();
                 indicator.setFraction(0.0);
                 indicator.setText2(String.format(message("buildingProjTask"), myModule.getName()));
-                AntHelper.runAntBuild(dataContext, myModule, AntHelper.createDeployListener(myModule, mdfdCmpntList, roleMdfdCache, isError));
+                AntHelper.runAntBuild(dataContext, myModule, AntHelper.createDeployListener(myModule, mdfdCmpntList, roleMdfdCache));
                 indicator.setFraction(1.0);
             } catch (Exception e) {
                 log(message("error"), e);
-                isError = true;
             }
-        }
-
-        @Nullable
-        public NotificationInfo getNotificationInfo() {
-            return new NotificationInfo(isError ? message("buildFail") : "Build successful", "Compilation Finished", isError ? message("buildFail") : "Build successful", true);
         }
     }
 
