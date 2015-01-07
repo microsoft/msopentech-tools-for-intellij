@@ -13,13 +13,16 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-
 package com.microsoftopentechnologies.intellij.helpers.graph;
 
-import com.microsoft.services.odata.impl.desktop.DesktopDependencyResolver;
+import com.microsoft.services.odata.impl.desktop.JvmDependencyResolver;
 import com.microsoftopentechnologies.intellij.components.MSOpenTechTools;
 
-public class PluginDependencyResolver extends DesktopDependencyResolver {
+public class PluginDependencyResolver extends JvmDependencyResolver {
+    public PluginDependencyResolver(String token) {
+        super(token);
+    }
+
     @Override
     public String getPlatformUserAgent(String productName) {
         String version = MSOpenTechTools.getCurrent().getSettings().getPluginVersion();
