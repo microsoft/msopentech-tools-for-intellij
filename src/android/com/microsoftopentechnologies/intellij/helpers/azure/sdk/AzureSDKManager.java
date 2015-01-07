@@ -17,6 +17,7 @@ package com.microsoftopentechnologies.intellij.helpers.azure.sdk;
 
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.model.vm.VirtualMachine;
+import com.microsoftopentechnologies.intellij.model.vm.VirtualMachineImage;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -38,4 +39,7 @@ public interface AzureSDKManager {
 
     @NotNull
     byte[] downloadRDP(@NotNull VirtualMachine vm) throws AzureCmdException;
+
+    @NotNull
+    List<VirtualMachineImage> getVirtualMachineImages(@NotNull String subscriptionId) throws AzureCmdException;
 }

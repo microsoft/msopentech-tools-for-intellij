@@ -17,22 +17,23 @@ package com.microsoftopentechnologies.intellij.helpers.azure.sdk;
 
 import com.microsoft.windowsazure.core.OperationStatusResponse;
 import com.microsoft.windowsazure.exception.ServiceException;
-import com.microsoft.windowsazure.management.compute.ComputeManagementClient;
-import com.microsoft.windowsazure.management.compute.DeploymentOperations;
-import com.microsoft.windowsazure.management.compute.HostedServiceOperations;
-import com.microsoft.windowsazure.management.compute.VirtualMachineOperations;
+import com.microsoft.windowsazure.management.compute.*;
 import com.microsoft.windowsazure.management.compute.models.*;
 import com.microsoft.windowsazure.management.compute.models.HostedServiceListResponse.HostedService;
+import com.microsoft.windowsazure.management.compute.models.VirtualMachineOSImageListResponse.VirtualMachineOSImage;
+import com.microsoft.windowsazure.management.compute.models.VirtualMachineVMImageListResponse.VirtualMachineVMImage;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureAuthenticationMode;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIManager;
 import com.microsoftopentechnologies.intellij.model.vm.Endpoint;
 import com.microsoftopentechnologies.intellij.model.vm.VirtualMachine;
+import com.microsoftopentechnologies.intellij.model.vm.VirtualMachineImage;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 public class AzureSDKManagerImpl implements AzureSDKManager {
@@ -52,12 +53,11 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
             apiManagerADAuth = new AzureSDKManagerADAuthDecorator(apiManager);
         }
 
-        AzureAuthenticationMode authenticationMode = AzureRestAPIManager.getManager().getAuthenticationMode();
-        if(authenticationMode == AzureAuthenticationMode.ActiveDirectory) {
+        if (AzureRestAPIManager.getManager().getAuthenticationMode() == AzureAuthenticationMode.ActiveDirectory) {
             return apiManagerADAuth;
+        } else {
+            return apiManager;
         }
-
-        return apiManager;
     }
 
     @NotNull
@@ -67,17 +67,9 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         ComputeManagementClient client = null;
 
         try {
-            client = AzureSDKHelper.getComputeManagementClient(subscriptionId);
+            client = getComputeManagementClient(subscriptionId);
 
-            if (client == null) {
-                throw new Exception("Unable to instantiate Compute Management client");
-            }
-
-            HostedServiceOperations hso = client.getHostedServicesOperations();
-
-            if (hso == null) {
-                throw new Exception("Unable to retrieve Hosted Services information");
-            }
+            HostedServiceOperations hso = getHostedServiceOperations(client);
 
             HostedServiceListResponse hslr = hso.list();
 
@@ -116,23 +108,11 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         ComputeManagementClient client = null;
 
         try {
-            client = AzureSDKHelper.getComputeManagementClient(vm.getSubscriptionId());
+            client = getComputeManagementClient(vm.getSubscriptionId());
 
-            if (client == null) {
-                throw new Exception("Unable to instantiate Compute Management client");
-            }
+            DeploymentGetResponse deployment = getDeployment(client, vm);
 
-            DeploymentGetResponse deployment = getDeployment(client, vm.getServiceName(), vm.getDeploymentName());
-
-            if (deployment == null) {
-                throw new Exception("Invalid Virtual Machine information. No Deployment matches the VM data.");
-            }
-
-            ArrayList<Role> roles = deployment.getRoles();
-
-            if (roles == null) {
-                throw new Exception("Invalid Virtual Machine information. No Roles match the VM data.");
-            }
+            List<Role> roles = getVMDeploymentRoles(deployment);
 
             Role vmRole = null;
 
@@ -173,27 +153,13 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         ComputeManagementClient client = null;
 
         try {
-            client = AzureSDKHelper.getComputeManagementClient(vm.getSubscriptionId());
+            client = getComputeManagementClient(vm.getSubscriptionId());
 
-            if (client == null) {
-                throw new Exception("Unable to instantiate Compute Management client");
-            }
-
-            VirtualMachineOperations vmo = client.getVirtualMachinesOperations();
-
-            if (vmo == null) {
-                return;
-            }
+            VirtualMachineOperations vmo = getVirtualMachineOperations(client);
 
             OperationStatusResponse osr = vmo.start(vm.getServiceName(), vm.getDeploymentName(), vm.getName());
 
-            if (osr == null) {
-                return;
-            }
-
-            if (osr.getError() != null) {
-                throw new Exception(osr.getError().getMessage());
-            }
+            validateOperationStatus(osr);
         } catch (Throwable t) {
             throw new AzureCmdException("Error starting the VM", t);
         } finally {
@@ -211,30 +177,16 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         ComputeManagementClient client = null;
 
         try {
-            client = AzureSDKHelper.getComputeManagementClient(vm.getSubscriptionId());
+            client = getComputeManagementClient(vm.getSubscriptionId());
 
-            if (client == null) {
-                throw new Exception("Unable to instantiate Compute Management client");
-            }
-
-            VirtualMachineOperations vmo = client.getVirtualMachinesOperations();
-
-            if (vmo == null) {
-                return;
-            }
+            VirtualMachineOperations vmo = getVirtualMachineOperations(client);
 
             VirtualMachineShutdownParameters parameters = new VirtualMachineShutdownParameters();
             parameters.setPostShutdownAction(deallocate ? PostShutdownAction.StoppedDeallocated : PostShutdownAction.Stopped);
 
             OperationStatusResponse osr = vmo.shutdown(vm.getServiceName(), vm.getDeploymentName(), vm.getName(), parameters);
 
-            if (osr == null) {
-                return;
-            }
-
-            if (osr.getError() != null) {
-                throw new Exception(osr.getError().getMessage());
-            }
+            validateOperationStatus(osr);
         } catch (Throwable t) {
             throw new AzureCmdException("Error shutting down the VM", t);
         } finally {
@@ -252,27 +204,13 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         ComputeManagementClient client = null;
 
         try {
-            client = AzureSDKHelper.getComputeManagementClient(vm.getSubscriptionId());
+            client = getComputeManagementClient(vm.getSubscriptionId());
 
-            if (client == null) {
-                throw new Exception("Unable to instantiate Compute Management client");
-            }
-
-            VirtualMachineOperations vmo = client.getVirtualMachinesOperations();
-
-            if (vmo == null) {
-                throw new Exception("Unable to retrieve Virtual Machine information");
-            }
+            VirtualMachineOperations vmo = getVirtualMachineOperations(client);
 
             OperationStatusResponse osr = vmo.restart(vm.getServiceName(), vm.getDeploymentName(), vm.getName());
 
-            if (osr == null) {
-                return;
-            }
-
-            if (osr.getError() != null) {
-                throw new Exception(osr.getError().getMessage());
-            }
+            validateOperationStatus(osr);
         } catch (Throwable t) {
             throw new AzureCmdException("Error restarting the VM", t);
         } finally {
@@ -290,23 +228,11 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         ComputeManagementClient client = null;
 
         try {
-            client = AzureSDKHelper.getComputeManagementClient(vm.getSubscriptionId());
+            client = getComputeManagementClient(vm.getSubscriptionId());
 
-            if (client == null) {
-                throw new Exception("Unable to instantiate Compute Management client");
-            }
+            DeploymentGetResponse deployment = getDeployment(client, vm);
 
-            DeploymentGetResponse deployment = getDeployment(client, vm.getServiceName(), vm.getDeploymentName());
-
-            if (deployment == null) {
-                throw new Exception("Invalid Virtual Machine information. No Deployment matches the VM data.");
-            }
-
-            ArrayList<Role> roles = deployment.getRoles();
-
-            if (roles == null) {
-                throw new Exception("Invalid Virtual Machine information. No Roles match the VM data.");
-            }
+            List<Role> roles = getVMDeploymentRoles(deployment);
 
             if (roles.size() == 1) {
                 Role role = roles.get(0);
@@ -339,17 +265,9 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         ComputeManagementClient client = null;
 
         try {
-            client = AzureSDKHelper.getComputeManagementClient(vm.getSubscriptionId());
+            client = getComputeManagementClient(vm.getSubscriptionId());
 
-            if (client == null) {
-                throw new Exception("Unable to instantiate Compute Management client");
-            }
-
-            VirtualMachineOperations vmo = client.getVirtualMachinesOperations();
-
-            if (vmo == null) {
-                throw new Exception("Unable to retrieve Virtual Machine information");
-            }
+            VirtualMachineOperations vmo = getVirtualMachineOperations(client);
 
             VirtualMachineGetRemoteDesktopFileResponse vmgrdfr = vmo.getRemoteDesktopFile(
                     vm.getServiceName(),
@@ -376,6 +294,165 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
                 } catch (IOException ignored) {
                 }
             }
+        }
+    }
+
+    @NotNull
+    @Override
+    public List<VirtualMachineImage> getVirtualMachineImages(@NotNull String subscriptionId) throws AzureCmdException {
+        List<VirtualMachineImage> vmImageList = new ArrayList<VirtualMachineImage>();
+        ComputeManagementClient client = null;
+
+        try {
+            client = getComputeManagementClient(subscriptionId);
+            vmImageList = loadOSImages(client, vmImageList);
+            vmImageList = loadVMImages(client, vmImageList);
+
+            return vmImageList;
+        } catch (Throwable t) {
+            throw new AzureCmdException("Error retrieving the VM Image list", t);
+        } finally {
+            if (client != null) {
+                try {
+                    client.close();
+                } catch (IOException ignored) {
+                }
+            }
+        }
+    }
+
+    @NotNull
+    private static ComputeManagementClient getComputeManagementClient(@NotNull String subscriptionId) throws Exception {
+        ComputeManagementClient client = AzureSDKHelper.getComputeManagementClient(subscriptionId);
+
+        if (client == null) {
+            throw new Exception("Unable to instantiate Compute Management client");
+        }
+
+        return client;
+    }
+
+    @NotNull
+    private static HostedServiceOperations getHostedServiceOperations(@NotNull ComputeManagementClient client) throws Exception {
+        HostedServiceOperations hso = client.getHostedServicesOperations();
+
+        if (hso == null) {
+            throw new Exception("Unable to retrieve Hosted Services information");
+        }
+
+        return hso;
+    }
+
+    @NotNull
+    private static DeploymentOperations getDeploymentOperations(@NotNull ComputeManagementClient client) throws Exception {
+        DeploymentOperations dop = client.getDeploymentsOperations();
+
+        if (dop == null) {
+            throw new Exception("Unable to retrieve Deployment information");
+        }
+
+        return dop;
+    }
+
+    @NotNull
+    private static VirtualMachineOperations getVirtualMachineOperations(@NotNull ComputeManagementClient client) throws Exception {
+        VirtualMachineOperations vmo = client.getVirtualMachinesOperations();
+
+        if (vmo == null) {
+            throw new Exception("Unable to retrieve Virtual Machines Information");
+        }
+
+        return vmo;
+    }
+
+    @NotNull
+    private static VirtualMachineOSImageOperations getVirtualMachineOSImageOperations(@NotNull ComputeManagementClient client)
+            throws Exception {
+        VirtualMachineOSImageOperations vmosio = client.getVirtualMachineOSImagesOperations();
+
+        if (vmosio == null) {
+            throw new Exception("Unable to retrieve OS Images information");
+        }
+
+        return vmosio;
+    }
+
+    @NotNull
+    private static VirtualMachineVMImageOperations getVirtualMachineVMImageOperations(@NotNull ComputeManagementClient client)
+            throws Exception {
+        VirtualMachineVMImageOperations vmvmio = client.getVirtualMachineVMImagesOperations();
+
+        if (vmvmio == null) {
+            throw new Exception("Unable to retrieve VM Images information");
+        }
+
+        return vmvmio;
+    }
+
+    @Nullable
+    private static DeploymentGetResponse getDeployment(@NotNull ComputeManagementClient client, @NotNull String serviceName,
+                                                       @NotNull DeploymentSlot slot)
+            throws Exception {
+        try {
+            DeploymentOperations dop = getDeploymentOperations(client);
+
+            return dop.getBySlot(serviceName, slot);
+        } catch (ServiceException se) {
+            if (se.getHttpStatusCode() == 404) {
+                return null;
+            } else {
+                throw se;
+            }
+        }
+    }
+
+    @Nullable
+    private static DeploymentGetResponse getDeployment(@NotNull ComputeManagementClient client, @NotNull String serviceName,
+                                                       @NotNull String deploymentName)
+            throws Exception {
+        try {
+            DeploymentOperations dop = getDeploymentOperations(client);
+
+            return dop.getByName(serviceName, deploymentName);
+        } catch (ServiceException se) {
+            if (se.getHttpStatusCode() == 404) {
+                return null;
+            } else {
+                throw se;
+            }
+        }
+    }
+
+    @NotNull
+    private static DeploymentGetResponse getDeployment(@NotNull ComputeManagementClient client, @NotNull VirtualMachine vm)
+            throws Exception {
+        DeploymentGetResponse deployment = getDeployment(client, vm.getServiceName(), vm.getDeploymentName());
+
+        if (deployment == null) {
+            throw new Exception("Invalid Virtual Machine information. No Deployment matches the VM data.");
+        }
+
+        return deployment;
+    }
+
+    @NotNull
+    private static List<Role> getVMDeploymentRoles(@NotNull DeploymentGetResponse deployment) throws Exception {
+        ArrayList<Role> roles = deployment.getRoles();
+
+        if (roles == null) {
+            throw new Exception("Invalid Virtual Machine information. No Roles match the VM data.");
+        }
+
+        return roles;
+    }
+
+    private static void validateOperationStatus(@Nullable OperationStatusResponse osr) throws Exception {
+        if (osr == null) {
+            throw new Exception("Unable to retrieve Operation Status");
+        }
+
+        if (osr.getError() != null) {
+            throw new Exception(osr.getError().getMessage());
         }
     }
 
@@ -411,48 +488,6 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         return vmList;
     }
 
-    @Nullable
-    private static DeploymentGetResponse getDeployment(@NotNull ComputeManagementClient client, @NotNull String serviceName,
-                                                       @NotNull DeploymentSlot slot)
-            throws Exception {
-        try {
-            DeploymentOperations dop = client.getDeploymentsOperations();
-
-            if (dop == null) {
-                throw new Exception("Unable to retrieve Deployment information");
-            }
-
-            return dop.getBySlot(serviceName, slot);
-        } catch (ServiceException se) {
-            if (se.getHttpStatusCode() == 404) {
-                return null;
-            } else {
-                throw se;
-            }
-        }
-    }
-
-    @Nullable
-    private static DeploymentGetResponse getDeployment(@NotNull ComputeManagementClient client, @NotNull String serviceName,
-                                                       @NotNull String deploymentName)
-            throws Exception {
-        try {
-            DeploymentOperations dop = client.getDeploymentsOperations();
-
-            if (dop == null) {
-                throw new Exception("Unable to retrieve Deployment information");
-            }
-
-            return dop.getByName(serviceName, deploymentName);
-        } catch (ServiceException se) {
-            if (se.getHttpStatusCode() == 404) {
-                return null;
-            } else {
-                throw se;
-            }
-        }
-    }
-
     @NotNull
     private static VirtualMachine loadEndpoints(@NotNull Role role, @NotNull VirtualMachine vm) {
         if (role.getConfigurationSets() == null) {
@@ -482,40 +517,79 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
                                      @NotNull String deploymentName, @NotNull String virtualMachineName,
                                      boolean deleteFromStorage)
             throws Exception {
-        VirtualMachineOperations vmo = client.getVirtualMachinesOperations();
-
-        if (vmo == null) {
-            throw new Exception("Unable to retrieve Virtual Machine information");
-        }
+        VirtualMachineOperations vmo = getVirtualMachineOperations(client);
 
         OperationStatusResponse osr = vmo.delete(serviceName, deploymentName, virtualMachineName, deleteFromStorage);
 
-        if (osr == null) {
-            return;
-        }
-
-        if (osr.getError() != null) {
-            throw new Exception(osr.getError().getMessage());
-        }
+        validateOperationStatus(osr);
     }
 
     private static void deleteDeployment(@NotNull ComputeManagementClient client, @NotNull String serviceName,
                                          @NotNull String deploymentName, boolean deleteFromStorage)
             throws Exception {
-        DeploymentOperations dop = client.getDeploymentsOperations();
-
-        if (dop == null) {
-            throw new Exception("Unable to retrieve Deployment information");
-        }
+        DeploymentOperations dop = getDeploymentOperations(client);
 
         OperationStatusResponse osr = dop.deleteByName(serviceName, deploymentName, deleteFromStorage);
 
-        if (osr == null) {
-            return;
+        validateOperationStatus(osr);
+    }
+
+    @NotNull
+    private static List<VirtualMachineImage> loadOSImages(@NotNull ComputeManagementClient client,
+                                                          @NotNull List<VirtualMachineImage> vmImageList)
+            throws Exception {
+        VirtualMachineOSImageListResponse osImages = getVirtualMachineOSImageOperations(client).list();
+
+        if (osImages != null) {
+            for (VirtualMachineOSImage osImage : osImages) {
+                vmImageList.add(
+                        new VirtualMachineImage(
+                                osImage.getName() != null ? osImage.getName() : "",
+                                osImage.getCategory() != null ? osImage.getCategory() : "",
+                                osImage.getPublisherName() != null ? osImage.getPublisherName() : "",
+                                osImage.getPublishedDate() != null ? osImage.getPublishedDate() : GregorianCalendar.getInstance(),
+                                osImage.getLabel() != null ? osImage.getLabel() : "",
+                                osImage.getDescription() != null ? osImage.getDescription() : "",
+                                osImage.getOperatingSystemType() != null ? osImage.getOperatingSystemType() : "",
+                                osImage.getLocation() != null ? osImage.getLocation() : "",
+                                osImage.getEula() != null ? osImage.getEula() : "",
+                                osImage.getPrivacyUri() != null ? osImage.getPrivacyUri().toString() : "",
+                                osImage.getPricingDetailUri() != null ? osImage.getPricingDetailUri().toString() : "",
+                                osImage.isShowInGui() != null ? osImage.isShowInGui() : false));
+            }
         }
 
-        if (osr.getError() != null) {
-            throw new Exception(osr.getError().getMessage());
+        return vmImageList;
+    }
+
+    @NotNull
+    private static List<VirtualMachineImage> loadVMImages(@NotNull ComputeManagementClient client,
+                                                          @NotNull List<VirtualMachineImage> vmImageList)
+            throws Exception {
+        VirtualMachineVMImageListResponse vmImages = getVirtualMachineVMImageOperations(client).list();
+
+        if (vmImages != null) {
+            for (VirtualMachineVMImage vmImage : vmImages) {
+                vmImageList.add(
+                        new VirtualMachineImage(
+                                vmImage.getName() != null ? vmImage.getName() : "",
+                                vmImage.getCategory() != null ? vmImage.getCategory() : "",
+                                vmImage.getPublisherName() != null ? vmImage.getPublisherName() : "",
+                                vmImage.getPublishedDate() != null ? vmImage.getPublishedDate() : GregorianCalendar.getInstance(),
+                                vmImage.getLabel() != null ? vmImage.getLabel() : "",
+                                vmImage.getDescription() != null ? vmImage.getDescription() : "",
+                                vmImage.getOSDiskConfiguration() != null
+                                        && vmImage.getOSDiskConfiguration().getOperatingSystem() != null ?
+                                        vmImage.getOSDiskConfiguration().getOperatingSystem() :
+                                        "",
+                                vmImage.getLocation() != null ? vmImage.getLocation() : "",
+                                vmImage.getEula() != null ? vmImage.getEula() : "",
+                                vmImage.getPrivacyUri() != null ? vmImage.getPrivacyUri().toString() : "",
+                                vmImage.getPricingDetailLink() != null ? vmImage.getPricingDetailLink().toString() : "",
+                                vmImage.isShowInGui() != null ? vmImage.isShowInGui() : false));
+            }
         }
+
+        return vmImageList;
     }
 }

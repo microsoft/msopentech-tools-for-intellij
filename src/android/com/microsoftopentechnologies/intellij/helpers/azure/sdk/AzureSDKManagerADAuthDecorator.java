@@ -13,7 +13,6 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-
 package com.microsoftopentechnologies.intellij.helpers.azure.sdk;
 
 import com.microsoft.windowsazure.exception.ServiceException;
@@ -27,6 +26,7 @@ import com.microsoftopentechnologies.intellij.helpers.azure.AzureManager;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIManager;
 import com.microsoftopentechnologies.intellij.model.vm.VirtualMachine;
+import com.microsoftopentechnologies.intellij.model.vm.VirtualMachineImage;
 import org.jetbrains.annotations.NotNull;
 
 import java.net.HttpURLConnection;
@@ -48,15 +48,15 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
             return func.run();
         } catch (AzureCmdException e) {
             Throwable throwable = e.getCause();
-            if(throwable == null)
+            if (throwable == null)
                 throw e;
-            if(!(throwable instanceof ServiceException))
+            if (!(throwable instanceof ServiceException))
                 throw e;
 
-            ServiceException serviceException = (ServiceException)throwable;
-            if(serviceException.getHttpStatusCode() == HttpURLConnection.HTTP_UNAUTHORIZED) {
+            ServiceException serviceException = (ServiceException) throwable;
+            if (serviceException.getHttpStatusCode() == HttpURLConnection.HTTP_UNAUTHORIZED) {
                 // attempt token refresh
-                if(refreshAccessToken(subscriptionId)) {
+                if (refreshAccessToken(subscriptionId)) {
                     // retry request
                     return func.run();
                 }
@@ -72,15 +72,15 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
         AuthenticationResult token = apiManager.getAuthenticationTokenForSubscription(subscriptionId);
 
         // check if we have a refresh token to redeem
-        if(token != null && !StringHelper.isNullOrWhiteSpace(token.getRefreshToken())) {
+        if (token != null && !StringHelper.isNullOrWhiteSpace(token.getRefreshToken())) {
             AuthenticationContext context = null;
             try {
                 context = new AuthenticationContext(settings.getAdAuthority());
                 token = context.acquireTokenByRefreshToken(
-                            token,
-                            AzureRestAPIHelper.getTenantName(subscriptionId),
-                            settings.getAzureServiceManagementUri(),
-                            settings.getClientId());
+                        token,
+                        AzureRestAPIHelper.getTenantName(subscriptionId),
+                        settings.getAzureServiceManagementUri(),
+                        settings.getClientId());
             } catch (Exception e) {
                 token = null;
             } finally {
@@ -89,7 +89,7 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
                 }
             }
 
-            if(token != null) {
+            if (token != null) {
                 apiManager.setAuthenticationTokenForSubscription(subscriptionId, token);
                 return true;
             }
@@ -171,6 +171,17 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
             @Override
             public byte[] run() throws AzureCmdException {
                 return sdkManager.downloadRDP(vm);
+            }
+        });
+    }
+
+    @NotNull
+    @Override
+    public List<VirtualMachineImage> getVirtualMachineImages(@NotNull final String subscriptionId) throws AzureCmdException {
+        return runWithRetry(subscriptionId, new Func0<List<VirtualMachineImage>>() {
+            @Override
+            public List<VirtualMachineImage> run() throws AzureCmdException {
+                return sdkManager.getVirtualMachineImages(subscriptionId);
             }
         });
     }
