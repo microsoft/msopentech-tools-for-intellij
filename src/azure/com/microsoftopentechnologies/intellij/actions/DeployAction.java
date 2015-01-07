@@ -293,7 +293,6 @@ public class DeployAction extends AnAction {
     public static class WindowsAzureDeploymentTask extends Task.Backgroundable {
 
         private final Module myModule;
-        private final AtomicBoolean wait = new AtomicBoolean(true);
         private String deploymentId;
 //        private String name;
 
@@ -317,6 +316,7 @@ public class DeployAction extends AnAction {
 
                 @Override
                 public void onDeploymentStep(DeploymentEventArgs args) {
+                    indicator.checkCanceled();
                     deploymentId = args.getId();
                     log(args.toString());
                     log("Complete: " + args.getDeployCompleteness());

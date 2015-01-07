@@ -93,11 +93,15 @@ public class PluginUtil {
         Messages.showWarningDialog(message, title);
     }
 
-    /**
-     * Gets preferences object according to node name.
-     * @return
-     */
-//
+
+    public static void displayWarningDialogInAWT(final String title, final String message) {
+        ApplicationManager.getApplication().invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                displayWarningDialog(title, message);
+            }
+        });
+    }
 
     /**
      * Gets location of Azure Libraries
