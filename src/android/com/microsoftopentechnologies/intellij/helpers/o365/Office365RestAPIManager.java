@@ -173,9 +173,14 @@ public class Office365RestAPIManager implements Office365Manager {
         graphApiUriLock.unlock();
     }
 
+    // NOTE: The result of calling getDirectoryClient should never be cached. This is because of the following
+    // reasons:
+    //  [a] every directory client object is associated with an authentication token
+    //  [b] as part of execution of the method, tokens might expire and be renewed in which case a new directory
+    //      client will be instantiated; if we use cached objects then we'll continue using the client with the
+    //      expired token instead of the new one
     private DirectoryClient getDirectoryClient() throws ParseException {
         if (directoryDataServiceClient == null) {
-
             PluginDependencyResolver dependencyResolver = new PluginDependencyResolver(getAuthenticationToken().getAccessToken());
             setDirectoryDataServiceClient(new DirectoryClient(getGraphApiUri(), dependencyResolver));
         }
@@ -765,7 +770,6 @@ public class Office365RestAPIManager implements Office365Manager {
     public ListenableFuture<List<ServicePrincipal>> addServicePrincipals(
             @NotNull final List<ServicePrincipal> servicePrincipals) throws ParseException {
 
-        final DirectoryClient directoryClient = getDirectoryClient();
         return requestWithToken(new RequestCallback<List<ServicePrincipal>>() {
             @Override
             public ListenableFuture<List<ServicePrincipal>> execute() throws ParseException {
@@ -774,7 +778,11 @@ public class Office365RestAPIManager implements Office365Manager {
                         new Function<ServicePrincipal, ListenableFuture<ServicePrincipal>>() {
                             @Override
                             public ListenableFuture<ServicePrincipal> apply(ServicePrincipal servicePrincipal) {
-                                return directoryClient.getservicePrincipals().add(servicePrincipal);
+                                try {
+                                    return getDirectoryClient().getservicePrincipals().add(servicePrincipal);
+                                } catch (ParseException e) {
+                                    return Futures.immediateFailedFuture(e);
+                                }
                             }
                         }
                 );
