@@ -25,10 +25,7 @@ import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureManager;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIManager;
-import com.microsoftopentechnologies.intellij.model.vm.Location;
-import com.microsoftopentechnologies.intellij.model.vm.VirtualMachine;
-import com.microsoftopentechnologies.intellij.model.vm.VirtualMachineImage;
-import com.microsoftopentechnologies.intellij.model.vm.VirtualMachineSize;
+import com.microsoftopentechnologies.intellij.model.vm.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.net.HttpURLConnection;
@@ -98,6 +95,17 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
         }
 
         return false;
+    }
+
+    @NotNull
+    @Override
+    public List<CloudService> getCloudServices(@NotNull final String subscriptionId) throws AzureCmdException {
+        return runWithRetry(subscriptionId, new Func0<List<CloudService>>() {
+            @Override
+            public List<CloudService> run() throws AzureCmdException {
+                return sdkManager.getCloudServices(subscriptionId);
+            }
+        });
     }
 
     @NotNull
@@ -179,6 +187,17 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
 
     @NotNull
     @Override
+    public List<StorageAccount> getStorageAccounts(@NotNull final String subscriptionId) throws AzureCmdException {
+        return runWithRetry(subscriptionId, new Func0<List<StorageAccount>>() {
+            @Override
+            public List<StorageAccount> run() throws AzureCmdException {
+                return sdkManager.getStorageAccounts(subscriptionId);
+            }
+        });
+    }
+
+    @NotNull
+    @Override
     public List<VirtualMachineImage> getVirtualMachineImages(@NotNull final String subscriptionId) throws AzureCmdException {
         return runWithRetry(subscriptionId, new Func0<List<VirtualMachineImage>>() {
             @Override
@@ -206,6 +225,17 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
             @Override
             public List<Location> run() throws AzureCmdException {
                 return sdkManager.getLocations(subscriptionId);
+            }
+        });
+    }
+
+    @NotNull
+    @Override
+    public List<AffinityGroup> getAffinityGroups(@NotNull final String subscriptionId) throws AzureCmdException {
+        return runWithRetry(subscriptionId, new Func0<List<AffinityGroup>>() {
+            @Override
+            public List<AffinityGroup> run() throws AzureCmdException {
+                return sdkManager.getAffinityGroups(subscriptionId);
             }
         });
     }

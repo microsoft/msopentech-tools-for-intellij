@@ -18,31 +18,29 @@ package com.microsoftopentechnologies.intellij.model.vm;
 import com.microsoftopentechnologies.intellij.model.ServiceTreeItem;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
-public class VirtualMachine implements ServiceTreeItem {
+public class StorageAccount implements ServiceTreeItem {
     private boolean loading;
     private String name;
-    private String serviceName;
-    private String dns;
-    private String deploymentName;
-    private String size;
-    private String status;
+    private String type;
+    private String location;
+    private String affinityGroup;
     private String subscriptionId;
-    private List<Endpoint> endpoints;
+    private Set<String> availabilitySets;
 
-    public VirtualMachine(@NotNull String name, @NotNull String serviceName, @NotNull String dns,
-                          @NotNull String deploymentName, @NotNull String size, @NotNull String status,
+    public StorageAccount(@NotNull String name,
+                          @NotNull String type,
+                          @NotNull String location,
+                          @NotNull String affinityGroup,
                           @NotNull String subscriptionId) {
         this.name = name;
-        this.serviceName = serviceName;
-        this.dns = dns;
-        this.deploymentName = deploymentName;
-        this.size = size;
-        this.status = status;
+        this.type = type;
+        this.location = location;
+        this.affinityGroup = affinityGroup;
         this.subscriptionId = subscriptionId;
-        this.endpoints = new ArrayList<Endpoint>();
+        this.availabilitySets = new TreeSet<String>();
     }
 
     @Override
@@ -61,39 +59,18 @@ public class VirtualMachine implements ServiceTreeItem {
     }
 
     @NotNull
-    public String getServiceName() {
-        return serviceName;
+    public String getType() {
+        return type;
     }
 
     @NotNull
-    public String getDns() {
-        return dns;
-    }
-
-    public void setDns(@NotNull String dns) {
-        this.dns = dns;
-    }
-
-    public String getDeploymentName() {
-        return deploymentName;
+    public String getLocation() {
+        return location;
     }
 
     @NotNull
-    public String getSize() {
-        return size;
-    }
-
-    public void setSize(@NotNull String size) {
-        this.size = size;
-    }
-
-    @NotNull
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(@NotNull String status) {
-        this.status = status;
+    public String getAffinityGroup() {
+        return affinityGroup;
     }
 
     @NotNull
@@ -102,8 +79,8 @@ public class VirtualMachine implements ServiceTreeItem {
     }
 
     @NotNull
-    public List<Endpoint> getEndpoints() {
-        return endpoints;
+    public Set<String> getAvailabilitySets() {
+        return availabilitySets;
     }
 
     @Override
