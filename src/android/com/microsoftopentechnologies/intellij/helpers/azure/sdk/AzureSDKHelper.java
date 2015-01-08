@@ -21,9 +21,12 @@ import com.microsoft.windowsazure.core.pipeline.apache.ApacheConfigurationProper
 import com.microsoft.windowsazure.core.utils.Base64;
 import com.microsoft.windowsazure.core.utils.KeyStoreType;
 import com.microsoft.windowsazure.management.ManagementClient;
+import com.microsoft.windowsazure.management.ManagementService;
 import com.microsoft.windowsazure.management.compute.ComputeManagementClient;
 import com.microsoft.windowsazure.management.compute.ComputeManagementService;
 import com.microsoft.windowsazure.management.configuration.ManagementConfiguration;
+import com.microsoft.windowsazure.management.storage.StorageManagementClient;
+import com.microsoft.windowsazure.management.storage.StorageManagementService;
 import com.microsoftopentechnologies.intellij.components.MSOpenTechTools;
 import com.microsoftopentechnologies.intellij.helpers.OpenSSLHelper;
 import com.microsoftopentechnologies.intellij.helpers.XmlHelper;
@@ -72,6 +75,26 @@ public class AzureSDKHelper {
     }
 
     @Nullable
+    public static StorageManagementClient getStorageManagementClient(@NotNull String subscriptionId)
+            throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException, XPathExpressionException, ParserConfigurationException, SAXException {
+        Configuration configuration = getConfiguration(subscriptionId);
+
+        if (configuration == null) {
+            return null;
+        }
+
+        StorageManagementClient client = StorageManagementService.create(configuration);
+
+        // add a request filter for tacking on the A/D auth token if the current authentication
+        // mode is active directory
+        if (AzureRestAPIManager.getManager().getAuthenticationMode() == AzureAuthenticationMode.ActiveDirectory) {
+            return client.withRequestFilterFirst(new AuthTokenRequestFilter(subscriptionId));
+        }
+
+        return client;
+    }
+
+    @Nullable
     public static ManagementClient getManagementClient(@NotNull String subscriptionId)
             throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException, XPathExpressionException, ParserConfigurationException, SAXException {
         Configuration configuration = getConfiguration(subscriptionId);
@@ -80,7 +103,7 @@ public class AzureSDKHelper {
             return null;
         }
 
-        ManagementClient client = configuration.create(ManagementClient.class);
+        ManagementClient client = ManagementService.create(configuration);
 
         // add a request filter for tacking on the A/D auth token if the current authentication
         // mode is active directory

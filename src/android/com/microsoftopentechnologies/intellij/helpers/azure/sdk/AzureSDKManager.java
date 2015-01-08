@@ -23,6 +23,9 @@ import java.util.List;
 
 public interface AzureSDKManager {
     @NotNull
+    List<CloudService> getCloudServices(@NotNull String subscriptionId) throws AzureCmdException;
+
+    @NotNull
     List<VirtualMachine> getVirtualMachines(@NotNull String subscriptionId) throws AzureCmdException;
 
     @NotNull
@@ -38,6 +41,9 @@ public interface AzureSDKManager {
 
     @NotNull
     byte[] downloadRDP(@NotNull VirtualMachine vm) throws AzureCmdException;
+
+    @NotNull
+    List<StorageAccount> getStorageAccounts(@NotNull String subscriptionId) throws AzureCmdException;
 
     @NotNull
     List<VirtualMachineImage> getVirtualMachineImages(@NotNull String subscriptionId) throws AzureCmdException;

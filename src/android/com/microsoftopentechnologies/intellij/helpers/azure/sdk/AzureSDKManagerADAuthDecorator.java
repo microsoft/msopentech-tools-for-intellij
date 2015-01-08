@@ -99,6 +99,17 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
 
     @NotNull
     @Override
+    public List<CloudService> getCloudServices(@NotNull final String subscriptionId) throws AzureCmdException {
+        return runWithRetry(subscriptionId, new Func0<List<CloudService>>() {
+            @Override
+            public List<CloudService> run() throws AzureCmdException {
+                return sdkManager.getCloudServices(subscriptionId);
+            }
+        });
+    }
+
+    @NotNull
+    @Override
     public List<VirtualMachine> getVirtualMachines(@NotNull final String subscriptionId) throws AzureCmdException {
         return runWithRetry(subscriptionId, new Func0<List<VirtualMachine>>() {
             @Override
@@ -170,6 +181,17 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
             @Override
             public byte[] run() throws AzureCmdException {
                 return sdkManager.downloadRDP(vm);
+            }
+        });
+    }
+
+    @NotNull
+    @Override
+    public List<StorageAccount> getStorageAccounts(@NotNull final String subscriptionId) throws AzureCmdException {
+        return runWithRetry(subscriptionId, new Func0<List<StorageAccount>>() {
+            @Override
+            public List<StorageAccount> run() throws AzureCmdException {
+                return sdkManager.getStorageAccounts(subscriptionId);
             }
         });
     }
