@@ -23,6 +23,7 @@ import java.util.*;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.PathManager;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.ui.Messages;
 import com.microsoft.windowsazure.Configuration;
 import com.microsoft.windowsazure.core.OperationStatus;
@@ -218,18 +219,22 @@ public final class DeploymentManager {
 			}
 		}
 		catch (Throwable t) {
-			String msg = (t != null ? t.getMessage() : "");
-			if (!msg.startsWith(OperationStatus.Failed.toString())) {
-				msg = OperationStatus.Failed.toString() + " : " + msg;
+			if (t instanceof ProcessCanceledException) {
+				PluginUtil.displayWarningDialogInAWT(message("interrupt"), message("deploymentInterrupted"));
+			} else {
+				String msg = (t.getMessage() != null ? t.getMessage() : "");
+				if (!msg.startsWith(OperationStatus.Failed.toString())) {
+					msg = OperationStatus.Failed.toString() + " : " + msg;
+				}
+				notifyProgress(deploymentDesc.getDeploymentId(), null, 100,
+						OperationStatus.Failed, msg,
+						deploymentDesc.getDeploymentId(),
+						deployState);
+				if (t instanceof DeploymentException) {
+					throw (DeploymentException) t;
+				}
+				throw new DeploymentException(msg, t);
 			}
-			notifyProgress(deploymentDesc.getDeploymentId(), null, 100,
-                    OperationStatus.Failed, msg,
-					deploymentDesc.getDeploymentId(),
-					deployState);
-			if (t instanceof DeploymentException) {
-				throw (DeploymentException)t;
-			}
-			throw new DeploymentException(msg, t);
 		}
 	}
 
