@@ -239,4 +239,37 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
             }
         });
     }
+
+    @Override
+    public void createStorageAccount(@NotNull final StorageAccount storageAccount) throws AzureCmdException {
+        runWithRetry(storageAccount.getSubscriptionId(), new Func0<Void>() {
+            @Override
+            public Void run() throws AzureCmdException {
+                sdkManager.createStorageAccount(storageAccount);
+                return null;
+            }
+        });
+    }
+
+    @Override
+    public void createCloudService(@NotNull final CloudService cloudService) throws AzureCmdException {
+        runWithRetry(cloudService.getSubscriptionId(), new Func0<Void>() {
+            @Override
+            public Void run() throws AzureCmdException {
+                sdkManager.createCloudService(cloudService);
+                return null;
+            }
+        });
+    }
+
+    @Override
+    public void createVirtualMachine(@NotNull final VirtualMachine virtualMachine) throws AzureCmdException {
+        runWithRetry(virtualMachine.getSubscriptionId(), new Func0<Void>() {
+            @Override
+            public Void run() throws AzureCmdException {
+                sdkManager.createVirtualMachine(virtualMachine);
+                return null;
+            }
+        });
+    }
 }
