@@ -22,9 +22,14 @@ import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerI
 import com.microsoftopentechnologies.intellij.model.Subscription;
 import com.microsoftopentechnologies.intellij.model.vm.VirtualMachine;
 import com.microsoftopentechnologies.intellij.serviceexplorer.Node;
+import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionEvent;
+import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionListener;
+import com.microsoftopentechnologies.intellij.wizards.createvm.CreateVMWizard;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class VMServiceModule extends Node {
     private static final String VM_SERVICE_MODULE_ID = VMServiceModule.class.getName();
@@ -51,4 +56,20 @@ public class VMServiceModule extends Node {
             }
         }
     }
+
+    @Override
+    protected Map<String, Class<? extends NodeActionListener>> initActions() {
+        HashMap<String, Class<? extends NodeActionListener>> stringClassHashMap = new HashMap<String, Class<? extends NodeActionListener>>();
+        stringClassHashMap.put("Create VM", CreateVMAction.class);
+        return stringClassHashMap;
+    }
+
+    public class CreateVMAction extends NodeActionListener {
+        @Override
+        public void actionPerformed(NodeActionEvent e) {
+            CreateVMWizard createVMWizard = new CreateVMWizard(e.getAction().getNode().getProject());
+            createVMWizard.show();
+        }
+    }
+
 }
