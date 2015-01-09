@@ -26,16 +26,22 @@ public class CloudService implements ServiceTreeItem {
     private String name;
     private String location;
     private String affinityGroup;
+    private String productionDeployment;
+    private String stagingDeployment;
     private String subscriptionId;
     private Set<String> availabilitySets;
 
     public CloudService(@NotNull String name,
                         @NotNull String location,
                         @NotNull String affinityGroup,
+                        @NotNull String productionDeployment,
+                        @NotNull String stagingDeployment,
                         @NotNull String subscriptionId) {
         this.name = name;
         this.location = location;
         this.affinityGroup = affinityGroup;
+        this.productionDeployment = productionDeployment;
+        this.stagingDeployment = stagingDeployment;
         this.subscriptionId = subscriptionId;
         this.availabilitySets = new TreeSet<String>();
     }
@@ -63,6 +69,16 @@ public class CloudService implements ServiceTreeItem {
     @NotNull
     public String getAffinityGroup() {
         return affinityGroup;
+    }
+
+    @NotNull
+    public String getProductionDeployment() {
+        return productionDeployment;
+    }
+
+    @NotNull
+    public String getStagingDeployment() {
+        return stagingDeployment;
     }
 
     @NotNull
