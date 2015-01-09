@@ -18,9 +18,6 @@ package com.microsoftopentechnologies.intellij.model.vm;
 import com.microsoftopentechnologies.intellij.model.ServiceTreeItem;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Set;
-import java.util.TreeSet;
-
 public class StorageAccount implements ServiceTreeItem {
     private boolean loading;
     private String name;
@@ -28,7 +25,6 @@ public class StorageAccount implements ServiceTreeItem {
     private String location;
     private String affinityGroup;
     private String subscriptionId;
-    private Set<String> availabilitySets;
 
     public StorageAccount(@NotNull String name,
                           @NotNull String type,
@@ -40,7 +36,6 @@ public class StorageAccount implements ServiceTreeItem {
         this.location = location;
         this.affinityGroup = affinityGroup;
         this.subscriptionId = subscriptionId;
-        this.availabilitySets = new TreeSet<String>();
     }
 
     @Override
@@ -76,11 +71,6 @@ public class StorageAccount implements ServiceTreeItem {
     @NotNull
     public String getSubscriptionId() {
         return subscriptionId;
-    }
-
-    @NotNull
-    public Set<String> getAvailabilitySets() {
-        return availabilitySets;
     }
 
     @Override

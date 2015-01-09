@@ -15,6 +15,8 @@
  */
 package com.microsoftopentechnologies.intellij.helpers.azure.sdk;
 
+import com.microsoft.windowsazure.core.OperationResponse;
+import com.microsoft.windowsazure.core.OperationStatus;
 import com.microsoft.windowsazure.core.OperationStatusResponse;
 import com.microsoft.windowsazure.exception.ServiceException;
 import com.microsoft.windowsazure.management.AffinityGroupOperations;
@@ -32,6 +34,7 @@ import com.microsoft.windowsazure.management.models.RoleSizeListResponse;
 import com.microsoft.windowsazure.management.models.RoleSizeListResponse.RoleSize;
 import com.microsoft.windowsazure.management.storage.StorageAccountOperations;
 import com.microsoft.windowsazure.management.storage.StorageManagementClient;
+import com.microsoft.windowsazure.management.storage.models.StorageAccountCreateParameters;
 import com.microsoft.windowsazure.management.storage.models.StorageAccountListResponse;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureAuthenticationMode;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
@@ -86,6 +89,16 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
             }
 
             for (HostedService hostedService : hostedServices) {
+                String productionDeployment = getDeployment(
+                        client,
+                        hostedService.getServiceName(),
+                        DeploymentSlot.Production).getName();
+
+                String stagingDeployment = getDeployment(
+                        client,
+                        hostedService.getServiceName(),
+                        DeploymentSlot.Staging).getName();
+
                 CloudService cloudService = new CloudService(
                         hostedService.getServiceName() != null ? hostedService.getServiceName() : "",
                         hostedService.getProperties() != null && hostedService.getProperties().getLocation() != null ?
@@ -94,6 +107,8 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
                         hostedService.getProperties() != null && hostedService.getProperties().getAffinityGroup() != null ?
                                 hostedService.getProperties().getAffinityGroup() :
                                 "",
+                        productionDeployment != null ? productionDeployment : "",
+                        stagingDeployment != null ? stagingDeployment : "",
                         subscriptionId);
 
                 cloudService = loadAvailabilitySets(client, cloudService);
@@ -387,7 +402,6 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         }
     }
 
-
     @NotNull
     @Override
     public List<VirtualMachineImage> getVirtualMachineImages(@NotNull String subscriptionId) throws AzureCmdException {
@@ -471,6 +485,156 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
             return affinityGroupList;
         } catch (Throwable t) {
             throw new AzureCmdException("Error retrieving the Affinity Group list", t);
+        } finally {
+            if (client != null) {
+                try {
+                    client.close();
+                } catch (IOException ignored) {
+                }
+            }
+        }
+    }
+
+    @Override
+    public void createStorageAccount(@NotNull StorageAccount storageAccount) throws AzureCmdException {
+        StorageManagementClient client = null;
+
+        try {
+            client = getStorageManagementClient(storageAccount.getSubscriptionId());
+            StorageAccountOperations sao = getStorageAccountOperations(client);
+            StorageAccountCreateParameters sacp = new StorageAccountCreateParameters(storageAccount.getName(),
+                    storageAccount.getName());
+            sacp.setAccountType(storageAccount.getType());
+            if (!storageAccount.getAffinityGroup().isEmpty()) {
+                sacp.setAffinityGroup(storageAccount.getAffinityGroup());
+            } else if (!storageAccount.getLocation().isEmpty()) {
+                sacp.setLocation(storageAccount.getLocation());
+            }
+
+            OperationStatusResponse osr = sao.create(sacp);
+            validateOperationStatus(osr);
+        } catch (Throwable t) {
+            throw new AzureCmdException("Error retrieving the VM list", t);
+        } finally {
+            if (client != null) {
+                try {
+                    client.close();
+                } catch (IOException ignored) {
+                }
+            }
+        }
+    }
+
+    @Override
+    public void createCloudService(@NotNull CloudService cloudService) throws AzureCmdException {
+        ComputeManagementClient client = null;
+
+        try {
+            client = getComputeManagementClient(cloudService.getSubscriptionId());
+            HostedServiceOperations hso = getHostedServiceOperations(client);
+            HostedServiceCreateParameters hscp = new HostedServiceCreateParameters(cloudService.getName(),
+                    cloudService.getName());
+
+            if (!cloudService.getAffinityGroup().isEmpty()) {
+                hscp.setAffinityGroup(cloudService.getAffinityGroup());
+            } else if (!cloudService.getLocation().isEmpty()) {
+                hscp.setLocation(cloudService.getLocation());
+            }
+
+            OperationResponse or = hso.create(hscp);
+
+            if (or == null) {
+                throw new Exception("Unable to retrieve Operation");
+            }
+
+            OperationStatusResponse osr = getOperationStatusResponse(client, or);
+            validateOperationStatus(osr);
+        } catch (Throwable t) {
+            throw new AzureCmdException("Error retrieving the VM list", t);
+        } finally {
+            if (client != null) {
+                try {
+                    client.close();
+                } catch (IOException ignored) {
+                }
+            }
+        }
+    }
+
+    @Override
+    public void createVirtualMachine(@NotNull VirtualMachine virtualMachine) throws AzureCmdException {
+        ComputeManagementClient client = null;
+
+        try {
+            client = getComputeManagementClient(virtualMachine.getSubscriptionId());
+            VirtualMachineOperations vmo = getVirtualMachineOperations(client);
+            OperationStatusResponse osr;
+
+            if (!virtualMachine.getDeploymentName().isEmpty()) {
+                VirtualMachineCreateParameters vmcp = new VirtualMachineCreateParameters(virtualMachine.getName());
+
+                if (!virtualMachine.getAvailabilitySet().isEmpty()) {
+                    vmcp.setAvailabilitySetName(virtualMachine.getAvailabilitySet());
+                }
+
+                vmcp.setVMImageName(virtualMachine.getImageName());
+                vmcp.setRoleSize(virtualMachine.getSize());
+
+                ConfigurationSet configurationSet = new ConfigurationSet();
+                configurationSet.setConfigurationSetType(NETWORK_CONFIGURATION);
+                ArrayList<InputEndpoint> inputEndpoints = configurationSet.getInputEndpoints();
+
+                for (Endpoint endpoint : virtualMachine.getEndpoints()) {
+                    InputEndpoint inputEndpoint = new InputEndpoint();
+                    inputEndpoint.setName(endpoint.getName());
+                    inputEndpoint.setProtocol(endpoint.getProtocol());
+                    inputEndpoint.setLocalPort(endpoint.getPrivatePort());
+                    inputEndpoint.setPort(endpoint.getPublicPort());
+
+                    inputEndpoints.add(inputEndpoint);
+                }
+
+                vmcp.getConfigurationSets().add(configurationSet);
+
+                osr = vmo.create(virtualMachine.getServiceName(), virtualMachine.getDeploymentName(), vmcp);
+            } else {
+                VirtualMachineCreateDeploymentParameters vmcdp = new VirtualMachineCreateDeploymentParameters();
+                vmcdp.setName(virtualMachine.getServiceName());
+                vmcdp.setLabel(virtualMachine.getServiceName());
+                vmcdp.setDeploymentSlot(DeploymentSlot.Production);
+
+                Role role = new Role();
+
+                if (!virtualMachine.getAvailabilitySet().isEmpty()) {
+                    role.setAvailabilitySetName(virtualMachine.getAvailabilitySet());
+                }
+
+                role.setVMImageName(virtualMachine.getImageName());
+                role.setRoleSize(virtualMachine.getSize());
+
+                ConfigurationSet configurationSet = new ConfigurationSet();
+                configurationSet.setConfigurationSetType(NETWORK_CONFIGURATION);
+                ArrayList<InputEndpoint> inputEndpoints = configurationSet.getInputEndpoints();
+
+                for (Endpoint endpoint : virtualMachine.getEndpoints()) {
+                    InputEndpoint inputEndpoint = new InputEndpoint();
+                    inputEndpoint.setName(endpoint.getName());
+                    inputEndpoint.setProtocol(endpoint.getProtocol());
+                    inputEndpoint.setLocalPort(endpoint.getPrivatePort());
+                    inputEndpoint.setPort(endpoint.getPublicPort());
+
+                    inputEndpoints.add(inputEndpoint);
+                }
+
+                role.getConfigurationSets().add(configurationSet);
+                vmcdp.getRoles().add(role);
+
+                osr = vmo.createDeployment(virtualMachine.getServiceName(), vmcdp);
+            }
+
+            validateOperationStatus(osr);
+        } catch (Throwable t) {
+            throw new AzureCmdException("Error retrieving the VM list", t);
         } finally {
             if (client != null) {
                 try {
@@ -658,7 +822,8 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     }
 
     @NotNull
-    private static DeploymentGetResponse getDeployment(@NotNull ComputeManagementClient client, @NotNull String serviceName,
+    private static DeploymentGetResponse getDeployment(@NotNull ComputeManagementClient client,
+                                                       @NotNull String serviceName,
                                                        @NotNull String deploymentName)
             throws Exception {
         try {
@@ -717,6 +882,41 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         }
     }
 
+    @Nullable
+    private static OperationStatusResponse getOperationStatusResponse(@NotNull ComputeManagementClient client,
+                                                                      @NotNull OperationResponse or)
+            throws InterruptedException, java.util.concurrent.ExecutionException, ServiceException {
+        OperationStatusResponse osr = client.getOperationStatusAsync(or.getRequestId()).get();
+        int delayInSeconds = 30;
+
+        if (client.getLongRunningOperationInitialTimeout() >= 0) {
+            delayInSeconds = client.getLongRunningOperationInitialTimeout();
+        }
+
+        while (osr.getStatus() == OperationStatus.InProgress) {
+            Thread.sleep(delayInSeconds * 1000);
+            osr = client.getOperationStatusAsync(or.getRequestId()).get();
+            delayInSeconds = 30;
+
+            if (client.getLongRunningOperationRetryTimeout() >= 0) {
+                delayInSeconds = client.getLongRunningOperationRetryTimeout();
+            }
+        }
+
+        if (osr.getStatus() != OperationStatus.Succeeded) {
+            if (osr.getError() != null) {
+                ServiceException ex = new ServiceException(osr.getError().getCode() + " : " + osr.getError().getMessage());
+                ex.setErrorCode(osr.getError().getCode());
+                ex.setErrorMessage(osr.getError().getMessage());
+                throw ex;
+            } else {
+                throw new ServiceException("");
+            }
+        }
+
+        return osr;
+    }
+
     @NotNull
     private static CloudService loadAvailabilitySets(@NotNull ComputeManagementClient client,
                                                      @NotNull CloudService cloudService)
@@ -759,8 +959,10 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
                 VirtualMachine vm = new VirtualMachine(
                         role.getRoleName() != null ? role.getRoleName() : "",
                         serviceName,
-                        deployment.getUri() != null ? deployment.getUri().toString() : "",
                         deployment.getName() != null ? deployment.getName() : "",
+                        role.getAvailabilitySetName() != null ? role.getAvailabilitySetName() : "",
+                        deployment.getUri() != null ? deployment.getUri().toString() : "",
+                        role.getVMImageName() != null ? role.getVMImageName() : "",
                         role.getRoleSize() != null ? role.getRoleSize() : "",
                         deployment.getStatus() != null ? deployment.getStatus().toString() : "",
                         subscriptionId);
@@ -901,7 +1103,9 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
                     vmSizeList.add(
                             new VirtualMachineSize(
                                     rs.getName() != null ? rs.getName() : "",
-                                    rs.getLabel() != null ? rs.getLabel() : ""
+                                    rs.getLabel() != null ? rs.getLabel() : "",
+                                    rs.getCores(),
+                                    rs.getMemoryInMb()
                             ));
                 }
             }

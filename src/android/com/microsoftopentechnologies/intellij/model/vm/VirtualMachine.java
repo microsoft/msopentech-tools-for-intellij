@@ -25,20 +25,24 @@ public class VirtualMachine implements ServiceTreeItem {
     private boolean loading;
     private String name;
     private String serviceName;
-    private String dns;
     private String deploymentName;
+    private String availabilitySet;
+    private String dns;
+    private String imageName;
     private String size;
     private String status;
     private String subscriptionId;
     private List<Endpoint> endpoints;
 
-    public VirtualMachine(@NotNull String name, @NotNull String serviceName, @NotNull String dns,
-                          @NotNull String deploymentName, @NotNull String size, @NotNull String status,
-                          @NotNull String subscriptionId) {
+    public VirtualMachine(@NotNull String name, @NotNull String serviceName, @NotNull String deploymentName,
+                          @NotNull String availabilitySet, @NotNull String dns, @NotNull String imageName,
+                          @NotNull String size, @NotNull String status, @NotNull String subscriptionId) {
         this.name = name;
         this.serviceName = serviceName;
-        this.dns = dns;
         this.deploymentName = deploymentName;
+        this.availabilitySet = availabilitySet;
+        this.dns = dns;
+        this.imageName = imageName;
         this.size = size;
         this.status = status;
         this.subscriptionId = subscriptionId;
@@ -66,6 +70,16 @@ public class VirtualMachine implements ServiceTreeItem {
     }
 
     @NotNull
+    public String getDeploymentName() {
+        return deploymentName;
+    }
+
+    @NotNull
+    public String getAvailabilitySet() {
+        return availabilitySet;
+    }
+
+    @NotNull
     public String getDns() {
         return dns;
     }
@@ -74,8 +88,9 @@ public class VirtualMachine implements ServiceTreeItem {
         this.dns = dns;
     }
 
-    public String getDeploymentName() {
-        return deploymentName;
+    @NotNull
+    public String getImageName() {
+        return imageName;
     }
 
     @NotNull

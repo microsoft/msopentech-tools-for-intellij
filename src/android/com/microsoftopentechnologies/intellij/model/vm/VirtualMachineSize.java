@@ -22,10 +22,14 @@ public class VirtualMachineSize implements ServiceTreeItem {
     private boolean loading;
     private String name;
     private String label;
+    private int cores;
+    private int memoryInMB;
 
-    public VirtualMachineSize(@NotNull String name, @NotNull String label) {
+    public VirtualMachineSize(@NotNull String name, @NotNull String label, int cores, int memoryInMB) {
         this.name = name;
         this.label = label;
+        this.cores = cores;
+        this.memoryInMB = memoryInMB;
     }
 
     @Override
@@ -46,6 +50,14 @@ public class VirtualMachineSize implements ServiceTreeItem {
     @NotNull
     public String getLabel() {
         return label;
+    }
+
+    public int getCores() {
+        return cores;
+    }
+
+    public int getMemoryInMB() {
+        return memoryInMB;
     }
 
     @Override
