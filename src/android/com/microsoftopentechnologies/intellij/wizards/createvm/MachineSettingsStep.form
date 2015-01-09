@@ -72,6 +72,7 @@
                   <forms/>
                 </constraints>
                 <properties>
+                  <labelFor value="a2767"/>
                   <text value="Virtual Machine Name"/>
                 </properties>
               </component>
@@ -81,6 +82,7 @@
                   <forms/>
                 </constraints>
                 <properties>
+                  <labelFor value="40594"/>
                   <text value="Size"/>
                 </properties>
               </component>
@@ -99,6 +101,7 @@
                   <forms/>
                 </constraints>
                 <properties>
+                  <labelFor value="acec"/>
                   <text value="User name"/>
                 </properties>
               </component>
@@ -117,6 +120,7 @@
                   <forms/>
                 </constraints>
                 <properties>
+                  <labelFor value="ac837"/>
                   <text value="Password"/>
                 </properties>
               </component>
@@ -126,12 +130,13 @@
                   <forms/>
                 </constraints>
                 <properties>
+                  <labelFor value="960f7"/>
                   <text value="Confirm "/>
                 </properties>
               </component>
-              <component id="960f7" class="javax.swing.JPasswordField" binding="confirmPasswordField">
+              <component id="ac837" class="javax.swing.JPasswordField" binding="vmPasswordField">
                 <constraints>
-                  <grid row="13" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                  <grid row="10" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
                     <preferred-size width="150" height="-1"/>
                   </grid>
                   <forms defaultalign-horz="false"/>
@@ -145,9 +150,9 @@
                 </constraints>
                 <properties/>
               </component>
-              <component id="ac837" class="javax.swing.JPasswordField" binding="vmPasswordField">
+              <component id="960f7" class="javax.swing.JPasswordField" binding="confirmPasswordField">
                 <constraints>
-                  <grid row="10" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                  <grid row="13" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
                     <preferred-size width="150" height="-1"/>
                   </grid>
                   <forms defaultalign-horz="false"/>

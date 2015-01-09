@@ -62,6 +62,7 @@
               <forms/>
             </constraints>
             <properties>
+              <labelFor value="650f8"/>
               <text value="Choose the subscription to use when creating the new virtual machine."/>
             </properties>
           </component>

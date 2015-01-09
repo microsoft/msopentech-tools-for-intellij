@@ -65,6 +65,7 @@
                   <forms/>
                 </constraints>
                 <properties>
+                  <labelFor value="4a690"/>
                   <text value="Image Type"/>
                 </properties>
               </component>

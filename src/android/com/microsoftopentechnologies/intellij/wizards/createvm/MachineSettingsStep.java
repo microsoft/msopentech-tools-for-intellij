@@ -31,6 +31,8 @@ import com.microsoftopentechnologies.intellij.model.vm.VirtualMachineImage;
 import com.microsoftopentechnologies.intellij.model.vm.VirtualMachineSize;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.text.DateFormat;
 import java.util.List;
@@ -73,24 +75,97 @@ public class MachineSettingsStep extends WizardStep<CreateVMWizardModel> {
     }
 
 
-    public MachineSettingsStep(CreateVMWizardModel model, Project project) {
+    public MachineSettingsStep(CreateVMWizardModel mModel, Project project) {
         super("Virtual Machine Basic Settings", null);
 
         this.project = project;
-        this.model = model;
+        this.model = mModel;
 
         model.configStepList(createVmStepsList, 2);
 
         scrollPanel.remove(imageInfoPanel);
         final JBScrollPane jbScrollPane = new JBScrollPane(imageInfoPanel, JBScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JBScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         scrollPanel.add(jbScrollPane);
+
+        DocumentListener documentListener = new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent documentEvent) {
+                validateEmptyFields();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent documentEvent) {
+                validateEmptyFields();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent documentEvent) {
+                validateEmptyFields();
+            }
+        };
+
+        vmNameTextField.getDocument().addDocumentListener(documentListener);
+        vmUserTextField.getDocument().addDocumentListener(documentListener);
+        vmPasswordField.getDocument().addDocumentListener(documentListener);
+        confirmPasswordField.getDocument().addDocumentListener(documentListener);
+    }
+
+    private void validateEmptyFields() {
+
+        boolean allFieldsCompleted = !(
+                vmNameTextField.getText().isEmpty()
+                        || vmUserTextField.getText().isEmpty()
+                        || vmPasswordField.getPassword().length == 0
+                        || confirmPasswordField.getPassword().length == 0);
+
+        model.getCurrentNavigationState().NEXT.setEnabled(allFieldsCompleted);
+    }
+
+    @Override
+    public WizardStep onNext(CreateVMWizardModel model) {
+        WizardStep wizardStep = super.onNext(model);
+
+        String name = vmNameTextField.getText();
+        String pass = new String(vmPasswordField.getPassword());
+        String conf = new String(confirmPasswordField.getPassword());
+
+        if (name.length() > 15 || name.length() < 3) {
+            JOptionPane.showMessageDialog(null, "Invalid virtual machine name. The name must be between 3 and 15 character long.", "Error creating the virtual machine", JOptionPane.ERROR_MESSAGE);
+            return this;
+        }
+
+        if (!name.matches("^[A-Za-z][A-Za-z0-9-]+[A-Za-z0-9]$")) {
+            JOptionPane.showMessageDialog(null, "Invalid virtual machine name. The name must start with a letter, \n" +
+                    "contain only letters, numbers, and hyphens, " +
+                    "and end with a letter or number.", "Error creating the virtual machine", JOptionPane.ERROR_MESSAGE);
+            return this;
+        }
+
+        if (!pass.equals(conf)) {
+            JOptionPane.showMessageDialog(null, "Password confirmation should match password", "Error creating the service", JOptionPane.ERROR_MESSAGE);
+            return this;
+        }
+
+        if (!pass.matches("(?=^.{8,255}$)((?=.*\\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*")) {
+            JOptionPane.showMessageDialog(null, "The password does not conform to complexity requirements.\n" +
+                    "It should be at least eight characters long and contain a mixture of upper case, lower case, digits and symbols.", "Error creating the virtual machine", JOptionPane.ERROR_MESSAGE);
+            return this;
+        }
+
+
+        model.setName(name);
+        model.setSize((VirtualMachineSize) vmSizeComboBox.getSelectedItem());
+        model.setUserName(vmUserTextField.getText());
+        model.setPassword(confirmPasswordField.getPassword());
+
+        return wizardStep;
     }
 
     @Override
     public JComponent prepare(WizardNavigationState wizardNavigationState) {
         rootPanel.revalidate();
 
-        model.getCurrentNavigationState().NEXT.setEnabled(false);
+        validateEmptyFields();
 
         final VirtualMachineImage virtualMachineImage = model.getVirtualMachineImage();
 
@@ -126,5 +201,6 @@ public class MachineSettingsStep extends WizardStep<CreateVMWizardModel> {
 
         return rootPanel;
     }
+
 
 }

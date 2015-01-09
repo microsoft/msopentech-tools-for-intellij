@@ -22,6 +22,7 @@ import com.intellij.ui.wizard.WizardModel;
 import com.microsoftopentechnologies.intellij.model.Subscription;
 import com.microsoftopentechnologies.intellij.model.vm.VirtualMachine;
 import com.microsoftopentechnologies.intellij.model.vm.VirtualMachineImage;
+import com.microsoftopentechnologies.intellij.model.vm.VirtualMachineSize;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -33,6 +34,11 @@ public class CreateVMWizardModel extends WizardModel {
 
     private Subscription subscription;
     private VirtualMachineImage virtualMachineImage;
+    private String name;
+    private VirtualMachineSize size;
+    private String userName;
+    private char[] password;
+
 
     public CreateVMWizardModel(Project project) {
         super(ApplicationNamesInfo.getInstance().getFullProductName() + " - Create VM Wizard");
@@ -40,6 +46,7 @@ public class CreateVMWizardModel extends WizardModel {
         add(new SubscriptionStep(this));
         add(new SelectImageStep(this, project));
         add(new MachineSettingsStep(this, project));
+        add(new CloudServiceStep(this, project));
 
     }
 
@@ -91,5 +98,37 @@ public class CreateVMWizardModel extends WizardModel {
         }
 
 
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public VirtualMachineSize getSize() {
+        return size;
+    }
+
+    public void setSize(VirtualMachineSize size) {
+        this.size = size;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public char[] getPassword() {
+        return password;
+    }
+
+    public void setPassword(char[] password) {
+        this.password = password;
     }
 }
