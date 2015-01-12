@@ -149,19 +149,20 @@ public class TableNode extends Node {
     public class EditTableAction extends NodeActionListener {
         @Override
         public void actionPerformed(NodeActionEvent e) {
-            try {
-                // get the parent MobileServiceNode node
-                MobileServiceNode mobileServiceNode = (MobileServiceNode)findParentByType(MobileServiceNode.class);
-                final Service mobileService = mobileServiceNode.getMobileService();
+            // get the parent MobileServiceNode node
+            MobileServiceNode mobileServiceNode = (MobileServiceNode)findParentByType(MobileServiceNode.class);
+            final Service mobileService = mobileServiceNode.getMobileService();
 
-                final Table selectedTable = AzureRestAPIManager.getManager().showTableDetails(
-                        mobileService.getSubcriptionId(),
-                        mobileService.getName(),
-                        table.getName());
+            runAsBackground("Editing table " + getName() + "...", new Runnable() {
+                @Override
+                public void run() {
+                    Table selectedTable = null;
+                    try {
+                        selectedTable = AzureRestAPIManager.getManager().showTableDetails(
+                                mobileService.getSubcriptionId(),
+                                mobileService.getName(),
+                                table.getName());
 
-                ApplicationManager.getApplication().invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
                         TableForm form = new TableForm();
                         form.setServiceName(mobileService.getName());
                         form.setSubscriptionId(mobileService.getSubcriptionId());
@@ -169,12 +170,11 @@ public class TableNode extends Node {
                         form.setProject(getProject());
                         UIHelper.packAndCenterJDialog(form);
                         form.setVisible(true);
+                    } catch (AzureCmdException e1) {
+                        UIHelper.showException("Error editing table", e1);
                     }
-                });
-
-            } catch (Throwable ex) {
-                UIHelper.showException("Error creating table", ex);
-            }
+                }
+            });
         }
     }
 }

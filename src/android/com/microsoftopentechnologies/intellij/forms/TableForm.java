@@ -149,12 +149,15 @@ public class TableForm extends JDialog {
                                 return;
                             }
 
-                            int tableNameIndex = Iterables.indexOf(existingTableNames, new Predicate<String>() {
-                                @Override
-                                public boolean apply(String name) {
-                                    return tableName.equalsIgnoreCase(name);
-                                }
-                            });
+                            int tableNameIndex = -1;
+                            if(existingTableNames != null) {
+                                tableNameIndex = Iterables.indexOf(existingTableNames, new Predicate<String>() {
+                                    @Override
+                                    public boolean apply(String name) {
+                                        return tableName.equalsIgnoreCase(name);
+                                    }
+                                });
+                            }
 
                             if(tableNameIndex != -1) {
                                 JOptionPane.showMessageDialog(form, "Invalid table name. A table with that name already exists in this service.",
