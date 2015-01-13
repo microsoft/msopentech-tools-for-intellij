@@ -511,7 +511,17 @@ public class AzureRestAPIHelper {
                         getTenantName(subscriptionId),
                         settings.getAzureServiceManagementUri(),
                         settings.getClientId());
-            } finally {
+            }
+            catch (IOException e) {
+                // if the error is HTTP status code 400 then we need to
+                // do interactive auth
+                if(e.getMessage().contains("HTTP status code 400")) {
+                    return null;
+                }
+
+                throw e;
+            }
+            finally {
                 context.dispose();
             }
 
