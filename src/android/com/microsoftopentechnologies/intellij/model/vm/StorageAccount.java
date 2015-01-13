@@ -24,17 +24,20 @@ public class StorageAccount implements ServiceTreeItem {
     private String type;
     private String location;
     private String affinityGroup;
+    private String key;
     private String subscriptionId;
 
     public StorageAccount(@NotNull String name,
                           @NotNull String type,
                           @NotNull String location,
                           @NotNull String affinityGroup,
+                          @NotNull String key,
                           @NotNull String subscriptionId) {
         this.name = name;
         this.type = type;
         this.location = location;
         this.affinityGroup = affinityGroup;
+        this.key = key;
         this.subscriptionId = subscriptionId;
     }
 
@@ -66,6 +69,11 @@ public class StorageAccount implements ServiceTreeItem {
     @NotNull
     public String getAffinityGroup() {
         return affinityGroup;
+    }
+
+    @NotNull
+    public String getKey() {
+        return key;
     }
 
     @NotNull

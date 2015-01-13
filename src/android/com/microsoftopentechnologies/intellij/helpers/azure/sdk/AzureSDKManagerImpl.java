@@ -15,6 +15,9 @@
  */
 package com.microsoftopentechnologies.intellij.helpers.azure.sdk;
 
+import com.microsoft.azure.storage.CloudStorageAccount;
+import com.microsoft.azure.storage.StorageException;
+import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import com.microsoft.windowsazure.core.OperationResponse;
 import com.microsoft.windowsazure.core.OperationStatus;
 import com.microsoft.windowsazure.core.OperationStatusResponse;
@@ -35,6 +38,7 @@ import com.microsoft.windowsazure.management.models.RoleSizeListResponse.RoleSiz
 import com.microsoft.windowsazure.management.storage.StorageAccountOperations;
 import com.microsoft.windowsazure.management.storage.StorageManagementClient;
 import com.microsoft.windowsazure.management.storage.models.StorageAccountCreateParameters;
+import com.microsoft.windowsazure.management.storage.models.StorageAccountGetKeysResponse;
 import com.microsoft.windowsazure.management.storage.models.StorageAccountListResponse;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureAuthenticationMode;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
@@ -44,14 +48,21 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.GregorianCalendar;
-import java.util.List;
-import java.util.Set;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.security.InvalidKeyException;
+import java.util.*;
 
 public class AzureSDKManagerImpl implements AzureSDKManager {
     private static final String PERSISTENT_VM_ROLE = "PersistentVMRole";
     private static final String NETWORK_CONFIGURATION = "NetworkConfiguration";
+    public static final String PLATFORM_IMAGE = "Platform";
+    public static final String USER_IMAGE = "User";
+    private static final String WINDOWS_OS_TYPE = "Windows";
+    private static final String LINUX_OS_TYPE = "Linux";
+    private static final String WINDOWS_PROVISIONING_CONFIGURATION = "WindowsProvisioningConfiguration";
+    private static final String LINUX_PROVISIONING_CONFIGURATION = "LinuxProvisioningConfiguration";
+
 
     private static AzureSDKManager apiManager;
     private static AzureSDKManager apiManagerADAuth;
@@ -118,7 +129,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
 
             return csList;
         } catch (Throwable t) {
-            throw new AzureCmdException("Error retrieving the VM list", t);
+            throw new AzureCmdException("Error retrieving the Cloud Service list", t);
         } finally {
             if (client != null) {
                 try {
@@ -187,14 +198,16 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
                 throw new Exception("Invalid Virtual Machine information. No Roles match the VM data.");
             }
 
-            vm.setDns(deployment.getUri() != null ? deployment.getUri().toString() : "");
+            vm.setAvailabilitySet(vmRole.getAvailabilitySetName() != null ? vmRole.getAvailabilitySetName() : "");
             vm.setSize(vmRole.getRoleSize() != null ? vmRole.getRoleSize() : "");
             vm.setStatus(deployment.getStatus() != null ? deployment.getStatus().toString() : "");
 
             vm.getEndpoints().clear();
             vm = loadEndpoints(vmRole, vm);
+
+            return vm;
         } catch (Throwable t) {
-            throw new AzureCmdException("Error starting the VM", t);
+            throw new AzureCmdException("Error refreshing the VM information", t);
         } finally {
             if (client != null) {
                 try {
@@ -203,8 +216,6 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
                 }
             }
         }
-
-        return vm;
     }
 
     @Override
@@ -373,6 +384,16 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
             }
 
             for (com.microsoft.windowsazure.management.storage.models.StorageAccount storageAccount : storageAccounts) {
+                String key = "";
+
+                if (storageAccount.getName() != null) {
+                    String primaryKey = getStorageAccountKeys(client, storageAccount.getName()).getPrimaryKey();
+
+                    if (primaryKey != null) {
+                        key = primaryKey;
+                    }
+                }
+
                 StorageAccount sa = new StorageAccount(
                         storageAccount.getName() != null ? storageAccount.getName() : "",
                         storageAccount.getProperties() != null && storageAccount.getProperties().getAccountType() != null ?
@@ -384,6 +405,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
                         storageAccount.getProperties() != null && storageAccount.getProperties().getAffinityGroup() != null ?
                                 storageAccount.getProperties().getAffinityGroup() :
                                 "",
+                        key,
                         subscriptionId);
 
                 saList.add(sa);
@@ -514,7 +536,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
             OperationStatusResponse osr = sao.create(sacp);
             validateOperationStatus(osr);
         } catch (Throwable t) {
-            throw new AzureCmdException("Error retrieving the VM list", t);
+            throw new AzureCmdException("Error creating the Storage Account", t);
         } finally {
             if (client != null) {
                 try {
@@ -550,7 +572,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
             OperationStatusResponse osr = getOperationStatusResponse(client, or);
             validateOperationStatus(osr);
         } catch (Throwable t) {
-            throw new AzureCmdException("Error retrieving the VM list", t);
+            throw new AzureCmdException("Error creating the Cloud Service", t);
         } finally {
             if (client != null) {
                 try {
@@ -562,79 +584,39 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     }
 
     @Override
-    public void createVirtualMachine(@NotNull VirtualMachine virtualMachine) throws AzureCmdException {
+    public void createVirtualMachine(@NotNull VirtualMachine virtualMachine, @NotNull VirtualMachineImage vmImage,
+                                     @NotNull StorageAccount storageAccount, @NotNull String username,
+                                     @NotNull String password)
+            throws AzureCmdException {
+        try {
+            String mediaLocation = getMediaLocation(virtualMachine, storageAccount);
+
+            createVirtualMachine(virtualMachine, vmImage, mediaLocation, username, password);
+        } catch (AzureCmdException e) {
+            throw e;
+        } catch (Throwable t) {
+            throw new AzureCmdException("Error creating the VM", t);
+        }
+    }
+
+    @Override
+    public void createVirtualMachine(@NotNull VirtualMachine virtualMachine, @NotNull VirtualMachineImage vmImage,
+                                     @NotNull String mediaLocation, @NotNull String username, @NotNull String password)
+            throws AzureCmdException {
+
         ComputeManagementClient client = null;
 
         try {
             client = getComputeManagementClient(virtualMachine.getSubscriptionId());
             VirtualMachineOperations vmo = getVirtualMachineOperations(client);
-            OperationStatusResponse osr;
 
             if (!virtualMachine.getDeploymentName().isEmpty()) {
-                VirtualMachineCreateParameters vmcp = new VirtualMachineCreateParameters(virtualMachine.getName());
-
-                if (!virtualMachine.getAvailabilitySet().isEmpty()) {
-                    vmcp.setAvailabilitySetName(virtualMachine.getAvailabilitySet());
-                }
-
-                vmcp.setVMImageName(virtualMachine.getImageName());
-                vmcp.setRoleSize(virtualMachine.getSize());
-
-                ConfigurationSet configurationSet = new ConfigurationSet();
-                configurationSet.setConfigurationSetType(NETWORK_CONFIGURATION);
-                ArrayList<InputEndpoint> inputEndpoints = configurationSet.getInputEndpoints();
-
-                for (Endpoint endpoint : virtualMachine.getEndpoints()) {
-                    InputEndpoint inputEndpoint = new InputEndpoint();
-                    inputEndpoint.setName(endpoint.getName());
-                    inputEndpoint.setProtocol(endpoint.getProtocol());
-                    inputEndpoint.setLocalPort(endpoint.getPrivatePort());
-                    inputEndpoint.setPort(endpoint.getPublicPort());
-
-                    inputEndpoints.add(inputEndpoint);
-                }
-
-                vmcp.getConfigurationSets().add(configurationSet);
-
-                osr = vmo.create(virtualMachine.getServiceName(), virtualMachine.getDeploymentName(), vmcp);
+                createVM(vmo, virtualMachine, vmImage, mediaLocation, username, password);
             } else {
-                VirtualMachineCreateDeploymentParameters vmcdp = new VirtualMachineCreateDeploymentParameters();
-                vmcdp.setName(virtualMachine.getServiceName());
-                vmcdp.setLabel(virtualMachine.getServiceName());
-                vmcdp.setDeploymentSlot(DeploymentSlot.Production);
-
-                Role role = new Role();
-
-                if (!virtualMachine.getAvailabilitySet().isEmpty()) {
-                    role.setAvailabilitySetName(virtualMachine.getAvailabilitySet());
-                }
-
-                role.setVMImageName(virtualMachine.getImageName());
-                role.setRoleSize(virtualMachine.getSize());
-
-                ConfigurationSet configurationSet = new ConfigurationSet();
-                configurationSet.setConfigurationSetType(NETWORK_CONFIGURATION);
-                ArrayList<InputEndpoint> inputEndpoints = configurationSet.getInputEndpoints();
-
-                for (Endpoint endpoint : virtualMachine.getEndpoints()) {
-                    InputEndpoint inputEndpoint = new InputEndpoint();
-                    inputEndpoint.setName(endpoint.getName());
-                    inputEndpoint.setProtocol(endpoint.getProtocol());
-                    inputEndpoint.setLocalPort(endpoint.getPrivatePort());
-                    inputEndpoint.setPort(endpoint.getPublicPort());
-
-                    inputEndpoints.add(inputEndpoint);
-                }
-
-                role.getConfigurationSets().add(configurationSet);
-                vmcdp.getRoles().add(role);
-
-                osr = vmo.createDeployment(virtualMachine.getServiceName(), vmcdp);
+                createVMDeployment(vmo, virtualMachine, vmImage, mediaLocation, username, password);
             }
-
-            validateOperationStatus(osr);
         } catch (Throwable t) {
-            throw new AzureCmdException("Error retrieving the VM list", t);
+            throw new AzureCmdException("Error creating the VM", t);
         } finally {
             if (client != null) {
                 try {
@@ -862,6 +844,19 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     }
 
     @NotNull
+    private StorageAccountGetKeysResponse getStorageAccountKeys(@NotNull StorageManagementClient client,
+                                                                @NotNull String storageName)
+            throws Exception {
+        StorageAccountGetKeysResponse sagkr = getStorageAccountOperations(client).getKeys(storageName);
+
+        if (sagkr == null) {
+            throw new Exception("Unable to retrieve Storage Account Keys information");
+        }
+
+        return sagkr;
+    }
+
+    @NotNull
     private static List<Role> getVMDeploymentRoles(@NotNull DeploymentGetResponse deployment) throws Exception {
         ArrayList<Role> roles = deployment.getRoles();
 
@@ -961,8 +956,6 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
                         serviceName,
                         deployment.getName() != null ? deployment.getName() : "",
                         role.getAvailabilitySetName() != null ? role.getAvailabilitySetName() : "",
-                        deployment.getUri() != null ? deployment.getUri().toString() : "",
-                        role.getVMImageName() != null ? role.getVMImageName() : "",
                         role.getRoleSize() != null ? role.getRoleSize() : "",
                         deployment.getStatus() != null ? deployment.getStatus().toString() : "",
                         subscriptionId);
@@ -1022,6 +1015,29 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         validateOperationStatus(osr);
     }
 
+
+    @NotNull
+    private static String getMediaLocation(@NotNull VirtualMachine virtualMachine,
+                                           @NotNull StorageAccount storageAccount)
+            throws URISyntaxException, InvalidKeyException, StorageException {
+        Calendar calendar = GregorianCalendar.getInstance();
+        String blobName = String.format("%s-%s-%04d-%02d-%02d.vhd",
+                virtualMachine.getServiceName(),
+                virtualMachine.getName(),
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH) + 1,
+                calendar.get(Calendar.DATE));
+
+        CloudStorageAccount csa = CloudStorageAccount.parse("DefaultEndpointsProtocol=http;" +
+                "AccountName=" + storageAccount.getName() + ";" +
+                "AccountKey=" + storageAccount.getKey());
+
+        CloudBlobContainer container = csa.createCloudBlobClient().getContainerReference("vhds");
+        container.createIfNotExists();
+
+        return container.getUri().toString() + "/" + blobName;
+    }
+
     @NotNull
     private static List<VirtualMachineImage> loadOSImages(@NotNull ComputeManagementClient client,
                                                           @NotNull List<VirtualMachineImage> vmImageList)
@@ -1033,6 +1049,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
                 vmImageList.add(
                         new VirtualMachineImage(
                                 osImage.getName() != null ? osImage.getName() : "",
+                                PLATFORM_IMAGE,
                                 osImage.getCategory() != null ? osImage.getCategory() : "",
                                 osImage.getPublisherName() != null ? osImage.getPublisherName() : "",
                                 osImage.getPublishedDate() != null ?
@@ -1064,6 +1081,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
                 vmImageList.add(
                         new VirtualMachineImage(
                                 vmImage.getName() != null ? vmImage.getName() : "",
+                                USER_IMAGE,
                                 vmImage.getCategory() != null ? vmImage.getCategory() : "",
                                 vmImage.getPublisherName() != null ? vmImage.getPublisherName() : "",
                                 vmImage.getPublishedDate() != null ?
@@ -1159,5 +1177,132 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         }
 
         return affinityGroupList;
+    }
+
+    private static void createVM(@NotNull VirtualMachineOperations vmo,
+                                 @NotNull VirtualMachine virtualMachine,
+                                 @NotNull VirtualMachineImage vmImage,
+                                 @NotNull String mediaLocation,
+                                 @NotNull String username,
+                                 @NotNull String password)
+            throws Exception {
+        VirtualMachineCreateParameters vmcp = new VirtualMachineCreateParameters(virtualMachine.getName());
+
+        if (!virtualMachine.getAvailabilitySet().isEmpty()) {
+            vmcp.setAvailabilitySetName(virtualMachine.getAvailabilitySet());
+        }
+
+        if (vmImage.getType().equals(USER_IMAGE)) {
+            vmcp.setVMImageName(vmImage.getName());
+            vmcp.setMediaLocation(new URI(mediaLocation));
+        } else if (vmImage.getType().equals(PLATFORM_IMAGE)) {
+            OSVirtualHardDisk osVHD = new OSVirtualHardDisk();
+            osVHD.setSourceImageName(vmImage.getName());
+            osVHD.setMediaLink(new URI(mediaLocation));
+            vmcp.setOSVirtualHardDisk(osVHD);
+        }
+
+        vmcp.setRoleSize(virtualMachine.getSize());
+
+        vmcp.getConfigurationSets().add(getProvisioningConfigurationSet(virtualMachine, vmImage, username, password));
+
+        if (virtualMachine.getEndpoints().size() > 0) {
+            vmcp.getConfigurationSets().add(getNetworkConfigurationSet(virtualMachine));
+        }
+
+        OperationStatusResponse osr = vmo.create(virtualMachine.getServiceName(), virtualMachine.getDeploymentName(), vmcp);
+
+        validateOperationStatus(osr);
+    }
+
+    private static void createVMDeployment(@NotNull VirtualMachineOperations vmo,
+                                           @NotNull VirtualMachine virtualMachine,
+                                           @NotNull VirtualMachineImage vmImage,
+                                           @NotNull String mediaLocation,
+                                           @NotNull String username,
+                                           @NotNull String password) throws Exception {
+        VirtualMachineCreateDeploymentParameters vmcdp = new VirtualMachineCreateDeploymentParameters();
+        vmcdp.setName(virtualMachine.getName());
+        vmcdp.setLabel(virtualMachine.getName());
+        vmcdp.setDeploymentSlot(DeploymentSlot.Production);
+
+        Role role = new Role();
+        role.setRoleName(virtualMachine.getName());
+
+        if (!virtualMachine.getAvailabilitySet().isEmpty()) {
+            role.setAvailabilitySetName(virtualMachine.getAvailabilitySet());
+        }
+
+        if (vmImage.getType().equals("User")) {
+            role.setVMImageName(vmImage.getName());
+            role.setMediaLocation(new URI(mediaLocation));
+        } else if (vmImage.getType().equals("Platform")) {
+            OSVirtualHardDisk osVHD = new OSVirtualHardDisk();
+            osVHD.setSourceImageName(vmImage.getName());
+            osVHD.setMediaLink(new URI(mediaLocation));
+            role.setOSVirtualHardDisk(osVHD);
+        }
+
+        role.setRoleSize(virtualMachine.getSize());
+        role.setRoleType(PERSISTENT_VM_ROLE);
+
+        role.getConfigurationSets().add(getProvisioningConfigurationSet(virtualMachine, vmImage, username, password));
+
+        if (virtualMachine.getEndpoints().size() > 0) {
+            role.getConfigurationSets().add(getNetworkConfigurationSet(virtualMachine));
+        }
+
+        vmcdp.getRoles().add(role);
+
+        OperationStatusResponse osr = vmo.createDeployment(virtualMachine.getServiceName(), vmcdp);
+
+        validateOperationStatus(osr);
+    }
+
+    @NotNull
+    private static ConfigurationSet getProvisioningConfigurationSet(@NotNull VirtualMachine virtualMachine,
+                                                                    @NotNull VirtualMachineImage vmImage,
+                                                                    @NotNull String username,
+                                                                    @NotNull String password) {
+        ConfigurationSet provConfSet = new ConfigurationSet();
+
+        if (vmImage.getOperatingSystemType().equals(WINDOWS_OS_TYPE)) {
+            provConfSet.setConfigurationSetType(WINDOWS_PROVISIONING_CONFIGURATION);
+            provConfSet.setAdminUserName(username);
+            provConfSet.setAdminPassword(password);
+            provConfSet.setComputerName(String.format("%s-%s-%02d",
+                    virtualMachine.getServiceName().substring(0, 5),
+                    virtualMachine.getName().substring(0, 5),
+                    1));
+        } else if (vmImage.getOperatingSystemType().equals(LINUX_OS_TYPE)) {
+            provConfSet.setConfigurationSetType(LINUX_PROVISIONING_CONFIGURATION);
+            provConfSet.setUserName(username);
+            provConfSet.setUserPassword(password);
+            provConfSet.setHostName(String.format("%s-%s-%02d",
+                    virtualMachine.getServiceName().substring(0, 5),
+                    virtualMachine.getName().substring(0, 5),
+                    1));
+        }
+
+        return provConfSet;
+    }
+
+    @NotNull
+    private static ConfigurationSet getNetworkConfigurationSet(@NotNull VirtualMachine virtualMachine) {
+        ConfigurationSet netConfSet = new ConfigurationSet();
+        netConfSet.setConfigurationSetType(NETWORK_CONFIGURATION);
+        ArrayList<InputEndpoint> inputEndpoints = netConfSet.getInputEndpoints();
+
+        for (Endpoint endpoint : virtualMachine.getEndpoints()) {
+            InputEndpoint inputEndpoint = new InputEndpoint();
+            inputEndpoint.setName(endpoint.getName());
+            inputEndpoint.setProtocol(endpoint.getProtocol());
+            inputEndpoint.setLocalPort(endpoint.getPrivatePort());
+            inputEndpoint.setPort(endpoint.getPublicPort());
+
+            inputEndpoints.add(inputEndpoint);
+        }
+
+        return netConfSet;
     }
 }
