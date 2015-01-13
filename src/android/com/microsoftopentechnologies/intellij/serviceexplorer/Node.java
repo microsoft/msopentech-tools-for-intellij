@@ -327,24 +327,15 @@ public class Node {
         runAsBackground("", runnable);
     }
 
-    protected void runAsBackground(String status, final Runnable runnable) {
-        final String nodeName = getName();
-        if(!status.isEmpty()) {
-            setName(nodeName + " " + status);
-        }
-
+    protected void runAsBackground(final String status, final Runnable runnable) {
         ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
             public void run() {
                 ProgressManager.getInstance().run(
-                        new Task.Backgroundable(getProject(), "Loading " + getName() + "...", false) {
+                        new Task.Backgroundable(getProject(), status, false) {
                             @Override
                             public void run(ProgressIndicator progressIndicator) {
-                                try {
-                                    runnable.run();
-                                } finally {
-                                    setName(nodeName);
-                                }
+                                runnable.run();
                             }
                         });
             }
