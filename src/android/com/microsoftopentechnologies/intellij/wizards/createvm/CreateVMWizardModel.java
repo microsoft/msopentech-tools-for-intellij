@@ -20,9 +20,7 @@ import com.intellij.openapi.application.ApplicationNamesInfo;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.wizard.WizardModel;
 import com.microsoftopentechnologies.intellij.model.Subscription;
-import com.microsoftopentechnologies.intellij.model.vm.VirtualMachine;
-import com.microsoftopentechnologies.intellij.model.vm.VirtualMachineImage;
-import com.microsoftopentechnologies.intellij.model.vm.VirtualMachineSize;
+import com.microsoftopentechnologies.intellij.model.vm.*;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -38,6 +36,9 @@ public class CreateVMWizardModel extends WizardModel {
     private VirtualMachineSize size;
     private String userName;
     private char[] password;
+    private CloudService cloudService;
+    private StorageAccount storageAccount;
+    private String availabilitySet;
 
 
     public CreateVMWizardModel(Project project) {
@@ -47,6 +48,7 @@ public class CreateVMWizardModel extends WizardModel {
         add(new SelectImageStep(this, project));
         add(new MachineSettingsStep(this, project));
         add(new CloudServiceStep(this, project));
+        add(new EndpointStep(this));
 
     }
 
@@ -130,5 +132,29 @@ public class CreateVMWizardModel extends WizardModel {
 
     public void setPassword(char[] password) {
         this.password = password;
+    }
+
+    public String getAvailabilitySet() {
+        return availabilitySet;
+    }
+
+    public void setAvailabilitySet(String availabilitySet) {
+        this.availabilitySet = availabilitySet;
+    }
+
+    public StorageAccount getStorageAccount() {
+        return storageAccount;
+    }
+
+    public void setStorageAccount(StorageAccount storageAccount) {
+        this.storageAccount = storageAccount;
+    }
+
+    public CloudService getCloudService() {
+        return cloudService;
+    }
+
+    public void setCloudService(CloudService cloudService) {
+        this.cloudService = cloudService;
     }
 }
