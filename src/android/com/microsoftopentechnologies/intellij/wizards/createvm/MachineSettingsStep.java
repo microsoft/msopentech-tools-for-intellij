@@ -35,6 +35,8 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.text.DateFormat;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class MachineSettingsStep extends WizardStep<CreateVMWizardModel> {
@@ -184,6 +186,30 @@ public class MachineSettingsStep extends WizardStep<CreateVMWizardModel> {
             public void run(ProgressIndicator progressIndicator) {
                 try {
                     final List<VirtualMachineSize> virtualMachineSizes = AzureSDKManagerImpl.getManager().getVirtualMachineSizes(model.getSubscription().getId().toString());
+
+                    Collections.sort(virtualMachineSizes, new Comparator<VirtualMachineSize>() {
+                        @Override
+                        public int compare(VirtualMachineSize t0, VirtualMachineSize t1) {
+
+                            if(t0.getName().contains("Basic") && t1.getName().contains("Basic")) {
+                                return t0.getName().compareTo(t1.getName());
+                            } else if(t0.getName().contains("Basic") ) {
+                                return -1;
+                            } else if(t1.getName().contains("Basic") ) {
+                                return 1;
+                            }
+
+                            int coreCompare = Integer.valueOf(t0.getCores()).compareTo(Integer.valueOf(t1.getCores()));
+
+                            if(coreCompare == 0){
+                                return Integer.valueOf(t0.getMemoryInMB()).compareTo(Integer.valueOf(t1.getMemoryInMB()));
+                            } else {
+                                return coreCompare;
+                            }
+                        }
+                    });
+
+
 
                     ApplicationManager.getApplication().invokeLater(new Runnable() {
                         @Override
