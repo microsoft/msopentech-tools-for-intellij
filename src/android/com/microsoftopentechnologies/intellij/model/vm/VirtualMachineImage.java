@@ -23,6 +23,7 @@ import java.util.Calendar;
 public class VirtualMachineImage implements ServiceTreeItem {
     private boolean loading;
     private String name;
+    private String type;
     private String category;
     private String publisherName;
     private Calendar publishedDate;
@@ -36,12 +37,13 @@ public class VirtualMachineImage implements ServiceTreeItem {
     private String recommendedVMSize;
     private boolean showInGui;
 
-    public VirtualMachineImage(@NotNull String name, @NotNull String category, @NotNull String publisherName,
-                               @NotNull Calendar publishedDate, @NotNull String label, @NotNull String description,
-                               @NotNull String operatingSystemType, @NotNull String location, @NotNull String eulaUri,
-                               @NotNull String privacyUri, @NotNull String pricingUri, @NotNull String recommendedVMSize,
-                               boolean showInGui) {
+    public VirtualMachineImage(@NotNull String name, @NotNull String type, @NotNull String category,
+                               @NotNull String publisherName, @NotNull Calendar publishedDate, @NotNull String label,
+                               @NotNull String description, @NotNull String operatingSystemType, @NotNull String location,
+                               @NotNull String eulaUri, @NotNull String privacyUri, @NotNull String pricingUri,
+                               @NotNull String recommendedVMSize, boolean showInGui) {
         this.name = name;
+        this.type = type;
         this.category = category;
         this.publisherName = publisherName;
         this.publishedDate = publishedDate;
@@ -69,6 +71,11 @@ public class VirtualMachineImage implements ServiceTreeItem {
     @NotNull
     public String getName() {
         return name;
+    }
+
+    @NotNull
+    public String getType() {
+        return type;
     }
 
     @NotNull

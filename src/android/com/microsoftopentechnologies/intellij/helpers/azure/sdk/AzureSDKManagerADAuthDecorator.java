@@ -263,11 +263,32 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
     }
 
     @Override
-    public void createVirtualMachine(@NotNull final VirtualMachine virtualMachine) throws AzureCmdException {
+    public void createVirtualMachine(@NotNull final VirtualMachine virtualMachine,
+                                     @NotNull final VirtualMachineImage vmImage,
+                                     @NotNull final StorageAccount storageAccount,
+                                     @NotNull final String username,
+                                     @NotNull final String password)
+            throws AzureCmdException {
         runWithRetry(virtualMachine.getSubscriptionId(), new Func0<Void>() {
             @Override
             public Void run() throws AzureCmdException {
-                sdkManager.createVirtualMachine(virtualMachine);
+                sdkManager.createVirtualMachine(virtualMachine, vmImage, storageAccount, username, password);
+                return null;
+            }
+        });
+    }
+
+    @Override
+    public void createVirtualMachine(@NotNull final VirtualMachine virtualMachine,
+                                     @NotNull final VirtualMachineImage vmImage,
+                                     @NotNull final String mediaLocation,
+                                     @NotNull final String username,
+                                     @NotNull final String password)
+            throws AzureCmdException {
+        runWithRetry(virtualMachine.getSubscriptionId(), new Func0<Void>() {
+            @Override
+            public Void run() throws AzureCmdException {
+                sdkManager.createVirtualMachine(virtualMachine, vmImage, mediaLocation, username, password);
                 return null;
             }
         });
