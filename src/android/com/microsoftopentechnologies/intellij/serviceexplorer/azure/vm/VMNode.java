@@ -171,7 +171,7 @@ public class VMNode extends Node {
 
     private void runVMAction(
             String promptMessage,
-            String progressMessage,
+            final String progressMessage,
             final VMActionRunnable action) {
         final int optionDialog = JOptionPane.showOptionDialog(null,
                 promptMessage,
@@ -192,7 +192,7 @@ public class VMNode extends Node {
                         // reload vm details
                         refreshItems();
                     } catch (AzureCmdException ex) {
-                        UIHelper.showException("Error shutting down virtual machine", ex);
+                        UIHelper.showException("Error " + progressMessage, ex);
                     }
 
                 }
