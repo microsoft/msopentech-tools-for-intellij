@@ -134,20 +134,22 @@ public class JobForm extends JDialog {
                     }
 
 
-                    if(existingJobNames == null) {
+                    if(id == null) {
                         existingJobNames = new ArrayList<String>();
 
                         for (Job job : AzureRestAPIManager.getManager().listJobs(subscriptionId, serviceName)) {
                             existingJobNames.add(job.getName().toLowerCase());
                         }
+
+
+                        if(existingJobNames.contains(jobName.toLowerCase())) {
+                            form.setCursor(Cursor.getDefaultCursor());
+                            JOptionPane.showMessageDialog(form, "Invalid job name. A job with that name already exists in this service.",
+                                    "Error creating the job", JOptionPane.ERROR_MESSAGE);
+                            return;
+                        }
                     }
 
-                    if(existingJobNames.contains(jobName.toLowerCase())) {
-                        form.setCursor(Cursor.getDefaultCursor());
-                        JOptionPane.showMessageDialog(form, "Invalid job name. A job with that name already exists in this service.",
-                                "Error creating the job", JOptionPane.ERROR_MESSAGE);
-                        return;
-                    }
 
                     if(id == null)
                         AzureRestAPIManager.getManager().createJob(subscriptionId, serviceName, jobName, interval, unit, now);
