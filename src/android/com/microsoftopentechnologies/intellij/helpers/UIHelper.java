@@ -28,7 +28,9 @@ import com.microsoftopentechnologies.intellij.forms.ErrorMessageForm;
 import com.microsoftopentechnologies.intellij.forms.ImportSubscriptionForm;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIManager;
-import com.microsoftopentechnologies.intellij.model.*;
+import com.microsoftopentechnologies.intellij.model.CustomAPI;
+import com.microsoftopentechnologies.intellij.model.Job;
+import com.microsoftopentechnologies.intellij.model.Script;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -52,6 +54,10 @@ public class UIHelper {
     }
 
     public static void showException(final String message, final Throwable ex, final String title) {
+        showException(message, ex, title, true);
+    }
+
+    public static void showException(final String message, final Throwable ex, final String title, final boolean appendEx) {
         ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -87,8 +93,11 @@ public class UIHelper {
                         details = errorLog;
                     } else {
                         details = stackTrace;
-                        String exMessage = (ex.getLocalizedMessage() == null || ex.getLocalizedMessage().isEmpty()) ? ex.getMessage() : ex.getLocalizedMessage();
-                        headerMessage = headerMessage + exMessage;
+
+                        if (appendEx) {
+                            String exMessage = (ex.getLocalizedMessage() == null || ex.getLocalizedMessage().isEmpty()) ? ex.getMessage() : ex.getLocalizedMessage();
+                            headerMessage = headerMessage + exMessage;
+                        }
                     }
                 }
 
@@ -212,4 +221,3 @@ public class UIHelper {
         }
     }
 }
-
