@@ -135,7 +135,7 @@ public class CustomAPIForm extends JDialog {
                                 }
                             }
 
-                            if(existingApiNames.contains(apiName.toLowerCase())) {
+                            if(editingCustomAPI == null && existingApiNames.contains(apiName.toLowerCase())) {
                                 form.setCursor(Cursor.getDefaultCursor());
                                 JOptionPane.showMessageDialog(form, "Invalid API name. An API with that name already exists in this service.",
                                         "Error creating the API", JOptionPane.ERROR_MESSAGE);
@@ -182,7 +182,7 @@ public class CustomAPIForm extends JDialog {
         this.editingCustomAPI = editingCustomAPI;
 
 
-        this.setTitle(editingCustomAPI == null ? "Create new custom API" : "Edit new custom API");
+        this.setTitle(editingCustomAPI == null ? "Create new custom API" : "Edit custom API");
 
         this.createButton.setText(editingCustomAPI == null ? "Create" : "Save");
         this.tableNameTextField.setText(editingCustomAPI == null ? "" : editingCustomAPI.getName());
