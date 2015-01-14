@@ -16,6 +16,8 @@
 package com.microsoftopentechnologies.intellij.wizards.activityConfiguration;
 
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.components.ServiceManager;
@@ -35,6 +37,8 @@ import com.intellij.openapi.roots.ex.ProjectRootManagerEx;
 import com.intellij.ui.wizard.WizardNavigationState;
 import com.intellij.ui.wizard.WizardStep;
 import com.microsoft.directoryservices.Application;
+import com.microsoft.services.odata.ODataException;
+import com.microsoft.services.odata.interfaces.ODataResponse;
 import com.microsoftopentechnologies.intellij.helpers.ServiceCodeReferenceHelper;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.helpers.o365.Office365Manager;
@@ -48,7 +52,6 @@ import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import java.awt.*;
-import java.text.ParseException;
 import java.util.Collections;
 import java.util.concurrent.ExecutionException;
 
@@ -270,7 +273,7 @@ public class SummaryStep extends WizardStep<AddServiceWizardModel> {
         }
     }
 
-    private void associateOffice365() throws ParseException, ExecutionException, InterruptedException {
+    private void associateOffice365() {
         final Project project = this.model.getProject();
 
         try {
@@ -295,8 +298,59 @@ public class SummaryStep extends WizardStep<AddServiceWizardModel> {
                 serviceCodeReferenceHelper.addListServicesLibs();
                 serviceCodeReferenceHelper.addListServicesClass(PACKAGE_NAME, LIST_SERVICES_ENDPOINT_URL, LIST_SERVICES_SITE_URL);
             }
+        } catch (ExecutionException ex) {
+            String message = "";
+
+            if (ex.getCause() instanceof ODataException) {
+                message = parseODataException((ODataException) ex.getCause());
+            }
+
+            if (!message.isEmpty()) {
+                UIHelper.showException("An error occurred while trying to associate the Office 365 application - " + message,
+                        ex.getCause(),
+                        "Error associating Office 365 application",
+                        false);
+            } else {
+                UIHelper.showException("An error occurred while trying to associate the Office 365 application",
+                        ex.getCause(),
+                        "Error associating Office 365 application");
+            }
         } catch (Throwable ex) {
-            UIHelper.showException("Error:", ex);
+            UIHelper.showException("An error occurred while trying to associate the Office 365 application",
+                    ex,
+                    "Error associating Office 365 application");
         }
+    }
+
+    @NotNull
+    private static String parseODataException(@NotNull ODataException oDataException) {
+        String result = "";
+
+        ODataResponse oDataResponse = oDataException.getODataResponse();
+
+        if (oDataResponse != null) {
+            if (oDataResponse.getPayload() != null) {
+                try {
+                    String json = new String(oDataResponse.getPayload(), "UTF-8");
+
+                    JsonObject errorJson = new JsonParser().parse(json).getAsJsonObject();
+                    result = errorJson.get("odata.error").getAsJsonObject()
+                            .get("message").getAsJsonObject()
+                            .get("value").getAsString();
+                } catch (Throwable ignored) {
+                }
+            } else if (oDataResponse.getResponse() != null) {
+                int status = oDataResponse.getResponse().getStatus();
+                switch (status) {
+                    case 403:
+                        result = "Authorization error - Status 403";
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
+        return result;
     }
 }
