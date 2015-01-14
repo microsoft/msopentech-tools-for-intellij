@@ -92,6 +92,7 @@ public class VMNode extends Node {
         getNodeActionByName("Shutdown").setEnabled(virtualMachine.getStatus().equals(VM_STATUS_RUNNING));
         getNodeActionByName("Start").setEnabled(!virtualMachine.getStatus().equals(VM_STATUS_RUNNING));
         getNodeActionByName("Restart").setEnabled(virtualMachine.getStatus().equals(VM_STATUS_RUNNING));
+        getNodeActionByName("Download RDP file").setEnabled(virtualMachine.getStatus().equals(VM_STATUS_RUNNING));
 
         return super.getNodeActions();
     }
