@@ -16,8 +16,12 @@
 
 package com.microsoftopentechnologies.intellij.serviceexplorer;
 
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 public class NodeAction {
     private String name;
@@ -44,9 +48,20 @@ public class NodeAction {
 
     public void fireNodeActionEvent() {
         if(!listeners.isEmpty()) {
-            NodeActionEvent event = new NodeActionEvent(this);
-            for(NodeActionListener listener : listeners) {
-                listener.actionPerformed(event);
+            final NodeActionEvent event = new NodeActionEvent(this);
+            for(final NodeActionListener listener : listeners) {
+                listener.beforeActionPerformed(event);
+                Futures.addCallback(listener.actionPerformedAsync(event), new FutureCallback<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        listener.afterActionPerformed(event);
+                    }
+
+                    @Override
+                    public void onFailure(Throwable throwable) {
+                        listener.afterActionPerformed(event);
+                    }
+                });
             }
         }
     }

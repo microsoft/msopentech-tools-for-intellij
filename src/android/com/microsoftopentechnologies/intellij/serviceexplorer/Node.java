@@ -50,9 +50,10 @@ public class Node {
     protected NodeAction clickAction = new NodeAction(this, CLICK_ACTION);
     protected List<NodeAction> nodeActions = new ArrayList<NodeAction>();
 
-    // marks this node as being in a "loading" state; one consequence of
-    // setting this to true is that all actions associated with this node
-    // get disabled automatically
+    // marks this node as being in a "loading" state; when this field is true
+    // the following consequences apply:
+    //  [1] all actions associated with this node get disabled
+    //  [2] click action gets disabled automatically
     protected boolean loading = false;
 
     protected PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
