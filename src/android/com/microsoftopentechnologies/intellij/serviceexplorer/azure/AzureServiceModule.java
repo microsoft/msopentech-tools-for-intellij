@@ -48,7 +48,7 @@ public class AzureServiceModule extends Node {
     @Override
     protected Map<String, Class<? extends NodeActionListener>> initActions() {
         // register the "manage subscriptions" action
-        addAction("Manage subscriptions", new ManageSubscriptionsAction());
+        addAction("Manage Subscriptions", new ManageSubscriptionsAction());
         return null;
     }
 
