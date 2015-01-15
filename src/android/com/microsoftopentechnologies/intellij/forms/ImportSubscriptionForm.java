@@ -111,6 +111,11 @@ public class ImportSubscriptionForm extends JDialog {
                         form.setCursor(Cursor.getDefaultCursor());
                         UIHelper.showException("Error: " + e.getMessage(), e);
                     }
+                } else {
+                    UIHelper.showException("The specified Subscriptions File does not exist.",
+                            null,
+                            "Invalid Subscriptions File Path",
+                            false);
                 }
             }
         });
