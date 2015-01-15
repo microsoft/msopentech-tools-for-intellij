@@ -110,7 +110,7 @@ limitations under the License.
               <hideActionText value="false"/>
               <horizontalAlignment value="2"/>
               <horizontalTextPosition value="2"/>
-              <text value="Import Subscription"/>
+              <text value="Import Subscriptions"/>
             </properties>
           </component>
         </children>
