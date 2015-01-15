@@ -59,7 +59,7 @@ public class ManageSubscriptionForm extends JDialog {
         this.project = project;
 
         final ManageSubscriptionForm form = this;
-        this.setTitle("Manage subscriptions");
+        this.setTitle("Manage Subscriptions");
         this.setModal(true);
         this.setContentPane(mainPanel);
 
@@ -82,8 +82,6 @@ public class ManageSubscriptionForm extends JDialog {
         model.addColumn("Name");
         model.addColumn("Id");
 
-
-
         subscriptionTable.setModel(model);
 
         TableColumn column = subscriptionTable.getColumnModel().getColumn(0);
@@ -94,12 +92,9 @@ public class ManageSubscriptionForm extends JDialog {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-
                     if(AzureRestAPIManager.getManager().getAuthenticationToken() != null) {
                         clearSubscriptions();
                     } else {
-
-
                         PluginSettings settings = MSOpenTechTools.getCurrent().getSettings();
                         final AuthenticationContext context = new AuthenticationContext(settings.getAdAuthority());
 
@@ -204,7 +199,6 @@ public class ManageSubscriptionForm extends JDialog {
         signInButton.setText(isNotSigned ? "Sign In ..." : "Sign Out");
     }
 
-
     private void clearSubscriptions() {
         int res = JOptionPane.showConfirmDialog(this, "Are you sure you would like to clear all subscriptions?",
                 "Clear Subscriptions",
@@ -282,7 +276,6 @@ public class ManageSubscriptionForm extends JDialog {
             @Override
             public void run() {
                 try {
-
                     while (model.getRowCount() > 0)
                         model.removeRow(0);
 
@@ -291,7 +284,8 @@ public class ManageSubscriptionForm extends JDialog {
                     if (subscriptionList != null && subscriptionList.size() > 0) {
                         for (Subscription subs : subscriptionList) {
                             Vector<Object> row = new Vector<Object>();
-                            row.add(new Boolean(subs.isSelected()));
+                            subs.setSelected(true);
+                            row.add(true);
                             row.add(subs.getName());
                             row.add(subs.getId().toString());
                             model.addRow(row);
