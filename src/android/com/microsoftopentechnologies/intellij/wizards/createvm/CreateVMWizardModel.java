@@ -39,6 +39,7 @@ public class CreateVMWizardModel extends WizardModel {
     private CloudService cloudService;
     private StorageAccount storageAccount;
     private String availabilitySet;
+    private Endpoint[] endpoints;
 
 
     public CreateVMWizardModel(Project project) {
@@ -156,5 +157,13 @@ public class CreateVMWizardModel extends WizardModel {
 
     public void setCloudService(CloudService cloudService) {
         this.cloudService = cloudService;
+    }
+
+    public Endpoint[] getEndpoints() {
+        return endpoints;
+    }
+
+    public void setEndpoints(Endpoint[] endpoints) {
+        this.endpoints = endpoints;
     }
 }
