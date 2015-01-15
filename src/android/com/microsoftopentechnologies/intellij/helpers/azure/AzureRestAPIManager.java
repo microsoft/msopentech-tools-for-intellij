@@ -27,7 +27,6 @@ import com.microsoftopentechnologies.intellij.helpers.XmlHelper;
 import com.microsoftopentechnologies.intellij.helpers.aadauth.AuthenticationResult;
 import com.microsoftopentechnologies.intellij.model.*;
 import org.apache.commons.lang.StringUtils;
-import org.w3c.dom.Attr;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -227,10 +226,10 @@ public class AzureRestAPIManager implements AzureManager {
                 fullList = getSubscriptionListFromToken();
             }
 
-            if(fullList != null) {
+            if (fullList != null) {
                 ArrayList<Subscription> ret = new ArrayList<Subscription>();
                 for (Subscription subscription : fullList) {
-                    if(subscription.isSelected())
+                    if (subscription.isSelected())
                         ret.add(subscription);
                 }
 
@@ -274,7 +273,7 @@ public class AzureRestAPIManager implements AzureManager {
                     UUID id = UUID.fromString(XmlHelper.getAttributeValue(subscriptionList.item(i), "Id"));
                     Node node = subscriptionList.item(i).getAttributes().getNamedItem("Selected");
 
-                    if(node == null) {
+                    if (node == null) {
                         node = subscriptionList.item(i).getOwnerDocument().createAttribute("Selected");
                     }
 
@@ -282,7 +281,7 @@ public class AzureRestAPIManager implements AzureManager {
                     subscriptionList.item(i).getAttributes().setNamedItem(node);
                 }
 
-                if(subscriptionList.getLength() > 0) {
+                if (subscriptionList.getLength() > 0) {
                     String savedXml = XmlHelper.saveXmlToStreamWriter(subscriptionList.item(0).getOwnerDocument());
                     PropertiesComponent.getInstance().setValue(MSOpenTechTools.AppSettingsNames.SUBSCRIPTION_FILE, savedXml);
                 }
@@ -298,7 +297,6 @@ public class AzureRestAPIManager implements AzureManager {
 
                 PropertiesComponent.getInstance().setValue(MSOpenTechTools.AppSettingsNames.SELECTED_SUBSCRIPTIONS, StringUtils.join(selectedIds, ","));
             }
-
         } catch (Exception e) {
             throw new AzureCmdException("Error getting subscription list", e);
         }
@@ -320,7 +318,7 @@ public class AzureRestAPIManager implements AzureManager {
             subscription.setName(XmlHelper.getAttributeValue(subscriptionList.item(i), "Name"));
             subscription.setId(UUID.fromString(XmlHelper.getAttributeValue(subscriptionList.item(i), "Id")));
             String selected = XmlHelper.getAttributeValue(subscriptionList.item(i), "Selected");
-            subscription.setSelected(selected != null && selected.equals("true"));
+            subscription.setSelected(selected == null || selected.equals("true"));
 
             list.add(subscription);
         }
@@ -331,9 +329,13 @@ public class AzureRestAPIManager implements AzureManager {
     public void refreshSubscriptionListFromToken() throws IOException, CertificateException, NoSuchAlgorithmException, UnrecoverableKeyException, ExecutionException, ParserConfigurationException, InterruptedException, AzureCmdException, SAXException, NoSubscriptionException, KeyStoreException, XPathExpressionException, KeyManagementException {
 
         ArrayList<UUID> selectedIds = new ArrayList<UUID>();
-        String selectedSubscriptions = PropertiesComponent.getInstance().getValue(MSOpenTechTools.AppSettingsNames.SELECTED_SUBSCRIPTIONS, "");
+        String selectedSubscriptions = null;
 
-        if(!selectedSubscriptions.isEmpty()) {
+        if (PropertiesComponent.getInstance().isValueSet(MSOpenTechTools.AppSettingsNames.SELECTED_SUBSCRIPTIONS)) {
+            selectedSubscriptions = PropertiesComponent.getInstance().getValue(MSOpenTechTools.AppSettingsNames.SELECTED_SUBSCRIPTIONS, "");
+        }
+
+        if (selectedSubscriptions != null && !selectedSubscriptions.isEmpty()) {
             for (String id : selectedSubscriptions.split(",")) {
                 selectedIds.add(UUID.fromString(id));
             }
@@ -353,7 +355,7 @@ public class AzureRestAPIManager implements AzureManager {
                 subscription.setName(XmlHelper.getChildNodeValue(subscriptionList.item(i), "SubscriptionName"));
                 subscription.setId(UUID.fromString(XmlHelper.getChildNodeValue(subscriptionList.item(i), "SubscriptionID")));
                 subscription.setTenantId(XmlHelper.getChildNodeValue(subscriptionList.item(i), "AADTenantID"));
-                subscription.setSelected(selectedIds.contains(subscription.getId()));
+                subscription.setSelected(selectedSubscriptions == null || selectedIds.contains(subscription.getId()));
 
                 subscriptions.add(subscription);
             }
@@ -895,9 +897,9 @@ public class AzureRestAPIManager implements AzureManager {
 
             String postData = "{\"name\":\"" + jobName + "\""
                     + (
-                        intervalUnit.equals("none") ? "" : (",\"intervalUnit\":\"" + intervalUnit
-                        + "\",\"intervalPeriod\":" + String.valueOf(interval)
-                        + ",\"startTime\":\"" + startDate + "\""))
+                    intervalUnit.equals("none") ? "" : (",\"intervalUnit\":\"" + intervalUnit
+                            + "\",\"intervalPeriod\":" + String.valueOf(interval)
+                            + ",\"startTime\":\"" + startDate + "\""))
                     + "}";
 
 
@@ -915,7 +917,7 @@ public class AzureRestAPIManager implements AzureManager {
             String postData = "{"
                     + "\"status\":\"" + (enabled ? "enabled" : "disabled") + "\""
                     + (
-                        intervalUnit.equals("none") ? "" : (",\"intervalUnit\":\"" + intervalUnit
+                    intervalUnit.equals("none") ? "" : (",\"intervalUnit\":\"" + intervalUnit
                             + "\",\"intervalPeriod\":" + String.valueOf(interval)
                             + ",\"startTime\":\"" + startDate + "\""))
                     + "}";
