@@ -44,7 +44,6 @@ import java.awt.font.TextAttribute;
 import java.io.IOException;
 import java.net.URI;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -89,21 +88,16 @@ public class ActivityLogToolWindowFactory implements ToolWindowFactory {
         };
     }
 
-    public void addDeployment(String key, String description, Date startDate) {
-        if (rows.containsKey(key)) {
-            rows.remove(key);
-        }
-        rows.put(key, new DeploymentTableItem(description, null, dateFormat.format(startDate), 0));
-    }
-
     public void registerDeploymentListener() {
         AzurePlugin.addDeploymentEventListener(
                 new DeploymentEventListener() {
 
                     @Override
                     public void onDeploymentStep(final DeploymentEventArgs args) {
-                        if (rows.containsKey(args.getId())) {
-                            final DeploymentTableItem item = rows.get(args.getId());
+                        // unique identifier for deployment
+                        String key = args.getId() + args.getStartTime().getTime();
+                        if (rows.containsKey(key)) {
+                            final DeploymentTableItem item = rows.get(key);
                             ApplicationManager.getApplication().invokeLater(new Runnable() {
                                 @Override
                                 public void run() {
@@ -119,14 +113,13 @@ public class ActivityLogToolWindowFactory implements ToolWindowFactory {
                                     } else {
                                         item.description = args.getDeployMessage();
                                     }
-
                                     table.getListTableModel().fireTableDataChanged();
                                 }
                             });
                         } else {
                             final DeploymentTableItem item = new DeploymentTableItem(args.getId(), args.getDeployMessage(),
                                     dateFormat.format(args.getStartTime()), args.getDeployCompleteness());
-                            rows.put(args.getId(), item);
+                            rows.put(key, item);
                             ApplicationManager.getApplication().invokeLater(new Runnable() {
                                 @Override
                                 public void run() {
@@ -140,6 +133,7 @@ public class ActivityLogToolWindowFactory implements ToolWindowFactory {
 
     private class ProgressBarRenderer implements TableCellRenderer {
         private final JProgressBar progressBar = new JProgressBar();
+        private final JLabel label = new JLabel();
 
         public ProgressBarRenderer() {
             progressBar.setMaximum(100);
@@ -151,7 +145,8 @@ public class ActivityLogToolWindowFactory implements ToolWindowFactory {
                 progressBar.setValue((Integer) value);
                 return progressBar;
             } else {
-                return null;
+                label.setText("");
+                return label;
             }
         }
     }
@@ -211,7 +206,7 @@ public class ActivityLogToolWindowFactory implements ToolWindowFactory {
 
     private final ColumnInfo<DeploymentTableItem, String> START_TIME = new ColumnInfo<DeploymentTableItem, String>(message("startTime")) {
         public String valueOf(DeploymentTableItem object) {
-            return object.startDate.toString();
+            return object.startDate;
         }
     };
 
