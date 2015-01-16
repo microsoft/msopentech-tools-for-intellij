@@ -209,13 +209,7 @@ public final class DeploymentManager {
                     displayHttpsLink ? deployment.getUri().toString().replaceAll("http://", "https://") : deployment.getUri().toString(),
                     20, status,
                     deployment.getStatus().toString());
-            ApplicationManager.getApplication().invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    Messages.showInfoMessage("<html>Deployment can be accessed at:<br><a href=\"" + url + "\">" + url + "</a></html>", "Deployment Completed");
-                }
-            });
-			// RDP prompt will come only on windows
+            // RDP prompt will come only on windows
 			if (deploymentDesc.isStartRdpOnDeploy() && AzurePlugin.IS_WINDOWS) {
                 String pluginFolder = String.format("%s%s%s", PathManager.getPluginsPath(), File.separator, AzurePlugin.PLUGIN_ID);
 				WindowsAzureRestUtils.getInstance().launchRDP(deployment, deploymentDesc.getRemoteDesktopDescriptor().getUserName(), pluginFolder);
