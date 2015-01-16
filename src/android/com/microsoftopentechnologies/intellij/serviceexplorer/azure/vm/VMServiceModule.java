@@ -67,7 +67,7 @@ public class VMServiceModule extends Node {
     public class CreateVMAction extends NodeActionListener {
         @Override
         public void actionPerformed(NodeActionEvent e) {
-            CreateVMWizard createVMWizard = new CreateVMWizard(e.getAction().getNode().getProject());
+            CreateVMWizard createVMWizard = new CreateVMWizard((VMServiceModule) e.getAction().getNode());
             createVMWizard.show();
         }
     }

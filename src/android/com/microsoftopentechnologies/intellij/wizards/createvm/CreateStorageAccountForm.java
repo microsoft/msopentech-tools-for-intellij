@@ -202,6 +202,8 @@ public class CreateStorageAccountForm extends JDialog {
             @Override
             public void run(ProgressIndicator progressIndicator) {
 
+                progressIndicator.setIndeterminate(true);
+
                 try {
                     final java.util.List<AffinityGroup> affinityGroups = AzureSDKManagerImpl.getManager().getAffinityGroups(subscription.getId().toString());
                     final java.util.List<Location> locations = AzureSDKManagerImpl.getManager().getLocations(subscription.getId().toString());

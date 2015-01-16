@@ -149,6 +149,8 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
             @Override
             public void run(ProgressIndicator progressIndicator) {
                 try {
+                    progressIndicator.setIndeterminate(true);
+
                     storageAccounts = AzureSDKManagerImpl.getManager().getStorageAccounts(model.getSubscription().getId().toString());
 
                 } catch (AzureCmdException e) {
@@ -194,6 +196,7 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
             @Override
             public void run(ProgressIndicator progressIndicator) {
                 try {
+                    progressIndicator.setIndeterminate(true);
 
                     if(cloudServices == null) {
                         cloudServices = AzureSDKManagerImpl.getManager().getCloudServices(model.getSubscription().getId().toString());

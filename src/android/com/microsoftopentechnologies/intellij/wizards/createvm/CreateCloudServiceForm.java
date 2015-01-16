@@ -135,8 +135,10 @@ public class CreateCloudServiceForm extends JDialog {
         ProgressManager.getInstance().run(new Task.Backgroundable(project, "Loading regions...", false) {
             @Override
             public void run(ProgressIndicator progressIndicator) {
+                progressIndicator.setIndeterminate(true);
 
                 try {
+
                     final List<AffinityGroup> affinityGroups = AzureSDKManagerImpl.getManager().getAffinityGroups(subscription.getId().toString());
                     final List<Location> locations = AzureSDKManagerImpl.getManager().getLocations(subscription.getId().toString());
 

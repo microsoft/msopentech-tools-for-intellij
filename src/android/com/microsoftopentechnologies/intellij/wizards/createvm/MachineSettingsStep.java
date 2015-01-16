@@ -184,6 +184,8 @@ public class MachineSettingsStep extends WizardStep<CreateVMWizardModel> {
         ProgressManager.getInstance().run(new Task.Backgroundable(project, "Loading VM sizes...", false) {
             @Override
             public void run(ProgressIndicator progressIndicator) {
+                progressIndicator.setIndeterminate(true);
+
                 try {
                     final List<VirtualMachineSize> virtualMachineSizes = AzureSDKManagerImpl.getManager().getVirtualMachineSizes(model.getSubscription().getId().toString());
 

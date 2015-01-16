@@ -16,11 +16,23 @@
 
 package com.microsoftopentechnologies.intellij.wizards.createvm;
 
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.progress.PerformInBackgroundOption;
+import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.progress.ProgressManager;
+import com.intellij.openapi.progress.Task;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.ui.table.JBTable;
 import com.intellij.ui.wizard.WizardNavigationState;
 import com.intellij.ui.wizard.WizardStep;
+import com.microsoftopentechnologies.intellij.helpers.UIHelper;
+import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
+import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerImpl;
 import com.microsoftopentechnologies.intellij.model.vm.Endpoint;
+import com.microsoftopentechnologies.intellij.model.vm.VirtualMachine;
+import com.microsoftopentechnologies.intellij.serviceexplorer.azure.vm.VMNode;
+import com.microsoftopentechnologies.intellij.serviceexplorer.azure.vm.VMServiceModule;
 
 import javax.swing.*;
 import javax.swing.event.TableModelEvent;
@@ -36,16 +48,20 @@ import java.awt.event.MouseEvent;
 import java.util.Vector;
 
 public class EndpointStep extends WizardStep<CreateVMWizardModel> {
+    private final VMServiceModule node;
     private CreateVMWizardModel model;
     private JPanel rootPanel;
     private JList createVmStepsList;
     private JTable endpointsTable;
     private JComboBox portNameComboBox;
     private JButton addButton;
+    private Project project;
 
-    public EndpointStep(final CreateVMWizardModel model) {
+    public EndpointStep(final CreateVMWizardModel model, Project project, VMServiceModule node) {
         super("Endpoint Settings", null);
 
+        this.node = node;
+        this.project = project;
         this.model = model;
 
         endpointsTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -120,7 +136,15 @@ public class EndpointStep extends WizardStep<CreateVMWizardModel> {
         endpointTableModel.addTableModelListener(new TableModelListener() {
             @Override
             public void tableChanged(TableModelEvent tableModelEvent) {
-                model.getCurrentNavigationState().FINISH.setEnabled(endpointTableModel.getRowCount() > 0);
+
+                boolean hasErrors = false;
+                for (int i = 0; i < endpointTableModel.getRowCount(); i++) {
+                    String errorFromRow = getErrorFromRow(i, endpointTableModel.getData());
+                    if(errorFromRow.length() > 0)
+                        hasErrors = true;
+                }
+
+                model.getCurrentNavigationState().FINISH.setEnabled(!hasErrors && endpointTableModel.getRowCount() > 0);
             }
         });
     }
@@ -134,8 +158,45 @@ public class EndpointStep extends WizardStep<CreateVMWizardModel> {
     @Override
     public boolean onFinish() {
 
-        EndpointTableModel tableModel = (EndpointTableModel) endpointsTable.getModel();
-        model.setEndpoints(tableModel.getData().toArray(new Endpoint[]{}));
+        final EndpointTableModel tableModel = (EndpointTableModel) endpointsTable.getModel();
+        ProgressManager.getInstance().run(new Task.Backgroundable(project, "Creating virtual machine...", false) {
+
+            @Override
+            public void run(ProgressIndicator progressIndicator) {
+                progressIndicator.setIndeterminate(true);
+
+                try {
+
+
+                    final VirtualMachine virtualMachine = new VirtualMachine(
+                            model.getName(),
+                            model.getCloudService().getName(),
+                            model.getCloudService().getProductionDeployment(),
+                            model.getAvailabilitySet(),
+                            model.getSize().getName(),
+                            "",
+                            model.getSubscription().getId().toString()
+                    );
+
+                    virtualMachine.getEndpoints().addAll(tableModel.getData());
+
+                    AzureSDKManagerImpl.getManager().createVirtualMachine(virtualMachine, model.getVirtualMachineImage(), model.getStorageAccount(), model.getUserName(), new String(model.getPassword()));
+
+                    ApplicationManager.getApplication().invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                node.addChildNode(new VMNode(node, virtualMachine));
+                            } catch (AzureCmdException e) {
+                                UIHelper.showException("Error refreshing VM list", e);
+                            }
+                        }
+                    });
+                } catch (AzureCmdException e) {
+                    UIHelper.showException("Error creating virtual machine", e);
+                }
+            }
+        });
 
         return super.onFinish();
     }
@@ -166,6 +227,40 @@ public class EndpointStep extends WizardStep<CreateVMWizardModel> {
             }
         };
     }
+
+    private static String getErrorFromRow(int row, Vector<Endpoint> list) {
+        String errors = "";
+        Endpoint endpoint = list.get(row);
+
+        if (endpoint.getName().length() < 3 && endpoint.getName().length() > 15) {
+            errors = errors + "The name must between 3 and 15 character long. \n";
+        }
+
+        if (!endpoint.getName().matches("^[A-Za-z0-9][A-Za-z0-9-\\s]+[A-Za-z0-9]$")) {
+            errors = errors + "The name must start with a letter or number, " +
+                    "contain only letters, numbers, and hyphens, " +
+                    "and end with a letter or number. \n";
+        }
+
+
+        if (endpoint.getPrivatePort() < 1 || endpoint.getPrivatePort() > 65535) {
+            errors = errors + "The private port must between a number between 1 and 65535. \n";
+        }
+
+        boolean containsName = false;
+        for (Endpoint ep : list) {
+            if(ep != endpoint && ep.getName().equals(endpoint.getName())) {
+                containsName = true;
+            }
+        }
+
+        if(containsName) {
+            errors = errors + "The name must be unique. \n";
+        }
+
+        return errors;
+    }
+
 
     private class DeleteRenderer extends JPanel implements TableCellRenderer {
 
@@ -225,43 +320,6 @@ public class EndpointStep extends WizardStep<CreateVMWizardModel> {
 
             return this;
         }
-
-        public String getErrorFromRow(int row, Vector<Endpoint> list) {
-            String errors = "";
-            Endpoint endpoint = list.get(row);
-
-            if (endpoint.getName().length() < 3 && endpoint.getName().length() > 15) {
-                errors = errors + "The name must between 3 and 15 character long. \n";
-            }
-
-            if (!endpoint.getName().matches("^[A-Za-z0-9][A-Za-z0-9-\\s]+[A-Za-z0-9]$")) {
-                errors = errors + "The name must start with a letter or number, " +
-                        "contain only letters, numbers, and hyphens, " +
-                        "and end with a letter or number. \n";
-            }
-
-            if (endpoint.getPublicPort() > 1 || endpoint.getPublicPort() < 65535) {
-                errors = errors + "The public port must between a number between 1 and 65535. \n";
-            }
-
-            if (endpoint.getPrivatePort() > 1 || endpoint.getPrivatePort() < 65535) {
-                errors = errors + "The private port must between a number between 1 and 65535. \n";
-            }
-
-            boolean containsName = false;
-            for (Endpoint ep : list) {
-                if(ep.getName().equals(endpoint.getName())) {
-                    containsName = true;
-                }
-            }
-
-            if(!containsName) {
-                errors = errors + "The name must be unique. \n";
-            }
-
-            return errors;
-        }
-
     }
 
     private class EndpointTableModel extends AbstractTableModel {

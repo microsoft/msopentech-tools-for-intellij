@@ -18,13 +18,14 @@ package com.microsoftopentechnologies.intellij.wizards.createvm;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.wizard.WizardDialog;
+import com.microsoftopentechnologies.intellij.serviceexplorer.azure.vm.VMServiceModule;
 
 import javax.swing.*;
 import java.awt.*;
 
 public class CreateVMWizard extends WizardDialog<CreateVMWizardModel> {
-    public CreateVMWizard(Project project) {
-        super(true, true, new CreateVMWizardModel(project));
+    public CreateVMWizard(VMServiceModule node) {
+        super(true, true, new CreateVMWizardModel(node));
     }
 
     @Override

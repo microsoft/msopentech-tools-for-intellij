@@ -44,14 +44,8 @@ public class SelectImageStep extends WizardStep<CreateVMWizardModel> {
     private JList createVmStepsList;
     private JComboBox imageTypeComboBox;
     private JList imageLabelList;
-    private JTextPane imageTitleTextPane;
-    private JTextPane imageDescriptionTextPane;
-    private JTextPane imagePublishedDateTextPane;
-    private JTextPane imagePublisherTextPane;
-    private JTextPane imageOSFamilyTextPane;
-    private JTextPane imageLocationTextPane;
+    private JEditorPane imageDescriptionTextPane;
     private JPanel imageInfoPanel;
-    private JPanel scrollPanel;
 
     CreateVMWizardModel model;
 
@@ -144,10 +138,6 @@ public class SelectImageStep extends WizardStep<CreateVMWizardModel> {
 
         model.configStepList(createVmStepsList, 1);
 
-        scrollPanel.remove(imageInfoPanel);
-        final JBScrollPane jbScrollPane = new JBScrollPane(imageInfoPanel, JBScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JBScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        scrollPanel.add(jbScrollPane);
-
         final ArrayList imageTypeList = new ArrayList();
         imageTypeList.add("Public Images");
         imageTypeList.addAll(Arrays.asList(PublicImages.values()));
@@ -204,19 +194,9 @@ public class SelectImageStep extends WizardStep<CreateVMWizardModel> {
                 model.setVirtualMachineImage(virtualMachineImage);
 
                 if(virtualMachineImage != null) {
-                    imageTitleTextPane.setText(virtualMachineImage.getLabel());
-                    imageDescriptionTextPane.setText(virtualMachineImage.getDescription());
-                    imagePublishedDateTextPane.setText(DateFormat.getDateInstance(DateFormat.SHORT).format(virtualMachineImage.getPublishedDate().getTime()));
-                    imagePublisherTextPane.setText(virtualMachineImage.getPublisherName());
-                    imageOSFamilyTextPane.setText(virtualMachineImage.getOperatingSystemType());
-                    imageLocationTextPane.setText(virtualMachineImage.getLocation());
-
-                    imageTitleTextPane.setCaretPosition(0);
-
+                    imageDescriptionTextPane.setText(model.getHtmlFromVMImage(virtualMachineImage));
                     model.getCurrentNavigationState().NEXT.setEnabled(true);
                 }
-
-                scrollPanel.setVisible(virtualMachineImage != null);
             }
         });
     }
@@ -236,6 +216,7 @@ public class SelectImageStep extends WizardStep<CreateVMWizardModel> {
             ProgressManager.getInstance().run(new Task.Backgroundable(project, "Loading virtual machine images...", false) {
                 @Override
                 public void run(ProgressIndicator progressIndicator) {
+                    progressIndicator.setIndeterminate(true);
 
                     try {
                         for (VirtualMachineImage virtualMachineImage : AzureSDKManagerImpl.getManager().getVirtualMachineImages(model.getSubscription().getId().toString())) {
