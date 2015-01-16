@@ -22,8 +22,8 @@ Azure Notes
 **Other Dependencies:**
 1. ProjectManagerLibrary.jar from Utils/ProjectManagerLibrary/jar
 2. AzureCommons.jar from Utils/AzureCommons/jar - might need to build
-3. AzureManagementUtil.jar from Utils/AzureManagementUtil.jar - might need to build
-4. azure-core-0.6.0.jar from PluginsAndFeatures\AddLibrary\AzureLibraries\com.microsoftopentechnologies.windowsazure.tools.sdk
+3. .cspack.jar from StarterKit/CSPackAntTask/jar
+4. azure-core-0.7.0.jar from PluginsAndFeatures\AddLibrary\AzureLibraries\com.microsoftopentechnologies.windowsazure.tools.sdk
 and all jars from 'dependencies' folder
 
 Also, need to add antIntegration.jar from <IDEA_INSTALLATION>/plugins/ant/lib to SDK classpath.

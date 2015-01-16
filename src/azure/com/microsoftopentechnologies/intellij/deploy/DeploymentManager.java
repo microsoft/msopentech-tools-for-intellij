@@ -24,7 +24,9 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.PathManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.progress.ProcessCanceledException;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.wm.ToolWindowManager;
 import com.microsoft.windowsazure.Configuration;
 import com.microsoft.windowsazure.core.OperationStatus;
 import com.microsoft.windowsazure.core.OperationStatusResponse;
@@ -47,6 +49,7 @@ import com.microsoftopentechnologies.azuremanagementutil.rest.WindowsAzureServic
 import com.microsoftopentechnologies.azuremanagementutil.rest.WindowsAzureStorageServices;
 import com.microsoftopentechnologies.intellij.AzurePlugin;
 import com.microsoftopentechnologies.intellij.AzureSettings;
+import com.microsoftopentechnologies.intellij.activitylog.ActivityLogToolWindowFactory;
 import com.microsoftopentechnologies.intellij.util.PluginUtil;
 
 import com.microsoft.windowsazure.management.compute.models.HostedServiceListResponse.HostedService;
@@ -102,7 +105,7 @@ public final class DeploymentManager {
 
 			WindowsAzureServiceManagement service = WizardCacheManager.createServiceManagementHelper();
 
-			openWindowsAzureActivityLogView(deploymentDesc);
+			openWindowsAzureActivityLogView(deploymentDesc, selectedModule.getProject());
 
 			if (deploymentDesc.getDeployMode() == WindowsAzurePackageType.LOCAL) {
 				deployToLocalEmulator(selectedModule, deploymentDesc);
@@ -362,8 +365,13 @@ public final class DeploymentManager {
 		AzurePlugin.fireDeploymentEvent(arg);
 	}
 
-	private void openWindowsAzureActivityLogView(
-			final DeployDescriptor descriptor) {
+	private void openWindowsAzureActivityLogView(final DeployDescriptor descriptor, final Project project) {
+		ApplicationManager.getApplication().invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				ToolWindowManager.getInstance(project).getToolWindow(ActivityLogToolWindowFactory.ACTIVITY_LOG_WINDOW).activate(null);
+			}
+		});
 
 //		Display.getDefault().syncExec(new Runnable() {
 //
