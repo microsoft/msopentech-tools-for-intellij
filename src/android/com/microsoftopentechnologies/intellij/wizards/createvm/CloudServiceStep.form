@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.microsoftopentechnologies.intellij.wizards.createvm.CloudServiceStep">
+  <grid id="27dc6" layout-manager="BorderLayout" hgap="0" vgap="0">
+    <constraints>
+      <xy x="20" y="13" width="774" height="407"/>
+    </constraints>
+    <properties/>
+    <border type="none"/>
+    <children>
+      <grid id="1de6d" binding="rootPanel" layout-manager="FormLayout">
+        <rowspec value="center:d:grow"/>
+        <colspec value="fill:175px:noGrow"/>
+        <colspec value="left:4dlu:noGrow"/>
+        <colspec value="fill:p:grow"/>
+        <colspec value="left:5dlu:noGrow"/>
+        <colspec value="fill:270px:grow"/>
+        <constraints border-constraint="Center"/>
+        <properties>
+          <maximumSize width="-1" height="-1"/>
+          <minimumSize width="-1" height="-1"/>
+          <preferredSize width="-1" height="-1"/>
+        </properties>
+        <border type="none"/>
+        <children>
+          <scrollpane id="4c72a">
+            <constraints>
+              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+              <forms defaultalign-vert="false"/>
+            </constraints>
+            <properties/>
+            <border type="none"/>
+            <children>
+              <component id="d881b" class="javax.swing.JList" binding="createVmStepsList">
+                <constraints/>
+                <properties>
+                  <background color="-1512984"/>
+                  <focusable value="false"/>
+                  <model/>
+                  <selectionMode value="0"/>
+                </properties>
+              </component>
+            </children>
+          </scrollpane>
+          <grid id="4cc6d" layout-manager="FormLayout">
+            <rowspec value="center:max(d;4px):noGrow"/>
+            <rowspec value="center:max(d;4px):noGrow"/>
+            <rowspec value="top:4dlu:noGrow"/>
+            <rowspec value="center:19px:noGrow"/>
+            <rowspec value="center:max(d;4px):noGrow"/>
+            <rowspec value="top:4dlu:noGrow"/>
+            <rowspec value="center:max(d;4px):noGrow"/>
+            <rowspec value="top:4dlu:noGrow"/>
+            <rowspec value="center:max(d;4px):noGrow"/>
+            <colspec value="fill:290px:noGrow"/>
+            <constraints>
+              <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+              <forms defaultalign-vert="false"/>
+            </constraints>
+            <properties/>
+            <border type="empty">
+              <size top="10" left="10" bottom="10" right="10"/>
+            </border>
+            <children>
+              <component id="df0a4" class="javax.swing.JLabel">
+                <constraints>
+                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
+                  <forms/>
+                </constraints>
+                <properties>
+                  <labelFor value="a2767"/>
+                  <text value="Cloud service"/>
+                </properties>
+              </component>
+              <component id="4b919" class="javax.swing.JComboBox" binding="cloudServiceComboBox">
+                <constraints>
+                  <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+                  <forms/>
+                </constraints>
+                <properties/>
+              </component>
+              <component id="649aa" class="javax.swing.JLabel">
+                <constraints>
+                  <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                  <forms/>
+                </constraints>
+                <properties>
+                  <text value="Storage account"/>
+                </properties>
+              </component>
+              <component id="1544a" class="javax.swing.JComboBox" binding="storageComboBox">
+                <constraints>
+                  <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+                  <forms/>
+                </constraints>
+                <properties/>
+              </component>
+              <grid id="74c8" layout-manager="GridLayoutManager" row-count="1" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+                <margin top="0" left="0" bottom="0" right="0"/>
+                <constraints>
+                  <grid row="8" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                  <forms/>
+                </constraints>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="4311e" class="javax.swing.JComboBox" binding="availabilityComboBox">
+                    <constraints>
+                      <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <editable value="true"/>
+                      <enabled value="false"/>
+                    </properties>
+                  </component>
+                </children>
+              </grid>
+              <component id="2bb30" class="javax.swing.JCheckBox" binding="availabilitySetCheckBox">
+                <constraints>
+                  <grid row="6" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                  <forms/>
+                </constraints>
+                <properties>
+                  <text value="Specify an availability set"/>
+                </properties>
+              </component>
+            </children>
+          </grid>
+          <grid id="a65be" binding="scrollPanel" layout-manager="BorderLayout" hgap="0" vgap="0">
+            <constraints>
+              <grid row="0" column="4" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+              <forms defaultalign-vert="false"/>
+            </constraints>
+            <properties>
+              <autoscrolls value="true"/>
+              <maximumSize width="-1" height="-1"/>
+              <minimumSize width="-1" height="-1"/>
+              <preferredSize width="-1" height="-1"/>
+              <visible value="true"/>
+            </properties>
+            <border type="none"/>
+            <children>
+              <grid id="7bb7d" binding="imageInfoPanel" custom-create="true" layout-manager="FormLayout">
+                <rowspec value="top:max(m;45px):grow"/>
+                <rowspec value="top:4dlu:noGrow"/>
+                <rowspec value="center:max(m;45px):grow"/>
+                <rowspec value="top:4dlu:noGrow"/>
+                <rowspec value="center:max(d;4px):noGrow"/>
+                <colspec value="left:250px:noGrow"/>
+                <constraints border-constraint="Center"/>
+                <properties>
+                  <autoscrolls value="true"/>
+                  <maximumSize width="-1" height="-1"/>
+                  <minimumSize width="-1" height="-1"/>
+                  <preferredSize width="-1" height="-1"/>
+                </properties>
+                <border type="empty">
+                  <size top="10" left="10" bottom="10" right="10"/>
+                </border>
+                <children>
+                  <component id="d819c" class="javax.swing.JTextPane" binding="imageDescriptionTextPane">
+                    <constraints>
+                      <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="6" anchor="0" fill="3" indent="0" use-parent-layout="false">
+                        <preferred-size width="150" height="50"/>
+                      </grid>
+                      <forms defaultalign-horz="false" defaultalign-vert="false"/>
+                    </constraints>
+                    <properties>
+                      <editable value="false"/>
+                      <font name="Segoe UI" size="11"/>
+                      <text value=""/>
+                    </properties>
+                  </component>
+                  <grid id="7c78c" layout-manager="GridBagLayout">
+                    <constraints>
+                      <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                      <forms/>
+                    </constraints>
+                    <properties/>
+                    <border type="none"/>
+                    <children>
+                      <component id="69c74" class="javax.swing.JLabel">
+                        <constraints>
+                          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="4" hsize-policy="0" anchor="9" fill="0" indent="0" use-parent-layout="false">
+                            <preferred-size width="65" height="25"/>
+                          </grid>
+                          <gridbag top="0" left="0" bottom="10" right="50" weightx="0.0" weighty="1.0" ipady="10"/>
+                        </constraints>
+                        <properties>
+                          <font style="1"/>
+                          <text value="PUBLISHED"/>
+                        </properties>
+                      </component>
+                      <component id="1bc8b" class="javax.swing.JLabel">
+                        <constraints>
+                          <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="9" fill="0" indent="0" use-parent-layout="false"/>
+                          <gridbag top="0" left="0" bottom="10" right="50" weightx="0.0" weighty="1.0" ipady="10"/>
+                        </constraints>
+                        <properties>
+                          <font style="1"/>
+                          <text value="PUBLISHER"/>
+                        </properties>
+                      </component>
+                      <component id="25c84" class="javax.swing.JLabel">
+                        <constraints>
+                          <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="9" fill="0" indent="0" use-parent-layout="false"/>
+                          <gridbag top="0" left="0" bottom="10" right="50" weightx="0.0" weighty="1.0" ipady="10"/>
+                        </constraints>
+                        <properties>
+                          <font style="1"/>
+                          <text value="OS FAMILY"/>
+                        </properties>
+                      </component>
+                      <component id="41c0f" class="javax.swing.JLabel">
+                        <constraints>
+                          <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="9" fill="0" indent="0" use-parent-layout="false"/>
+                          <gridbag top="0" left="0" bottom="10" right="50" weightx="0.0" weighty="1.0" ipady="10"/>
+                        </constraints>
+                        <properties>
+                          <font style="1"/>
+                          <text value="LOCATION"/>
+                        </properties>
+                      </component>
+                      <component id="2f8b5" class="javax.swing.JTextPane" binding="imageLocationTextPane">
+                        <constraints>
+                          <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="6" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                          <gridbag weightx="1.0" weighty="1.0" ipady="10"/>
+                        </constraints>
+                        <properties>
+                          <editable value="false"/>
+                          <font swing-font="Label.font"/>
+                          <text value=""/>
+                        </properties>
+                      </component>
+                      <component id="ec9f0" class="javax.swing.JTextPane" binding="imagePublisherTextPane">
+                        <constraints>
+                          <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="6" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                          <gridbag weightx="1.0" weighty="1.0" ipady="10"/>
+                        </constraints>
+                        <properties>
+                          <editable value="false"/>
+                          <font swing-font="Label.font"/>
+                          <text value=""/>
+                        </properties>
+                      </component>
+                      <component id="72be5" class="javax.swing.JTextPane" binding="imagePublishedDateTextPane">
+                        <constraints>
+                          <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="6" anchor="0" fill="3" indent="0" use-parent-layout="false">
+                            <preferred-size width="6" height="25"/>
+                          </grid>
+                          <gridbag weightx="1.0" weighty="1.0" ipady="10"/>
+                        </constraints>
+                        <properties>
+                          <editable value="false"/>
+                          <font swing-font="Label.font"/>
+                          <text value=""/>
+                        </properties>
+                      </component>
+                      <component id="efdfa" class="javax.swing.JTextPane" binding="imageOSFamilyTextPane">
+                        <constraints>
+                          <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="6" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                          <gridbag weightx="1.0" weighty="1.0" ipady="10"/>
+                        </constraints>
+                        <properties>
+                          <editable value="false"/>
+                          <font swing-font="Label.font"/>
+                          <text value=""/>
+                        </properties>
+                      </component>
+                    </children>
+                  </grid>
+                  <component id="6f2f3" class="javax.swing.JTextPane" binding="imageTitleTextPane">
+                    <constraints>
+                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="6" anchor="0" fill="3" indent="0" use-parent-layout="false">
+                        <preferred-size width="150" height="50"/>
+                      </grid>
+                      <forms defaultalign-horz="false" defaultalign-vert="false"/>
+                    </constraints>
+                    <properties>
+                      <autoscrolls value="true"/>
+                      <editable value="false"/>
+                      <font name="Segoe UI" size="14" style="1"/>
+                      <maximumSize width="-1" height="2147483647"/>
+                      <minimumSize width="-1" height="-1"/>
+                      <preferredSize width="-1" height="-1"/>
+                      <text value=""/>
+                    </properties>
+                  </component>
+                </children>
+              </grid>
+            </children>
+          </grid>
+        </children>
+      </grid>
+    </children>
+  </grid>
+</form>
