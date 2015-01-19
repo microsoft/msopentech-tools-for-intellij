@@ -43,12 +43,6 @@ public class WindowsAzureUndeploymentTask extends Task.Backgroundable {
 
     @Override
     public void run(@NotNull final ProgressIndicator indicator) {
-//        MessageConsole console = Activator.findConsole(Activator.CONSOLE_NAME);
-
-//        console.clearConsole();
-
-//        final MessageConsoleStream out = console.newMessageStream();
-
         AzurePlugin.removeUnNecessaryListener();
         DeploymentEventListener undeployListnr = new DeploymentEventListener() {
             @Override
