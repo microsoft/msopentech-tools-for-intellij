@@ -2,35 +2,41 @@
 package ${packageName};
 
 import android.app.Activity;
+<#if includeOutlookServices || includeFileServices || includeListServices>
+import android.content.Context;
+</#if>
 import android.os.Bundle;
-
+<#if includeOutlookServices || includeFileServices || includeListServices>
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
-
-import java.util.List;
-
-<#if includeOutlookServices>
-// Outlook Services imports
-import com.microsoftopentechnologies.intellij.OutlookServicesClient;
-import com.microsoft.outlookservices.Message;
-
 </#if>
 <#if includeFileServices>
-// File Services imports
-import com.microsoftopentechnologies.intellij.FileServicesClient;
 import com.microsoft.fileservices.Item;
-
 </#if>
 <#if includeListServices>
-// List Services imports
-import com.microsoftopentechnologies.intellij.ListServicesClient;
+import com.microsoft.listservices.Credentials;
 import com.microsoft.listservices.Query;
 import com.microsoft.listservices.SPList;
-
+import com.microsoft.listservices.SharepointListsClient;
+import com.microsoft.listservices.http.Request;
 </#if>
-public class ${activityClass} extends Activity {
+<#if includeOutlookServices>
+import com.microsoft.outlookservices.Message;
+import com.microsoft.outlookservices.odata.OutlookClient;
+</#if>
+<#if includeOutlookServices || includeFileServices>
+import com.microsoft.services.odata.impl.DefaultDependencyResolver;
+</#if>
+<#if includeFileServices>
+import com.microsoft.sharepointservices.odata.SharePointClient;
+</#if>
+<#if includeOutlookServices || includeFileServices || includeListServices>
 
+import java.util.List;
+</#if>
+
+public class ${activityClass} extends Activity {
     /**
      * Initializes the activity
      */
@@ -39,7 +45,10 @@ public class ${activityClass} extends Activity {
         super.onCreate(savedInstanceState);
 <#if includeOutlookServices>
 
-        Futures.addCallback(getInboxMessages(), new FutureCallback<List<Message>>() {
+        OutlookClient outlookClient = getOutlookClient(this);
+        ListenableFuture<List<Message>> inboxFuture = getInboxMessages(outlookClient);
+
+        Futures.addCallback(inboxFuture, new FutureCallback<List<Message>>() {
             @Override
             public void onSuccess(List<Message> messages) {
                 // handle success
@@ -55,7 +64,10 @@ public class ${activityClass} extends Activity {
 </#if>
 <#if includeFileServices>
 
-        Futures.addCallback(getMyFiles(), new FutureCallback<List<Item>>() {
+        SharePointClient sharePointClient = getSharePointClient(this);
+        ListenableFuture<List<Item>> filesFuture = getMyFiles(sharePointClient);
+
+        Futures.addCallback(filesFuture, new FutureCallback<List<Item>>() {
             @Override
             public void onSuccess(List<Item> messages) {
                 // handle success
@@ -71,7 +83,10 @@ public class ${activityClass} extends Activity {
 </#if>
 <#if includeListServices>
 
-        Futures.addCallback(getMyLists(), new FutureCallback<List<SPList>>() {
+        SharepointListsClient sharepointListsClient = getSharepointListsClient(this);
+        ListenableFuture<List<SPList>> listsFuture = getMyLists(sharepointListsClient);
+
+        Futures.addCallback(listsFuture, new FutureCallback<List<SPList>>() {
             @Override
             public void onSuccess(List<SPList> messages) {
                 // handle success
@@ -87,23 +102,52 @@ public class ${activityClass} extends Activity {
 </#if>
 	}
 <#if includeOutlookServices>
-	
-    public ListenableFuture<List<Message>> getInboxMessages() {
-        OutlookServicesClient client = new OutlookServicesClient();
+
+    private static OutlookClient getOutlookClient(Context context) {
+        // TODO: Implement this invoking AAD or another credentials provider
+        String token = "someAADtoken";
+        DefaultDependencyResolver resolver = new DefaultDependencyResolver(token);
+		String url = context.getString(R.string.os_url_${activityToLayout(activityClass)});
+
+        return new OutlookClient(url, resolver);
+    }
+
+    private static ListenableFuture<List<Message>> getInboxMessages(OutlookClient client) {
         return client.getMe().getFolders().getById("Inbox").getMessages().read();
     }
 </#if>
 <#if includeFileServices>
 
-   public ListenableFuture<List<Item>> getMyFiles() {
-        FileServicesClient client = new FileServicesClient();
+   private static SharePointClient getSharePointClient(Context context) {
+        // TODO: Implement this invoking AAD or another credentials provider
+        String token = "someAADtoken";
+        DefaultDependencyResolver resolver = new DefaultDependencyResolver(token);
+		String url = context.getString(R.string.fs_url_${activityToLayout(activityClass)});
+
+        return new SharePointClient(url, resolver);
+    }
+
+    private static ListenableFuture<List<Item>> getMyFiles(SharePointClient client) {
         return client.getfiles().read();
     }
 </#if>
 <#if includeListServices>
 
-    public ListenableFuture<List<SPList>> getMyLists() {
-        ListServicesClient client = new ListServicesClient();
+    private static SharepointListsClient getSharepointListsClient(Context context) {
+        Credentials credentials = new Credentials() {
+            @Override
+            public void prepareRequest(Request request) {
+                // TODO: Implement this invoking AAD or another credentials provider
+            }
+        };
+
+        String serverUrl = context.getString(R.string.ls_server_url_${activityToLayout(activityClass)});
+        String siteRelativeUrl = context.getString(R.string.ls_site_relative_url_${activityToLayout(activityClass)});
+
+        return new SharepointListsClient(serverUrl, siteRelativeUrl, credentials);
+    }
+
+    private static ListenableFuture<List<SPList>> getMyLists(SharepointListsClient client) {
         return client.getLists(new Query());
     }
 </#if>

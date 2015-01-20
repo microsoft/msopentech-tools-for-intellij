@@ -3,76 +3,129 @@ package ${packageName};
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.os.Bundle;
-
-<#if includeMobileServices>
-import com.google.gson.JsonElement;
-import com.microsoftopentechnologies.intellij.MobileService;
-import com.microsoft.windowsazure.mobileservices.ApiJsonOperationCallback;
-import com.microsoft.windowsazure.mobileservices.MobileServiceClient;
-import com.microsoft.windowsazure.mobileservices.MobileServiceJsonTable;
-import com.microsoft.windowsazure.mobileservices.MobileServiceQuery;
-import com.microsoft.windowsazure.mobileservices.ServiceFilterResponse;
-import com.microsoft.windowsazure.mobileservices.TableJsonQueryCallback;
+<#if includeMobileServices || includeNotificationHub>
+import android.content.Context;
 </#if>
-
+import android.os.Bundle;
+<#if includeMobileServices>
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.gson.JsonElement;
+</#if>
 <#if includeNotificationHub>
-import com.microsoftopentechnologies.intellij.NotificationHubsHelper;
 import com.microsoft.windowsazure.messaging.NotificationHub;
 </#if>
+<#if includeMobileServices>
+import com.microsoft.windowsazure.mobileservices.MobileServiceClient;
+import com.microsoft.windowsazure.mobileservices.MobileServiceException;
+import com.microsoft.windowsazure.mobileservices.table.MobileServiceJsonTable;
+</#if>
+<#if includeNotificationHub>
+import com.microsoft.windowsazure.notifications.NotificationsHandler;
+import com.microsoft.windowsazure.notifications.NotificationsManager;
+</#if>
+<#if includeMobileServices>
 
 import java.net.MalformedURLException;
+</#if>
 
 public class ${activityClass} extends Activity {
+<#if includeNotificationHub>
+    public static class NotificationHubsHelper extends NotificationsHandler {
+        @Override
+        public void onRegistered(Context context, String gcmRegistrationId) {
+            try {
+                String hubName = context.getString(R.string.nh_name_${activityToLayout(activityClass)});
+                String connStr = context.getString(R.string.nh_conn_str_${activityToLayout(activityClass)});
 
+                NotificationHub hub = new NotificationHub(hubName, connStr, context);
+                hub.register(gcmRegistrationId);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        @Override
+        public void onUnregistered(Context context, String gcmRegistrationId) {
+            try {
+                String hubName = context.getString(R.string.nh_name_${activityToLayout(activityClass)});
+                String connStr = context.getString(R.string.nh_conn_str_${activityToLayout(activityClass)});
+
+                NotificationHub hub = new NotificationHub(hubName, connStr, context);
+                hub.unregister();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        @Override
+        public void onReceive(Context context, Bundle bundle) {
+            super.onReceive(context, bundle);
+            //YOU CAN OVERRIDE THE DEFAULT IMPLEMENTATION HERE
+        }
+    }
+
+</#if>
     /**
      * Initializes the activity
      */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+<#if includeMobileServices>
 
-        <#if includeMobileServices>
         try {
-
             //Obtain the MobileServiceClient object to query your mobile service
-            MobileServiceClient mobileServiceClient = MobileService.getInstance(this);
+            MobileServiceClient mobileServiceClient = getMobileServiceClient(this);
 
             //Query or update your table's data using MobileServiceJsonTable
-            MobileServiceJsonTable table_name = mobileServiceClient.getTable("TABLE_NAME");
-            table_name.execute(new MobileServiceQuery<Object>(), new TableJsonQueryCallback() {
+            MobileServiceJsonTable table = mobileServiceClient.getTable("TABLE_NAME");
+            ListenableFuture<JsonElement> tableFuture = table.execute();
+
+            Futures.addCallback(tableFuture, new FutureCallback<JsonElement>() {
                 @Override
-                public void onCompleted(JsonElement jsonElement, int i, Exception e, ServiceFilterResponse serviceFilterResponse) {
+                public void onSuccess(JsonElement element) {
+                    // handle success
+
+                }
+
+                @Override
+                public void onFailure(Throwable throwable) {
+                    // handle failure
 
                 }
             });
 
             //Run your custom APIs
-            mobileServiceClient.invokeApi("API_NAME", new ApiJsonOperationCallback() {
+            ListenableFuture<JsonElement> apiFuture = mobileServiceClient.invokeApi("API_NAME");
+
+            Futures.addCallback(apiFuture, new FutureCallback<JsonElement>() {
                 @Override
-                public void onCompleted(JsonElement jsonElement, Exception e, ServiceFilterResponse serviceFilterResponse) {
+                public void onSuccess(JsonElement element) {
+                    // handle success
+
+                }
+
+                @Override
+                public void onFailure(Throwable throwable) {
+                    // handle failure
 
                 }
             });
         } catch (MalformedURLException e) {
             createAndShowDialog(e, "Error trying to get mobile service. Invalid URL");
+        } catch (MobileServiceException e) {
+            createAndShowDialog(e, "Error trying to query mobile service table. Invalid URL");
         }
-        </#if>
+</#if>
+<#if includeNotificationHub>
 
-        <#if includeNotificationHub>
-        try {
-            //Use the NotificationHub object to register to GCM by getting the registration ID and using the register method
-            NotificationHub notificationHub = NotificationHubsHelper.getNotificationHub(this);
-            notificationHub.register("GCM_REGISTRATION_ID");
-        } catch (Exception e) {
-            createAndShowDialog(e, "Error registering notification hub");
-        }
-        </#if>
+		handleNotifications(this);
+</#if>
     }
 
     /**
      * Creates a dialog and shows it
-     * 
+     *
      * @param exception
      *            The exception to show in the dialog
      * @param title
@@ -90,7 +143,7 @@ public class ${activityClass} extends Activity {
 
     /**
      * Creates a dialog and shows it
-     * 
+     *
      * @param message
      *            The dialog message
      * @param title
@@ -103,4 +156,34 @@ public class ${activityClass} extends Activity {
         builder.setTitle(title);
         builder.create().show();
     }
+<#if includeMobileServices>
+
+    /**
+     * Creates a new MobileServiceClient instance with preconfigured credentials
+     *
+     * @param context
+     *            The context being associated to the MobileServiceClient
+     * @return
+     *            The Mobile Service client
+     */
+	private static MobileServiceClient getMobileServiceClient(Context context) throws MalformedURLException {
+		String appUrl = context.getString(R.string.ms_url_${activityToLayout(activityClass)});
+        String appKey = context.getString(R.string.ms_key_${activityToLayout(activityClass)});
+
+        return new MobileServiceClient(appUrl, appKey, context);
+	}
+</#if>
+<#if includeNotificationHub>
+
+    /**
+     * Enable notifications handling using the NotificationHubsHelper class
+     *
+     * @param context
+     *            The context being used to handle notifications
+     */
+	private static void handleNotifications(Context context) {
+        String gcmAppId = context.getString(R.string.nh_sender_id_${activityToLayout(activityClass)});
+        NotificationsManager.handleNotifications(context, gcmAppId, NotificationHubsHelper.class);
+	}
+</#if>
 }

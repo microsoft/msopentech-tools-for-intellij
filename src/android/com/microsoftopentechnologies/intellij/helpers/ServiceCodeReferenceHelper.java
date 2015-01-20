@@ -13,18 +13,18 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-
 package com.microsoftopentechnologies.intellij.helpers;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.microsoftopentechnologies.intellij.model.Service;
+import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -44,43 +44,37 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.xpath.*;
 import java.io.*;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.*;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Scanner;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 public class ServiceCodeReferenceHelper {
-
     private static final String AZURESDK_URL = "http://zumo.blob.core.windows.net/sdk/azuresdk-android-1.1.5.zip";
-    static final String TEMPLATES_URL = "/com/microsoftopentechnologies/intellij/templates/";
+
+    private static final String TEMPLATES_URL = "/com/microsoftopentechnologies/intellij/templates/";
 
     private static final String NOTIFICATIONHELPER_PATH = "notifications/";
-
-    private static final String MOBILESERVICE_PATH = "mobileservices/";
-    private static final String MOBILESERVICE_LIBTEMPLATE = "mobileservices.xml";
-    private static final String MOBILESERVICE_LIBNAME = "mobileservices";
-
     private static final String NOTIFICATIONHUBS_PATH = "notificationhubs/";
     private static final String NOTIFICATIONHUBS_LIBTEMPLATE = "notification.xml";
     private static final String NOTIFICATIONHUBS_LIBNAME = "notification";
 
+    private static final String STRINGS_XML = "src/main/res/values/strings.xml";
 
     private Project project;
+    private Module module;
     private String sourcePath;
-    private VirtualFile moduleFolder;
 
-    public ServiceCodeReferenceHelper(Project project) {
+    public ServiceCodeReferenceHelper(Project project, Module module) {
         this.project = project;
+        this.module = module;
     }
 
     public static InputStream getTemplateResource(String libTemplate) {
         return ServiceCodeReferenceHelper.class.getResourceAsStream(TEMPLATES_URL + libTemplate);
-    }
-
-    public void addMobileServicesLibs()
-            throws ParserConfigurationException, TransformerException, SAXException, XPathExpressionException, IOException {
-        addReferences(MOBILESERVICE_PATH, MOBILESERVICE_LIBTEMPLATE, MOBILESERVICE_LIBNAME);
     }
 
     public void addNotificationHubsLibs()
@@ -99,124 +93,6 @@ public class ServiceCodeReferenceHelper {
 
     public void addListServicesLibs() throws ParserConfigurationException, SAXException, XPathExpressionException, IOException {
         updateSourceAndModule();
-    }
-
-    public void addMobileServiceClass(String packageLiteral, Service service) throws MalformedURLException {
-        if (sourcePath != null) {
-            InputStream is = ServiceCodeReferenceHelper.class.getResourceAsStream("/com/microsoftopentechnologies/intellij/templates/MobileService.codetemplate");
-            String template = getString(is);
-
-            template = template.replace("$APPURL", service.getAppUrl());
-            template = template.replace("$APPKEY", service.getAppKey());
-            template = template.replace("$PACKAGE", packageLiteral);
-
-            final String code = template;
-
-            String basePath = sourcePath.replace("file://", "");
-
-            if (!basePath.endsWith(File.separator))
-                basePath = basePath + File.separator;
-
-            for (String packagePart : packageLiteral.split("[.]")) {
-                basePath = basePath + packagePart + File.separator;
-            }
-
-            File folder = new File(basePath);
-            if (!folder.exists())
-                folder.mkdirs();
-            final File file = new File(basePath + "MobileService.java");
-
-            try {
-
-                if (!file.exists()) {
-                    file.createNewFile();
-                }
-
-                final VirtualFile vf = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(file);
-
-                if (vf != null) {
-                    ApplicationManager.getApplication().invokeAndWait(new Runnable() {
-                        @Override
-                        public void run() {
-                            ApplicationManager.getApplication().runWriteAction(new Runnable() {
-                                @Override
-                                public void run() {
-                                    try {
-                                        vf.setBinaryContent(code.getBytes());
-                                        FileEditorManager.getInstance(project).openFile(vf, false);
-                                    } catch (Throwable ex) {
-                                        UIHelper.showException("Error trying to create Azure Mobile Services helper class", ex);
-                                    }
-                                }
-                            });
-                        }
-                    }, ModalityState.defaultModalityState());
-                }
-            } catch (Throwable ex) {
-                UIHelper.showException("Error trying to create Azure Mobile Services helper class", ex);
-            }
-        }
-    }
-
-    public void addNotificationHubsClass(String packageLiteral, String senderId, String connStr, String hubName) throws MalformedURLException {
-        if (sourcePath != null) {
-            InputStream is = ServiceCodeReferenceHelper.class.getResourceAsStream("/com/microsoftopentechnologies/intellij/templates/NotificationHubsHelper.codetemplate");
-            String template = getString(is);
-
-            template = template.replace("$SENDERID", senderId);
-            template = template.replace("$CONNSTR", hubName);
-            template = template.replace("$HUBNAME", connStr);
-            template = template.replace("$PACKAGE", packageLiteral);
-
-            final String code = template;
-
-            //Hack, Java doesn't suport UNC Urls!
-            String basePath = sourcePath.replace("file://", "");
-
-            if (!basePath.endsWith(File.separator))
-                basePath = basePath + File.separator;
-
-            for (String packagePart : packageLiteral.split("[.]")) {
-                basePath = basePath + packagePart + File.separator;
-            }
-
-            File folder = new File(basePath);
-
-            if (!folder.exists()) {
-                folder.mkdirs();
-            }
-
-            final File file = new File(basePath + "NotificationHubsHelper.java");
-
-            try {
-                if (!file.exists()) {
-                    file.createNewFile();
-                }
-
-                final VirtualFile vf = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(file);
-
-                if (vf != null) {
-                    ApplicationManager.getApplication().invokeAndWait(new Runnable() {
-                        @Override
-                        public void run() {
-                            ApplicationManager.getApplication().runWriteAction(new Runnable() {
-                                @Override
-                                public void run() {
-                                    try {
-                                        vf.setBinaryContent(code.getBytes());
-                                        FileEditorManager.getInstance(project).openFile(vf, false);
-                                    } catch (Throwable ex) {
-                                        UIHelper.showException("Error trying to create Notification Hubs helper class", ex);
-                                    }
-                                }
-                            });
-                        }
-                    }, ModalityState.defaultModalityState());
-                }
-            } catch (Throwable ex) {
-                UIHelper.showException("Error trying to create Notification Hubs helper class", ex);
-            }
-        }
     }
 
     public void addOutlookServicesClass(String packageLiteral, String endpointUrl) {
@@ -400,92 +276,42 @@ public class ServiceCodeReferenceHelper {
         }
     }
 
-    public void addManifestEntries(String packageName) throws ParserConfigurationException, IOException, SAXException, TransformerException, XPathExpressionException {
-        VirtualFile manifestvf = null;
-        for (VirtualFile vf : moduleFolder.getChildren()) {
-            if (vf.getName().equals("AndroidManifest.xml")) {
-                manifestvf = vf;
-                break;
+    public void fillMobileServiceResource(String activityName, String appUrl, String appKey) throws IOException {
+        VirtualFile vf = module.getModuleFile().getParent().findFileByRelativePath(STRINGS_XML);
+
+        if (vf != null) {
+            FileDocumentManager fdm = FileDocumentManager.getInstance();
+            com.intellij.openapi.editor.Document document = fdm.getDocument(vf);
+
+            if (document != null) {
+                String content = document.getText();
+                content = content.replace(">$APPURL_" + activityName + "<", ">" + appUrl + "<");
+                content = content.replace(">$APPKEY_" + activityName + "<", ">" + appKey + "<");
+                document.setText(content);
+                fdm.saveDocument(document);
             }
         }
+    }
 
-        final VirtualFile manifest = manifestvf;
+    public void fillNotificationHubResource(String activityName, String senderId, String connStr, String hubName) {
+        VirtualFile vf = module.getModuleFile().getParent().findFileByRelativePath(STRINGS_XML);
 
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        dbf.setNamespaceAware(true);
-        DocumentBuilder db = dbf.newDocumentBuilder();
-        Document doc = null;
-        if (manifest != null) {
-            doc = db.parse(manifest.getInputStream());
-        }
+        if (vf != null) {
+            FileDocumentManager fdm = FileDocumentManager.getInstance();
+            com.intellij.openapi.editor.Document document = fdm.getDocument(vf);
 
-        if (doc != null) {
-
-            Node manifestNode = doc.getElementsByTagName("manifest").item(0);
-
-            addXMLElement(manifestNode, "uses-permission", "android:name", "android.permission.INTERNET");
-            addXMLElement(manifestNode, "uses-permission", "android:name", "android.permission.GET_ACCOUNTS");
-            addXMLElement(manifestNode, "uses-permission", "android:name", "android.permission.WAKE_LOCK");
-            addXMLElement(manifestNode, "uses-permission", "android:name", "android.permission.com.google.android.c2dm.permission.RECEIVE");
-
-            String permissionName = packageName + ".permission.C2D_MESSAGE";
-
-            HashMap<String, String> permissionAttrMap = new HashMap<String, String>();
-            permissionAttrMap.put("android:name", permissionName);
-            permissionAttrMap.put("android:protectionLevel", "signature");
-            addXMLElement(manifestNode, "permission", permissionAttrMap);
-
-            addXMLElement(manifestNode, "uses-permission", "android:name", permissionName);
-
-            Node application = doc.getElementsByTagName("application").item(0);
-
-            HashMap<String, String> receiverAttrMap = new HashMap<String, String>();
-            receiverAttrMap.put("android:name", "com.microsoft.windowsazure.notifications.NotificationsBroadcastReceiver");
-            receiverAttrMap.put("android:permission", "com.google.android.c2dm.permission.SEND");
-            Node receiver = addXMLElement(application, "receiver", receiverAttrMap);
-
-            if (receiver != null) {
-                Element intent = doc.createElement("intent-filter");
-                addXMLElement(intent, "action", "android:name", "com.google.android.c2dm.intent.RECEIVE");
-                addXMLElement(intent, "category", "android:name", packageName);
-                receiver.appendChild(intent);
-            }
-
-            // Use a Transformer for output
-            TransformerFactory tFactory = TransformerFactory.newInstance();
-            Transformer transformer = tFactory.newTransformer();
-
-            DOMSource source = new DOMSource(doc);
-            StringWriter writer = new StringWriter();
-            StreamResult result = new StreamResult(writer);
-            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-            transformer.transform(source, result);
-            final byte[] buff = writer.getBuffer().toString().getBytes();
-
-            if (manifest != null) {
-                manifest.setWritable(true);
-
-                ApplicationManager.getApplication().invokeAndWait(new Runnable() {
-                    @Override
-                    public void run() {
-                        ApplicationManager.getApplication().runWriteAction(new Runnable() {
-                            @Override
-                            public void run() {
-                                try {
-                                    manifest.setBinaryContent(buff);
-                                } catch (Throwable ex) {
-                                    UIHelper.showException("Error updating Android permissions", ex);
-                                }
-                            }
-                        });
-                    }
-                }, ModalityState.defaultModalityState());
+            if (document != null) {
+                String content = document.getText();
+                content = content.replace(">$SENDERID_" + activityName + "<", ">" + senderId + "<");
+                content = content.replace(">$CONNSTR_" + activityName + "<", ">" + connStr + "<");
+                content = content.replace(">$HUBNAME_" + activityName + "<", ">" + hubName + "<");
+                document.setText(content);
+                fdm.saveDocument(document);
             }
         }
     }
 
     public static Boolean isAndroidGradleModule(VirtualFile virtualFileDir) throws IOException {
-
         VirtualFile buildGradleFile = null;
         for (VirtualFile file : virtualFileDir.getChildren()) {
             if (file.getName().contains("build.gradle"))
@@ -535,7 +361,6 @@ public class ServiceCodeReferenceHelper {
 
                     //hardcoded path for gradle project
                     sourcePath = virtualFileDir.getUrl() + "/src/main/java";
-                    moduleFolder = virtualFileDir.findChild("src").findChild("main");
                 } else {
 
                     final VirtualFile moduleFile = module.getModuleFile();
@@ -709,7 +534,6 @@ public class ServiceCodeReferenceHelper {
                 if (isAndroidGradleModule(virtualFileDir)) {
                     //hardcoded path for gradle project
                     sourcePath = virtualFileDir.getUrl() + "/src/main/java";
-                    moduleFolder = virtualFileDir.findChild("src").findChild("main");
                 } else {
                     final VirtualFile moduleFile = module.getModuleFile();
 
@@ -873,6 +697,14 @@ public class ServiceCodeReferenceHelper {
         //Using the trick described in this link to read whole streams in one operation:
         //http://stackoverflow.com/a/5445161
         Scanner s = new Scanner(is).useDelimiter("\\A");
+        return s.hasNext() ? s.next() : "";
+    }
+
+    @NotNull
+    public static String getString(@NotNull InputStream is, @NotNull String charsetName) {
+        //Using the trick described in this link to read whole streams in one operation:
+        //http://stackoverflow.com/a/5445161
+        Scanner s = new Scanner(is, charsetName).useDelimiter("\\A");
         return s.hasNext() ? s.next() : "";
     }
 }

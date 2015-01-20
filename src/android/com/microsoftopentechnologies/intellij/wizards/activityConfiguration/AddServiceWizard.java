@@ -24,15 +24,17 @@ import javax.swing.*;
 import java.awt.*;
 
 public class AddServiceWizard extends WizardDialog<AddServiceWizardModel> {
-    public AddServiceWizard(Project project, Module module, boolean isMobileServiceSelected, boolean isNotificationHubSelected,
-                            boolean isOutlookServices, boolean isFileServices, boolean isListServices) {
-        super(true, true, new AddServiceWizardModel(project, module, isMobileServiceSelected, isNotificationHubSelected,
-                isOutlookServices, isFileServices, isListServices));
+    public AddServiceWizard(Project project, Module module, String activityName, boolean isMobileServiceSelected,
+                            boolean isNotificationHubSelected, boolean isOutlookServices, boolean isFileServices,
+                            boolean isListServices) {
+        super(true, true, new AddServiceWizardModel(project, module, activityName, isMobileServiceSelected,
+                isNotificationHubSelected, isOutlookServices, isFileServices, isListServices));
     }
 
-    public static void run(Project project, Module module, boolean isMobileServiceSelected, boolean isNotificationHubSelected,
-                           boolean isOutlookServices, boolean isFileServices, boolean isListServices) {
-        new AddServiceWizard(project, module, isMobileServiceSelected, isNotificationHubSelected,
+    public static void run(Project project, Module module, String activityName, boolean isMobileServiceSelected,
+                           boolean isNotificationHubSelected, boolean isOutlookServices, boolean isFileServices,
+                           boolean isListServices) {
+        new AddServiceWizard(project, module, activityName, isMobileServiceSelected, isNotificationHubSelected,
                 isOutlookServices, isFileServices, isListServices).show();
     }
 

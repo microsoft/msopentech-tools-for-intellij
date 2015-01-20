@@ -29,6 +29,7 @@ import com.intellij.openapi.externalSystem.service.project.manage.ProjectDataMan
 import com.intellij.openapi.externalSystem.util.DisposeAwareProjectChange;
 import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
 import com.intellij.openapi.externalSystem.util.ExternalSystemUtil;
+import com.intellij.openapi.module.Module;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
@@ -43,7 +44,6 @@ import com.microsoftopentechnologies.intellij.helpers.ServiceCodeReferenceHelper
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.helpers.o365.Office365Manager;
 import com.microsoftopentechnologies.intellij.helpers.o365.Office365RestAPIManager;
-import com.microsoftopentechnologies.intellij.model.Service;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.plugins.gradle.util.GradleConstants;
@@ -56,11 +56,11 @@ import java.util.Collections;
 import java.util.concurrent.ExecutionException;
 
 public class SummaryStep extends WizardStep<AddServiceWizardModel> {
-    private static final String PACKAGE_NAME = "com.microsoftopentechnologies.intellij";
-    private static final String OUTLOOK_SERVICES_ENDPOINT_URL = "https://outlook.com/ews/odata/";
-    private static final String FILE_SERVICES_ENDPOINT_URL = "https://mytenant.sharepoint.com/_api/v1.0";
-    private static final String LIST_SERVICES_ENDPOINT_URL = "https://mytenant.sharepoint.com/_api/v1.0";
-    private static final String LIST_SERVICES_SITE_URL = "/";
+    //private static final String PACKAGE_NAME = "com.microsoftopentechnologies.intellij";
+    //private static final String OUTLOOK_SERVICES_ENDPOINT_URL = "https://outlook.com/ews/odata/";
+    //private static final String FILE_SERVICES_ENDPOINT_URL = "https://mytenant.sharepoint.com/_api/v1.0";
+    //private static final String LIST_SERVICES_ENDPOINT_URL = "https://mytenant.sharepoint.com/_api/v1.0";
+    //private static final String LIST_SERVICES_SITE_URL = "/";
 
     private final AddServiceWizardModel model;
     private JPanel rootPanel;
@@ -146,11 +146,9 @@ public class SummaryStep extends WizardStep<AddServiceWizardModel> {
 
     @Override
     public boolean onFinish() {
-
         final SummaryStep summaryStep = this;
 
         ProgressManager.getInstance().run(new Task.Backgroundable(this.model.getProject(), "Setting up project for Microsoft services...", false) {
-
             @Override
             public void run(@NotNull ProgressIndicator progressIndicator) {
                 try {
@@ -196,6 +194,7 @@ public class SummaryStep extends WizardStep<AddServiceWizardModel> {
                                                     if (externalProject == null) {
                                                         return;
                                                     }
+
                                                     ExternalSystemApiUtil.executeProjectChangeAction(true, new DisposeAwareProjectChange(myProject) {
                                                         @Override
                                                         public void execute() {
@@ -232,7 +231,10 @@ public class SummaryStep extends WizardStep<AddServiceWizardModel> {
 
     private void associateMobileService() {
         final Project project = this.model.getProject();
-        final Service service = this.model.getService();
+        final Module module = this.model.getModule();
+        final String activityName = this.model.getActivityName();
+        final String appUrl = this.model.getService().getAppUrl();
+        final String appKey = this.model.getService().getAppKey();
 
         ApplicationManager.getApplication().invokeAndWait(new Runnable() {
             @Override
@@ -241,9 +243,8 @@ public class SummaryStep extends WizardStep<AddServiceWizardModel> {
                     @Override
                     public void run() {
                         try {
-                            ServiceCodeReferenceHelper scrh = new ServiceCodeReferenceHelper(project);
-                            scrh.addMobileServicesLibs();
-                            scrh.addMobileServiceClass(PACKAGE_NAME, service);
+                            ServiceCodeReferenceHelper scrh = new ServiceCodeReferenceHelper(project, module);
+                            scrh.fillMobileServiceResource(activityName, appUrl, appKey);
                         } catch (Throwable ex) {
                             UIHelper.showException("Error creating Service helper", ex);
                         }
@@ -255,26 +256,34 @@ public class SummaryStep extends WizardStep<AddServiceWizardModel> {
 
     private void associateNotificationHub() {
         final Project project = this.model.getProject();
+        final Module module = this.model.getModule();
+        final String activityName = this.model.getActivityName();
         final String senderId = this.model.getSenderId();
-        final String connectionString = this.model.getConnectionString();
+        final String connStr = this.model.getConnectionString();
         final String hubName = this.model.getHubName();
 
-        try {
-            ServiceCodeReferenceHelper serviceCodeReferenceHelper = new ServiceCodeReferenceHelper(project);
-            serviceCodeReferenceHelper.addNotificationHubsLibs();
-            serviceCodeReferenceHelper.addNotificationHubsClass(
-                    PACKAGE_NAME,
-                    senderId,
-                    connectionString,
-                    hubName);
-            serviceCodeReferenceHelper.addManifestEntries(PACKAGE_NAME);
-        } catch (Throwable ex) {
-            UIHelper.showException("Error:", ex);
-        }
+        ApplicationManager.getApplication().invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                ApplicationManager.getApplication().runWriteAction(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            ServiceCodeReferenceHelper scrh = new ServiceCodeReferenceHelper(project, module);
+                            scrh.addNotificationHubsLibs();
+                            scrh.fillNotificationHubResource(activityName, senderId, connStr, hubName);
+                        } catch (Throwable ex) {
+                            UIHelper.showException("Error:", ex);
+                        }
+                    }
+                });
+            }
+        }, ModalityState.NON_MODAL);
     }
 
     private void associateOffice365() {
-        final Project project = this.model.getProject();
+        //final Project project = this.model.getProject();
+        //final Module module = this.model.getModule();
 
         try {
             // update graph api
@@ -282,7 +291,8 @@ public class SummaryStep extends WizardStep<AddServiceWizardModel> {
             ListenableFuture<Application> future = manager.setO365PermissionsForApp(model.getOfficeApp(), model.getOfficePermissions());
             future.get();
 
-            ServiceCodeReferenceHelper serviceCodeReferenceHelper = new ServiceCodeReferenceHelper(project);
+            /*
+            ServiceCodeReferenceHelper serviceCodeReferenceHelper = new ServiceCodeReferenceHelper(project, module);
 
             if (model.isOutlookServices()) {
                 serviceCodeReferenceHelper.addOutlookServicesLibs();
@@ -298,6 +308,7 @@ public class SummaryStep extends WizardStep<AddServiceWizardModel> {
                 serviceCodeReferenceHelper.addListServicesLibs();
                 serviceCodeReferenceHelper.addListServicesClass(PACKAGE_NAME, LIST_SERVICES_ENDPOINT_URL, LIST_SERVICES_SITE_URL);
             }
+            */
         } catch (ExecutionException ex) {
             String message = "";
 
