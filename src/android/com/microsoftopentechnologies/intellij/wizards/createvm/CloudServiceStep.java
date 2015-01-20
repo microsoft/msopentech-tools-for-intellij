@@ -234,7 +234,7 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
 
         Object item = cloudServiceComboBox.getSelectedItem();
 
-        if(item == null && cloudServices != null && cloudServices.size() > 0) {
+        if(!(item instanceof CloudService) && cloudServices != null && cloudServices.size() > 0) {
             item = cloudServices.get(0);
         }
 
