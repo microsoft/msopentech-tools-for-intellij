@@ -13,18 +13,19 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-
 package com.microsoftopentechnologies.intellij.forms;
 
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.Consumer;
-import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIManager;
 import com.microsoftopentechnologies.intellij.helpers.LinkListener;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
+import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIManager;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -74,8 +75,10 @@ public class ImportSubscriptionForm extends JDialog {
                 FileChooser.chooseFile(fileChooserDescriptor, null, null, new Consumer<VirtualFile>() {
                     @Override
                     public void consume(VirtualFile virtualFile) {
-                        if (virtualFile != null)
+                        if (virtualFile != null) {
                             txtFile.setText(virtualFile.getPath());
+                            importButton.setEnabled(true);
+                        }
                     }
                 });
             }
@@ -89,13 +92,11 @@ public class ImportSubscriptionForm extends JDialog {
             }
         });
 
-
         importButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 if (new File(txtFile.getText()).exists()) {
                     try {
-
                         form.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
                         AzureRestAPIManager.getManager().loadSubscriptionFile(txtFile.getText());
@@ -106,15 +107,39 @@ public class ImportSubscriptionForm extends JDialog {
 
                         form.setVisible(false);
                         form.dispose();
-
-
                     } catch (Throwable e) {
                         form.setCursor(Cursor.getDefaultCursor());
                         UIHelper.showException("Error: " + e.getMessage(), e);
                     }
+                } else {
+                    UIHelper.showException("The specified Subscriptions File does not exist.",
+                            null,
+                            "Invalid Subscriptions File Path",
+                            false);
                 }
             }
         });
+
+        DocumentListener documentListener = new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                importButton.setEnabled(txtFile.getText() != null && !txtFile.getText().trim().isEmpty());
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                importButton.setEnabled(txtFile.getText() != null && !txtFile.getText().trim().isEmpty());
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                importButton.setEnabled(txtFile.getText() != null && !txtFile.getText().trim().isEmpty());
+            }
+        };
+
+        txtFile.getDocument().addDocumentListener(documentListener);
+
+        importButton.setEnabled(false);
     }
 
     private Runnable onSubscriptionLoaded;
@@ -122,5 +147,4 @@ public class ImportSubscriptionForm extends JDialog {
     public void setOnSubscriptionLoaded(Runnable onSubscriptionLoaded) {
         this.onSubscriptionLoaded = onSubscriptionLoaded;
     }
-
 }

@@ -15,6 +15,8 @@
  */
 package com.microsoftopentechnologies.intellij.forms;
 
+import com.microsoftopentechnologies.intellij.helpers.StringHelper;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -50,6 +52,7 @@ public class ErrorMessageForm extends JDialog {
     public void showErrorMessageForm(String errorMessage, String details) {
         lblError.setText("<html><p>" + (errorMessage.length() > 260 ? errorMessage.substring(0, 260) + "..." : errorMessage) + "</p></html>");
         detailTextArea.setText(details);
+        showAdvancedInfoCheckBox.setEnabled(!StringHelper.isNullOrWhiteSpace(details));
         this.setResizable(false);
     }
 

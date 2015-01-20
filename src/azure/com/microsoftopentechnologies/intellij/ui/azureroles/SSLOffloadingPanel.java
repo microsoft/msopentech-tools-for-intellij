@@ -120,6 +120,11 @@ public class SSLOffloadingPanel extends BaseConfigurable implements SearchableCo
                     }
                 }
                 removeErrorMsg();
+                try {
+                    handlePageComplete(true);
+                } catch (ConfigurationException e1) {
+                    // ignore
+                }
             }
         };
     }

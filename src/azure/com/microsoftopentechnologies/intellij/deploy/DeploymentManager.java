@@ -24,7 +24,8 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.PathManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.progress.ProcessCanceledException;
-import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.wm.ToolWindowManager;
 import com.microsoft.windowsazure.Configuration;
 import com.microsoft.windowsazure.core.OperationStatus;
 import com.microsoft.windowsazure.core.OperationStatusResponse;
@@ -47,6 +48,7 @@ import com.microsoftopentechnologies.azuremanagementutil.rest.WindowsAzureServic
 import com.microsoftopentechnologies.azuremanagementutil.rest.WindowsAzureStorageServices;
 import com.microsoftopentechnologies.intellij.AzurePlugin;
 import com.microsoftopentechnologies.intellij.AzureSettings;
+import com.microsoftopentechnologies.intellij.activitylog.ActivityLogToolWindowFactory;
 import com.microsoftopentechnologies.intellij.util.PluginUtil;
 
 import com.microsoft.windowsazure.management.compute.models.HostedServiceListResponse.HostedService;
@@ -90,6 +92,7 @@ public final class DeploymentManager {
 		DeployDescriptor deploymentDesc = WizardCacheManager.collectConfiguration();
 
 		String deployState = deploymentDesc.getDeployState();
+		Date startDate = new Date();
 		try {
 
 			int conditionalProgress = 20;
@@ -102,17 +105,17 @@ public final class DeploymentManager {
 
 			WindowsAzureServiceManagement service = WizardCacheManager.createServiceManagementHelper();
 
-			openWindowsAzureActivityLogView(deploymentDesc);
+			openWindowsAzureActivityLogView(deploymentDesc, selectedModule.getProject());
 
 			if (deploymentDesc.getDeployMode() == WindowsAzurePackageType.LOCAL) {
 				deployToLocalEmulator(selectedModule, deploymentDesc);
-				notifyProgress(deploymentDesc.getDeploymentId(), null, 100, OperationStatus.Succeeded, message("deplCompleted"));
+				notifyProgress(deploymentDesc.getDeploymentId(), startDate, null, 100, OperationStatus.Succeeded, message("deplCompleted"));
 				return;
 			}
 
 			// need to improve this check (maybe hostedSerivce.isExisting())?
 			if (hostedService.getUri() == null || hostedService.getUri().toString().isEmpty()) { // the hosted service was not yet created.
-				notifyProgress(deploymentDesc.getDeploymentId(), null, 5, OperationStatus.InProgress, String.format("%s - %s", message("createHostedService"), hostedService.getServiceName()));
+				notifyProgress(deploymentDesc.getDeploymentId(), startDate, null, 5, OperationStatus.InProgress, String.format("%s - %s", message("createHostedService"), hostedService.getServiceName()));
 				createHostedService(hostedService.getServiceName(), hostedService.getServiceName(),
 						hostedService.getProperties().getLocation(), hostedService.getProperties().getDescription());
 				conditionalProgress -= 5;
@@ -120,7 +123,7 @@ public final class DeploymentManager {
 
 			// same goes here
 			if (storageAccount.getUrl() == null || storageAccount.getUrl().isEmpty()) { // the storage account was not yet created
-				notifyProgress(deploymentDesc.getDeploymentId(), null, 10, OperationStatus.InProgress,
+				notifyProgress(deploymentDesc.getDeploymentId(), startDate, null, 10, OperationStatus.InProgress,
                         String.format("%s - %s", message("createStorageAccount"), storageAccount.getServiceName()));
 				createStorageAccount(storageAccount.getServiceName(), storageAccount.getServiceName(),
 						storageAccount.getStorageAccountProperties().getLocation(), storageAccount.getStorageAccountProperties().getDescription());
@@ -136,7 +139,7 @@ public final class DeploymentManager {
 				for (int i = 0; i < certList.size(); i++) {
 					CertificateUpload cert = certList.get(i);
 					DeploymentManagerUtilMethods.uploadCertificateIfNeededGeneric(service, deploymentDesc, cert.getPfxPath(), cert.getPfxPwd());
-					notifyProgress(deploymentDesc.getDeploymentId(), null, 0, OperationStatus.InProgress,
+					notifyProgress(deploymentDesc.getDeploymentId(), startDate, null, 0, OperationStatus.InProgress,
 							String.format("%s%s", message("deplUploadCert"), cert.getName()));
 				}
 			}
@@ -144,20 +147,20 @@ public final class DeploymentManager {
 
 			if (deploymentDesc.getRemoteDesktopDescriptor().isEnabled()) {
 
-				notifyProgress(deploymentDesc.getDeploymentId(), null, conditionalProgress, OperationStatus.InProgress, message("deplConfigRdp"));
+				notifyProgress(deploymentDesc.getDeploymentId(), startDate, null, conditionalProgress, OperationStatus.InProgress, message("deplConfigRdp"));
 
 				DeploymentManagerUtilMethods.configureRemoteDesktop(deploymentDesc, WizardCacheManager.getCurrentDeployConfigFile(),
                         String.format("%s%s%s", PathManager.getPluginsPath(), File.separator, AzurePlugin.PLUGIN_ID));
 			}
 			else {
-				notifyProgress(deploymentDesc.getDeploymentId(), null, conditionalProgress, OperationStatus.InProgress, message("deplConfigRdp"));
+				notifyProgress(deploymentDesc.getDeploymentId(), startDate, null, conditionalProgress, OperationStatus.InProgress, message("deplConfigRdp"));
 			}
 
 			Notifier notifier = new NotifierImp();
 
 			String targetCspckgName = createCspckTargetName(deploymentDesc);
 
-			notifyProgress(deploymentDesc.getDeploymentId(), null, 20, OperationStatus.InProgress, message("uploadingServicePackage"));
+			notifyProgress(deploymentDesc.getDeploymentId(), startDate, null, 20, OperationStatus.InProgress, message("uploadingServicePackage"));
 
 			DeploymentManagerUtilMethods.uploadPackageService(
 					WizardCacheManager.createStorageServiceHelper(),
@@ -166,7 +169,7 @@ public final class DeploymentManager {
 					message("eclipseDeployContainer").toLowerCase(),
 					deploymentDesc, notifier);
 
-			notifyProgress(deploymentDesc.getDeploymentId(), null, 20, OperationStatus.InProgress, message("creatingDeployment"));
+			notifyProgress(deploymentDesc.getDeploymentId(), startDate, null, 20, OperationStatus.InProgress, message("creatingDeployment"));
 
 			String storageAccountURL = deploymentDesc.getStorageAccount().
                     getStorageAccountProperties().getEndpoints().get(0).toString();
@@ -188,10 +191,10 @@ public final class DeploymentManager {
 			DeploymentManagerUtilMethods.deletePackage(WizardCacheManager.createStorageServiceHelper(),
                     message("eclipseDeployContainer").toLowerCase(),
                     targetCspckgName, notifier);
-			notifyProgress(deploymentDesc.getDeploymentId(),
+			notifyProgress(deploymentDesc.getDeploymentId(), startDate,
 					null, 0, OperationStatus.InProgress, message("deletePackage"));
 
-			notifyProgress(deploymentDesc.getDeploymentId(), null, 20, OperationStatus.InProgress, message("waitingForDeployment"));
+			notifyProgress(deploymentDesc.getDeploymentId(), startDate, null, 20, OperationStatus.InProgress, message("waitingForDeployment"));
 
 			DeploymentGetResponse deployment = waitForDeployment(
 					deploymentDesc.getConfiguration(),
@@ -202,17 +205,11 @@ public final class DeploymentManager {
 			boolean displayHttpsLink = deploymentDesc.getDisplayHttpsLink();
 			
 			final String url = displayHttpsLink ? deployment.getUri().toString().replaceAll("http://", "https://") : deployment.getUri().toString();
-			notifyProgress(deploymentDesc.getDeploymentId(),
+			notifyProgress(deploymentDesc.getDeploymentId(), startDate,
                     displayHttpsLink ? deployment.getUri().toString().replaceAll("http://", "https://") : deployment.getUri().toString(),
                     20, status,
                     deployment.getStatus().toString());
-            ApplicationManager.getApplication().invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    Messages.showInfoMessage("<html>Deployment can be accessed at:<br><a href=\"" + url + "\">" + url + "</a></html>", "Deployment Completed");
-                }
-            });
-			// RDP prompt will come only on windows
+            // RDP prompt will come only on windows
 			if (deploymentDesc.isStartRdpOnDeploy() && AzurePlugin.IS_WINDOWS) {
                 String pluginFolder = String.format("%s%s%s", PathManager.getPluginsPath(), File.separator, AzurePlugin.PLUGIN_ID);
 				WindowsAzureRestUtils.getInstance().launchRDP(deployment, deploymentDesc.getRemoteDesktopDescriptor().getUserName(), pluginFolder);
@@ -226,7 +223,7 @@ public final class DeploymentManager {
 				if (!msg.startsWith(OperationStatus.Failed.toString())) {
 					msg = OperationStatus.Failed.toString() + " : " + msg;
 				}
-				notifyProgress(deploymentDesc.getDeploymentId(), null, 100,
+				notifyProgress(deploymentDesc.getDeploymentId(), startDate, null, 100,
 						OperationStatus.Failed, msg,
 						deploymentDesc.getDeploymentId(),
 						deployState);
@@ -343,11 +340,10 @@ public final class DeploymentManager {
 		}
 	}
 
-	public void notifyUploadProgress() {
-
-	}
-
-	public void notifyProgress(String deploymentId,
+	/**
+	 * Unlike Eclipse plugin, here startDate is deployment start time, not the event timestamp
+	 */
+	public void notifyProgress(String deploymentId, Date startDate,
 			String deploymentURL,
 			int progress,
 			OperationStatus inprogress, String message, Object... args) {
@@ -357,57 +353,22 @@ public final class DeploymentManager {
 		arg.setDeploymentURL(deploymentURL);
 		arg.setDeployMessage(String.format(message, args));
 		arg.setDeployCompleteness(progress);
-		arg.setStartTime(new Date());
+		arg.setStartTime(startDate);
 		arg.setStatus(inprogress);
 		AzurePlugin.fireDeploymentEvent(arg);
 	}
 
-	private void openWindowsAzureActivityLogView(
-			final DeployDescriptor descriptor) {
-
-//		Display.getDefault().syncExec(new Runnable() {
-//
-//			@Override
-//			public void run() {
-//				try {
-//					WindowsAzureActivityLogView waView = (WindowsAzureActivityLogView) PlatformUI
-//							.getWorkbench().getActiveWorkbenchWindow()
-//							.getActivePage().showView(message("activityView"));
-//
-//					String desc = String.format(message("deplDesc"), descriptor.getHostedService().getServiceName(), descriptor.getDeployState());
-//
-//					waView.addDeployment(descriptor.getDeploymentId(), desc,
-//							descriptor.getStartTime());
-//
-//				} catch (PartInitException e) {
-//					log(message("deplCantOpenView"), e);
-//				}
-//
-//			}
-//		});
+	private void openWindowsAzureActivityLogView(final DeployDescriptor descriptor, final Project project) {
+		ApplicationManager.getApplication().invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				ToolWindowManager.getInstance(project).getToolWindow(ActivityLogToolWindowFactory.ACTIVITY_LOG_WINDOW).activate(null);
+			}
+		});
 	}
 
 	public void undeploy(final String serviceName, final String deplymentName, final String deploymentState)
 			throws WACommonException, RestAPIException, InterruptedException {
-//		Display.getDefault().syncExec(new Runnable() {
-//			@Override
-//			public void run() {
-//				try {
-//					WindowsAzureActivityLogView waView = (WindowsAzureActivityLogView) PlatformUI
-//							.getWorkbench().getActiveWorkbenchWindow()
-//							.getActivePage()
-//							.showView(message("activityView"));
-//
-//					String desc = String.format(message("undeployMsg"), serviceName,deploymentState);
-//
-//					waView.addDeployment(deplymentName, desc, new Date());
-//
-//				} catch (Exception e) {
-//					log(message("deplCantOpenView"), e);
-//				}
-//			}
-//		});
-
 		Configuration configuration = WizardCacheManager.getCurrentPublishData().getCurrentConfiguration();
 		int[] progressArr = new int[]{50, 50};
 		unPublish(configuration, serviceName, deplymentName, progressArr);
@@ -428,6 +389,7 @@ public final class DeploymentManager {
 
         int retryCount = 0;
         boolean successfull = false;
+		Date startDate = new Date();
         while (!successfull) {
             try {
                 retryCount++;
@@ -441,18 +403,18 @@ public final class DeploymentManager {
                 //                    UpdatedDeploymentStatus.Suspended
                 //            );
                 //			waitForStatus(configuration, service, requestId);
-                notifyProgress(deplymentName, null, progressArr[0], OperationStatus.InProgress, message("undeployProgressMsg"), deplymentName);
+                notifyProgress(deplymentName, startDate,null, progressArr[0], OperationStatus.InProgress, message("undeployProgressMsg"), deplymentName);
                 requestId = service.deleteDeployment(configuration, serviceName, deplymentName);
                 waitForStatus(configuration, service, requestId);
-                notifyProgress(deplymentName, null, progressArr[1], OperationStatus.Succeeded, message("undeployCompletedMsg"), serviceName);
+                notifyProgress(deplymentName, startDate, null, progressArr[1], OperationStatus.Succeeded, message("undeployCompletedMsg"), serviceName);
                 successfull = true;
             } catch (Exception e) {
                 // Retry 5 times
                 if (retryCount > AzurePlugin.REST_SERVICE_MAX_RETRY_COUNT) {
                     log(message("deplError"), e);
-                    notifyProgress(deplymentName, null, 100, OperationStatus.Failed, e.getMessage(), serviceName);
+                    notifyProgress(deplymentName, startDate, null, 100, OperationStatus.Failed, e.getMessage(), serviceName);
                 }
-                notifyProgress(deplymentName, null, -progressArr[0], OperationStatus.InProgress, message("undeployProgressMsg"), deplymentName);
+                notifyProgress(deplymentName, startDate, null, -progressArr[0], OperationStatus.InProgress, message("undeployProgressMsg"), deplymentName);
             }
         }
     }

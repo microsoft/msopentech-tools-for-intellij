@@ -68,6 +68,7 @@ public class RolesPanel implements AzureAbstractPanel {
             each.setPreferredWidth(((RolesTableModel) tblRoles.getModel()).getColumnWidth(i,  tblRoles.getPreferredScrollableViewportSize().width));
         }
         btnAddRole.addActionListener(createBtnAddListener());
+        btnEditRole.addActionListener(createBtnEditListener());
         btnRemoveRole.addActionListener(createBtnRemoveListener());
         tblRoles.getSelectionModel().addListSelectionListener(createRolesTableListener());
     }
@@ -85,8 +86,12 @@ public class RolesPanel implements AzureAbstractPanel {
                      * else CANCEL : remove added role from list of roles.
                      */
                     if (windowsAzureRole != null) {
+                        RoleConfigurablesGroup group = new RoleConfigurablesGroup(myModule, waProjManager, windowsAzureRole, true);
                         ShowSettingsUtil.getInstance().showSettingsDialog(myModule.getProject(),
-                                new ConfigurableGroup[]{new RoleConfigurablesGroup(myModule, waProjManager, windowsAzureRole, true)});
+                                new ConfigurableGroup[]{group});
+                        if (group.isModified()) { // Cancel was clicked, so changes should be reverted
+                            listRoles.remove(windowsAzureRole);
+                        }
                     }
                     ((RolesTableModel) tblRoles.getModel()).fireTableDataChanged();
                     LocalFileSystem.getInstance().findFileByPath(PluginUtil.getModulePath(myModule)).refresh(true, true);
@@ -95,7 +100,27 @@ public class RolesPanel implements AzureAbstractPanel {
                 }
             }
         };
+    }
 
+    private ActionListener createBtnEditListener() {
+        return new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int selIndex = tblRoles.getSelectedRow();
+                if (selIndex > -1) {
+                    try {
+                        loadProject();
+                        WindowsAzureRole windowsAzureRole = listRoles.get(tblRoles.getSelectedRow());
+                        ShowSettingsUtil.getInstance().showSettingsDialog(myModule.getProject(),
+                                new ConfigurableGroup[]{new RoleConfigurablesGroup(myModule, waProjManager, windowsAzureRole, false)});
+                        ((RolesTableModel) tblRoles.getModel()).fireTableDataChanged();
+                        LocalFileSystem.getInstance().findFileByPath(PluginUtil.getModulePath(myModule)).refresh(true, true);
+                    } catch (Exception ex) {
+                        PluginUtil.displayErrorDialogAndLog(message("rolsDlgErr"), message("rolsDlgErrMsg"), ex);
+                    }
+                }
+            }
+        };
     }
 
     /**
@@ -146,7 +171,7 @@ public class RolesPanel implements AzureAbstractPanel {
             @Override
             public void valueChanged(ListSelectionEvent e) {
                 boolean buttonsEnabled = tblRoles.getSelectedRow() > -1;
-//                btnEditRole.setEnabled(buttonsEnabled);
+                btnEditRole.setEnabled(buttonsEnabled);
                 btnRemoveRole.setEnabled(buttonsEnabled);
             }
         };

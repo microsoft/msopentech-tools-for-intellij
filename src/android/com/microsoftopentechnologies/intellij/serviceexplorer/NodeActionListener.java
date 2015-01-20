@@ -16,7 +16,11 @@
 
 package com.microsoftopentechnologies.intellij.serviceexplorer;
 
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+
 import java.util.EventListener;
+import java.util.concurrent.ExecutionException;
 
 public abstract class NodeActionListener implements EventListener {
     public NodeActionListener() {
@@ -24,5 +28,20 @@ public abstract class NodeActionListener implements EventListener {
         // Class.newInstance to work on sub-classes
     }
 
-    public abstract void actionPerformed(NodeActionEvent e);
+    protected void beforeActionPerformed(NodeActionEvent e) {
+        // mark node as loading
+        e.getAction().getNode().setLoading(true);
+    }
+
+    public void actionPerformed(NodeActionEvent e)  {}
+
+    public ListenableFuture<Void> actionPerformedAsync(NodeActionEvent e) {
+        actionPerformed(e);
+        return Futures.immediateFuture(null);
+    }
+
+    protected void afterActionPerformed(NodeActionEvent e) {
+        // mark node as done loading
+        e.getAction().getNode().setLoading(false);
+    }
 }

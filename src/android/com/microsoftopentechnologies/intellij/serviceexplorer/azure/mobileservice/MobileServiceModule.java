@@ -19,7 +19,9 @@ package com.microsoftopentechnologies.intellij.serviceexplorer.azure.mobileservi
 import com.intellij.openapi.application.ApplicationManager;
 import com.microsoftopentechnologies.intellij.forms.CreateNewServiceForm;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
+import com.microsoftopentechnologies.intellij.helpers.azure.AzureAuthenticationMode;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
+import com.microsoftopentechnologies.intellij.helpers.azure.AzureManager;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIManager;
 import com.microsoftopentechnologies.intellij.model.Service;
 import com.microsoftopentechnologies.intellij.model.Subscription;
@@ -67,6 +69,27 @@ public class MobileServiceModule extends Node {
     public class CreateServiceAction extends NodeActionListener {
         @Override
         public void actionPerformed(NodeActionEvent e) {
+            // check if we have a valid subscription handy
+            AzureManager apiManager = AzureRestAPIManager.getManager();
+            if(apiManager.getAuthenticationMode() == AzureAuthenticationMode.Unknown) {
+                UIHelper.showException("Please configure an Azure subscription by right-clicking on the \"Azure\" " +
+                        "node and selecting \"Manage subscriptions\".", null, "No Azure subscription found");
+                return;
+            }
+
+            try {
+                ArrayList<Subscription> subscriptions = apiManager.getSubscriptionList();
+                if(subscriptions == null || subscriptions.isEmpty()) {
+                    UIHelper.showException("No active Azure subscription was found. Please enable one more Azure " +
+                            "subscriptions by right-clicking on the \"Azure\" " +
+                            "node and selecting \"Manage subscriptions\".",
+                            null, "No active Azure subscription found");
+                    return;
+                }
+            } catch (AzureCmdException e1) {
+                UIHelper.showException("An error occurred while creating the mobile service.", e1);
+            }
+
             CreateNewServiceForm form = new CreateNewServiceForm();
             form.setServiceCreated(new Runnable() {
                 @Override
