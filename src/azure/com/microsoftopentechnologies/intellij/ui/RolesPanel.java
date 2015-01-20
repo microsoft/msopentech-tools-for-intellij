@@ -86,8 +86,12 @@ public class RolesPanel implements AzureAbstractPanel {
                      * else CANCEL : remove added role from list of roles.
                      */
                     if (windowsAzureRole != null) {
+                        RoleConfigurablesGroup group = new RoleConfigurablesGroup(myModule, waProjManager, windowsAzureRole, true);
                         ShowSettingsUtil.getInstance().showSettingsDialog(myModule.getProject(),
-                                new ConfigurableGroup[]{new RoleConfigurablesGroup(myModule, waProjManager, windowsAzureRole, true)});
+                                new ConfigurableGroup[]{group});
+                        if (group.isModified()) { // Cancel was clicked, so changes should be reverted
+                            listRoles.remove(windowsAzureRole);
+                        }
                     }
                     ((RolesTableModel) tblRoles.getModel()).fireTableDataChanged();
                     LocalFileSystem.getInstance().findFileByPath(PluginUtil.getModulePath(myModule)).refresh(true, true);
