@@ -32,6 +32,8 @@ import com.microsoftopentechnologies.intellij.model.vm.StorageAccount;
 import com.microsoftopentechnologies.intellij.model.vm.VirtualMachineImage;
 
 import javax.swing.*;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
 import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
@@ -45,38 +47,13 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
     private CreateVMWizardModel model;
     private JPanel rootPanel;
     private JList createVmStepsList;
-    private JPanel scrollPanel;
-    private JPanel imageInfoPanel;
-    private JTextPane imageDescriptionTextPane;
-    private JTextPane imageLocationTextPane;
-    private JTextPane imagePublisherTextPane;
-    private JTextPane imagePublishedDateTextPane;
-    private JTextPane imageOSFamilyTextPane;
-    private JTextPane imageTitleTextPane;
+    private JEditorPane imageDescriptionTextPane;
     private JComboBox cloudServiceComboBox;
     private JComboBox storageComboBox;
     private JCheckBox availabilitySetCheckBox;
     private JComboBox availabilityComboBox;
     private List<StorageAccount> storageAccounts;
     private List<CloudService> cloudServices;
-
-    private void createUIComponents() {
-        imageInfoPanel = new JPanel() {
-            @Override
-            public Dimension getPreferredSize() {
-
-                double height = 0;
-                for (Component component : this.getComponents()) {
-                    height += component.getHeight();
-                }
-
-                Dimension preferredSize = super.getPreferredSize();
-                preferredSize.setSize(preferredSize.getWidth(), height);
-                return preferredSize;
-            }
-        };
-    }
-
 
 
     public CloudServiceStep(CreateVMWizardModel mModel, final Project project) {
@@ -87,10 +64,6 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
         this.model = mModel;
 
         model.configStepList(createVmStepsList, 3);
-
-        scrollPanel.remove(imageInfoPanel);
-        final JBScrollPane jbScrollPane = new JBScrollPane(imageInfoPanel, JBScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JBScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        scrollPanel.add(jbScrollPane);
 
         cloudServiceComboBox.addItemListener(new ItemListener() {
             @Override
@@ -115,7 +88,7 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
         storageComboBox.setRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(JList<?> jList, Object o, int i, boolean b, boolean b1) {
-                if(o instanceof StorageAccount) {
+                if (o instanceof StorageAccount) {
                     StorageAccount sa = (StorageAccount) o;
                     return super.getListCellRendererComponent(jList, String.format("%s (%s)", sa.getName(), sa.getLocation()), i, b, b1);
                 } else {
@@ -138,39 +111,58 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
             }
         });
 
-
+        imageDescriptionTextPane.addHyperlinkListener(new HyperlinkListener() {
+            @Override
+            public void hyperlinkUpdate(HyperlinkEvent hyperlinkEvent) {
+                if(hyperlinkEvent.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+                    if(Desktop.isDesktopSupported()) {
+                        try {
+                            Desktop.getDesktop().browse(hyperlinkEvent.getURL().toURI());
+                        } catch (Exception e) {
+                            UIHelper.showException("Error opening link", e);
+                        }
+                    }
+                }
+            }
+        });
     }
 
     @Override
     public JComponent prepare(WizardNavigationState wizardNavigationState) {
         rootPanel.revalidate();
 
-        ProgressManager.getInstance().run(new Task.Backgroundable(project, "Loading storage account...", false) {
-            @Override
-            public void run(ProgressIndicator progressIndicator) {
-                try {
-                    progressIndicator.setIndeterminate(true);
+        model.getCurrentNavigationState().NEXT.setEnabled(false);
 
-                    storageAccounts = AzureSDKManagerImpl.getManager().getStorageAccounts(model.getSubscription().getId().toString());
+        if(storageAccounts == null) {
+            ProgressManager.getInstance().run(new Task.Backgroundable(project, "Loading storage account...", false) {
+                @Override
+                public void run(ProgressIndicator progressIndicator) {
+                    try {
+                        progressIndicator.setIndeterminate(true);
 
-                } catch (AzureCmdException e) {
-                    UIHelper.showException("Error trying to get storage account list", e);
+                        storageAccounts = AzureSDKManagerImpl.getManager().getStorageAccounts(model.getSubscription().getId().toString());
+
+                        ApplicationManager.getApplication().invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                fillStorage();
+                            }
+                        });
+
+
+                    } catch (AzureCmdException e) {
+                        UIHelper.showException("Error trying to get storage account list", e);
+                    }
                 }
-            }
-        });
+            });
+        }
 
         final VirtualMachineImage virtualMachineImage = model.getVirtualMachineImage();
-
-        imageTitleTextPane.setText(virtualMachineImage.getLabel());
-        imageDescriptionTextPane.setText(virtualMachineImage.getDescription());
-        imagePublishedDateTextPane.setText(DateFormat.getDateInstance(DateFormat.SHORT).format(virtualMachineImage.getPublishedDate().getTime()));
-        imagePublisherTextPane.setText(virtualMachineImage.getPublisherName());
-        imageOSFamilyTextPane.setText(virtualMachineImage.getOperatingSystemType());
-        imageLocationTextPane.setText(virtualMachineImage.getLocation());
-
-        imageTitleTextPane.setCaretPosition(0);
+        imageDescriptionTextPane.setText(model.getHtmlFromVMImage(virtualMachineImage));
+        imageDescriptionTextPane.setCaretPosition(0);
 
         fillCloudServices();
+        fillStorage();
 
         return rootPanel;
 
@@ -178,6 +170,11 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
 
     @Override
     public WizardStep onNext(CreateVMWizardModel model) {
+        if(!(storageComboBox.getSelectedItem() instanceof StorageAccount)) {
+            JOptionPane.showMessageDialog(null, "Must select a storage account", "Error creating the virtual machine", JOptionPane.ERROR_MESSAGE);
+            return this;
+        }
+
         model.setCloudService((CloudService) cloudServiceComboBox.getSelectedItem());
         model.setStorageAccount((StorageAccount) storageComboBox.getSelectedItem());
         model.setAvailabilitySet(availabilitySetCheckBox.isSelected() ?
@@ -198,39 +195,25 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
                 try {
                     progressIndicator.setIndeterminate(true);
 
-                    if(cloudServices == null) {
+                    if (cloudServices == null) {
                         cloudServices = AzureSDKManagerImpl.getManager().getCloudServices(model.getSubscription().getId().toString());
                     }
 
                     ApplicationManager.getApplication().invokeLater(new Runnable() {
                         @Override
                         public void run() {
+                            fillStorage();
 
-                            cloudServiceComboBox.setModel(new DefaultComboBoxModel(cloudServices.toArray()){
+                            cloudServiceComboBox.setModel(new DefaultComboBoxModel(cloudServices.toArray()) {
                                 @Override
                                 public void setSelectedItem(Object o) {
-                                    if(o instanceof String) {
-                                        final CreateCloudServiceForm form = new CreateCloudServiceForm();
-                                        form.fillFields(model.getSubscription(), project);
-                                        UIHelper.packAndCenterJDialog(form);
-
-                                        form.setOnCreate(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                ApplicationManager.getApplication().invokeLater(new Runnable() {
-                                                    @Override
-                                                    public void run() {
-                                                        cloudServices.add(form.getCloudService());
-                                                        fillCloudServices();
-                                                    }
-                                                });
-                                            }
-                                        });
-
-                                        form.setVisible(true);
-
+                                    if (o instanceof String) {
+                                        if (o.toString().trim().length() > 0) {
+                                            showNewCloudServiceForm();
+                                        }
                                     } else {
                                         super.setSelectedItem(o);
+                                        fillStorage();
                                     }
                                 }
 
@@ -248,10 +231,17 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
     }
 
     private void fillStorage() {
-        if(cloudServiceComboBox.getSelectedItem() instanceof CloudService) {
 
-            Vector<StorageAccount> accounts = new Vector<StorageAccount>();
-            CloudService selectedItem = (CloudService) cloudServiceComboBox.getSelectedItem();
+        Object item = cloudServiceComboBox.getSelectedItem();
+
+        if(item == null && cloudServices != null && cloudServices.size() > 0) {
+            item = cloudServices.get(0);
+        }
+
+        Vector<StorageAccount> accounts = new Vector<StorageAccount>();
+
+        if(item != null && storageAccounts != null && item instanceof CloudService) {
+            CloudService selectedItem = (CloudService) item;
 
             for (StorageAccount storageAccount : storageAccounts) {
                 if (storageAccount.getLocation().equals(selectedItem.getLocation())) {
@@ -259,39 +249,24 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
                 }
             }
 
-            storageComboBox.setModel(new DefaultComboBoxModel(accounts) {
-                @Override
-                public void setSelectedItem(Object o) {
-                    if (o instanceof String) {
-
-                        final CreateStorageAccountForm form = new CreateStorageAccountForm();
-                        form.fillFields(model.getSubscription(), project);
-                        UIHelper.packAndCenterJDialog(form);
-
-                        form.setOnCreate(new Runnable() {
-                            @Override
-                            public void run() {
-                                ApplicationManager.getApplication().invokeLater(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        storageAccounts.add(form.getStorageAccount());
-                                        fillStorage();
-                                    }
-                                });
-
-                            }
-                        });
-
-                        form.setVisible(true);
-
-                    } else {
-                        super.setSelectedItem(o);
-                    }
-                }
-            });
         }
 
+
+        storageComboBox.setModel(new DefaultComboBoxModel(accounts) {
+            @Override
+            public void setSelectedItem(Object o) {
+                if (o instanceof String) {
+                    if(o.toString().trim().length() > 0) {
+                        showNewStorageForm();
+                    }
+                } else {
+                    super.setSelectedItem(o);
+                }
+            }
+        });
+
         storageComboBox.insertItemAt("<< Create new storage account >>", 0);
+        model.getCurrentNavigationState().NEXT.setEnabled(accounts.size() > 0);
     }
 
     private void fillAvailabilitySets() {
@@ -301,5 +276,47 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
         } else {
             availabilityComboBox.setModel(new DefaultComboBoxModel(new String[] {}));
         }
+    }
+
+    private void showNewCloudServiceForm() {
+        final CreateCloudServiceForm form = new CreateCloudServiceForm();
+        form.fillFields(model.getSubscription(), project);
+        UIHelper.packAndCenterJDialog(form);
+
+        form.setOnCreate(new Runnable() {
+            @Override
+            public void run() {
+                ApplicationManager.getApplication().invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        cloudServices.add(form.getCloudService());
+                        fillCloudServices();
+                    }
+                });
+            }
+        });
+        form.setVisible(true);
+    }
+
+    private void showNewStorageForm() {
+        final CreateStorageAccountForm form = new CreateStorageAccountForm();
+        form.fillFields(model.getSubscription(), project);
+        UIHelper.packAndCenterJDialog(form);
+
+        form.setOnCreate(new Runnable() {
+            @Override
+            public void run() {
+                ApplicationManager.getApplication().invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        storageAccounts.add(form.getStorageAccount());
+                        fillStorage();
+                    }
+                });
+
+            }
+        });
+
+        form.setVisible(true);
     }
 }

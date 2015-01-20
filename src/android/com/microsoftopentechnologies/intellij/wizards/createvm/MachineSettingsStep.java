@@ -33,6 +33,8 @@ import com.microsoftopentechnologies.intellij.model.vm.VirtualMachineSize;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
 import java.awt.*;
 import java.text.DateFormat;
 import java.util.Collections;
@@ -42,14 +44,7 @@ import java.util.List;
 public class MachineSettingsStep extends WizardStep<CreateVMWizardModel> {
     private JPanel rootPanel;
     private JList createVmStepsList;
-    private JPanel scrollPanel;
-    private JPanel imageInfoPanel;
-    private JTextPane imageDescriptionTextPane;
-    private JTextPane imageLocationTextPane;
-    private JTextPane imagePublisherTextPane;
-    private JTextPane imagePublishedDateTextPane;
-    private JTextPane imageOSFamilyTextPane;
-    private JTextPane imageTitleTextPane;
+    private JEditorPane imageDescriptionTextPane;
     private JTextField vmNameTextField;
     private JComboBox vmSizeComboBox;
     private JTextField vmUserTextField;
@@ -59,22 +54,6 @@ public class MachineSettingsStep extends WizardStep<CreateVMWizardModel> {
     Project project;
     CreateVMWizardModel model;
 
-    private void createUIComponents() {
-        imageInfoPanel = new JPanel() {
-            @Override
-            public Dimension getPreferredSize() {
-
-                double height = 0;
-                for (Component component : this.getComponents()) {
-                    height += component.getHeight();
-                }
-
-                Dimension preferredSize = super.getPreferredSize();
-                preferredSize.setSize(preferredSize.getWidth(), height);
-                return preferredSize;
-            }
-        };
-    }
 
 
     public MachineSettingsStep(CreateVMWizardModel mModel, Project project) {
@@ -84,10 +63,6 @@ public class MachineSettingsStep extends WizardStep<CreateVMWizardModel> {
         this.model = mModel;
 
         model.configStepList(createVmStepsList, 2);
-
-        scrollPanel.remove(imageInfoPanel);
-        final JBScrollPane jbScrollPane = new JBScrollPane(imageInfoPanel, JBScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JBScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        scrollPanel.add(jbScrollPane);
 
         DocumentListener documentListener = new DocumentListener() {
             @Override
@@ -110,6 +85,22 @@ public class MachineSettingsStep extends WizardStep<CreateVMWizardModel> {
         vmUserTextField.getDocument().addDocumentListener(documentListener);
         vmPasswordField.getDocument().addDocumentListener(documentListener);
         confirmPasswordField.getDocument().addDocumentListener(documentListener);
+
+
+        imageDescriptionTextPane.addHyperlinkListener(new HyperlinkListener() {
+            @Override
+            public void hyperlinkUpdate(HyperlinkEvent hyperlinkEvent) {
+                if(hyperlinkEvent.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+                    if(Desktop.isDesktopSupported()) {
+                        try {
+                            Desktop.getDesktop().browse(hyperlinkEvent.getURL().toURI());
+                        } catch (Exception e) {
+                            UIHelper.showException("Error opening link", e);
+                        }
+                    }
+                }
+            }
+        });
     }
 
     private void validateEmptyFields() {
@@ -170,62 +161,56 @@ public class MachineSettingsStep extends WizardStep<CreateVMWizardModel> {
         validateEmptyFields();
 
         final VirtualMachineImage virtualMachineImage = model.getVirtualMachineImage();
+        imageDescriptionTextPane.setText(model.getHtmlFromVMImage(virtualMachineImage));
+        imageDescriptionTextPane.setCaretPosition(0);
 
-        imageTitleTextPane.setText(virtualMachineImage.getLabel());
-        imageDescriptionTextPane.setText(virtualMachineImage.getDescription());
-        imagePublishedDateTextPane.setText(DateFormat.getDateInstance(DateFormat.SHORT).format(virtualMachineImage.getPublishedDate().getTime()));
-        imagePublisherTextPane.setText(virtualMachineImage.getPublisherName());
-        imageOSFamilyTextPane.setText(virtualMachineImage.getOperatingSystemType());
-        imageLocationTextPane.setText(virtualMachineImage.getLocation());
+        if(vmSizeComboBox.getItemCount() == 0) {
 
-        imageTitleTextPane.setCaretPosition(0);
+            ProgressManager.getInstance().run(new Task.Backgroundable(project, "Loading VM sizes...", false) {
+                @Override
+                public void run(ProgressIndicator progressIndicator) {
+                    progressIndicator.setIndeterminate(true);
 
+                    try {
+                        final List<VirtualMachineSize> virtualMachineSizes = AzureSDKManagerImpl.getManager().getVirtualMachineSizes(model.getSubscription().getId().toString());
 
-        ProgressManager.getInstance().run(new Task.Backgroundable(project, "Loading VM sizes...", false) {
-            @Override
-            public void run(ProgressIndicator progressIndicator) {
-                progressIndicator.setIndeterminate(true);
+                        Collections.sort(virtualMachineSizes, new Comparator<VirtualMachineSize>() {
+                            @Override
+                            public int compare(VirtualMachineSize t0, VirtualMachineSize t1) {
 
-                try {
-                    final List<VirtualMachineSize> virtualMachineSizes = AzureSDKManagerImpl.getManager().getVirtualMachineSizes(model.getSubscription().getId().toString());
+                                if (t0.getName().contains("Basic") && t1.getName().contains("Basic")) {
+                                    return t0.getName().compareTo(t1.getName());
+                                } else if (t0.getName().contains("Basic")) {
+                                    return -1;
+                                } else if (t1.getName().contains("Basic")) {
+                                    return 1;
+                                }
 
-                    Collections.sort(virtualMachineSizes, new Comparator<VirtualMachineSize>() {
-                        @Override
-                        public int compare(VirtualMachineSize t0, VirtualMachineSize t1) {
+                                int coreCompare = Integer.valueOf(t0.getCores()).compareTo(Integer.valueOf(t1.getCores()));
 
-                            if(t0.getName().contains("Basic") && t1.getName().contains("Basic")) {
-                                return t0.getName().compareTo(t1.getName());
-                            } else if(t0.getName().contains("Basic") ) {
-                                return -1;
-                            } else if(t1.getName().contains("Basic") ) {
-                                return 1;
+                                if (coreCompare == 0) {
+                                    return Integer.valueOf(t0.getMemoryInMB()).compareTo(Integer.valueOf(t1.getMemoryInMB()));
+                                } else {
+                                    return coreCompare;
+                                }
                             }
+                        });
 
-                            int coreCompare = Integer.valueOf(t0.getCores()).compareTo(Integer.valueOf(t1.getCores()));
 
-                            if(coreCompare == 0){
-                                return Integer.valueOf(t0.getMemoryInMB()).compareTo(Integer.valueOf(t1.getMemoryInMB()));
-                            } else {
-                                return coreCompare;
+                        ApplicationManager.getApplication().invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                vmSizeComboBox.setModel(new DefaultComboBoxModel(virtualMachineSizes.toArray()));
                             }
-                        }
-                    });
+                        });
 
 
-
-                    ApplicationManager.getApplication().invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            vmSizeComboBox.setModel(new DefaultComboBoxModel(virtualMachineSizes.toArray()));
-                        }
-                    });
-
-
-                } catch (AzureCmdException e) {
-                    UIHelper.showException("Error trying to get VM sizes", e);
+                    } catch (AzureCmdException e) {
+                        UIHelper.showException("Error trying to get VM sizes", e);
+                    }
                 }
-            }
-        });
+            });
+        }
 
         return rootPanel;
     }

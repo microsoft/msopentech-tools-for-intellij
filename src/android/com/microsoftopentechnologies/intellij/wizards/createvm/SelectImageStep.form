@@ -11,7 +11,7 @@
         <rowspec value="center:d:grow"/>
         <colspec value="fill:175px:noGrow"/>
         <colspec value="left:4dlu:noGrow"/>
-        <colspec value="fill:p:grow"/>
+        <colspec value="fill:d:grow"/>
         <colspec value="left:4dlu:noGrow"/>
         <colspec value="fill:270px:grow"/>
         <constraints border-constraint="Center"/>
@@ -49,7 +49,7 @@
             <rowspec value="center:max(d;4px):noGrow"/>
             <rowspec value="top:4dlu:noGrow"/>
             <rowspec value="center:290px:noGrow"/>
-            <colspec value="fill:290px:noGrow"/>
+            <colspec value="fill:230px:grow"/>
             <constraints>
               <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
               <forms defaultalign-vert="false"/>
@@ -59,16 +59,6 @@
               <size top="10" left="10" bottom="10" right="10"/>
             </border>
             <children>
-              <component id="82480" class="javax.swing.JLabel">
-                <constraints>
-                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
-                  <forms/>
-                </constraints>
-                <properties>
-                  <labelFor value="4a690"/>
-                  <text value="Image Type"/>
-                </properties>
-              </component>
               <component id="4a690" class="javax.swing.JComboBox" binding="imageTypeComboBox">
                 <constraints>
                   <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
@@ -104,6 +94,16 @@
                   </component>
                 </children>
               </scrollpane>
+              <component id="82480" class="javax.swing.JLabel">
+                <constraints>
+                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
+                  <forms/>
+                </constraints>
+                <properties>
+                  <labelFor value="4a690"/>
+                  <text value="Image Type"/>
+                </properties>
+              </component>
             </children>
           </grid>
           <scrollpane id="4c405">
@@ -113,6 +113,7 @@
             </constraints>
             <properties>
               <horizontalScrollBarPolicy value="31"/>
+              <opaque value="true"/>
             </properties>
             <border type="empty"/>
             <children>
@@ -123,8 +124,9 @@
                   <background color="-1513240"/>
                   <contentType value="text/html"/>
                   <editable value="false"/>
-                  <preferredSize width="270" height="6"/>
-                  <text value="&lt;html&gt;&#13;&#10;  &lt;head&gt;&#13;&#10;&#13;&#10;  &lt;/head&gt;&#13;&#10;  &lt;body&gt;&#13;&#10;    &lt;p style=&quot;margin-top: 0&quot;&gt;&#13;&#10;      &#13;&#10;    &lt;/p&gt;&#13;&#10;  &lt;/body&gt;&#13;&#10;&lt;/html&gt;&#13;&#10;"/>
+                  <inheritsPopupMenu value="false"/>
+                  <preferredSize width="250" height="6"/>
+                  <text value="&lt;html&gt;&#13;&#10;  &lt;head&gt;&#13;&#10;    &#13;&#10;  &lt;/head&gt;&#13;&#10;  &lt;body&gt;&#13;&#10;  &lt;/body&gt;&#13;&#10;&lt;/html&gt;&#13;&#10;"/>
                 </properties>
               </component>
             </children>

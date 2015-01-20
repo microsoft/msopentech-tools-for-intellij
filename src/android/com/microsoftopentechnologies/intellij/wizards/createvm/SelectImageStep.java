@@ -30,11 +30,15 @@ import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerI
 import com.microsoftopentechnologies.intellij.model.vm.VirtualMachineImage;
 
 import javax.swing.*;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.text.DateFormat;
 import java.util.*;
 import java.util.List;
@@ -195,7 +199,23 @@ public class SelectImageStep extends WizardStep<CreateVMWizardModel> {
 
                 if(virtualMachineImage != null) {
                     imageDescriptionTextPane.setText(model.getHtmlFromVMImage(virtualMachineImage));
+                    imageDescriptionTextPane.setCaretPosition(0);
                     model.getCurrentNavigationState().NEXT.setEnabled(true);
+                }
+            }
+        });
+
+        imageDescriptionTextPane.addHyperlinkListener(new HyperlinkListener() {
+            @Override
+            public void hyperlinkUpdate(HyperlinkEvent hyperlinkEvent) {
+                if(hyperlinkEvent.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+                    if(Desktop.isDesktopSupported()) {
+                        try {
+                            Desktop.getDesktop().browse(hyperlinkEvent.getURL().toURI());
+                        } catch (Exception e) {
+                            UIHelper.showException("Error opening link", e);
+                        }
+                    }
                 }
             }
         });

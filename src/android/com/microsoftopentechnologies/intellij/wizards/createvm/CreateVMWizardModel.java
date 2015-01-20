@@ -35,9 +35,9 @@ public class CreateVMWizardModel extends WizardModel {
     private final String BASE_HTML_VM_IMAGE = "<html>\n" +
             "<body style=\"padding: 5px; width: 250px\">\n" +
             "    <p style=\"font-family: 'Segoe UI';font-size: 14pt;font-weight: bold;\">#TITLE#</p>\n" +
-            "    <p style=\"font-family: 'Segoe UI';font-size: 11pt;\">#DESCRIPTION#</p>\n" +
+            "    <p style=\"font-family: 'Segoe UI';font-size: 11pt; width:200px \">#DESCRIPTION#</p>\n" +
             "    <p>\n" +
-            "        <table>\n" +
+            "        <table style='width:200px'>\n" +
             "            <tr>\n" +
             "                <td style=\"font-family: 'Segoe UI';font-size: 12pt;width:60px;vertical-align:top;\"><b>PUBLISHED</b></td>\n" +
             "                <td style=\"font-family: 'Segoe UI';font-size: 12pt;\">#PUBLISH_DATE#</td>\n" +
@@ -51,7 +51,7 @@ public class CreateVMWizardModel extends WizardModel {
             "                <td style =\"font-family: 'Segoe UI';font-size: 12pt;\">#OS#</td>\n" +
             "            </tr>\n" +
             "            <tr>\n" +
-            "                <td style=\"font-family: 'Segoe UI';font-size: 12pt;vertical-align:top;font-weight:bold;\">LOCATION</td>\n" +
+            "                <td style=\"font-family: 'Segoe UI';font-size: 12pt;v-align:top;font-weight:bold;\">LOCATION</td>\n" +
             "                <td style=\"font-family: 'Segoe UI';font-size: 12pt;\">#LOCATION#</td>\n" +
             "            </tr>\n" +
             "        </table>\n" +
