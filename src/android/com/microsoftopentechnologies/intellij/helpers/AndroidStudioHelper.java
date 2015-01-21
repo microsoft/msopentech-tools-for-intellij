@@ -117,21 +117,21 @@ public class AndroidStudioHelper {
                 String[] deleteAndCopy = {
                         "osascript",
                         "-e",
-                        "do shell script \"rm -r \\\"/" + templatePath + mobileServicesTemplateName + "\\\"\"",
+                        "do shell script \"rm -r \\\"/" + templatePath + mobileServicesTemplateName + "\\\"\" with administrator privileges",
                         "-e",
-                        "do shell script \"rm -r \\\"/" + templatePath + officeTemplateName + "\\\"\"",
+                        "do shell script \"rm -r \\\"/" + templatePath + officeTemplateName + "\\\"\" with administrator privileges",
                         "-e",
-                        "do shell script \"cp -Rp \\\"" + tmpDir + mobileServicesTemplateName + "\\\" \\\"/" + templatePath + "\\\"\"",
+                        "do shell script \"cp -Rp \\\"" + tmpDir + mobileServicesTemplateName + "\\\" \\\"/" + templatePath + "\\\"\" with administrator privileges",
                         "-e",
-                        "do shell script \"cp -Rp \\\"" + tmpDir + officeTemplateName + "\\\" \\\"/" + templatePath + "\\\"\""
+                        "do shell script \"cp -Rp \\\"" + tmpDir + officeTemplateName + "\\\" \\\"/" + templatePath + "\\\"\" with administrator privileges"
                 };
 
                 String[] copy = {
                         "osascript",
                         "-e",
-                        "do shell script \"cp -Rp \\\"" + tmpDir + mobileServicesTemplateName + "\\\" \\\"/" + templatePath + "\\\"\"",
+                        "do shell script \"cp -Rp \\\"" + tmpDir + mobileServicesTemplateName + "\\\" \\\"/" + templatePath + "\\\"\" with administrator privileges",
                         "-e",
-                        "do shell script \"cp -Rp \\\"" + tmpDir + officeTemplateName + "\\\" \\\"/" + templatePath + "\\\"\""
+                        "do shell script \"cp -Rp \\\"" + tmpDir + officeTemplateName + "\\\" \\\"/" + templatePath + "\\\"\" with administrator privileges"
                 };
 
                 exec(deleteTemplates ? deleteAndCopy : copy, tmpDir);
