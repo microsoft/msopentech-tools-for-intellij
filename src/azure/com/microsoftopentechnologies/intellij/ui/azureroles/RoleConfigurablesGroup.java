@@ -61,5 +61,10 @@ public class RoleConfigurablesGroup extends SearchableConfigurable.Parent.Abstra
     public String getShortName() {
         return getDisplayName();
     }
+
+    @Override
+    public boolean isModified() {
+        return rolesConfigurable[0].isModified();
+    }
 }
 

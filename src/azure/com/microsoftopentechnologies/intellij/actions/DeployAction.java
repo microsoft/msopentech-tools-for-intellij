@@ -15,6 +15,9 @@
  */
 package com.microsoftopentechnologies.intellij.actions;
 
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.wm.ToolWindowId;
+import com.intellij.openapi.wm.ToolWindowManager;
 import com.microsoftopentechnologies.azurecommons.deploy.DeploymentEventArgs;
 import com.microsoftopentechnologies.azurecommons.deploy.DeploymentEventListener;
 import com.microsoftopentechnologies.azurecommons.deploy.model.AutoUpldCmpnts;
@@ -213,6 +216,12 @@ public class DeployAction extends AnAction {
                 indicator.setFraction(0.0);
                 indicator.setText2(String.format(message("buildingProjTask"), myModule.getName()));
                 AntHelper.runAntBuild(dataContext, myModule, AntHelper.createDeployListener(myModule, mdfdCmpntList, roleMdfdCache));
+                ApplicationManager.getApplication().invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        ToolWindowManager.getInstance(myModule.getProject()).getToolWindow(ToolWindowId.MESSAGES_WINDOW).activate(null);
+                    }
+                });
                 indicator.setFraction(1.0);
             } catch (Exception e) {
                 log(message("error"), e);
@@ -328,18 +337,6 @@ public class DeployAction extends AnAction {
             AzurePlugin.addDeploymentEventListener(deployListnr);
             AzurePlugin.depEveList.add(deployListnr);
 
-
-//            Activator.getDefault().addUploadProgressEventListener(new UploadProgressEventListener() {
-//
-//                @Override
-//                public void onUploadProgress(UploadProgressEventArgs args) {
-//                    synchronized (monitor) {
-//                        String message = com.microsoftopentechnologies.intellij.deploy.Messages.uploadingServicePackage + " - " + args.getPercentage() + "% Completed";
-//                        monitor.subTask(message);
-//                        out.println(message);
-//                    }
-//                }
-//            });
              doTask();
 //            Thread thread = doAsync();
 

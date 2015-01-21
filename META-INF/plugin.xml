@@ -64,6 +64,12 @@ limitations under the License.
                 id="Service Explorer"
                 canCloseContents="false"
                 icon="/com/microsoftopentechnologies/intellij/icons/azure.png"/>
+        <toolWindow
+                anchor="bottom"
+                factoryClass="com.microsoftopentechnologies.intellij.activitylog.ActivityLogToolWindowFactory"
+                id="Azure Activity Log"
+                canCloseContents="true"
+                icon="/icons/RoleFolder.gif"/>
         <moduleType id="AZURE_MODULE"
                     implementationClass="com.microsoftopentechnologies.intellij.module.AzureModuleType"/>
         <moduleConfigurationEditorProvider
