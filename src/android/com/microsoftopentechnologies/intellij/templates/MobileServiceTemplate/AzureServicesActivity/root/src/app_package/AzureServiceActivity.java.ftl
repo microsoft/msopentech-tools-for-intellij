@@ -8,6 +8,8 @@ import android.content.Context;
 </#if>
 import android.os.Bundle;
 <#if includeMobileServices>
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.gson.JsonElement;
 </#if>

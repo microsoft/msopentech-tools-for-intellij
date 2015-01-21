@@ -56,12 +56,6 @@ import java.util.Collections;
 import java.util.concurrent.ExecutionException;
 
 public class SummaryStep extends WizardStep<AddServiceWizardModel> {
-    //private static final String PACKAGE_NAME = "com.microsoftopentechnologies.intellij";
-    //private static final String OUTLOOK_SERVICES_ENDPOINT_URL = "https://outlook.com/ews/odata/";
-    //private static final String FILE_SERVICES_ENDPOINT_URL = "https://mytenant.sharepoint.com/_api/v1.0";
-    //private static final String LIST_SERVICES_ENDPOINT_URL = "https://mytenant.sharepoint.com/_api/v1.0";
-    //private static final String LIST_SERVICES_SITE_URL = "/";
-
     private final AddServiceWizardModel model;
     private JPanel rootPanel;
     private JEditorPane editorSummary;
@@ -282,33 +276,38 @@ public class SummaryStep extends WizardStep<AddServiceWizardModel> {
     }
 
     private void associateOffice365() {
-        //final Project project = this.model.getProject();
-        //final Module module = this.model.getModule();
+        final Project project = this.model.getProject();
+        final Module module = this.model.getModule();
+        final String activityName = this.model.getActivityName();
+        final String appId = this.model.getOfficeApp().getappId();
+        final String name = this.model.getOfficeApp().getdisplayName();
 
+        ApplicationManager.getApplication().invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                ApplicationManager.getApplication().runWriteAction(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            ServiceCodeReferenceHelper scrh = new ServiceCodeReferenceHelper(project, module);
+                            scrh.fillOffice365Resource(activityName, appId, name);
+                        } catch (Throwable ex) {
+                            UIHelper.showException("Error:", ex);
+                        }
+                    }
+                });
+            }
+        }, ModalityState.NON_MODAL);
+
+        updateO365Permission();
+    }
+
+    private void updateO365Permission() {
         try {
             // update graph api
             final Office365Manager manager = Office365RestAPIManager.getManager();
             ListenableFuture<Application> future = manager.setO365PermissionsForApp(model.getOfficeApp(), model.getOfficePermissions());
             future.get();
-
-            /*
-            ServiceCodeReferenceHelper serviceCodeReferenceHelper = new ServiceCodeReferenceHelper(project, module);
-
-            if (model.isOutlookServices()) {
-                serviceCodeReferenceHelper.addOutlookServicesLibs();
-                serviceCodeReferenceHelper.addOutlookServicesClass(PACKAGE_NAME, OUTLOOK_SERVICES_ENDPOINT_URL);
-            }
-
-            if (model.isFileServices()) {
-                serviceCodeReferenceHelper.addFileServicesLibs();
-                serviceCodeReferenceHelper.addFileServicesClass(PACKAGE_NAME, FILE_SERVICES_ENDPOINT_URL);
-            }
-
-            if (model.isListServices()) {
-                serviceCodeReferenceHelper.addListServicesLibs();
-                serviceCodeReferenceHelper.addListServicesClass(PACKAGE_NAME, LIST_SERVICES_ENDPOINT_URL, LIST_SERVICES_SITE_URL);
-            }
-            */
         } catch (ExecutionException ex) {
             String message = "";
 

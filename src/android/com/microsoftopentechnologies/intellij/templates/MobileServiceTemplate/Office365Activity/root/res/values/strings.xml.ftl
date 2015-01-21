@@ -2,6 +2,10 @@
     <#if !isNewProject>
     <string name="title_${activityToLayout(activityClass)}">${escapeXmlString(activityTitle)}</string>
     </#if>
+<#if includeOutlookServices || includeFileServices || includeListServices>
+    <string name="o365_app_id_${activityToLayout(activityClass)}">$O365_APP_ID_${activityClass}</string>
+    <string name="o365_name_${activityToLayout(activityClass)}">$O365_NAME_${activityClass}</string>
+</#if>
 <#if includeOutlookServices>
     <string name="os_url_${activityToLayout(activityClass)}">https://outlook.com/ews/odata/</string>
 </#if>

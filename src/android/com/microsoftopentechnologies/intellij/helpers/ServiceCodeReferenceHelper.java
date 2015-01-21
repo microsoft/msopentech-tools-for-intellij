@@ -18,7 +18,6 @@ package com.microsoftopentechnologies.intellij.helpers;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
-import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
@@ -31,8 +30,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import javax.xml.XMLConstants;
-import javax.xml.namespace.NamespaceContext;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -46,8 +43,6 @@ import javax.xml.xpath.*;
 import java.io.*;
 import java.net.URL;
 import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.Map;
 import java.util.Scanner;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -64,11 +59,14 @@ public class ServiceCodeReferenceHelper {
 
     private static final String STRINGS_XML = "src/main/res/values/strings.xml";
 
-    private Project project;
-    private Module module;
+    @NotNull
+    private final Project project;
+
+    @NotNull
+    private final Module module;
     private String sourcePath;
 
-    public ServiceCodeReferenceHelper(Project project, Module module) {
+    public ServiceCodeReferenceHelper(@NotNull Project project, @NotNull Module module) {
         this.project = project;
         this.module = module;
     }
@@ -80,233 +78,62 @@ public class ServiceCodeReferenceHelper {
     public void addNotificationHubsLibs()
             throws ParserConfigurationException, TransformerException, SAXException, XPathExpressionException, IOException {
         addReferences(NOTIFICATIONHUBS_PATH, NOTIFICATIONHUBS_LIBTEMPLATE, NOTIFICATIONHUBS_LIBNAME);
-
-    }
-
-    public void addOutlookServicesLibs() throws ParserConfigurationException, SAXException, XPathExpressionException, IOException {
-        updateSourceAndModule();
-    }
-
-    public void addFileServicesLibs() throws ParserConfigurationException, SAXException, XPathExpressionException, IOException {
-        updateSourceAndModule();
-    }
-
-    public void addListServicesLibs() throws ParserConfigurationException, SAXException, XPathExpressionException, IOException {
-        updateSourceAndModule();
-    }
-
-    public void addOutlookServicesClass(String packageLiteral, String endpointUrl) {
-        if (sourcePath != null) {
-            InputStream is = ServiceCodeReferenceHelper.class.getResourceAsStream("/com/microsoftopentechnologies/intellij/templates/OutlookServicesClient.codetemplate");
-            String template = getString(is);
-
-            template = template.replace("$PACKAGE", packageLiteral);
-            template = template.replace("$ENDPOINTURL", endpointUrl);
-
-            final String code = template;
-
-            String basePath = sourcePath.replace("file://", "");
-
-            if (!basePath.endsWith(File.separator)) {
-                basePath = basePath + File.separator;
-            }
-
-            for (String packagePart : packageLiteral.split("[.]")) {
-                basePath = basePath + packagePart + File.separator;
-            }
-
-            File folder = new File(basePath);
-
-            if (!folder.exists()) {
-                folder.mkdirs();
-            }
-
-            final File file = new File(basePath + "OutlookServicesClient.java");
-
-            try {
-
-                if (!file.exists()) {
-                    file.createNewFile();
-                }
-
-                final VirtualFile vf = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(file);
-
-                if (vf != null) {
-                    ApplicationManager.getApplication().invokeAndWait(new Runnable() {
-                        @Override
-                        public void run() {
-                            ApplicationManager.getApplication().runWriteAction(new Runnable() {
-                                @Override
-                                public void run() {
-                                    try {
-                                        vf.setBinaryContent(code.getBytes());
-                                        FileEditorManager.getInstance(project).openFile(vf, false);
-                                    } catch (Throwable ex) {
-                                        UIHelper.showException("Error trying to create Outlook Services client class", ex);
-                                    }
-                                }
-                            });
-                        }
-                    }, ModalityState.defaultModalityState());
-                }
-            } catch (Throwable ex) {
-                UIHelper.showException("Error trying to create Outlook Services client class", ex);
-            }
-        }
-    }
-
-    public void addFileServicesClass(String packageLiteral, String endpointUrl) {
-        if (sourcePath != null) {
-            InputStream is = ServiceCodeReferenceHelper.class.getResourceAsStream("/com/microsoftopentechnologies/intellij/templates/FileServicesClient.codetemplate");
-            String template = getString(is);
-
-            template = template.replace("$PACKAGE", packageLiteral);
-            template = template.replace("$ENDPOINTURL", endpointUrl);
-
-            final String code = template;
-
-            String basePath = sourcePath.replace("file://", "");
-
-            if (!basePath.endsWith(File.separator)) {
-                basePath = basePath + File.separator;
-            }
-
-            for (String packagePart : packageLiteral.split("[.]")) {
-                basePath = basePath + packagePart + File.separator;
-            }
-
-            File folder = new File(basePath);
-
-            if (!folder.exists()) {
-                folder.mkdirs();
-            }
-
-            final File file = new File(basePath + "FileServicesClient.java");
-
-            try {
-
-                if (!file.exists()) {
-                    file.createNewFile();
-                }
-
-                final VirtualFile vf = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(file);
-
-                if (vf != null) {
-                    ApplicationManager.getApplication().invokeAndWait(new Runnable() {
-                        @Override
-                        public void run() {
-                            ApplicationManager.getApplication().runWriteAction(new Runnable() {
-                                @Override
-                                public void run() {
-                                    try {
-                                        vf.setBinaryContent(code.getBytes());
-                                        FileEditorManager.getInstance(project).openFile(vf, false);
-                                    } catch (Throwable ex) {
-                                        UIHelper.showException("Error trying to create File Services client class", ex);
-                                    }
-                                }
-                            });
-                        }
-                    }, ModalityState.defaultModalityState());
-                }
-            } catch (Throwable ex) {
-                UIHelper.showException("Error trying to create File Services client class", ex);
-            }
-        }
-    }
-
-    public void addListServicesClass(String packageLiteral, String endpointUrl, String siteUrl) {
-        if (sourcePath != null) {
-            InputStream is = ServiceCodeReferenceHelper.class.getResourceAsStream("/com/microsoftopentechnologies/intellij/templates/ListServicesClient.codetemplate");
-            String template = getString(is);
-
-            template = template.replace("$PACKAGE", packageLiteral);
-            template = template.replace("$ENDPOINTURL", endpointUrl);
-            template = template.replace("$SITEURL", siteUrl);
-
-            final String code = template;
-
-            String basePath = sourcePath.replace("file://", "");
-
-            if (!basePath.endsWith(File.separator)) {
-                basePath = basePath + File.separator;
-            }
-
-            for (String packagePart : packageLiteral.split("[.]")) {
-                basePath = basePath + packagePart + File.separator;
-            }
-
-            File folder = new File(basePath);
-
-            if (!folder.exists()) {
-                folder.mkdirs();
-            }
-
-            final File file = new File(basePath + "ListServicesClient.java");
-
-            try {
-
-                if (!file.exists()) {
-                    file.createNewFile();
-                }
-
-                final VirtualFile vf = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(file);
-
-                if (vf != null) {
-                    ApplicationManager.getApplication().invokeAndWait(new Runnable() {
-                        @Override
-                        public void run() {
-                            ApplicationManager.getApplication().runWriteAction(new Runnable() {
-                                @Override
-                                public void run() {
-                                    try {
-                                        vf.setBinaryContent(code.getBytes());
-                                        FileEditorManager.getInstance(project).openFile(vf, false);
-                                    } catch (Throwable ex) {
-                                        UIHelper.showException("Error trying to create List Services client class", ex);
-                                    }
-                                }
-                            });
-                        }
-                    }, ModalityState.defaultModalityState());
-                }
-            } catch (Throwable ex) {
-                UIHelper.showException("Error trying to create List Services client class", ex);
-            }
-        }
     }
 
     public void fillMobileServiceResource(String activityName, String appUrl, String appKey) throws IOException {
-        VirtualFile vf = module.getModuleFile().getParent().findFileByRelativePath(STRINGS_XML);
+        if (module.getModuleFile() != null && module.getModuleFile().getParent() != null) {
+            VirtualFile vf = module.getModuleFile().getParent().findFileByRelativePath(STRINGS_XML);
 
-        if (vf != null) {
-            FileDocumentManager fdm = FileDocumentManager.getInstance();
-            com.intellij.openapi.editor.Document document = fdm.getDocument(vf);
+            if (vf != null) {
+                FileDocumentManager fdm = FileDocumentManager.getInstance();
+                com.intellij.openapi.editor.Document document = fdm.getDocument(vf);
 
-            if (document != null) {
-                String content = document.getText();
-                content = content.replace(">$APPURL_" + activityName + "<", ">" + appUrl + "<");
-                content = content.replace(">$APPKEY_" + activityName + "<", ">" + appKey + "<");
-                document.setText(content);
-                fdm.saveDocument(document);
+                if (document != null) {
+                    String content = document.getText();
+                    content = content.replace(">$APPURL_" + activityName + "<", ">" + appUrl + "<");
+                    content = content.replace(">$APPKEY_" + activityName + "<", ">" + appKey + "<");
+                    document.setText(content);
+                    fdm.saveDocument(document);
+                }
             }
         }
     }
 
     public void fillNotificationHubResource(String activityName, String senderId, String connStr, String hubName) {
-        VirtualFile vf = module.getModuleFile().getParent().findFileByRelativePath(STRINGS_XML);
+        if (module.getModuleFile() != null && module.getModuleFile().getParent() != null) {
+            VirtualFile vf = module.getModuleFile().getParent().findFileByRelativePath(STRINGS_XML);
 
-        if (vf != null) {
-            FileDocumentManager fdm = FileDocumentManager.getInstance();
-            com.intellij.openapi.editor.Document document = fdm.getDocument(vf);
+            if (vf != null) {
+                FileDocumentManager fdm = FileDocumentManager.getInstance();
+                com.intellij.openapi.editor.Document document = fdm.getDocument(vf);
 
-            if (document != null) {
-                String content = document.getText();
-                content = content.replace(">$SENDERID_" + activityName + "<", ">" + senderId + "<");
-                content = content.replace(">$CONNSTR_" + activityName + "<", ">" + connStr + "<");
-                content = content.replace(">$HUBNAME_" + activityName + "<", ">" + hubName + "<");
-                document.setText(content);
-                fdm.saveDocument(document);
+                if (document != null) {
+                    String content = document.getText();
+                    content = content.replace(">$SENDERID_" + activityName + "<", ">" + senderId + "<");
+                    content = content.replace(">$CONNSTR_" + activityName + "<", ">" + connStr + "<");
+                    content = content.replace(">$HUBNAME_" + activityName + "<", ">" + hubName + "<");
+                    document.setText(content);
+                    fdm.saveDocument(document);
+                }
+            }
+        }
+    }
+
+    public void fillOffice365Resource(String activityName, String appId, String name) {
+        if (module.getModuleFile() != null && module.getModuleFile().getParent() != null) {
+            VirtualFile vf = module.getModuleFile().getParent().findFileByRelativePath(STRINGS_XML);
+
+            if (vf != null) {
+                FileDocumentManager fdm = FileDocumentManager.getInstance();
+                com.intellij.openapi.editor.Document document = fdm.getDocument(vf);
+
+                if (document != null) {
+                    String content = document.getText();
+                    content = content.replace(">$O365_APP_ID_" + activityName + "<", ">" + appId + "<");
+                    content = content.replace(">$O365_NAME_" + activityName + "<", ">" + name + "<");
+                    document.setText(content);
+                    fdm.saveDocument(document);
+                }
             }
         }
     }
@@ -318,10 +145,8 @@ public class ServiceCodeReferenceHelper {
                 buildGradleFile = file;
         }
 
-        if (buildGradleFile == null)
-            return false;
-
-        return getString(buildGradleFile.getInputStream()).contains("apply plugin: 'com.android.application'");
+        return buildGradleFile != null &&
+                getString(buildGradleFile.getInputStream()).contains("apply plugin: 'com.android.application'");
     }
 
     private void addReferences(String zipPath, String libTemplate, String libName)
@@ -521,140 +346,6 @@ public class ServiceCodeReferenceHelper {
                 }
             }
         }
-    }
-
-    private void updateSourceAndModule() throws IOException, ParserConfigurationException, SAXException, XPathExpressionException {
-        //Write all android modules to add new reference
-        for (Module module : ModuleManager.getInstance(project).getModules()) {
-            File tempModuleFolder = new File(module.getModuleFilePath()).getParentFile();
-
-            if (tempModuleFolder.exists()) {
-                VirtualFile virtualFileDir = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(tempModuleFolder);
-
-                if (isAndroidGradleModule(virtualFileDir)) {
-                    //hardcoded path for gradle project
-                    sourcePath = virtualFileDir.getUrl() + "/src/main/java";
-                } else {
-                    final VirtualFile moduleFile = module.getModuleFile();
-
-                    if (moduleFile != null) {
-                        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-                        DocumentBuilder db = dbf.newDocumentBuilder();
-                        Document doc = db.parse(moduleFile.getInputStream());
-
-                        final XPathFactory xPathfactory = XPathFactory.newInstance();
-
-                        XPath isAndroidModuleXpath = xPathfactory.newXPath();
-                        XPathExpression isAndroidModuleQuery = isAndroidModuleXpath.compile("boolean(//facet[@type='android'])");
-                        Boolean isAndroidModule = (Boolean) isAndroidModuleQuery.evaluate(doc, XPathConstants.BOOLEAN);
-
-                        if (isAndroidModule) {
-                            //Add project level reference
-                            VirtualFile ideaFolder = project.getProjectFile().getParent();
-
-                            //Sets the module main source path
-                            XPath xpathSources = xPathfactory.newXPath();
-                            XPathExpression sourcesQuery = xpathSources.compile("//sourceFolder");
-                            NodeList sources = ((org.w3c.dom.NodeList) sourcesQuery.evaluate(doc, XPathConstants.NODESET));
-
-                            for (int i = 0; i < sources.getLength() && sourcePath == null; i++) {
-                                String url = sources.item(i).getAttributes().getNamedItem("url").getNodeValue();
-                                if (url.contains("src")) {
-                                    sourcePath = url.replace("file://$MODULE_DIR$", moduleFile.getParent().getUrl());
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private Node addXMLElement(Node parent, String name, String attrName, String attrValue) throws XPathExpressionException {
-        Document document = parent.getOwnerDocument();
-
-        // there's no default implementation for NamespaceContext...seems kind of silly, no?
-        NamespaceContext namespaceContext = new NamespaceContext() {
-            public String getNamespaceURI(String prefix) {
-                if (prefix == null) throw new NullPointerException("Null prefix");
-                else if ("android".equals(prefix))
-                    return "http://schemas.android.com/apk/res/android";
-                else if ("xml".equals(prefix)) return XMLConstants.XML_NS_URI;
-                return XMLConstants.NULL_NS_URI;
-            }
-
-            // This method isn't necessary for XPath processing.
-            public String getPrefix(String uri) {
-                throw new UnsupportedOperationException();
-            }
-
-            // This method isn't necessary for XPath processing either.
-            public Iterator getPrefixes(String uri) {
-                throw new UnsupportedOperationException();
-            }
-        };
-
-
-        XPathFactory xPathfactory = XPathFactory.newInstance();
-        XPath isAndroidModuleXpath = xPathfactory.newXPath();
-        isAndroidModuleXpath.setNamespaceContext(namespaceContext);
-        XPathExpression isAndroidModuleQuery = isAndroidModuleXpath.compile("boolean(//" + name + "[@" + attrName + "='" + attrValue + "'])");
-        Boolean exists = (Boolean) isAndroidModuleQuery.evaluate(document, XPathConstants.BOOLEAN);
-
-        if (exists)
-            return null;
-
-        Element element = document.createElement(name);
-        element.setAttribute(attrName, attrValue);
-        parent.appendChild(element);
-
-        return element;
-    }
-
-    private Node addXMLElement(Node parent, String name, Map<String, String> attr) throws XPathExpressionException {
-        Document document = parent.getOwnerDocument();
-        Boolean exists = false;
-
-        NamespaceContext namespaceContext = new NamespaceContext() {
-            public String getNamespaceURI(String prefix) {
-                if (prefix == null) throw new NullPointerException("Null prefix");
-                else if ("android".equals(prefix))
-                    return "http://schemas.android.com/apk/res/android";
-                else if ("xml".equals(prefix)) return XMLConstants.XML_NS_URI;
-                return XMLConstants.NULL_NS_URI;
-            }
-
-            // This method isn't necessary for XPath processing.
-            public String getPrefix(String uri) {
-                throw new UnsupportedOperationException();
-            }
-
-            // This method isn't necessary for XPath processing either.
-            public Iterator getPrefixes(String uri) {
-                throw new UnsupportedOperationException();
-            }
-        };
-
-
-        Element element = document.createElement(name);
-
-        for (String attrName : attr.keySet()) {
-            String attrValue = attr.get(attrName);
-
-            XPathFactory xPathfactory = XPathFactory.newInstance();
-            XPath isAndroidModuleXpath = xPathfactory.newXPath();
-            isAndroidModuleXpath.setNamespaceContext(namespaceContext);
-            XPathExpression isAndroidModuleQuery = isAndroidModuleXpath.compile("boolean(//" + name + "[@" + attrName + "='" + attrValue + "'])");
-            exists = exists || (Boolean) isAndroidModuleQuery.evaluate(document, XPathConstants.BOOLEAN);
-
-            element.setAttribute(attrName, attrValue);
-        }
-
-        if (exists)
-            return null;
-
-        parent.appendChild(element);
-        return element;
     }
 
     private void saveUrl(String filename, String urlString)

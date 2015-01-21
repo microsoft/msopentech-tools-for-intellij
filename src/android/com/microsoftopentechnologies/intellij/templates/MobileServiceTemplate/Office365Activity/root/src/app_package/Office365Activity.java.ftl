@@ -37,6 +37,11 @@ import java.util.List;
 </#if>
 
 public class ${activityClass} extends Activity {
+<#if includeOutlookServices || includeFileServices || includeListServices>
+    private final String o365AppId = this.getString(R.string.o365_app_id_${activityToLayout(activityClass)});
+    private final String o365Name = this.getString(R.string.o365_name_${activityToLayout(activityClass)});
+
+</#if>
     /**
      * Initializes the activity
      */
