@@ -19,9 +19,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Document;
@@ -140,9 +138,11 @@ public class ServiceCodeReferenceHelper {
 
     public static Boolean isAndroidGradleModule(VirtualFile virtualFileDir) throws IOException {
         VirtualFile buildGradleFile = null;
+
         for (VirtualFile file : virtualFileDir.getChildren()) {
-            if (file.getName().contains("build.gradle"))
+            if (file.getName().contains("build.gradle")) {
                 buildGradleFile = file;
+            }
         }
 
         return buildGradleFile != null &&
@@ -151,78 +151,141 @@ public class ServiceCodeReferenceHelper {
 
     private void addReferences(String zipPath, String libTemplate, String libName)
             throws IOException, ParserConfigurationException, SAXException, XPathExpressionException, TransformerException {
-
         //Downloads libraries
         String path = System.getProperty("java.io.tmpdir");
-        if (!path.endsWith(File.separator))
+
+        if (!path.endsWith(File.separator)) {
             path = path + File.separator;
+        }
 
         path = path + "TempAzure";
+
         File pathFile = new File(path);
-        if (!pathFile.exists())
+
+        if (!pathFile.exists()) {
             pathFile.mkdirs();
+        }
 
         path = path + File.separator + "androidAzureSDK.zip";
 
         File zipFile = new File(path);
 
-        if (!zipFile.exists())
+        if (!zipFile.exists()) {
             saveUrl(path, AZURESDK_URL);
+        }
 
-        //Write all android modules to add new reference
-        for (Module module : ModuleManager.getInstance(project).getModules()) {
-            File tempModuleFolder = new File(module.getModuleFilePath()).getParentFile();
+        final VirtualFile moduleFile = module.getModuleFile();
 
-            if (tempModuleFolder.exists()) {
+        if (moduleFile != null) {
+            moduleFile.refresh(false, false);
 
-                VirtualFile virtualFileDir = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(tempModuleFolder);
+            final VirtualFile moduleDir = module.getModuleFile().getParent();
 
-                if (isAndroidGradleModule(virtualFileDir)) {
+            if (moduleDir != null) {
+                moduleDir.refresh(false, false);
 
-                    copyJarFiles(virtualFileDir, zipFile, zipPath);
+                if (isAndroidGradleModule(moduleDir)) {
+                    copyJarFiles(moduleDir, zipFile, zipPath);
 
-                    if (zipPath.equals(NOTIFICATIONHUBS_PATH))
-                        copyJarFiles(virtualFileDir, zipFile, NOTIFICATIONHELPER_PATH);
+                    if (zipPath.equals(NOTIFICATIONHUBS_PATH)) {
+                        copyJarFiles(moduleDir, zipFile, NOTIFICATIONHELPER_PATH);
+                    }
 
                     //hardcoded path for gradle project
-                    sourcePath = virtualFileDir.getUrl() + "/src/main/java";
+                    sourcePath = moduleDir.getUrl() + "/src/main/java";
                 } else {
+                    DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+                    DocumentBuilder db = dbf.newDocumentBuilder();
+                    Document doc = db.parse(moduleFile.getInputStream());
 
-                    final VirtualFile moduleFile = module.getModuleFile();
+                    final XPathFactory xPathfactory = XPathFactory.newInstance();
 
-                    if (moduleFile != null) {
+                    XPath isAndroidModuleXpath = xPathfactory.newXPath();
+                    XPathExpression isAndroidModuleQuery = isAndroidModuleXpath.compile("boolean(//facet[@type='android'])");
+                    Boolean isAndroidModule = (Boolean) isAndroidModuleQuery.evaluate(doc, XPathConstants.BOOLEAN);
 
-                        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-                        DocumentBuilder db = dbf.newDocumentBuilder();
-                        Document doc = db.parse(moduleFile.getInputStream());
+                    if (isAndroidModule) {
+                        //Unzips libraries and copies them to libs folder
+                        copyJarFiles(project.getBaseDir(), zipFile, zipPath);
 
-                        final XPathFactory xPathfactory = XPathFactory.newInstance();
+                        if (zipPath.equals(NOTIFICATIONHUBS_PATH)) {
+                            copyJarFiles(project.getBaseDir(), zipFile, NOTIFICATIONHELPER_PATH);
+                        }
 
-                        XPath isAndroidModuleXpath = xPathfactory.newXPath();
-                        XPathExpression isAndroidModuleQuery = isAndroidModuleXpath.compile("boolean(//facet[@type='android'])");
-                        Boolean isAndroidModule = (Boolean) isAndroidModuleQuery.evaluate(doc, XPathConstants.BOOLEAN);
+                        //Add project level reference
+                        VirtualFile ideaFolder = project.getProjectFile().getParent();
+                        VirtualFile librariesFolder = null;
 
-                        if (isAndroidModule) {
-                            //Unzips libraries and copies them to libs folder
-                            copyJarFiles(project.getBaseDir(), zipFile, zipPath);
-                            if (zipPath.equals(NOTIFICATIONHUBS_PATH))
-                                copyJarFiles(project.getBaseDir(), zipFile, NOTIFICATIONHELPER_PATH);
-
-                            //Add project level reference
-                            VirtualFile ideaFolder = project.getProjectFile().getParent();
-                            VirtualFile librariesFolder = null;
-                            for (VirtualFile vf : ideaFolder.getChildren()) {
-                                if (vf.getName().equals("libraries"))
-                                    librariesFolder = vf;
+                        for (VirtualFile vf : ideaFolder.getChildren()) {
+                            if (vf.getName().equals("libraries")) {
+                                librariesFolder = vf;
                             }
+                        }
 
-                            if (librariesFolder == null)
-                                librariesFolder = ideaFolder.createChildDirectory(project, "libraries");
+                        if (librariesFolder == null) {
+                            librariesFolder = ideaFolder.createChildDirectory(project, "libraries");
+                        }
 
-                            final VirtualFile mobileServiceRefFile = librariesFolder.createChildData(project, libTemplate);
+                        final VirtualFile mobileServiceRefFile = librariesFolder.createChildData(project, libTemplate);
 
-                            InputStream is = getTemplateResource(libTemplate);
-                            final String template = getString(is);
+                        InputStream is = getTemplateResource(libTemplate);
+                        final String template = getString(is);
+                        ApplicationManager.getApplication().invokeAndWait(new Runnable() {
+                            @Override
+                            public void run() {
+                                ApplicationManager.getApplication().runWriteAction(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        try {
+                                            mobileServiceRefFile.setBinaryContent(template.getBytes());
+                                        } catch (Throwable ex) {
+                                            UIHelper.showException("Error trying to configure Azure Mobile Services", ex);
+                                        }
+                                    }
+                                });
+                            }
+                        }, ModalityState.defaultModalityState());
+
+                        //Sets the module main source path
+                        XPath xpathSources = xPathfactory.newXPath();
+                        XPathExpression sourcesQuery = xpathSources.compile("//sourceFolder");
+                        NodeList sources = ((org.w3c.dom.NodeList) sourcesQuery.evaluate(doc, XPathConstants.NODESET));
+
+                        for (int i = 0; i < sources.getLength() && sourcePath == null; i++) {
+                            String url = sources.item(i).getAttributes().getNamedItem("url").getNodeValue();
+                            if (url.contains("src")) {
+                                sourcePath = url.replace("file://$MODULE_DIR$", moduleFile.getParent().getUrl());
+                            }
+                        }
+
+                        //Adds the libraries
+                        XPath xpathComponent = xPathfactory.newXPath();
+                        XPathExpression componentQuery = xpathComponent.compile("//component[@name='NewModuleRootManager']");
+                        Node component = ((org.w3c.dom.NodeList) componentQuery.evaluate(doc, XPathConstants.NODESET)).item(0);
+
+                        XPath existsLibEntryXPath = xPathfactory.newXPath();
+                        XPathExpression existsLibEntryQuery = existsLibEntryXPath.compile("boolean(//orderEntry[@name='" + libName + "' and @type='library'])");
+                        Boolean existsLibEntry = (Boolean) existsLibEntryQuery.evaluate(doc, XPathConstants.BOOLEAN);
+
+                        if (!existsLibEntry) {
+                            Element orderEntry = doc.createElement("orderEntry");
+                            orderEntry.setAttribute("type", "library");
+                            orderEntry.setAttribute("name", libName);
+                            orderEntry.setAttribute("level", "project");
+
+                            component.appendChild(orderEntry);
+
+                            // Use a Transformer for output
+                            TransformerFactory tFactory = TransformerFactory.newInstance();
+                            Transformer transformer = tFactory.newTransformer();
+                            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+
+                            DOMSource source = new DOMSource(doc);
+                            StringWriter writer = new StringWriter();
+                            StreamResult result = new StreamResult(writer);
+                            transformer.transform(source, result);
+                            final byte[] buff = writer.getBuffer().toString().getBytes();
+                            moduleFile.setWritable(true);
                             ApplicationManager.getApplication().invokeAndWait(new Runnable() {
                                 @Override
                                 public void run() {
@@ -230,7 +293,7 @@ public class ServiceCodeReferenceHelper {
                                         @Override
                                         public void run() {
                                             try {
-                                                mobileServiceRefFile.setBinaryContent(template.getBytes());
+                                                moduleFile.setBinaryContent(buff);
                                             } catch (Throwable ex) {
                                                 UIHelper.showException("Error trying to configure Azure Mobile Services", ex);
                                             }
@@ -238,66 +301,6 @@ public class ServiceCodeReferenceHelper {
                                     });
                                 }
                             }, ModalityState.defaultModalityState());
-
-                            //Sets the module main source path
-                            XPath xpathSources = xPathfactory.newXPath();
-                            XPathExpression sourcesQuery = xpathSources.compile("//sourceFolder");
-                            NodeList sources = ((org.w3c.dom.NodeList) sourcesQuery.evaluate(doc, XPathConstants.NODESET));
-
-                            for (int i = 0; i < sources.getLength() && sourcePath == null; i++) {
-                                String url = sources.item(i).getAttributes().getNamedItem("url").getNodeValue();
-                                if (url.contains("src")) {
-                                    sourcePath = url.replace("file://$MODULE_DIR$", moduleFile.getParent().getUrl());
-                                }
-                            }
-
-                            //Adds the libraries
-                            XPath xpathComponent = xPathfactory.newXPath();
-                            XPathExpression componentQuery = xpathComponent.compile("//component[@name='NewModuleRootManager']");
-                            Node component = ((org.w3c.dom.NodeList) componentQuery.evaluate(doc, XPathConstants.NODESET)).item(0);
-
-                            XPath existsLibEntryXPath = xPathfactory.newXPath();
-                            XPathExpression existsLibEntryQuery = existsLibEntryXPath.compile("boolean(//orderEntry[@name='" + libName + "' and @type='library'])");
-                            Boolean existsLibEntry = (Boolean) existsLibEntryQuery.evaluate(doc, XPathConstants.BOOLEAN);
-
-                            if (!existsLibEntry) {
-                                Element orderEntry = doc.createElement("orderEntry");
-                                orderEntry.setAttribute("type", "library");
-                                orderEntry.setAttribute("name", libName);
-                                orderEntry.setAttribute("level", "project");
-
-                                component.appendChild(orderEntry);
-
-                                // Use a Transformer for output
-                                TransformerFactory tFactory = TransformerFactory.newInstance();
-                                Transformer transformer = tFactory.newTransformer();
-                                transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-
-                                DOMSource source = new DOMSource(doc);
-                                StringWriter writer = new StringWriter();
-                                StreamResult result = new StreamResult(writer);
-                                transformer.transform(source, result);
-                                final byte[] buff = writer.getBuffer().toString().getBytes();
-
-                                if (moduleFile != null) {
-                                    moduleFile.setWritable(true);
-                                    ApplicationManager.getApplication().invokeAndWait(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            ApplicationManager.getApplication().runWriteAction(new Runnable() {
-                                                @Override
-                                                public void run() {
-                                                    try {
-                                                        moduleFile.setBinaryContent(buff);
-                                                    } catch (Throwable ex) {
-                                                        UIHelper.showException("Error trying to configure Azure Mobile Services", ex);
-                                                    }
-                                                }
-                                            });
-                                        }
-                                    }, ModalityState.defaultModalityState());
-                                }
-                            }
                         }
                     }
                 }
@@ -309,10 +312,15 @@ public class ServiceCodeReferenceHelper {
         if (baseDir.isDirectory()) {
             final ZipFile zip = new ZipFile(zipFile);
             Enumeration<? extends ZipEntry> entries = zip.entries();
+
             while (entries.hasMoreElements()) {
                 final ZipEntry zipEntry = entries.nextElement();
-                if (!zipEntry.isDirectory() && zipEntry.getName().startsWith(zipPath) && zipEntry.getName().endsWith(".jar")) {
+
+                if (!zipEntry.isDirectory() && zipEntry.getName().startsWith(zipPath) &&
+                        zipEntry.getName().endsWith(".jar") &&
+                        !(zipEntry.getName().endsWith("-sources.jar") || zipEntry.getName().endsWith("-javadoc.jar"))) {
                     VirtualFile libsVf = null;
+
                     for (VirtualFile vf : baseDir.getChildren()) {
                         if (vf.getName().equals("libs")) {
                             libsVf = vf;
@@ -348,24 +356,29 @@ public class ServiceCodeReferenceHelper {
         }
     }
 
-    private void saveUrl(String filename, String urlString)
+    private static void saveUrl(String filename, String urlString)
             throws IOException {
         InputStream in = null;
         FileOutputStream fout = null;
+
         try {
             in = new URL(urlString).openStream();
             fout = new FileOutputStream(filename);
 
             byte data[] = new byte[1024];
             int count;
+
             while ((count = in.read(data, 0, 1024)) != -1) {
                 fout.write(data, 0, count);
             }
         } finally {
-            if (in != null)
+            if (in != null) {
                 in.close();
-            if (fout != null)
+            }
+
+            if (fout != null) {
                 fout.close();
+            }
         }
     }
 

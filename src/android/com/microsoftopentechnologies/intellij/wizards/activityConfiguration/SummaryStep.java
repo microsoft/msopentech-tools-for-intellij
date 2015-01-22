@@ -171,8 +171,8 @@ public class SummaryStep extends WizardStep<AddServiceWizardModel> {
                         progressIndicator.setFraction(steps / totalSteps);
                     }
 
-                    // just for Azure Services. Office 365 already triggered gradle sync - avoid conflict
-                    if (summaryStep.model.getService() != null || summaryStep.model.getHubName() != null) {
+                    // just for Notification Hubs. Mobile Services and Office 365 already triggered gradle sync - avoid conflict
+                    if (summaryStep.model.getHubName() != null) {
                         ApplicationManager.getApplication().invokeLater(new Runnable() {
                             @Override
                             public void run() {
