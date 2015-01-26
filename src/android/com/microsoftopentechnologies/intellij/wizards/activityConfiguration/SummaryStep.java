@@ -82,56 +82,64 @@ public class SummaryStep extends WizardStep<AddServiceWizardModel> {
         rootPanel.revalidate();
 
         StringBuilder summary = new StringBuilder();
-        summary.append("<html> <head> </head> <body style=\"font-family: sans serif;\"> <p style=\"margin-top: 0\"><b>Summary:</b></p> <ol> ");
-
+        summary.append("<html> <head> </head> <body style=\"font-family: sans serif;\"> <p style=\"margin-top: 0\">" +
+                "<b>Summary:</b></p> <ol> ");
 
         if (this.model.getService() != null || this.model.getHubName() != null) {
             if (this.model.getService() != null) {
-                summary.append("<li>Added <a href=\"https://go.microsoft.com/fwLink/?LinkID=280126&clcid=0x409\">Azure Mobile Services</a> library to project <b>");
+                summary.append("<li>Added a reference to the Azure Mobile Services library in project <b>");
                 summary.append(this.model.getProject().getName());
                 summary.append("</b>.</li> ");
-                summary.append("<li>Added helper class using Mobile Service <b>");
+                summary.append("<li>Added a static method to instantiate MobileServiceClient, connecting to <b>");
                 summary.append(this.model.getService().getName());
                 summary.append("</b>.</li> ");
             }
 
             if (this.model.getHubName() != null) {
-                summary.append("<li>Added <a href=\"https://go.microsoft.com/fwLink/?LinkID=280126&clcid=0x409\">Notification Hub</a> library to project <b>");
+                summary.append("<li>Added <a href=\"https://go.microsoft.com/fwLink/?LinkID=280126&clcid=0x409\">" +
+                        "Notification Hub</a> library to project <b>");
                 summary.append(this.model.getProject().getName());
                 summary.append("</b>.</li> ");
-                summary.append("<li>Added helper class using Notification Hub <b>");
+                summary.append("<li>Added a helper class extending NotificationsHandler, using Notification Hub <b>");
                 summary.append(this.model.getHubName());
                 summary.append("</b>.</li> ");
+                summary.append("<li>Added a static method to handle notifications using NotificationHubsHelper.</li> ");
             }
 
-            summary.append("<li>Added an Azure Services Activity referencing the mentioned helper classes.</li> ");
+            summary.append("<li>Configured the Azure Services Activity referencing the mentioned static methods.</li> ");
+            if (this.model.getService() != null) {
+                summary.append("<li>You can follow the link to <a href=\"https://github.com/Azure/azure-mobile-services/\">" +
+                        "Azure Mobile Services SDK</a> to learn more about the referenced libraries.</li> ");
+            }
         } else if (this.model.isOutlookServices() || this.model.isFileServices() || this.model.isListServices()) {
             if (this.model.isOutlookServices()) {
                 summary.append("<li>Added a reference to the Outlook Services library in project <b>");
                 summary.append(this.model.getProject().getName());
                 summary.append("</b>.</li> ");
-                summary.append("<li>Added helper class OutlookServicesClient.</li> ");
+                summary.append("<li>Added a static method to instantiate OutlookClient and list messages.</li> ");
             }
 
             if (this.model.isFileServices()) {
                 summary.append("<li>Added a reference to the File Services library in project <b>");
                 summary.append(this.model.getProject().getName());
                 summary.append("</b>.</li> ");
-                summary.append("<li>Added helper class FileServicesClient.</li> ");
+                summary.append("<li>Added a static method to instantiate SharePointClient and list files.</li> ");
             }
 
             if (this.model.isListServices()) {
                 summary.append("<li>Added a reference to the SharePoint Lists library in project <b>");
                 summary.append(this.model.getProject().getName());
                 summary.append("</b>.</li> ");
-                summary.append("<li>Added helper class ListServicesClient.</li> ");
+                summary.append("<li>Added a static method to instantiate SharepointListsClient and enumerate lists.</li> ");
             }
 
-            summary.append("<li>Added an Office 365 Activity referencing the mentioned helper classes.</li> ");
-            summary.append("<li>You can follow the link to <a href=\"https://github.com/OfficeDev/Office-365-SDK-for-Android\">Office 365 SDK for Android</a> to learn more about the referenced libraries.</li> ");
+            summary.append("<li>Configured the Office 365 Activity referencing the mentioned static methods.</li> ");
+            summary.append("<li>You can follow the link to <a href=\"https://github.com/OfficeDev/Office-365-SDK-for-Android\">" +
+                    "Office 365 SDK for Android</a> to learn more about the referenced libraries.</li> ");
         }
 
-        summary.append("</ol> <p style=\"margin-top: 0\">After clicking Finish, it might take a few seconds to complete set up.</p> </body> </html>");
+        summary.append("</ol> <p style=\"margin-top: 0\">After clicking Finish, it might take a few seconds to " +
+                "complete set up.</p> </body> </html>");
 
         editorSummary.setText(summary.toString());
 
