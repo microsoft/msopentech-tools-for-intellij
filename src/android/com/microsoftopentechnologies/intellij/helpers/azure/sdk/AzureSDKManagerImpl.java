@@ -63,7 +63,6 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     private static final String WINDOWS_PROVISIONING_CONFIGURATION = "WindowsProvisioningConfiguration";
     private static final String LINUX_PROVISIONING_CONFIGURATION = "LinuxProvisioningConfiguration";
 
-
     private static AzureSDKManager apiManager;
     private static AzureSDKManager apiManagerADAuth;
 
@@ -100,10 +99,11 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
             }
 
             for (HostedService hostedService : hostedServices) {
-                String productionDeployment = getDeployment(
+                DeploymentGetResponse prodDGR = getDeployment(
                         client,
                         hostedService.getServiceName(),
-                        DeploymentSlot.Production).getName();
+                        DeploymentSlot.Production);
+                String productionDeployment = prodDGR.getName();
 
                 String stagingDeployment = getDeployment(
                         client,
@@ -122,7 +122,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
                         stagingDeployment != null ? stagingDeployment : "",
                         subscriptionId);
 
-                cloudService = loadAvailabilitySets(client, cloudService);
+                cloudService = loadAvailabilitySets(prodDGR, cloudService);
 
                 csList.add(cloudService);
             }
@@ -913,13 +913,9 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     }
 
     @NotNull
-    private static CloudService loadAvailabilitySets(@NotNull ComputeManagementClient client,
+    private static CloudService loadAvailabilitySets(@NotNull DeploymentGetResponse deployment,
                                                      @NotNull CloudService cloudService)
             throws Exception {
-        DeploymentGetResponse deployment = getDeployment(client,
-                cloudService.getName(),
-                DeploymentSlot.Production);
-
         if (deployment.getRoles() != null) {
             Set<String> availabilitySets = cloudService.getAvailabilitySets();
 
