@@ -15,6 +15,9 @@
  */
 package com.microsoftopentechnologies.intellij.helpers.azure.sdk;
 
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.SettableFuture;
+import com.intellij.openapi.application.ApplicationManager;
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
@@ -52,6 +55,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 public class AzureSDKManagerImpl implements AzureSDKManager {
     private static final String PERSISTENT_VM_ROLE = "PersistentVMRole";
@@ -99,16 +103,18 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
             }
 
             for (HostedService hostedService : hostedServices) {
-                DeploymentGetResponse prodDGR = getDeployment(
+                ListenableFuture<DeploymentGetResponse> productionFuture = getDeploymentAsync(
                         client,
                         hostedService.getServiceName(),
                         DeploymentSlot.Production);
-                String productionDeployment = prodDGR.getName();
-
-                String stagingDeployment = getDeployment(
+                ListenableFuture<DeploymentGetResponse> stagingFuture = getDeploymentAsync(
                         client,
                         hostedService.getServiceName(),
-                        DeploymentSlot.Staging).getName();
+                        DeploymentSlot.Staging);
+
+                DeploymentGetResponse prodDGR = productionFuture.get();
+                String productionDeployment = prodDGR.getName();
+                String stagingDeployment = stagingFuture.get().getName();
 
                 CloudService cloudService = new CloudService(
                         hostedService.getServiceName() != null ? hostedService.getServiceName() : "",
@@ -128,6 +134,8 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
             }
 
             return csList;
+        } catch (ExecutionException e) {
+            throw new AzureCmdException("Error retrieving the Cloud Service list", e.getCause());
         } catch (Throwable t) {
             throw new AzureCmdException("Error retrieving the Cloud Service list", t);
         } finally {
@@ -782,6 +790,26 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     }
 
     @NotNull
+    private static ListenableFuture<DeploymentGetResponse> getDeploymentAsync(@NotNull final ComputeManagementClient client,
+                                                                              @NotNull final String serviceName,
+                                                                              @NotNull final DeploymentSlot slot) {
+        final SettableFuture<DeploymentGetResponse> future = SettableFuture.create();
+
+        ApplicationManager.getApplication().executeOnPooledThread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    future.set(getDeployment(client, serviceName, slot));
+                } catch (Exception e) {
+                    future.setException(e);
+                }
+            }
+        });
+
+        return future;
+    }
+
+    @NotNull
     private static DeploymentGetResponse getDeployment(@NotNull ComputeManagementClient client,
                                                        @NotNull String serviceName,
                                                        @NotNull DeploymentSlot slot)
@@ -1274,6 +1302,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
             provConfSet.setConfigurationSetType(LINUX_PROVISIONING_CONFIGURATION);
             provConfSet.setUserName(username);
             provConfSet.setUserPassword(password);
+            provConfSet.setDisableSshPasswordAuthentication(false);
             provConfSet.setHostName(String.format("%s-%s-%02d",
                     virtualMachine.getServiceName().substring(0, 5),
                     virtualMachine.getName().substring(0, 5),
