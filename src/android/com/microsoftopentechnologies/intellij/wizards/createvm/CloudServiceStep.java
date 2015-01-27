@@ -21,7 +21,6 @@ import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
-import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.wizard.WizardNavigationState;
 import com.intellij.ui.wizard.WizardStep;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
@@ -37,7 +36,6 @@ import javax.swing.event.HyperlinkListener;
 import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.text.DateFormat;
 import java.util.List;
 import java.util.Vector;
 
@@ -75,7 +73,7 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
 
         cloudServiceComboBox.setRenderer(new DefaultListCellRenderer() {
             @Override
-            public Component getListCellRendererComponent(JList<?> jList, Object o, int i, boolean b, boolean b1) {
+            public Component getListCellRendererComponent(JList jList, Object o, int i, boolean b, boolean b1) {
                 if (o instanceof CloudService) {
                     CloudService sa = (CloudService) o;
                     return super.getListCellRendererComponent(jList, String.format("%s (%s)", sa.getName(), sa.getLocation()), i, b, b1);
@@ -87,7 +85,7 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
 
         storageComboBox.setRenderer(new DefaultListCellRenderer() {
             @Override
-            public Component getListCellRendererComponent(JList<?> jList, Object o, int i, boolean b, boolean b1) {
+            public Component getListCellRendererComponent(JList jList, Object o, int i, boolean b, boolean b1) {
                 if (o instanceof StorageAccount) {
                     StorageAccount sa = (StorageAccount) o;
                     return super.getListCellRendererComponent(jList, String.format("%s (%s)", sa.getName(), sa.getLocation()), i, b, b1);

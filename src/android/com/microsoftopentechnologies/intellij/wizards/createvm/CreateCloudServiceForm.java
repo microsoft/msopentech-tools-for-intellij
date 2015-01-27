@@ -84,7 +84,7 @@ public class CreateCloudServiceForm extends JDialog {
 
         regionOrAffinityGroupComboBox.setRenderer(new DefaultListCellRenderer() {
             @Override
-            public Component getListCellRendererComponent(JList<?> jList, Object o, int i, boolean b, boolean b1) {
+            public Component getListCellRendererComponent(JList jList, Object o, int i, boolean b, boolean b1) {
 
                 return (o instanceof String) ?
                         super.getListCellRendererComponent(jList, o, i, b, b1)

@@ -105,7 +105,7 @@ public class CreateStorageAccountForm extends JDialog {
 
         regionOrAffinityGroupComboBox.setRenderer(new DefaultListCellRenderer() {
             @Override
-            public Component getListCellRendererComponent(JList<?> jList, Object o, int i, boolean b, boolean b1) {
+            public Component getListCellRendererComponent(JList jList, Object o, int i, boolean b, boolean b1) {
 
                 return (o instanceof String) ?
                         super.getListCellRendererComponent(jList, o, i, b, b1)
@@ -140,7 +140,7 @@ public class CreateStorageAccountForm extends JDialog {
         replicationComboBox.setModel(new DefaultComboBoxModel(ReplicationTypes.values()));
         replicationComboBox.setRenderer(new DefaultListCellRenderer() {
             @Override
-            public Component getListCellRendererComponent(JList<?> jList, Object o, int i, boolean b, boolean b1) {
+            public Component getListCellRendererComponent(JList jList, Object o, int i, boolean b, boolean b1) {
                 return super.getListCellRendererComponent(jList, ((ReplicationTypes) o).getDescription(), i, b, b1);
             }
         });

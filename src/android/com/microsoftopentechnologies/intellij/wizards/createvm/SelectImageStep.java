@@ -152,7 +152,7 @@ public class SelectImageStep extends WizardStep<CreateVMWizardModel> {
         imageTypeList.addAll(Arrays.asList(PrivateImages.values()));
 
 
-        imageTypeComboBox.setModel(new DefaultComboBoxModel<Object>(imageTypeList.toArray()) {
+        imageTypeComboBox.setModel(new DefaultComboBoxModel(imageTypeList.toArray()) {
             @Override
             public void setSelectedItem(Object o) {
                 if (o instanceof Enum) {
@@ -163,7 +163,7 @@ public class SelectImageStep extends WizardStep<CreateVMWizardModel> {
 
         imageTypeComboBox.setRenderer(new DefaultListCellRenderer() {
             @Override
-            public Component getListCellRendererComponent(JList<?> jList, Object o, int i, boolean b, boolean b1) {
+            public Component getListCellRendererComponent(JList jList, Object o, int i, boolean b, boolean b1) {
                 if (o instanceof Enum) {
                     return super.getListCellRendererComponent(jList, "  " + o.toString(), i, b, b1);
                 } else {
@@ -185,7 +185,7 @@ public class SelectImageStep extends WizardStep<CreateVMWizardModel> {
 
         imageLabelList.setCellRenderer(new DefaultListCellRenderer() {
             @Override
-            public Component getListCellRendererComponent(JList<?> jList, Object o, int i, boolean b, boolean b1) {
+            public Component getListCellRendererComponent(JList jList, Object o, int i, boolean b, boolean b1) {
                 String cellValue = o.toString();
 
                 if(o instanceof VirtualMachineImage){
