@@ -15,6 +15,7 @@
  */
 package com.microsoftopentechnologies.intellij.helpers.azure.sdk;
 
+import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import com.intellij.openapi.application.ApplicationManager;
@@ -391,35 +392,17 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
                 return saList;
             }
 
+            List<ListenableFuture<StorageAccount>> saFutureList = new ArrayList<ListenableFuture<StorageAccount>>();
+
             for (com.microsoft.windowsazure.management.storage.models.StorageAccount storageAccount : storageAccounts) {
-                String key = "";
-
-                if (storageAccount.getName() != null) {
-                    String primaryKey = getStorageAccountKeys(client, storageAccount.getName()).getPrimaryKey();
-
-                    if (primaryKey != null) {
-                        key = primaryKey;
-                    }
-                }
-
-                StorageAccount sa = new StorageAccount(
-                        storageAccount.getName() != null ? storageAccount.getName() : "",
-                        storageAccount.getProperties() != null && storageAccount.getProperties().getAccountType() != null ?
-                                storageAccount.getProperties().getAccountType() :
-                                "",
-                        storageAccount.getProperties() != null && storageAccount.getProperties().getLocation() != null ?
-                                storageAccount.getProperties().getLocation() :
-                                "",
-                        storageAccount.getProperties() != null && storageAccount.getProperties().getAffinityGroup() != null ?
-                                storageAccount.getProperties().getAffinityGroup() :
-                                "",
-                        key,
-                        subscriptionId);
-
-                saList.add(sa);
+                saFutureList.add(getStorageAccountAsync(subscriptionId, client, storageAccount));
             }
 
+            saList.addAll(Futures.allAsList(saFutureList).get());
+
             return saList;
+        } catch (ExecutionException e) {
+            throw new AzureCmdException("Error retrieving the VM list", e.getCause());
         } catch (Throwable t) {
             throw new AzureCmdException("Error retrieving the VM list", t);
         } finally {
@@ -872,8 +855,58 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     }
 
     @NotNull
-    private StorageAccountGetKeysResponse getStorageAccountKeys(@NotNull StorageManagementClient client,
-                                                                @NotNull String storageName)
+    private static ListenableFuture<StorageAccount> getStorageAccountAsync(@NotNull final String subscriptionId,
+                                                                           @NotNull final StorageManagementClient client,
+                                                                           @NotNull final com.microsoft.windowsazure.management.storage.models.StorageAccount storageAccount)
+            throws Exception {
+        final SettableFuture<StorageAccount> future = SettableFuture.create();
+
+        ApplicationManager.getApplication().executeOnPooledThread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    future.set(getStorageAccount(subscriptionId, client, storageAccount));
+                } catch (Exception e) {
+                    future.setException(e);
+                }
+            }
+        });
+
+        return future;
+    }
+
+    @NotNull
+    private static StorageAccount getStorageAccount(@NotNull String subscriptionId,
+                                                    @NotNull StorageManagementClient client,
+                                                    @NotNull com.microsoft.windowsazure.management.storage.models.StorageAccount storageAccount) throws Exception {
+        String key = "";
+
+        if (storageAccount.getName() != null) {
+            String primaryKey = getStorageAccountKeys(client, storageAccount.getName()).getPrimaryKey();
+
+            if (primaryKey != null) {
+                key = primaryKey;
+            }
+        }
+
+        return new StorageAccount(
+                storageAccount.getName() != null ? storageAccount.getName() : "",
+                storageAccount.getProperties() != null && storageAccount.getProperties().getAccountType() != null ?
+                        storageAccount.getProperties().getAccountType() :
+                        "",
+                storageAccount.getProperties() != null && storageAccount.getProperties().getLocation() != null ?
+                        storageAccount.getProperties().getLocation() :
+                        "",
+                storageAccount.getProperties() != null && storageAccount.getProperties().getAffinityGroup() != null ?
+                        storageAccount.getProperties().getAffinityGroup() :
+                        "",
+                key,
+                subscriptionId);
+    }
+
+    @NotNull
+    private static StorageAccountGetKeysResponse getStorageAccountKeys(@NotNull StorageManagementClient client,
+                                                                       @NotNull String storageName)
             throws Exception {
         StorageAccountGetKeysResponse sagkr = getStorageAccountOperations(client).getKeys(storageName);
 
