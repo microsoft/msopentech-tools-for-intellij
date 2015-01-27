@@ -68,7 +68,7 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
         cloudServiceComboBox.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent itemEvent) {
-                fillStorage();
+                fillStorage(null);
                 fillAvailabilitySets();
             }
         });
@@ -145,10 +145,9 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
                         ApplicationManager.getApplication().invokeLater(new Runnable() {
                             @Override
                             public void run() {
-                                fillStorage();
+                                fillStorage(null);
                             }
                         });
-
 
                     } catch (AzureCmdException e) {
                         UIHelper.showException("Error trying to get storage account list", e);
@@ -161,8 +160,8 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
         imageDescriptionTextPane.setText(model.getHtmlFromVMImage(virtualMachineImage));
         imageDescriptionTextPane.setCaretPosition(0);
 
-        fillCloudServices();
-        fillStorage();
+        fillCloudServices(null);
+        fillStorage(null);
 
         return rootPanel;
 
@@ -186,7 +185,7 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
         return super.onNext(model);
     }
 
-    private void fillCloudServices() {
+    private void fillCloudServices(final CloudService selected) {
         cloudServiceComboBox.setModel(new DefaultComboBoxModel(new String[] { "<Loading...>" }));
 
         ProgressManager.getInstance().run(new Task.Backgroundable(project, "Loading cloud services...", false) {
@@ -202,7 +201,7 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
                     ApplicationManager.getApplication().invokeLater(new Runnable() {
                         @Override
                         public void run() {
-                            fillStorage();
+                            fillStorage(null);
 
                             cloudServiceComboBox.setModel(new DefaultComboBoxModel(cloudServices.toArray()) {
                                 @Override
@@ -213,13 +212,17 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
                                         }
                                     } else {
                                         super.setSelectedItem(o);
-                                        fillStorage();
+                                        fillStorage(null);
                                     }
                                 }
 
                             });
 
                             cloudServiceComboBox.insertItemAt("<< Create new cloud service >>", 0);
+
+                            if(selected != null) {
+                                cloudServiceComboBox.setSelectedItem(selected);
+                            }
                         }
                     });
 
@@ -230,7 +233,7 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
         });
     }
 
-    private void fillStorage() {
+    private void fillStorage(StorageAccount selected) {
 
         Object item = cloudServiceComboBox.getSelectedItem();
 
@@ -266,6 +269,11 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
         });
 
         storageComboBox.insertItemAt("<< Create new storage account >>", 0);
+
+        if(selected != null) {
+            storageComboBox.setSelectedItem(selected);
+        }
+
         model.getCurrentNavigationState().NEXT.setEnabled(accounts.size() > 0);
     }
 
@@ -289,8 +297,9 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
                 ApplicationManager.getApplication().invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        cloudServices.add(form.getCloudService());
-                        fillCloudServices();
+                        CloudService newCloudService = form.getCloudService();
+                        cloudServices.add(newCloudService);
+                        fillCloudServices(newCloudService);
                     }
                 });
             }
@@ -309,11 +318,11 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
                 ApplicationManager.getApplication().invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        storageAccounts.add(form.getStorageAccount());
-                        fillStorage();
+                        StorageAccount newStorageAccount = form.getStorageAccount();
+                        storageAccounts.add(newStorageAccount);
+                        fillStorage(newStorageAccount);
                     }
                 });
-
             }
         });
 

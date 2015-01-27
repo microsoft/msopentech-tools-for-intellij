@@ -59,9 +59,8 @@ public class VMServiceModule extends Node {
 
     @Override
     protected Map<String, Class<? extends NodeActionListener>> initActions() {
-        HashMap<String, Class<? extends NodeActionListener>> stringClassHashMap = new HashMap<String, Class<? extends NodeActionListener>>();
-        stringClassHashMap.put("Create VM", CreateVMAction.class);
-        return stringClassHashMap;
+        addAction("Create VM", new CreateVMAction());
+        return null;
     }
 
     public class CreateVMAction extends NodeActionListener {

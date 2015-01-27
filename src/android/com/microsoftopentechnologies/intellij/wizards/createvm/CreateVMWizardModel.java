@@ -16,6 +16,7 @@
 
 package com.microsoftopentechnologies.intellij.wizards.createvm;
 
+import com.google.common.util.concurrent.ListenableFuture;
 import com.intellij.openapi.application.ApplicationNamesInfo;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.wizard.WizardModel;
@@ -141,7 +142,7 @@ public class CreateVMWizardModel extends WizardModel {
 
         jList.setCellRenderer(new DefaultListCellRenderer() {
             @Override
-            public Component getListCellRendererComponent(JList<?> jList, Object o, int i, boolean b, boolean b1) {
+            public Component getListCellRendererComponent(JList jList, Object o, int i, boolean b, boolean b1) {
                 return super.getListCellRendererComponent(jList, "  " + o.toString() , i, b, b1);
             }
         });
@@ -153,8 +154,6 @@ public class CreateVMWizardModel extends WizardModel {
         for (MouseMotionListener mouseMotionListener : jList.getMouseMotionListeners()) {
             jList.removeMouseMotionListener(mouseMotionListener);
         }
-
-
     }
 
     public String getName() {

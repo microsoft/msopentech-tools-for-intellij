@@ -40,6 +40,7 @@ import java.awt.event.ItemListener;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
 
@@ -185,7 +186,16 @@ public class SelectImageStep extends WizardStep<CreateVMWizardModel> {
         imageLabelList.setCellRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(JList<?> jList, Object o, int i, boolean b, boolean b1) {
-                String cellValue = (o instanceof VirtualMachineImage) ? ((VirtualMachineImage) o).getLabel() : o.toString();
+                String cellValue = o.toString();
+
+                if(o instanceof VirtualMachineImage){
+                    VirtualMachineImage virtualMachineImage = (VirtualMachineImage) o;
+
+                    cellValue = String.format("%s (%s)",
+                            virtualMachineImage.getLabel(),
+                            new SimpleDateFormat("yyyy-MM").format(virtualMachineImage.getPublishedDate().getTime()));
+                }
+
                 this.setToolTipText(cellValue);
                 return super.getListCellRendererComponent(jList, cellValue, i, b, b1);
             }
