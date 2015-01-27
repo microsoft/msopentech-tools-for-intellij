@@ -423,8 +423,10 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
 
         try {
             client = getComputeManagementClient(subscriptionId);
-            vmImageList = loadOSImages(client, vmImageList);
-            vmImageList = loadVMImages(client, vmImageList);
+            ListenableFuture<List<VirtualMachineImage>> osImagesFuture = getOSImagesAsync(client);
+            ListenableFuture<List<VirtualMachineImage>> vmImagesFuture = getVMImagesAsync(client);
+            vmImageList.addAll(osImagesFuture.get());
+            vmImageList.addAll(vmImagesFuture.get());
 
             return vmImageList;
         } catch (Throwable t) {
@@ -1096,9 +1098,28 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     }
 
     @NotNull
-    private static List<VirtualMachineImage> loadOSImages(@NotNull ComputeManagementClient client,
-                                                          @NotNull List<VirtualMachineImage> vmImageList)
+    private static ListenableFuture<List<VirtualMachineImage>> getOSImagesAsync(@NotNull final ComputeManagementClient client) {
+        final SettableFuture<List<VirtualMachineImage>> future = SettableFuture.create();
+
+        ApplicationManager.getApplication().executeOnPooledThread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    future.set(getOSImages(client));
+                } catch (Exception e) {
+                    future.setException(e);
+                }
+            }
+        });
+
+        return future;
+    }
+
+    @NotNull
+    private static List<VirtualMachineImage> getOSImages(@NotNull ComputeManagementClient client)
             throws Exception {
+        List<VirtualMachineImage> vmImageList = new ArrayList<VirtualMachineImage>();
+
         VirtualMachineOSImageListResponse osImages = getVirtualMachineOSImageOperations(client).list();
 
         if (osImages != null) {
@@ -1128,9 +1149,28 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     }
 
     @NotNull
-    private static List<VirtualMachineImage> loadVMImages(@NotNull ComputeManagementClient client,
-                                                          @NotNull List<VirtualMachineImage> vmImageList)
+    private static ListenableFuture<List<VirtualMachineImage>> getVMImagesAsync(@NotNull final ComputeManagementClient client) {
+        final SettableFuture<List<VirtualMachineImage>> future = SettableFuture.create();
+
+        ApplicationManager.getApplication().executeOnPooledThread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    future.set(getVMImages(client));
+                } catch (Exception e) {
+                    future.setException(e);
+                }
+            }
+        });
+
+        return future;
+    }
+
+    @NotNull
+    private static List<VirtualMachineImage> getVMImages(@NotNull ComputeManagementClient client)
             throws Exception {
+        List<VirtualMachineImage> vmImageList = new ArrayList<VirtualMachineImage>();
+
         VirtualMachineVMImageListResponse vmImages = getVirtualMachineVMImageOperations(client).list();
 
         if (vmImages != null) {
