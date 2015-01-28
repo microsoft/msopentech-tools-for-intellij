@@ -65,7 +65,7 @@ public class CreateStorageAccountForm extends JDialog {
                 case Standard_LRS:
                     return "Locally Redundant";
                 case Standard_RAGRS:
-                    return "Read_Access Geo-Redundant";
+                    return "Read Access Geo-Redundant";
             }
 
             return super.toString();

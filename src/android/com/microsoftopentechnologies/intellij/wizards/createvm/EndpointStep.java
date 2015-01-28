@@ -102,21 +102,13 @@ public class EndpointStep extends WizardStep<CreateVMWizardModel> {
             }
         });
 
+    }
+
+    @Override
+    public JComponent prepare(WizardNavigationState wizardNavigationState) {
+        rootPanel.revalidate();
+
         final EndpointTableModel endpointTableModel = new EndpointTableModel();
-        endpointTableModel.getData().add(new Endpoint("Powershell", "TCP", 5983, 5983));
-        endpointTableModel.getData().add(new Endpoint("Remote Desktop", "TCP", 3389, 3389));
-
-        endpointsTable.setModel(endpointTableModel);
-
-        endpointsTable.getColumnModel().getColumn(0).setPreferredWidth(15);
-        endpointsTable.getColumnModel().getColumn(1).setPreferredWidth(150);
-        endpointsTable.getColumnModel().getColumn(2).setPreferredWidth(75);
-        endpointsTable.getColumnModel().getColumn(3).setPreferredWidth(75);
-        endpointsTable.getColumnModel().getColumn(4).setPreferredWidth(60);
-        endpointsTable.getColumnModel().getColumn(5).setPreferredWidth(205);
-
-        endpointsTable.setTableHeader(null);
-
 
         endpointsTable.addMouseListener(new MouseAdapter() {
             @Override
@@ -138,20 +130,36 @@ public class EndpointStep extends WizardStep<CreateVMWizardModel> {
             public void tableChanged(TableModelEvent tableModelEvent) {
 
                 boolean hasErrors = false;
-                for (int i = 0; i < endpointTableModel.getRowCount(); i++) {
+                for (int i = 0; i < endpointTableModel.getRowCount() && !hasErrors; i++) {
                     String errorFromRow = getErrorFromRow(i, endpointTableModel.getData());
-                    if(errorFromRow.length() > 0)
+                    if(errorFromRow.length() > 0) {
                         hasErrors = true;
+                    }
                 }
 
                 model.getCurrentNavigationState().FINISH.setEnabled(!hasErrors && endpointTableModel.getRowCount() > 0);
             }
         });
-    }
 
-    @Override
-    public JComponent prepare(WizardNavigationState wizardNavigationState) {
-        rootPanel.revalidate();
+        if(model.getVirtualMachineImage().getOperatingSystemType().equals("Windows")) {
+            endpointTableModel.getData().add(new Endpoint("Powershell", "TCP", 5983, 5983));
+            endpointTableModel.getData().add(new Endpoint("Remote Desktop", "TCP", 3389, 3389));
+        } else {
+            endpointTableModel.getData().add(new Endpoint("SSH", "TCP", 22, 22));
+        }
+
+        endpointsTable.setModel(endpointTableModel);
+
+        endpointsTable.getColumnModel().getColumn(0).setPreferredWidth(15);
+        endpointsTable.getColumnModel().getColumn(1).setPreferredWidth(150);
+        endpointsTable.getColumnModel().getColumn(2).setPreferredWidth(75);
+        endpointsTable.getColumnModel().getColumn(3).setPreferredWidth(75);
+        endpointsTable.getColumnModel().getColumn(4).setPreferredWidth(60);
+        endpointsTable.getColumnModel().getColumn(5).setPreferredWidth(205);
+
+        endpointsTable.setTableHeader(null);
+
+
         return rootPanel;
     }
 
