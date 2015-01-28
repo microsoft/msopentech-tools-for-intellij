@@ -55,6 +55,6 @@ public class RolesEditor extends ModuleElementsEditor {
     @Nullable
     @Override
     public String getHelpTopic() {
-        return null;
+        return rolesPanel.getHelpTopic();
     }
 }

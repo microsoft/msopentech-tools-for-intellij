@@ -69,7 +69,7 @@ public class AzureConfigurable extends SearchableConfigurable.Parent.Abstract im
     @Nullable
     @Override
     public String getHelpTopic() {
-        return null;
+        return "windows_azure_project_properties";
     }
 
     @Override

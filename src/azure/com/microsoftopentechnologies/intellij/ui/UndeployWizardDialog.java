@@ -216,4 +216,9 @@ public class UndeployWizardDialog extends DialogWrapper {
     protected JComponent createCenterPanel() {
         return contentPane;
     }
+
+    @Override
+    protected String getHelpId() {
+        return "unpublish_project_command";
+    }
 }

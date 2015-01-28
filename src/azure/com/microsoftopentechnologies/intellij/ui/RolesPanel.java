@@ -202,6 +202,10 @@ public class RolesPanel implements AzureAbstractPanel {
         return null;
     }
 
+    public String getHelpTopic() {
+        return "windows_azure_project_roles";
+    }
+
     private class RolesTableModel extends AbstractTableModel {
         public final String[] COLUMNS = new String[]{message("rolsName"), message("rolsVMSize"), message("rolsInstances")};
 

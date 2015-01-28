@@ -85,6 +85,11 @@ public class SubscriptionsPanel implements AzureAbstractPanel {
         return null;
     }
 
+    @Override
+    public String getHelpTopic() {
+        return null;
+    }
+
     private ActionListener createRemoveButtonListener() {
         return new ActionListener() {
             @Override

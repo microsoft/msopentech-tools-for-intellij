@@ -106,7 +106,7 @@ public class LocalStoragePanel extends BaseConfigurable implements SearchableCon
     @Nullable
     @Override
     public String getHelpTopic() {
-        return null;
+        return "windows_azure_localstorage_page";
     }
 
     @Nullable

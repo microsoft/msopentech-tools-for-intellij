@@ -606,6 +606,7 @@ limitations under the License.
                 <attribute name="Manifest-Version" value="1.0"/>
             </manifest>
         </jar>
+        <copy file="${module.msopentech-tools-for-intellij.basedir}/help/msopentech-tools-help.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/help/msopentech-tools-help.jar"/>
         <copy file="${path.variable.maven_repository}/org/apache/httpcomponents/httpmime/4.3.5/httpmime-4.3.5.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/httpmime-4.3.5.jar"/>
         <copy file="${path.variable.maven_repository}/org/apache/httpcomponents/httpclient/4.3.5/httpclient-4.3.5.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/httpclient-4.3.5.jar"/>
         <copy file="${path.variable.maven_repository}/org/apache/httpcomponents/httpcore/4.3.2/httpcore-4.3.2.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/httpcore-4.3.2.jar"/>

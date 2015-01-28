@@ -153,5 +153,7 @@ limitations under the License.
             <reference ref="Actions.UnpublishAction"/>
         </group>
     </actions>
+
+    <helpset file="msopentech-tools-help.jar" path="/helpset.hs"/>
 </idea-plugin>
 

@@ -79,7 +79,7 @@ public class RolesConfigurable extends SearchableConfigurable.Parent.Abstract {
     @Nullable
     @Override
     public String getHelpTopic() {
-        return null;
+        return panel.getHelpTopic();
     }
 
     @Nullable

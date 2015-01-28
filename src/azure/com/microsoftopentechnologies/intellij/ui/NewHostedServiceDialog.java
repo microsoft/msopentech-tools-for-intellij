@@ -136,4 +136,9 @@ public class NewHostedServiceDialog extends DialogWrapper {
     protected JComponent createTitlePane() {
         return new TitlePanel(message("hostedNew"), message("hostedCreateNew"));
     }
+
+    @Override
+    protected String getHelpId() {
+        return "new_hosted_service";
+    }
 }
