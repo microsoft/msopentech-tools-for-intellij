@@ -55,6 +55,6 @@ public class RemoteAccessEditor extends ModuleElementsEditor {
     @Nullable
     @Override
     public String getHelpTopic() {
-        return waRemoteAccessPanel.getHelpId();
+        return waRemoteAccessPanel.getHelpTopic();
     }
 }
