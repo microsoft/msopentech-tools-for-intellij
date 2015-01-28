@@ -13,31 +13,33 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-
 package com.microsoftopentechnologies.intellij.components;
 
 import com.google.gson.Gson;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.command.CommandProcessor;
 import com.intellij.openapi.components.ApplicationComponent;
-import com.intellij.openapi.vfs.LocalFileSystem;
-import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.editor.Document;
+import com.intellij.openapi.fileEditor.impl.FileDocumentManagerImpl;
+import com.intellij.openapi.module.ModuleUtil;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectLocator;
+import com.intellij.openapi.util.TextRange;
+import com.intellij.openapi.vfs.*;
 import com.microsoftopentechnologies.intellij.helpers.AndroidStudioHelper;
 import com.microsoftopentechnologies.intellij.helpers.StringHelper;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
+import com.microsoftopentechnologies.intellij.wizards.activityConfiguration.AddServiceWizard;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Collection;
 
 public class MSOpenTechTools extends ApplicationComponent.Adapter {
-    private static MSOpenTechTools current = null;
-
-    // TODO: This needs to be the plugin ID from plugin.xml somehow.
-    public static final String PLUGIN_ID = "com.microsoftopentechnologies.intellij";
-
     // NOTE: If you add new setting names to this list, evaluate whether it should be cleared
     // when the plugin is upgraded/uninstalled and add the setting to the array "settings" in
     // the "cleanTempData" function below. Otherwise your setting will get retained across
@@ -52,11 +54,38 @@ public class MSOpenTechTools extends ApplicationComponent.Adapter {
         public static final String CURRENT_PLUGIN_VERSION = "com.microsoftopentechnologies.intellij.PluginVersion";
     }
 
+    private static final String MOBILE_SERVICE_CODE = "//010fa0c4-5af1-4f81-95c1-720d9fab8d96";
+    private static final String NOTIFICATION_HUBS_CODE = "//46cca6b7-ff7d-4e05-9ef2-d7eb4798222e";
+    private static final String NOTIFICATION_HUBS_MOBILE_SERVICE_CODE = "//657555dc-6167-466a-9536-071307770d46";
+    private static final String OUTLOOK_SERVICES_CODE = "//fa684d69-70b3-41ec-83ff-2f8fa77aeeba";
+    private static final String FILE_SERVICES_CODE = "//1073bed4-78c3-4b4a-8a4d-ad874a286d86";
+    private static final String LIST_SERVICES_CODE = "//6695fd94-10cc-4274-b5df-46a3bc63a33d";
+    private static final String OUTLOOK_FILE_SERVICES_CODE = "//c4c2fd13-4abf-4785-a410-1887c5a1f1fc";
+    private static final String OUTLOOK_LIST_SERVICES_CODE = "//322e22fa-c249-4805-b057-c7b282acb605";
+    private static final String FILE_LIST_SERVICES_CODE = "//7193e8e2-dcec-4eb9-a3d6-02d86f88eaed";
+    private static final String OUTLOOK_FILE_LIST_SERVICES_CODE = "//25fdea0c-8a15-457f-9b15-dacb4e7dc2b2";
+    private static final VirtualFileListener vfl = getVirtualFileListener();
+
+    private static MSOpenTechTools current = null;
     private PluginSettings settings;
+
+    // TODO: This needs to be the plugin ID from plugin.xml somehow.
+    public static final String PLUGIN_ID = "com.microsoftopentechnologies.intellij";
 
     public MSOpenTechTools() {
     }
 
+    public static MSOpenTechTools getCurrent() {
+        return current;
+    }
+
+    @Override
+    @NotNull
+    public String getComponentName() {
+        return "MSOpenTechTools";
+    }
+
+    @Override
     public void initComponent() {
         // save the object instance
         current = this;
@@ -71,6 +100,17 @@ public class MSOpenTechTools extends ApplicationComponent.Adapter {
 
         // delete android studio activity templates
         cleanTempData(PropertiesComponent.getInstance());
+
+        VirtualFileManager.getInstance().addVirtualFileListener(vfl);
+    }
+
+    @Override
+    public void disposeComponent() {
+        VirtualFileManager.getInstance().removeVirtualFileListener(vfl);
+    }
+
+    public PluginSettings getSettings() {
+        return settings;
     }
 
     private void loadPluginSettings() throws IOException {
@@ -80,7 +120,8 @@ public class MSOpenTechTools extends ApplicationComponent.Adapter {
                     new InputStreamReader(
                             MSOpenTechTools.class.getResourceAsStream("/settings.json")));
             StringBuilder sb = new StringBuilder();
-            String line = null;
+            String line;
+
             while ((line = reader.readLine()) != null) {
                 sb.append(line);
             }
@@ -95,10 +136,6 @@ public class MSOpenTechTools extends ApplicationComponent.Adapter {
                 }
             }
         }
-    }
-
-    public static MSOpenTechTools getCurrent() {
-        return current;
     }
 
     private void cleanTempData(PropertiesComponent propComp) {
@@ -116,6 +153,7 @@ public class MSOpenTechTools extends ApplicationComponent.Adapter {
         // subscriptions.
         PropertiesComponent properties = PropertiesComponent.getInstance();
         String currentPluginVersion = properties.getValue(AppSettingsNames.CURRENT_PLUGIN_VERSION);
+
         if (StringHelper.isNullOrWhiteSpace(currentPluginVersion) ||
                 !getSettings().getPluginVersion().equals(currentPluginVersion)) {
 
@@ -135,7 +173,7 @@ public class MSOpenTechTools extends ApplicationComponent.Adapter {
         properties.setValue(AppSettingsNames.CURRENT_PLUGIN_VERSION, getSettings().getPluginVersion());
 
         try {
-            if (cleanTempData.isEmpty() || !cleanTempData.equals(settings.getPluginVersion()) ) {
+            if (cleanTempData.isEmpty() || !cleanTempData.equals(settings.getPluginVersion())) {
 
                 String tmpdir = System.getProperty("java.io.tmpdir");
                 StringBuilder sb = new StringBuilder();
@@ -150,7 +188,8 @@ public class MSOpenTechTools extends ApplicationComponent.Adapter {
                 if (tempFolder != null && tempFolder.exists()) {
                     try {
                         tempFolder.delete(MSOpenTechTools.getCurrent());
-                    } catch (IOException ignored) { }
+                    } catch (IOException ignored) {
+                    }
                 }
 
                 propComp.setValue(AppSettingsNames.CLEAN_TEMP_DATA, settings.getPluginVersion());
@@ -163,15 +202,102 @@ public class MSOpenTechTools extends ApplicationComponent.Adapter {
         } catch (Exception e) {
             UIHelper.showException("Error copying templates", e);
         }
-
     }
 
-    @NotNull
-    public String getComponentName() {
-        return "MSOpenTechTools";
-    }
+    private static VirtualFileListener getVirtualFileListener() {
+        return new VirtualFileListener() {
+            @Override
+            public void propertyChanged(@NotNull VirtualFilePropertyEvent virtualFilePropertyEvent) {
+            }
 
-    public PluginSettings getSettings() {
-        return settings;
+            @Override
+            public void contentsChanged(@NotNull VirtualFileEvent virtualFileEvent) {
+            }
+
+            @Override
+            public void fileCreated(@NotNull final VirtualFileEvent virtualFileEvent) {
+            }
+
+            @Override
+            public void fileDeleted(@NotNull VirtualFileEvent virtualFileEvent) {
+            }
+
+            @Override
+            public void fileMoved(@NotNull VirtualFileMoveEvent virtualFileMoveEvent) {
+            }
+
+            @Override
+            public void fileCopied(@NotNull VirtualFileCopyEvent virtualFileCopyEvent) {
+            }
+
+            @Override
+            public void beforePropertyChange(@NotNull VirtualFilePropertyEvent virtualFilePropertyEvent) {
+            }
+
+            @Override
+            public void beforeContentsChange(@NotNull VirtualFileEvent virtualFileEvent) {
+                if (virtualFileEvent.isFromSave()) {
+                    final VirtualFile vf = virtualFileEvent.getFile();
+                    Object requestor = virtualFileEvent.getRequestor();
+
+                    if ("java".equals(vf.getExtension()) && (requestor instanceof FileDocumentManagerImpl)) {
+                        FileDocumentManagerImpl fdm = (FileDocumentManagerImpl) requestor;
+                        final Document document = fdm.getDocument(vf);
+
+                        if (document != null) {
+                            final int codeLineStart = document.getLineStartOffset(0);
+                            int codeLineEnd = document.getLineEndOffset(0);
+                            TextRange codeLineRange = new TextRange(codeLineStart, codeLineEnd);
+                            String codeLine = document.getText(codeLineRange);
+                            final boolean isMobileService = codeLine.equals(MOBILE_SERVICE_CODE) || codeLine.equals(NOTIFICATION_HUBS_MOBILE_SERVICE_CODE);
+                            final boolean isNotificationHub = codeLine.equals(NOTIFICATION_HUBS_CODE) || codeLine.equals(NOTIFICATION_HUBS_MOBILE_SERVICE_CODE);
+                            final boolean isOutlookServices = codeLine.equals(OUTLOOK_SERVICES_CODE) || codeLine.equals(OUTLOOK_FILE_SERVICES_CODE) || codeLine.equals(OUTLOOK_LIST_SERVICES_CODE) || codeLine.equals(OUTLOOK_FILE_LIST_SERVICES_CODE);
+                            final boolean isFileServices = codeLine.equals(FILE_SERVICES_CODE) || codeLine.equals(OUTLOOK_FILE_SERVICES_CODE) || codeLine.equals(FILE_LIST_SERVICES_CODE) || codeLine.equals(OUTLOOK_FILE_LIST_SERVICES_CODE);
+                            final boolean isListServices = codeLine.equals(LIST_SERVICES_CODE) || codeLine.equals(OUTLOOK_LIST_SERVICES_CODE) || codeLine.equals(FILE_LIST_SERVICES_CODE) || codeLine.equals(OUTLOOK_FILE_LIST_SERVICES_CODE);
+
+                            if (isMobileService || isNotificationHub || isOutlookServices || isFileServices || isListServices) {
+                                final int packageLineStart = document.getLineStartOffset(1);
+
+                                CommandProcessor.getInstance().runUndoTransparentAction(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        document.deleteString(codeLineStart, packageLineStart);
+                                    }
+                                });
+
+                                fdm.saveDocument(document);
+
+                                ApplicationManager.getApplication().invokeLater(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Collection<Project> projects = ProjectLocator.getInstance().getProjectsForFile(vf);
+
+                                        if (projects.size() == 1) {
+                                            AddServiceWizard.run(
+                                                    (Project) projects.toArray()[0],
+                                                    ModuleUtil.findModuleForFile(vf, (Project) projects.toArray()[0]),
+                                                    vf.getNameWithoutExtension(),
+                                                    isMobileService,
+                                                    isNotificationHub,
+                                                    isOutlookServices,
+                                                    isFileServices,
+                                                    isListServices);
+                                        }
+                                    }
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void beforeFileDeletion(@NotNull VirtualFileEvent virtualFileEvent) {
+            }
+
+            @Override
+            public void beforeFileMovement(@NotNull VirtualFileMoveEvent virtualFileMoveEvent) {
+            }
+        };
     }
 }
