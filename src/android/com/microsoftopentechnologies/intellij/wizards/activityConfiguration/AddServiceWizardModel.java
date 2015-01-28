@@ -24,11 +24,13 @@ import com.microsoft.directoryservices.Application;
 import com.microsoftopentechnologies.intellij.helpers.graph.ServicePermissionEntry;
 import com.microsoftopentechnologies.intellij.model.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class AddServiceWizardModel extends WizardModel {
     private final Project project;
     private final Module module;
+    private final String activityName;
     private final List<ServiceType> serviceTypes;
     private Service service;
     private String senderId;
@@ -41,11 +43,13 @@ public class AddServiceWizardModel extends WizardModel {
     private Application officeApp;
     private List<ServicePermissionEntry> officePermissions;
 
-    public AddServiceWizardModel(Project project, Module module, boolean isMobileServiceSelected, boolean isNotificationHubSelected,
-                                 boolean isOutlookServices, boolean isFileServices, boolean isListServices) {
+    public AddServiceWizardModel(Project project, Module module, String activityName, boolean isMobileServiceSelected,
+                                 boolean isNotificationHubSelected, boolean isOutlookServices, boolean isFileServices,
+                                 boolean isListServices) {
         super(ApplicationNamesInfo.getInstance().getFullProductName() + " - Add Microsoft Service Wizard");
         this.project = project;
         this.module = module;
+        this.activityName = activityName;
         this.serviceTypes = new ArrayList<ServiceType>();
         this.isOutlookServices = isOutlookServices;
         this.isFileServices = isFileServices;
@@ -72,6 +76,10 @@ public class AddServiceWizardModel extends WizardModel {
 
     public Module getModule() {
         return module;
+    }
+
+    public String getActivityName() {
+        return activityName;
     }
 
     public List<ServiceType> getServiceTypes() {

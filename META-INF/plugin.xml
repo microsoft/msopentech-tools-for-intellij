@@ -95,12 +95,6 @@ limitations under the License.
             <implementation-class>com.microsoftopentechnologies.intellij.AzurePlugin</implementation-class>
             <loadForDefaultProject/>
         </component>
-        <component>
-            <implementation-class>com.microsoftopentechnologies.intellij.components.AzureServiceComponent
-            </implementation-class>
-            <option name="workspace" value="false"/>
-            <loadForDefaultProject/>
-        </component>
     </project-components>
 
     <module-components>
@@ -153,5 +147,7 @@ limitations under the License.
             <reference ref="Actions.UnpublishAction"/>
         </group>
     </actions>
+
+    <helpset file="msopentech-tools-help.jar" path="/helpset.hs"/>
 </idea-plugin>
 

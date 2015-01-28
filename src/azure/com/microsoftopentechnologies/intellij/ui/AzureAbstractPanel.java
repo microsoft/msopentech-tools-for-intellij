@@ -30,4 +30,6 @@ public interface AzureAbstractPanel {
     public abstract String getSelectedValue();
 
     public abstract ValidationInfo doValidate();
+
+    public String getHelpTopic();
 }

@@ -276,4 +276,9 @@ public class CacheDialog extends DialogWrapper {
             PluginUtil.displayErrorDialog(message("cachErrTtl"), message("cachSetErrMsg"));
         }
     }
+
+    @Override
+    protected String getHelpId() {
+        return "windows_azure_cache_dialog";
+    }
 }

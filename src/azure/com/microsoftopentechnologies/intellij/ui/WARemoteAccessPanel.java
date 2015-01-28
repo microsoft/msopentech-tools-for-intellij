@@ -615,6 +615,11 @@ public class WARemoteAccessPanel implements AzureAbstractPanel {
         }
     }
 
+    @Override
+    public String getHelpTopic() {
+        return "windows_azure_project_remote_access_property";
+    }
+
 }
 
 

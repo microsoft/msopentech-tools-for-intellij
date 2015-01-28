@@ -34,7 +34,6 @@ import javax.swing.event.DocumentListener;
 
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.io.File;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -328,6 +327,6 @@ public class AzureRolePanel extends BaseConfigurable {
     @Nullable
     @Override
     public String getHelpTopic() {
-        return null;
+        return "windows_azure_role";
     }
 }

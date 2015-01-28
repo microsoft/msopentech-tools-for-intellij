@@ -682,5 +682,10 @@ public class DeployWizardDialog extends WindowsAzurePage {
     public boolean getConToDplyChkStatus() {
         return conToDplyChkBtn.isSelected();
     }
+
+    @Override
+    public String getHelpId() {
+        return "publish_project_command";
+    }
 }
 

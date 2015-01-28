@@ -318,4 +318,9 @@ public class EditStorageAccountDialog extends DialogWrapper {
     protected JComponent createTitlePane() {
         return new TitlePanel(message("strTxt"), message("strNmMsg"));
     }
+
+    @Override
+    protected String getHelpId() {
+        return "storage_account_dialog";
+    }
 }

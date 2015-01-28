@@ -757,4 +757,8 @@ public class ImportExportDialog extends DialogWrapper {
     public boolean isModified() {
         return modified;
     }
+
+    protected String getHelpId() {
+        return "windows_azure_importexport_dialog";
+    }
 }

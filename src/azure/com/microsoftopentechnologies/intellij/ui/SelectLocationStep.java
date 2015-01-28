@@ -29,7 +29,6 @@ import javax.swing.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
-import java.io.IOException;
 
 import static com.microsoftopentechnologies.intellij.ui.messages.AzureBundle.message;
 
@@ -134,9 +133,4 @@ public class SelectLocationStep extends AzureWizardStep {
     public boolean isUseDefaultLocation() {
         return useDefaultLocation.isSelected();
     }
-
-    //    @Override
-//    public String getHelpId() {
-//        return "plugin.configuration.wizard";
-//    }
 }

@@ -27,4 +27,7 @@ public abstract class AzureWizardStep extends WizardStep<AzureWizardModel> {
 
     public abstract ValidationInfo doValidate();
 
+    public String getHelpId() {
+        return "windows_azure_project";
+    }
 }

@@ -296,4 +296,9 @@ public class AddApplicationDialog extends DialogWrapper {
     protected JComponent createCenterPanel() {
         return contentPane;
     }
+
+    @Override
+    protected String getHelpId() {
+        return "windows_azure_addapp_dialog";
+    }
 }

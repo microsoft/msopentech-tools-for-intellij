@@ -16,9 +16,10 @@ limitations under the License.
 
 -->
 <recipe>
-	<!-- TODO: Add dependencies to Azure Mobile Service and Notification Hub SDKs. -->
-    <!--<dependency mavenUrl="com.microsoft.windowsazure.storage:microsoft-windowsazure-storage-android-sdk:0.1.0" />-->
+<#if includeMobileServices>
+	<dependency mavenUrl="com.microsoft.azure:azure-mobile-services-android-sdk:2.0-beta" />
 
+</#if>
     <merge from="AndroidManifest.xml.ftl"
             to="${escapeXmlAttribute(manifestOut)}/AndroidManifest.xml" />
 
