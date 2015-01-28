@@ -1,0 +1,9 @@
+body {font-family: arial;}
+
+a {font-family: arial; font-size: 12}
+
+p.bold_par {font-size: 12; font-weight: bold}
+p.standard {font-size: 12}
+
+li {font-size: 12}
+ol {font-size: 12}

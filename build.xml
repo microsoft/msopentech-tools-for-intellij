@@ -205,11 +205,9 @@ limitations under the License.
     </path>
 
     <path id="library.azure-graph-api.classpath">
-        <pathelement location="${basedir}/lib/graph/directory-services-0.9-SNAPSHOT.jar"/>
-        <pathelement location="${basedir}/lib/graph/odata-engine-helpers-0.9-SNAPSHOT.jar"/>
-        <pathelement location="${basedir}/lib/graph/odata-engine-interfaces-0.9-SNAPSHOT.jar"/>
-        <pathelement location="${basedir}/lib/graph/odata-engine-java-desktop-impl-0.9-SNAPSHOT.jar"/>
-        <pathelement location="${basedir}/lib/graph/odata-engine-java-impl-0.9-SNAPSHOT.jar"/>
+        <pathelement location="${basedir}/lib/graph/directory-services-0.11.1.jar"/>
+        <pathelement location="${basedir}/lib/graph/odata-engine-core-0.11.1.jar"/>
+        <pathelement location="${basedir}/lib/graph/odata-engine-jvm-impl-0.11.1.jar"/>
     </path>
 
     <path id="library.azurecommons.classpath">
@@ -641,11 +639,9 @@ limitations under the License.
         <copy file="${basedir}/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/dependencies/azure-management-compute-0.7.0.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/azure-management-compute-0.7.0.jar"/>
         <copy file="${path.variable.maven_repository}/com/nimbusds/nimbus-jose-jwt/2.11.0/nimbus-jose-jwt-2.11.0.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/nimbus-jose-jwt-2.11.0.jar"/>
         <copy file="${path.variable.maven_repository}/org/bouncycastle/bcprov-jdk15on/1.47/bcprov-jdk15on-1.47.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/bcprov-jdk15on-1.47.jar"/>
-        <copy file="${module.msopentech-tools-for-intellij.basedir}/lib/graph/directory-services-0.9-SNAPSHOT.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/directory-services-0.9.jar"/>
-        <copy file="${module.msopentech-tools-for-intellij.basedir}/lib/graph/odata-engine-helpers-0.9-SNAPSHOT.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/odata-engine-helpers-0.9.jar"/>
-        <copy file="${module.msopentech-tools-for-intellij.basedir}/lib/graph/odata-engine-interfaces-0.9-SNAPSHOT.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/odata-engine-interfaces-0.9.jar"/>
-        <copy file="${module.msopentech-tools-for-intellij.basedir}/lib/graph/odata-engine-java-desktop-impl-0.9-SNAPSHOT.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/odata-engine-java-desktop-impl-0.9.jar"/>
-        <copy file="${module.msopentech-tools-for-intellij.basedir}/lib/graph/odata-engine-java-impl-0.9-SNAPSHOT.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/odata-engine-java-impl-0.9.jar"/>
+        <copy file="${module.msopentech-tools-for-intellij.basedir}/lib/graph/directory-services-0.11.1.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/directory-services-0.11.jar"/>
+        <copy file="${module.msopentech-tools-for-intellij.basedir}/lib/graph/odata-engine-core-0.11.1.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/odata-engine-core-0.11.jar"/>
+        <copy file="${module.msopentech-tools-for-intellij.basedir}/lib/graph/odata-engine-jvm-impl-0.11.1.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/odata-engine-jvm-impl-0.11.jar"/>
         <copy file="${path.variable.maven_repository}/org/apache/httpcomponents/fluent-hc/4.3.5/fluent-hc-4.3.5.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/fluent-hc-4.3.5.jar"/>
         <copy file="${path.variable.maven_repository}/net/jcip/jcip-annotations/1.0/jcip-annotations-1.0.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/jcip-annotations-1.0.jar"/>
         <copy file="${path.variable.maven_repository}/net/minidev/json-smart/1.1.1/json-smart-1.1.1.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/json-smart-1.1.1.jar"/>
@@ -704,11 +700,9 @@ limitations under the License.
         <copy file="${path.variable.maven_repository}/commons-codec/commons-codec/1.6/commons-codec-1.6.jar" tofile="${tmp.dir.msopentech-tools-for-androidstudio}/msopentech-tools-for-androidstudio/lib/commons-codec-1.6.jar"/>
         <copy file="${path.variable.maven_repository}/com/nimbusds/nimbus-jose-jwt/2.11.0/nimbus-jose-jwt-2.11.0.jar" tofile="${tmp.dir.msopentech-tools-for-androidstudio}/msopentech-tools-for-androidstudio/lib/nimbus-jose-jwt-2.11.0.jar"/>
         <copy file="${path.variable.maven_repository}/org/bouncycastle/bcprov-jdk15on/1.47/bcprov-jdk15on-1.47.jar" tofile="${tmp.dir.msopentech-tools-for-androidstudio}/msopentech-tools-for-androidstudio/lib/bcprov-jdk15on-1.47.jar"/>
-        <copy file="${module.msopentech-tools-for-androidstudio.basedir}/lib/graph/directory-services-0.9-SNAPSHOT.jar" tofile="${tmp.dir.msopentech-tools-for-androidstudio}/msopentech-tools-for-androidstudio/lib/directory-services-0.9.jar"/>
-        <copy file="${module.msopentech-tools-for-androidstudio.basedir}/lib/graph/odata-engine-helpers-0.9-SNAPSHOT.jar" tofile="${tmp.dir.msopentech-tools-for-androidstudio}/msopentech-tools-for-androidstudio/lib/odata-engine-helpers-0.9.jar"/>
-        <copy file="${module.msopentech-tools-for-androidstudio.basedir}/lib/graph/odata-engine-interfaces-0.9-SNAPSHOT.jar" tofile="${tmp.dir.msopentech-tools-for-androidstudio}/msopentech-tools-for-androidstudio/lib/odata-engine-interfaces-0.9.jar"/>
-        <copy file="${module.msopentech-tools-for-androidstudio.basedir}/lib/graph/odata-engine-java-desktop-impl-0.9-SNAPSHOT.jar" tofile="${tmp.dir.msopentech-tools-for-androidstudio}/msopentech-tools-for-androidstudio/lib/odata-engine-java-desktop-impl-0.9.jar"/>
-        <copy file="${module.msopentech-tools-for-androidstudio.basedir}/lib/graph/odata-engine-java-impl-0.9-SNAPSHOT.jar" tofile="${tmp.dir.msopentech-tools-for-androidstudio}/msopentech-tools-for-androidstudio/lib/odata-engine-java-impl-0.9.jar"/>
+        <copy file="${module.msopentech-tools-for-androidstudio.basedir}/lib/graph/directory-services-0.11.1.jar" tofile="${tmp.dir.msopentech-tools-for-androidstudio}/msopentech-tools-for-androidstudio/lib/directory-services-0.11.jar"/>
+        <copy file="${module.msopentech-tools-for-androidstudio.basedir}/lib/graph/odata-engine-core-0.11.1.jar" tofile="${tmp.dir.msopentech-tools-for-androidstudio}/msopentech-tools-for-androidstudio/lib/odata-engine-core-0.11.jar"/>
+        <copy file="${module.msopentech-tools-for-androidstudio.basedir}/lib/graph/odata-engine-jvm-impl-0.11.1.jar" tofile="${tmp.dir.msopentech-tools-for-androidstudio}/msopentech-tools-for-androidstudio/lib/odata-engine-jvm-impl-0.11.jar"/>
         <copy file="${path.variable.maven_repository}/org/apache/httpcomponents/fluent-hc/4.3.5/fluent-hc-4.3.5.jar" tofile="${tmp.dir.msopentech-tools-for-androidstudio}/msopentech-tools-for-androidstudio/lib/fluent-hc-4.3.5.jar"/>
         <copy file="${path.variable.maven_repository}/net/jcip/jcip-annotations/1.0/jcip-annotations-1.0.jar" tofile="${tmp.dir.msopentech-tools-for-androidstudio}/msopentech-tools-for-androidstudio/lib/jcip-annotations-1.0.jar"/>
         <copy file="${path.variable.maven_repository}/net/minidev/json-smart/1.1.1/json-smart-1.1.1.jar" tofile="${tmp.dir.msopentech-tools-for-androidstudio}/msopentech-tools-for-androidstudio/lib/json-smart-1.1.1.jar"/>
