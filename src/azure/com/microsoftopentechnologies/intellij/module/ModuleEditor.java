@@ -17,23 +17,25 @@ package com.microsoftopentechnologies.intellij.module;
 
 import com.intellij.openapi.roots.ui.configuration.ModuleConfigurationState;
 import com.intellij.openapi.roots.ui.configuration.ModuleElementsEditor;
-import com.microsoftopentechnologies.intellij.ui.RolesPanel;
+import com.microsoftopentechnologies.intellij.ui.AzureAbstractPanel;
+import com.microsoftopentechnologies.intellij.ui.SubscriptionsPanel;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 
-public class RolesEditor extends ModuleElementsEditor {
-    private RolesPanel rolesPanel;
 
-    public RolesEditor(ModuleConfigurationState state) {
+public class ModuleEditor extends ModuleElementsEditor {
+    private AzureAbstractPanel panel;
+
+    public ModuleEditor(ModuleConfigurationState state, AzureAbstractPanel panel) {
         super(state);
-        rolesPanel = new RolesPanel(getState().getRootModel().getModule());
+        this.panel = panel;
     }
 
     @Override
     protected JComponent createComponentImpl() {
-        return rolesPanel.getPanel();
+        return panel.getPanel();
     }
 
     @Override
@@ -43,18 +45,20 @@ public class RolesEditor extends ModuleElementsEditor {
 
     @Override
     public void saveData() {
-        rolesPanel.doOKAction();
+        panel.doOKAction();
     }
 
     @Nls
     @Override
     public String getDisplayName() {
-        return rolesPanel.getDisplayName();
+        return panel.getDisplayName();
     }
 
     @Nullable
     @Override
     public String getHelpTopic() {
-        return rolesPanel.getHelpTopic();
+        return null;
     }
 }
+
+

@@ -19,6 +19,7 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.ValidationInfo;
+import com.intellij.openapi.vfs.LocalFileSystem;
 import com.interopbridges.tools.windowsazure.WindowsAzureInvalidProjectOperationException;
 import com.interopbridges.tools.windowsazure.WindowsAzureProjectManager;
 import com.michaelbaranov.microba.calendar.DatePicker;
@@ -593,7 +594,7 @@ public class WARemoteAccessPanel implements AzureAbstractPanel {
             PluginUtil.displayErrorDialogAndLog(message("remAccErrTitle"), message("remAccErDateParse"), e);
             return false;
         }
-//        WAEclipseHelper.refreshWorkspace(Messages.remAccWarning, Messages.remAccWarnMsg);
+        LocalFileSystem.getInstance().findFileByPath(PluginUtil.getModulePath(myModule)).refresh(true, true);
         isFrmEncLink = false;
         return true;
     }
