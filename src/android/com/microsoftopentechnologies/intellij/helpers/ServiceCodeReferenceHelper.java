@@ -36,12 +36,8 @@ import java.util.zip.ZipFile;
 
 public class ServiceCodeReferenceHelper {
     private static final String AZURESDK_URL = "http://zumo.blob.core.windows.net/sdk/azuresdk-android-1.1.5.zip";
-
     private static final String TEMPLATES_URL = "/com/microsoftopentechnologies/intellij/templates/";
-
-    private static final String NOTIFICATIONHELPER_PATH = "notifications/";
     private static final String NOTIFICATIONHUBS_PATH = "notificationhubs/";
-
     private static final String STRINGS_XML = "src/main/res/values/strings.xml";
 
     @NotNull
@@ -155,10 +151,6 @@ public class ServiceCodeReferenceHelper {
                     moduleDir.refresh(false, false);
 
                     copyJarFiles(moduleDir, zipFile, zipPath);
-
-                    if (zipPath.equals(NOTIFICATIONHUBS_PATH)) {
-                        copyJarFiles(moduleDir, zipFile, NOTIFICATIONHELPER_PATH);
-                    }
                 }
             }
         }
