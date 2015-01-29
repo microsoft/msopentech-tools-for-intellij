@@ -57,7 +57,7 @@ public class ModuleEditor extends ModuleElementsEditor {
     @Nullable
     @Override
     public String getHelpTopic() {
-        return null;
+        return panel.getHelpTopic();
     }
 }
 

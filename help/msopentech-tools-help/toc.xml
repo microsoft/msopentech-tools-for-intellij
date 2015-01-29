@@ -6,7 +6,7 @@
 	<tocitem text="MSOpentech Tools">
 		<tocitem text="About Azure Deployment Project" target="windows_azure_project" />
 		<tocitem text="About Azure" target="windows_azure_project_properties" />
-		<tocitem text="About Azure Roles" target="windows_azure_role" />
+		<tocitem text="About Azure Roles" target="windows_azure_project_roles" />
 		<tocitem text="About Remote Access" target="windows_azure_project_remote_access_property" />
 		<tocitem text="About New Certificate" target="new_certificate_dialog" />
 		<tocitem text="About Storage Account" target="storage_account_dialog" />
@@ -28,6 +28,7 @@
 		<tocitem text="Create a New Cloud Service" target="new_hosted_service" />
 		<tocitem text="Create a New Storage Account" target="new_storage_account" />
 		<tocitem text="Unpublish a Deployment from Azure Cloud" target="unpublish_project_command" />
-		<tocitem text="About Roles" target="windows_azure_role" />
+		<tocitem text="About Roles" target="windows_azure_project_roles" />
+		<tocitem text="About Azure" target="windows_azure_project_project_property" />
 	</tocitem>
 </toc>
