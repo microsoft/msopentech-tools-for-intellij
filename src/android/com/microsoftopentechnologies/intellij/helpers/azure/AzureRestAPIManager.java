@@ -442,12 +442,19 @@ public class AzureRestAPIManager implements AzureManager {
                 ser.setMgmtPortalLink((String) item.get("managementPortalLink"));
                 ser.setSubcriptionId(subscriptionId);
 
+                if (item.containsKey("platform") && item.get("platform").equals("dotNet")) {
+                    ser.setRuntime(Service.NET_RUNTIME);
+                } else {
+                    ser.setRuntime(Service.NODE_RUNTIME);
+                }
+
                 for (Map<String, String> table : (List<Map<String, String>>) item.get("tables")) {
                     Table t = new Table();
                     t.setName(table.get("name"));
                     t.setSelfLink(table.get("selflink"));
                     ser.getTables().add(t);
                 }
+
                 res.add(ser);
             }
 
@@ -966,7 +973,7 @@ public class AzureRestAPIManager implements AzureManager {
     }
 
     @Override
-    public List<LogEntry> listLog(UUID subscriptionId, String serviceName) throws AzureCmdException, ParseException {
+    public List<LogEntry> listLog(UUID subscriptionId, String serviceName, String runtime) throws AzureCmdException, ParseException {
         try {
             String path = String.format("/%s/services/mobileservices/mobileservices/%s/logs?$top=10", subscriptionId.toString(), serviceName);
 
@@ -986,7 +993,14 @@ public class AzureRestAPIManager implements AzureManager {
                 logEntry.setSource(item.get("source"));
                 logEntry.setType(item.get("type"));
 
-                SimpleDateFormat ISO8601DATEFORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.ENGLISH);
+                SimpleDateFormat ISO8601DATEFORMAT;
+
+                if (Service.NODE_RUNTIME.equals(runtime)) {
+                    ISO8601DATEFORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.ENGLISH);
+                } else {
+                    ISO8601DATEFORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.ENGLISH);
+                }
+
                 logEntry.setTimeCreated(ISO8601DATEFORMAT.parse(item.get("timeCreated")));
 
                 res.add(logEntry);

@@ -80,7 +80,7 @@ public class ViewLogForm extends JDialog {
     }
 
 
-    public void queryLog(UUID subscriptionId, String serviceName) {
+    public void queryLog(UUID subscriptionId, String serviceName, String runtime) {
 
         try {
             this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -90,7 +90,7 @@ public class ViewLogForm extends JDialog {
             while(model.getRowCount() > 0)
                 model.removeRow(0);
 
-            for(LogEntry log : AzureRestAPIManager.getManager().listLog(subscriptionId, serviceName)) {
+            for(LogEntry log : AzureRestAPIManager.getManager().listLog(subscriptionId, serviceName, runtime)) {
 
                 Vector<Object> row = new Vector<Object>();
                 row.add(log.getType());

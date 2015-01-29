@@ -14,21 +14,23 @@
  *  limitations under the License.
  */
 
- package com.microsoftopentechnologies.intellij.model;
+package com.microsoftopentechnologies.intellij.model;
 
 import java.util.ArrayList;
 import java.util.UUID;
 
 public class Service implements ServiceTreeItem {
+    public static final String NODE_RUNTIME = "JavaScript";
+    public static final String NET_RUNTIME = ".NET Framework";
 
     private boolean loading;
 
-    public Service(){
+    public Service() {
         tables = new ArrayList<Table>();
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         return name + (loading ? " (loading...)" : "");
     }
 
@@ -44,6 +46,7 @@ public class Service implements ServiceTreeItem {
     private String region;
     private String mgmtPortalLink;
     private UUID subcriptionId;
+    private String runtime;
 
     public String getName() {
         return name;
@@ -129,7 +132,6 @@ public class Service implements ServiceTreeItem {
         this.mgmtPortalLink = mgmtPortalLink;
     }
 
-
     @Override
     public boolean isLoading() {
         return loading;
@@ -146,5 +148,13 @@ public class Service implements ServiceTreeItem {
 
     public void setSubcriptionId(UUID subcriptionId) {
         this.subcriptionId = subcriptionId;
+    }
+
+    public String getRuntime() {
+        return runtime;
+    }
+
+    public void setRuntime(String runtime) {
+        this.runtime = runtime;
     }
 }
