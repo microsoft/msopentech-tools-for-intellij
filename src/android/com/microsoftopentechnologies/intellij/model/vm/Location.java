@@ -18,18 +18,14 @@ package com.microsoftopentechnologies.intellij.model.vm;
 import com.microsoftopentechnologies.intellij.model.ServiceTreeItem;
 import org.jetbrains.annotations.NotNull;
 
-public class Endpoint implements ServiceTreeItem {
+public class Location implements ServiceTreeItem {
     private boolean loading;
     private String name;
-    private String protocol;
-    private int privatePort;
-    private int publicPort;
+    private String displayName;
 
-    public Endpoint(@NotNull String name, @NotNull String protocol, int privatePort, int publicPort) {
+    public Location(@NotNull String name, @NotNull String displayName) {
         this.name = name;
-        this.protocol = protocol;
-        this.privatePort = privatePort;
-        this.publicPort = publicPort;
+        this.displayName = displayName;
     }
 
     @Override
@@ -48,36 +44,12 @@ public class Endpoint implements ServiceTreeItem {
     }
 
     @NotNull
-    public String getProtocol() {
-        return protocol;
-    }
-
-    public int getPrivatePort() {
-        return privatePort;
-    }
-
-    public int getPublicPort() {
-        return publicPort;
+    public String getDisplayName() {
+        return displayName;
     }
 
     @Override
-    public String toString(){
-        return name + (loading ? " (loading...)" : "");
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setProtocol(String protocol) {
-        this.protocol = protocol;
-    }
-
-    public void setPrivatePort(int privatePort) {
-        this.privatePort = privatePort;
-    }
-
-    public void setPublicPort(int publicPort) {
-        this.publicPort = publicPort;
+    public String toString() {
+        return displayName + (loading ? " (loading...)" : "");
     }
 }

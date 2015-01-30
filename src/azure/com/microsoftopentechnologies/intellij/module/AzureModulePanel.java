@@ -123,6 +123,6 @@ public class AzureModulePanel implements AzureAbstractPanel {
 
     @Override
     public String getHelpTopic() {
-        return null;
+        return "windows_azure_project_project_property";
     }
 }

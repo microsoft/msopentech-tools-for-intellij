@@ -16,12 +16,15 @@
 package com.microsoftopentechnologies.intellij.helpers.azure.sdk;
 
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.intellij.model.vm.VirtualMachine;
+import com.microsoftopentechnologies.intellij.model.vm.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
 public interface AzureSDKManager {
+    @NotNull
+    List<CloudService> getCloudServices(@NotNull String subscriptionId) throws AzureCmdException;
+
     @NotNull
     List<VirtualMachine> getVirtualMachines(@NotNull String subscriptionId) throws AzureCmdException;
 
@@ -38,4 +41,32 @@ public interface AzureSDKManager {
 
     @NotNull
     byte[] downloadRDP(@NotNull VirtualMachine vm) throws AzureCmdException;
+
+    @NotNull
+    List<StorageAccount> getStorageAccounts(@NotNull String subscriptionId) throws AzureCmdException;
+
+    @NotNull
+    List<VirtualMachineImage> getVirtualMachineImages(@NotNull String subscriptionId) throws AzureCmdException;
+
+    @NotNull
+    List<VirtualMachineSize> getVirtualMachineSizes(@NotNull String subscriptionId) throws AzureCmdException;
+
+    @NotNull
+    List<Location> getLocations(@NotNull String subscriptionId) throws AzureCmdException;
+
+    @NotNull
+    List<AffinityGroup> getAffinityGroups(@NotNull String subscriptionId) throws AzureCmdException;
+
+    void createStorageAccount(@NotNull StorageAccount storageAccount) throws AzureCmdException;
+
+    void createCloudService(@NotNull CloudService cloudService) throws AzureCmdException;
+
+    void createVirtualMachine(@NotNull VirtualMachine virtualMachine, @NotNull VirtualMachineImage vmImage,
+                              @NotNull StorageAccount storageAccount, @NotNull String username,
+                              @NotNull String password)
+            throws AzureCmdException;
+
+    void createVirtualMachine(@NotNull VirtualMachine virtualMachine, @NotNull VirtualMachineImage vmImage,
+                              @NotNull String mediaLocation, @NotNull String username, @NotNull String password)
+            throws AzureCmdException;
 }

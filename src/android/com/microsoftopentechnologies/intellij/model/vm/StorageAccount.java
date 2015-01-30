@@ -18,31 +18,27 @@ package com.microsoftopentechnologies.intellij.model.vm;
 import com.microsoftopentechnologies.intellij.model.ServiceTreeItem;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.List;
-
-public class VirtualMachine implements ServiceTreeItem {
+public class StorageAccount implements ServiceTreeItem {
     private boolean loading;
     private String name;
-    private String serviceName;
-    private String deploymentName;
-    private String availabilitySet;
-    private String size;
-    private String status;
+    private String type;
+    private String location;
+    private String affinityGroup;
+    private String key;
     private String subscriptionId;
-    private List<Endpoint> endpoints;
 
-    public VirtualMachine(@NotNull String name, @NotNull String serviceName, @NotNull String deploymentName,
-                          @NotNull String availabilitySet, @NotNull String size, @NotNull String status,
+    public StorageAccount(@NotNull String name,
+                          @NotNull String type,
+                          @NotNull String location,
+                          @NotNull String affinityGroup,
+                          @NotNull String key,
                           @NotNull String subscriptionId) {
         this.name = name;
-        this.serviceName = serviceName;
-        this.deploymentName = deploymentName;
-        this.availabilitySet = availabilitySet;
-        this.size = size;
-        this.status = status;
+        this.type = type;
+        this.location = location;
+        this.affinityGroup = affinityGroup;
+        this.key = key;
         this.subscriptionId = subscriptionId;
-        this.endpoints = new ArrayList<Endpoint>();
     }
 
     @Override
@@ -61,50 +57,28 @@ public class VirtualMachine implements ServiceTreeItem {
     }
 
     @NotNull
-    public String getServiceName() {
-        return serviceName;
+    public String getType() {
+        return type;
     }
 
     @NotNull
-    public String getDeploymentName() {
-        return deploymentName;
+    public String getLocation() {
+        return location;
     }
 
     @NotNull
-    public String getAvailabilitySet() {
-        return availabilitySet;
-    }
-
-    public void setAvailabilitySet(@NotNull String availabilitySet) {
-        this.availabilitySet = availabilitySet;
+    public String getAffinityGroup() {
+        return affinityGroup;
     }
 
     @NotNull
-    public String getSize() {
-        return size;
-    }
-
-    public void setSize(@NotNull String size) {
-        this.size = size;
-    }
-
-    @NotNull
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(@NotNull String status) {
-        this.status = status;
+    public String getKey() {
+        return key;
     }
 
     @NotNull
     public String getSubscriptionId() {
         return subscriptionId;
-    }
-
-    @NotNull
-    public List<Endpoint> getEndpoints() {
-        return endpoints;
     }
 
     @Override
