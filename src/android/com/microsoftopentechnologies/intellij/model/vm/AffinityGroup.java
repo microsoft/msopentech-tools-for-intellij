@@ -18,18 +18,16 @@ package com.microsoftopentechnologies.intellij.model.vm;
 import com.microsoftopentechnologies.intellij.model.ServiceTreeItem;
 import org.jetbrains.annotations.NotNull;
 
-public class Endpoint implements ServiceTreeItem {
+public class AffinityGroup implements ServiceTreeItem {
     private boolean loading;
     private String name;
-    private String protocol;
-    private int privatePort;
-    private int publicPort;
+    private String label;
+    private String location;
 
-    public Endpoint(@NotNull String name, @NotNull String protocol, int privatePort, int publicPort) {
+    public AffinityGroup(@NotNull String name, @NotNull String label, @NotNull String location) {
         this.name = name;
-        this.protocol = protocol;
-        this.privatePort = privatePort;
-        this.publicPort = publicPort;
+        this.label = label;
+        this.location = location;
     }
 
     @Override
@@ -48,36 +46,17 @@ public class Endpoint implements ServiceTreeItem {
     }
 
     @NotNull
-    public String getProtocol() {
-        return protocol;
+    public String getLabel() {
+        return label;
     }
 
-    public int getPrivatePort() {
-        return privatePort;
-    }
-
-    public int getPublicPort() {
-        return publicPort;
+    @NotNull
+    public String getLocation() {
+        return location;
     }
 
     @Override
-    public String toString(){
-        return name + (loading ? " (loading...)" : "");
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setProtocol(String protocol) {
-        this.protocol = protocol;
-    }
-
-    public void setPrivatePort(int privatePort) {
-        this.privatePort = privatePort;
-    }
-
-    public void setPublicPort(int publicPort) {
-        this.publicPort = publicPort;
+    public String toString() {
+        return label + (loading ? " (loading...)" : "");
     }
 }
