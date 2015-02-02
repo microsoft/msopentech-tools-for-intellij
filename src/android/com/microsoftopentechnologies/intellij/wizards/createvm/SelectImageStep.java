@@ -21,7 +21,6 @@ import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
-import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.wizard.WizardNavigationState;
 import com.intellij.ui.wizard.WizardStep;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
@@ -37,9 +36,6 @@ import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
@@ -71,18 +67,18 @@ public class SelectImageStep extends WizardStep<CreateVMWizardModel> {
         };
     }
 
-
     private enum PublicImages {
         WindowsServer,
         SharePoint,
         BizTalkServer,
         SQLServer,
         VisualStudio,
+        Linux,
         Other;
 
         @Override
         public String toString() {
-            switch(this) {
+            switch (this) {
                 case WindowsServer:
                     return "Windows Server";
                 case BizTalkServer:
@@ -188,7 +184,7 @@ public class SelectImageStep extends WizardStep<CreateVMWizardModel> {
             public Component getListCellRendererComponent(JList jList, Object o, int i, boolean b, boolean b1) {
                 String cellValue = o.toString();
 
-                if(o instanceof VirtualMachineImage){
+                if (o instanceof VirtualMachineImage) {
                     VirtualMachineImage virtualMachineImage = (VirtualMachineImage) o;
 
                     cellValue = String.format("%s (%s)",
@@ -207,7 +203,7 @@ public class SelectImageStep extends WizardStep<CreateVMWizardModel> {
                 VirtualMachineImage virtualMachineImage = (VirtualMachineImage) imageLabelList.getSelectedValue();
                 model.setVirtualMachineImage(virtualMachineImage);
 
-                if(virtualMachineImage != null) {
+                if (virtualMachineImage != null) {
                     imageDescriptionTextPane.setText(model.getHtmlFromVMImage(virtualMachineImage));
                     imageDescriptionTextPane.setCaretPosition(0);
                     model.getCurrentNavigationState().NEXT.setEnabled(true);
@@ -218,8 +214,8 @@ public class SelectImageStep extends WizardStep<CreateVMWizardModel> {
         imageDescriptionTextPane.addHyperlinkListener(new HyperlinkListener() {
             @Override
             public void hyperlinkUpdate(HyperlinkEvent hyperlinkEvent) {
-                if(hyperlinkEvent.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-                    if(Desktop.isDesktopSupported()) {
+                if (hyperlinkEvent.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+                    if (Desktop.isDesktopSupported()) {
                         try {
                             Desktop.getDesktop().browse(hyperlinkEvent.getURL().toURI());
                         } catch (Exception e) {
@@ -235,13 +231,12 @@ public class SelectImageStep extends WizardStep<CreateVMWizardModel> {
     public JComponent prepare(WizardNavigationState wizardNavigationState) {
         rootPanel.revalidate();
 
-        if(virtualMachineImages == null) {
+        if (virtualMachineImages == null) {
             imageTypeComboBox.setEnabled(false);
             model.getCurrentNavigationState().NEXT.setEnabled(false);
 
             imageLabelList.setListData(new String[]{"loading..."});
             imageLabelList.setEnabled(false);
-
 
             ProgressManager.getInstance().run(new Task.Backgroundable(project, "Loading virtual machine images...", false) {
                 @Override
@@ -257,23 +252,28 @@ public class SelectImageStep extends WizardStep<CreateVMWizardModel> {
                                     for (PublicImages publicImage : PublicImages.values()) {
                                         if (virtualMachineImage.getPublisherName().contains(publicImage.toString())) {
                                             type = publicImage;
+                                        } else if (virtualMachineImage.getOperatingSystemType().equals(publicImage.toString())) {
+                                            type = publicImage;
                                         }
                                     }
 
-                                    if (type == null)
+                                    if (type == null) {
                                         type = PublicImages.Other;
-
+                                    }
                                 } else if (virtualMachineImage.getCategory().equals("Private")) {
                                     type = PrivateImages.VMImages;
                                 } else {
                                     for (MSDNImages msdnImages : MSDNImages.values()) {
                                         if (virtualMachineImage.getPublisherName().contains(msdnImages.toString())) {
                                             type = msdnImages;
+                                        } else if (virtualMachineImage.getOperatingSystemType().equals(msdnImages.toString())) {
+                                            type = msdnImages;
                                         }
                                     }
 
-                                    if (type == null)
+                                    if (type == null) {
                                         type = MSDNImages.Other;
+                                    }
                                 }
 
                                 if (virtualMachineImages == null) {
@@ -314,8 +314,8 @@ public class SelectImageStep extends WizardStep<CreateVMWizardModel> {
         Enum imageType = (Enum) imageTypeComboBox.getSelectedItem();
 
         List<VirtualMachineImage> machineImages = virtualMachineImages.get(imageType);
-        imageLabelList.setListData(machineImages == null ? new Object[] {} : machineImages.toArray());
-        if(machineImages != null && machineImages.size() > 0) {
+        imageLabelList.setListData(machineImages == null ? new Object[]{} : machineImages.toArray());
+        if (machineImages != null && machineImages.size() > 0) {
             imageLabelList.setSelectedIndex(0);
         }
     }
