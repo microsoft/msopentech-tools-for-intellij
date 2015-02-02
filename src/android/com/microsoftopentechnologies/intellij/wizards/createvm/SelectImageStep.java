@@ -189,7 +189,7 @@ public class SelectImageStep extends WizardStep<CreateVMWizardModel> {
 
                     cellValue = String.format("%s (%s)",
                             virtualMachineImage.getLabel(),
-                            new SimpleDateFormat("yyyy-MM").format(virtualMachineImage.getPublishedDate().getTime()));
+                            new SimpleDateFormat("yyyy-MM-dd").format(virtualMachineImage.getPublishedDate().getTime()));
                 }
 
                 this.setToolTipText(cellValue);
