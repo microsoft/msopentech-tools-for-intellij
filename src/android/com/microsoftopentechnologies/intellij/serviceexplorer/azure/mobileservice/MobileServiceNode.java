@@ -59,8 +59,9 @@ public class MobileServiceNode extends Node {
     protected Node jobsNode;        // the parent node for all scheduled job nodes
 
     public MobileServiceNode(Node parent, Service service) {
-        super(service.getName(), service.getName(), parent, ICON_PATH, true);
+        super(service.getName(), service.getName(), parent, ICON_PATH, true, true);
         mobileService = service;
+        loadActions();
     }
 
     @Override
@@ -71,33 +72,34 @@ public class MobileServiceNode extends Node {
                 UUID subscriptionId = mobileService.getSubcriptionId();
                 String serviceName = mobileService.getName();
 
-                // load tables
-                tablesNode = loadServiceNode(
-                        apiManager.getTableList(subscriptionId, serviceName),
-                        "_tables",
-                        TABLES,
-                        tablesNode,
-                        TableNode.class,
-                        Table.class);
+                if (isNodeRuntime()) {
+                    // load tables
+                    tablesNode = loadServiceNode(
+                            apiManager.getTableList(subscriptionId, serviceName),
+                            "_tables",
+                            TABLES,
+                            tablesNode,
+                            TableNode.class,
+                            Table.class);
 
-                // load custom APIs
-                customAPIsNode = loadServiceNode(
-                        apiManager.getAPIList(subscriptionId, serviceName),
-                        "_apis",
-                        CUSTOM_APIS,
-                        customAPIsNode,
-                        CustomAPINode.class,
-                        CustomAPI.class);
+                    // load custom APIs
+                    customAPIsNode = loadServiceNode(
+                            apiManager.getAPIList(subscriptionId, serviceName),
+                            "_apis",
+                            CUSTOM_APIS,
+                            customAPIsNode,
+                            CustomAPINode.class,
+                            CustomAPI.class);
 
-                // load scheduled jobs
-                jobsNode = loadServiceNode(
-                        apiManager.listJobs(subscriptionId, serviceName),
-                        "_jobs",
-                        SCHEDULED_JOBS,
-                        jobsNode,
-                        ScheduledJobNode.class,
-                        Job.class);
-
+                    // load scheduled jobs
+                    jobsNode = loadServiceNode(
+                            apiManager.listJobs(subscriptionId, serviceName),
+                            "_jobs",
+                            SCHEDULED_JOBS,
+                            jobsNode,
+                            ScheduledJobNode.class,
+                            Job.class);
+                }
             } catch (NoSuchMethodException e) {
                 handleError(e);
             } catch (IllegalAccessException e) {
@@ -141,7 +143,7 @@ public class MobileServiceNode extends Node {
         // added; if we called "addChildNode" after the children of "node"
         // have been added then the service explorer tool window will not be
         // notified of those new nodes
-        if(parentNode == null) {
+        if (parentNode == null) {
             parentNode = new Node(mobileService.getName() + idSuffix, displayName, this, null, false);
             addChildNode(parentNode);
         } else {
@@ -151,7 +153,7 @@ public class MobileServiceNode extends Node {
 
         // create child table nodes for this node
         Constructor<N> constructor = nodeClass.getConstructor(Node.class, modelClass);
-        for(E nodeElement : nodesList) {
+        for (E nodeElement : nodesList) {
             parentNode.addChildNode((Node) constructor.newInstance(parentNode, nodeElement));
         }
 
@@ -160,18 +162,23 @@ public class MobileServiceNode extends Node {
 
     @Override
     protected Map<String, Class<? extends NodeActionListener>> initActions() {
-        return ImmutableMap.of(
-                "Create table", CreateTableAction.class,
-                "Create API", CreateAPIAction.class,
-                "Create new job", CreateNewJobAction.class,
-                "Show log", ShowLogAction.class);
+        if (isNodeRuntime()) {
+            return ImmutableMap.of(
+                    "Create table", CreateTableAction.class,
+                    "Create API", CreateAPIAction.class,
+                    "Create new job", CreateNewJobAction.class,
+                    "Show log", ShowLogAction.class);
+        } else {// register the sole edit table action
+            addAction("Show log", new ShowLogAction());
+            return null;
+        }
     }
 
     @Override
     protected void onNodeClick(NodeActionEvent event) {
         // we attempt loading the services only if we haven't already
         // loaded them
-        if(!childNodesLoaded) {
+        if (!childNodesLoaded) {
             Futures.addCallback(load(), new FutureCallback<List<Node>>() {
                 @Override
                 public void onSuccess(List<Node> nodes) {
@@ -329,12 +336,16 @@ public class MobileServiceNode extends Node {
             ApplicationManager.getApplication().invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    form.queryLog(mobileService.getSubcriptionId(), mobileService.getName());
+                    form.queryLog(mobileService.getSubcriptionId(), mobileService.getName(), mobileService.getRuntime());
                 }
             });
 
             UIHelper.packAndCenterJDialog(form);
             form.setVisible(true);
         }
+    }
+
+    private boolean isNodeRuntime() {
+        return Service.NODE_RUNTIME.equals(mobileService.getRuntime());
     }
 }
