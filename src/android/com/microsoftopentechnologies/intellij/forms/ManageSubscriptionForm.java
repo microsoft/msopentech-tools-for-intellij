@@ -93,7 +93,7 @@ public class ManageSubscriptionForm extends JDialog {
             public void actionPerformed(ActionEvent e) {
                 try {
                     if (AzureRestAPIManager.getManager().getAuthenticationToken() != null) {
-                        clearSubscriptions();
+                        clearSubscriptions(false);
                     } else {
                         PluginSettings settings = MSOpenTechTools.getCurrent().getSettings();
                         final AuthenticationContext context = new AuthenticationContext(settings.getAdAuthority());
@@ -149,7 +149,7 @@ public class ManageSubscriptionForm extends JDialog {
         removeButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                clearSubscriptions();
+                clearSubscriptions(true);
             }
         });
 
@@ -199,8 +199,10 @@ public class ManageSubscriptionForm extends JDialog {
         signInButton.setText(isNotSigned ? "Sign In ..." : "Sign Out");
     }
 
-    private void clearSubscriptions() {
-        int res = JOptionPane.showConfirmDialog(this, "Are you sure you would like to clear all subscriptions?",
+    private void clearSubscriptions(boolean isSigningOut) {
+        int res = JOptionPane.showConfirmDialog(this, (isSigningOut
+                        ? "Are you sure you would like to clear all subscriptions?"
+                        : "Are you sure you would like to sign out?"),
                 "Clear Subscriptions",
                 JOptionPane.YES_NO_OPTION,
                 JOptionPane.INFORMATION_MESSAGE);
