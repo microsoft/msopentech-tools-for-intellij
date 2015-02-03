@@ -256,14 +256,33 @@ public class EndpointStep extends WizardStep<CreateVMWizardModel> {
         }
 
         boolean containsName = false;
+        boolean containsPublicPort = false;
+        boolean containsPrivatePort = false;
+
         for (Endpoint ep : list) {
             if(ep != endpoint && ep.getName().equals(endpoint.getName())) {
                 containsName = true;
+            }
+
+            if(ep != endpoint && ep.getProtocol().equals(endpoint.getProtocol()) && ep.getPrivatePort() == endpoint.getPrivatePort()) {
+                containsPrivatePort = true;
+            }
+
+            if(ep != endpoint && ep.getProtocol().equals(endpoint.getProtocol()) && ep.getPublicPort() == endpoint.getPublicPort()) {
+                containsPublicPort = true;
             }
         }
 
         if(containsName) {
             errors = errors + "The name must be unique. \n";
+        }
+
+        if(containsPrivatePort) {
+            errors = errors + "The private port and the protocol conflicts with another in the virtual machine. \n";
+        }
+
+        if(containsPublicPort) {
+            errors = errors + "The public port and the protocol conflicts with another in the virtual machine. \n";
         }
 
         return errors;
