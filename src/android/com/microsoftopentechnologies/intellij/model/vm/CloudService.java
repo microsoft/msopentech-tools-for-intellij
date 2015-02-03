@@ -27,7 +27,9 @@ public class CloudService implements ServiceTreeItem {
     private String location;
     private String affinityGroup;
     private String productionDeployment;
+    private boolean productionDeploymentVM;
     private String stagingDeployment;
+    private boolean stagingDeploymentVM;
     private String subscriptionId;
     private Set<String> availabilitySets;
 
@@ -35,13 +37,17 @@ public class CloudService implements ServiceTreeItem {
                         @NotNull String location,
                         @NotNull String affinityGroup,
                         @NotNull String productionDeployment,
+                        boolean productionDeploymentVM,
                         @NotNull String stagingDeployment,
+                        boolean stagingDeploymentVM,
                         @NotNull String subscriptionId) {
         this.name = name;
         this.location = location;
         this.affinityGroup = affinityGroup;
         this.productionDeployment = productionDeployment;
+        this.productionDeploymentVM = productionDeploymentVM;
         this.stagingDeployment = stagingDeployment;
+        this.stagingDeploymentVM = stagingDeploymentVM;
         this.subscriptionId = subscriptionId;
         this.availabilitySets = new TreeSet<String>();
     }
@@ -76,9 +82,17 @@ public class CloudService implements ServiceTreeItem {
         return productionDeployment;
     }
 
+    public boolean isProductionDeploymentVM() {
+        return productionDeploymentVM;
+    }
+
     @NotNull
     public String getStagingDeployment() {
         return stagingDeployment;
+    }
+
+    public boolean isStagingDeploymentVM() {
+        return stagingDeploymentVM;
     }
 
     @NotNull

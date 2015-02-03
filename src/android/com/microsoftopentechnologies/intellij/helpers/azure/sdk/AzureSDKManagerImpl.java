@@ -115,7 +115,11 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
 
                 DeploymentGetResponse prodDGR = productionFuture.get();
                 String productionDeployment = prodDGR.getName();
-                String stagingDeployment = stagingFuture.get().getName();
+                boolean productionDeploymentVM = isDeploymentVM(prodDGR);
+
+                DeploymentGetResponse stagingDGR = stagingFuture.get();
+                String stagingDeployment = stagingDGR.getName();
+                boolean stagingDeploymentVM = isDeploymentVM(stagingDGR);
 
                 CloudService cloudService = new CloudService(
                         hostedService.getServiceName() != null ? hostedService.getServiceName() : "",
@@ -126,7 +130,9 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
                                 hostedService.getProperties().getAffinityGroup() :
                                 "",
                         productionDeployment != null ? productionDeployment : "",
+                        productionDeploymentVM,
                         stagingDeployment != null ? stagingDeployment : "",
+                        stagingDeploymentVM,
                         subscriptionId);
 
                 cloudService = loadAvailabilitySets(prodDGR, cloudService);
@@ -147,6 +153,21 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
                 }
             }
         }
+    }
+
+    private boolean isDeploymentVM(@NotNull DeploymentGetResponse dgr) {
+        boolean deploymentVM = true;
+
+        if (dgr.getRoles() != null) {
+            for (Role role : dgr.getRoles()) {
+                if (!PERSISTENT_VM_ROLE.equals(role.getRoleType())) {
+                    deploymentVM = false;
+                    break;
+                }
+            }
+        }
+
+        return deploymentVM;
     }
 
     @NotNull
