@@ -87,6 +87,13 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
             }
         });
 
+        storageComboBox.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent itemEvent) {
+                model.getCurrentNavigationState().NEXT.setEnabled(storageComboBox.getSelectedItem() instanceof StorageAccount);
+            }
+        });
+
         availabilitySetCheckBox.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent itemEvent) {
@@ -175,7 +182,9 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
                                 cloudServices = new TreeMap<String, CloudService>();
 
                                 for (CloudService cloudService : AzureSDKManagerImpl.getManager().getCloudServices(model.getSubscription().getId().toString())) {
-                                    cloudServices.put(cloudService.getName(), cloudService);
+                                    if (cloudService.isProductionDeploymentVM()) {
+                                        cloudServices.put(cloudService.getName(), cloudService);
+                                    }
                                 }
                             }
                         }
