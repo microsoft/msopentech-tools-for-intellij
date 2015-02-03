@@ -196,6 +196,25 @@ public class Node {
             }
         });
 
+        // add the refresh node action
+        if (hasRefreshAction) {
+            addAction("Refresh", new NodeActionListener() {
+                @Override
+                public void actionPerformed(NodeActionEvent e) {
+                    Futures.addCallback(load(), new FutureCallback<List<Node>>() {
+                        @Override
+                        public void onSuccess(List<Node> nodes) {
+                        }
+
+                        @Override
+                        public void onFailure(Throwable throwable) {
+                            UIHelper.showException("An error occurred while refreshing the service.", throwable);
+                        }
+                    });
+                }
+            });
+        }
+
         // add the other actions
         Map<String, Class<? extends NodeActionListener>> actions = initActions();
 
@@ -220,25 +239,6 @@ public class Node {
                     UIHelper.showException(e.getMessage(), e);
                 }
             }
-        }
-
-        // add the refresh node action
-        if (hasRefreshAction) {
-            addAction("Refresh", new NodeActionListener() {
-                @Override
-                public void actionPerformed(NodeActionEvent e) {
-                    Futures.addCallback(load(), new FutureCallback<List<Node>>() {
-                        @Override
-                        public void onSuccess(List<Node> nodes) {
-                        }
-
-                        @Override
-                        public void onFailure(Throwable throwable) {
-                            UIHelper.showException("An error occurred while refreshing the service.", throwable);
-                        }
-                    });
-                }
-            });
         }
     }
 
