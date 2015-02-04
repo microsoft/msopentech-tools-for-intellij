@@ -193,6 +193,7 @@ public class CreateCloudServiceForm extends JDialog {
             cloudService = new CloudService(name, region, affinityGroup, "", true, "", true, subscription.getId().toString());
             AzureSDKManagerImpl.getManager().createCloudService(cloudService);
         } catch (Exception e) {
+            cloudService = null;
             UIHelper.showException("Error creating cloud service", e);
         }
 

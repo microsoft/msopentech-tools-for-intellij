@@ -178,6 +178,7 @@ public class CreateStorageAccountForm extends JDialog {
 
             onCreate.run();
         } catch (AzureCmdException e) {
+            storageAccount = null;
             UIHelper.showException("Error creating cloud service", e);
         }
 
