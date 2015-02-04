@@ -137,7 +137,7 @@ public class EndpointStep extends WizardStep<CreateVMWizardModel> {
                     }
                 }
 
-                model.getCurrentNavigationState().FINISH.setEnabled(!hasErrors && endpointTableModel.getRowCount() > 0);
+                model.getCurrentNavigationState().FINISH.setEnabled(!hasErrors);
             }
         });
 
