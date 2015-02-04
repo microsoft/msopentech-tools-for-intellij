@@ -132,7 +132,7 @@ public class SelectImageStep extends WizardStep<CreateVMWizardModel> {
 
     public SelectImageStep(final CreateVMWizardModel model, Project project) {
 
-        super("Choose a Virtual Machine Image", null);
+        super("Select a Virtual Machine Image", null);
 
         this.model = model;
         this.project = project;
