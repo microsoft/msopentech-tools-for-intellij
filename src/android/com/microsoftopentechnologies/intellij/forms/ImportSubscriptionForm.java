@@ -51,6 +51,8 @@ public class ImportSubscriptionForm extends JDialog {
 
         final ImportSubscriptionForm form = this;
 
+        mainPanel.getRootPane().setDefaultButton(null);
+
         browseButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
@@ -78,6 +80,7 @@ public class ImportSubscriptionForm extends JDialog {
                         if (virtualFile != null) {
                             txtFile.setText(virtualFile.getPath());
                             importButton.setEnabled(true);
+                            mainPanel.getRootPane().setDefaultButton(importButton);
                         }
                     }
                 });
