@@ -41,7 +41,7 @@ import static com.microsoftopentechnologies.intellij.ui.messages.AzureBundle.mes
 public class AzurePlugin extends AbstractProjectComponent {
     private static final Logger LOG = Logger.getInstance("#com.microsoftopentechnologies.intellij.AzurePlugin");
     public static final String PLUGIN_ID = "msopentech-tools-for-intellij";
-    private static final String COMPONENTSETS_VERSION = "2.5.1"; // todo: temporary fix!
+    private static final String COMPONENTSETS_VERSION = "2.5.2"; // todo: temporary fix!
     private static final String PREFERENCESETS_VERSION = "2.5.1";
     public final static int REST_SERVICE_MAX_RETRY_COUNT = 7;
 
