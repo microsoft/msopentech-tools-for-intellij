@@ -14,19 +14,19 @@ import com.google.common.util.concurrent.ListenableFuture;
 <#if includeFileServices>
 import com.microsoft.fileservices.Item;
 </#if>
-<#if includeListServices>
-import com.microsoft.listservices.Credentials;
-import com.microsoft.listservices.Query;
-import com.microsoft.listservices.SPList;
-import com.microsoft.listservices.SharepointListsClient;
-import com.microsoft.listservices.http.Request;
-</#if>
 <#if includeOutlookServices>
 import com.microsoft.outlookservices.Message;
 import com.microsoft.outlookservices.odata.OutlookClient;
 </#if>
 <#if includeOutlookServices || includeFileServices>
 import com.microsoft.services.odata.impl.DefaultDependencyResolver;
+</#if>
+<#if includeListServices>
+import com.microsoft.sharepointservices.Credentials;
+import com.microsoft.sharepointservices.ListClient;
+import com.microsoft.sharepointservices.Query;
+import com.microsoft.sharepointservices.SPList;
+import com.microsoft.sharepointservices.http.Request;
 </#if>
 <#if includeFileServices>
 import com.microsoft.sharepointservices.odata.SharePointClient;
@@ -88,8 +88,8 @@ public class ${activityClass} extends Activity {
 </#if>
 <#if includeListServices>
 
-        SharepointListsClient sharepointListsClient = getSharepointListsClient(this);
-        ListenableFuture<List<SPList>> listsFuture = getMyLists(sharepointListsClient);
+        ListClient listClient = getListClient(this);
+        ListenableFuture<List<SPList>> listsFuture = getMyLists(listClient);
 
         Futures.addCallback(listsFuture, new FutureCallback<List<SPList>>() {
             @Override
@@ -138,7 +138,7 @@ public class ${activityClass} extends Activity {
 </#if>
 <#if includeListServices>
 
-    private static SharepointListsClient getSharepointListsClient(Context context) {
+    private static ListClient getListClient(Context context) {
         Credentials credentials = new Credentials() {
             @Override
             public void prepareRequest(Request request) {
@@ -149,10 +149,10 @@ public class ${activityClass} extends Activity {
         String serverUrl = context.getString(R.string.ls_server_url_${activityToLayout(activityClass)});
         String siteRelativeUrl = context.getString(R.string.ls_site_relative_url_${activityToLayout(activityClass)});
 
-        return new SharepointListsClient(serverUrl, siteRelativeUrl, credentials);
+        return new ListClient(serverUrl, siteRelativeUrl, credentials);
     }
 
-    private static ListenableFuture<List<SPList>> getMyLists(SharepointListsClient client) {
+    private static ListenableFuture<List<SPList>> getMyLists(ListClient client) {
         return client.getLists(new Query());
     }
 </#if>
