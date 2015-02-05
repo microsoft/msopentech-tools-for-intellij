@@ -15,6 +15,7 @@
  */
 package com.microsoftopentechnologies.intellij.forms;
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -81,6 +82,13 @@ public class ImportSubscriptionForm extends JDialog {
                             txtFile.setText(virtualFile.getPath());
                             importButton.setEnabled(true);
                             mainPanel.getRootPane().setDefaultButton(importButton);
+                            ApplicationManager.getApplication().invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    importButton.requestFocus();
+                                }
+                            });
+
                         }
                     }
                 });
