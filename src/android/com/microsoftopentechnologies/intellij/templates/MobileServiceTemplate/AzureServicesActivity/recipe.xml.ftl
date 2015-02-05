@@ -23,6 +23,7 @@ limitations under the License.
 
 </#if>
 <#if includeNotificationHub>
+	<dependency mavenUrl="com.google.android.gms:play-services:+" />
 	<dependency mavenUrl="com.microsoft.azure:azure-notifications-handler:2.0-beta@aar" />
 
 </#if>
