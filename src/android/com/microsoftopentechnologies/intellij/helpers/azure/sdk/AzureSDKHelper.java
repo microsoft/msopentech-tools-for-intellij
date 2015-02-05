@@ -21,9 +21,12 @@ import com.microsoft.windowsazure.core.pipeline.apache.ApacheConfigurationProper
 import com.microsoft.windowsazure.core.utils.Base64;
 import com.microsoft.windowsazure.core.utils.KeyStoreType;
 import com.microsoft.windowsazure.management.ManagementClient;
+import com.microsoft.windowsazure.management.ManagementService;
 import com.microsoft.windowsazure.management.compute.ComputeManagementClient;
 import com.microsoft.windowsazure.management.compute.ComputeManagementService;
 import com.microsoft.windowsazure.management.configuration.ManagementConfiguration;
+import com.microsoft.windowsazure.management.storage.StorageManagementClient;
+import com.microsoft.windowsazure.management.storage.StorageManagementService;
 import com.microsoftopentechnologies.intellij.components.MSOpenTechTools;
 import com.microsoftopentechnologies.intellij.helpers.OpenSSLHelper;
 import com.microsoftopentechnologies.intellij.helpers.XmlHelper;
@@ -40,7 +43,9 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import java.io.*;
 import java.net.URI;
-import java.security.*;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 
 public class AzureSDKHelper {
@@ -62,7 +67,27 @@ public class AzureSDKHelper {
 
         // add a request filter for tacking on the A/D auth token if the current authentication
         // mode is active directory
-        if(AzureRestAPIManager.getManager().getAuthenticationMode() == AzureAuthenticationMode.ActiveDirectory) {
+        if (AzureRestAPIManager.getManager().getAuthenticationMode() == AzureAuthenticationMode.ActiveDirectory) {
+            return client.withRequestFilterFirst(new AuthTokenRequestFilter(subscriptionId));
+        }
+
+        return client;
+    }
+
+    @Nullable
+    public static StorageManagementClient getStorageManagementClient(@NotNull String subscriptionId)
+            throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException, XPathExpressionException, ParserConfigurationException, SAXException {
+        Configuration configuration = getConfiguration(subscriptionId);
+
+        if (configuration == null) {
+            return null;
+        }
+
+        StorageManagementClient client = StorageManagementService.create(configuration);
+
+        // add a request filter for tacking on the A/D auth token if the current authentication
+        // mode is active directory
+        if (AzureRestAPIManager.getManager().getAuthenticationMode() == AzureAuthenticationMode.ActiveDirectory) {
             return client.withRequestFilterFirst(new AuthTokenRequestFilter(subscriptionId));
         }
 
@@ -78,17 +103,18 @@ public class AzureSDKHelper {
             return null;
         }
 
-        ManagementClient client = configuration.create(ManagementClient.class);
+        ManagementClient client = ManagementService.create(configuration);
 
         // add a request filter for tacking on the A/D auth token if the current authentication
         // mode is active directory
-        if(AzureRestAPIManager.getManager().getAuthenticationMode() == AzureAuthenticationMode.ActiveDirectory) {
+        if (AzureRestAPIManager.getManager().getAuthenticationMode() == AzureAuthenticationMode.ActiveDirectory) {
             return client.withRequestFilterFirst(new AuthTokenRequestFilter(subscriptionId));
         }
 
         return client;
     }
 
+    @Nullable
     private static Configuration getConfiguration(@NotNull String subscriptionId) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, XPathExpressionException, SAXException, ParserConfigurationException, IOException {
         switch (AzureRestAPIManager.getManager().getAuthenticationMode()) {
             case SubscriptionSettings:
@@ -100,6 +126,7 @@ public class AzureSDKHelper {
         return null;
     }
 
+    @Nullable
     private static Configuration getConfigurationFromAuthToken(@NotNull String subscriptionId) throws SAXException, ParserConfigurationException, XPathExpressionException, IOException {
 
         // NOTE: This implementation has to be considered as somewhat hacky. It relies on certain
@@ -108,20 +135,23 @@ public class AzureSDKHelper {
         // though it will not be used. We also supply a no-op "credential provider". Ideally we want
         // the SDK to directly support the scenario we need.
 
-        SubscriptionInfo subscriptionInfo = getSubscriptionInfoFromToken(subscriptionId);
+        String azureServiceManagementUri = MSOpenTechTools.getCurrent().getSettings().getAzureServiceManagementUri();
+
         ClassLoader old = Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(AzureSDKHelper.class.getClassLoader());
 
         try {
             // create a default configuration object
             Configuration configuration = ManagementConfiguration.configure(
-                    URI.create(subscriptionInfo.managementURI),
+                    URI.create(azureServiceManagementUri),
                     subscriptionId, null, null, KeyStoreType.pkcs12);
 
-            // replace the credential provider with a custom one that does nothing
-            configuration.setProperty(
-                    ManagementConfiguration.SUBSCRIPTION_CLOUD_CREDENTIALS,
-                    new EmptyCloudCredentials(subscriptionId));
+            if (configuration != null) {
+                // replace the credential provider with a custom one that does nothing
+                configuration.setProperty(
+                        ManagementConfiguration.SUBSCRIPTION_CLOUD_CREDENTIALS,
+                        new EmptyCloudCredentials(subscriptionId));
+            }
 
             // remove the SSL connection factory in case one was added; this is needed
             // in the case when the user switches from subscription based auth to A/D
@@ -165,12 +195,6 @@ public class AzureSDKHelper {
         } finally {
             Thread.currentThread().setContextClassLoader(old);
         }
-    }
-
-    private static SubscriptionInfo getSubscriptionInfoFromToken(@NotNull String subscriptionId) {
-        SubscriptionInfo subscriptionInfo = new SubscriptionInfo();
-        subscriptionInfo.managementURI = MSOpenTechTools.getCurrent().getSettings().getAzureServiceManagementUri();
-        return subscriptionInfo;
     }
 
     @Nullable

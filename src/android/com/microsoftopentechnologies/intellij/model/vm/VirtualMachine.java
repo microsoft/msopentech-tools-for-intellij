@@ -25,22 +25,20 @@ public class VirtualMachine implements ServiceTreeItem {
     private boolean loading;
     private String name;
     private String serviceName;
-    private String dns;
-    private String environment;
     private String deploymentName;
+    private String availabilitySet;
     private String size;
     private String status;
     private String subscriptionId;
     private List<Endpoint> endpoints;
 
-    public VirtualMachine(@NotNull String name, @NotNull String serviceName, @NotNull String dns, @NotNull String environment,
-                          @NotNull String deploymentName, @NotNull String size, @NotNull String status,
+    public VirtualMachine(@NotNull String name, @NotNull String serviceName, @NotNull String deploymentName,
+                          @NotNull String availabilitySet, @NotNull String size, @NotNull String status,
                           @NotNull String subscriptionId) {
         this.name = name;
         this.serviceName = serviceName;
-        this.dns = dns;
-        this.environment = environment;
         this.deploymentName = deploymentName;
+        this.availabilitySet = availabilitySet;
         this.size = size;
         this.status = status;
         this.subscriptionId = subscriptionId;
@@ -68,25 +66,17 @@ public class VirtualMachine implements ServiceTreeItem {
     }
 
     @NotNull
-    public String getDns() {
-        return dns;
-    }
-
-    public void setDns(@NotNull String dns) {
-        this.dns = dns;
+    public String getDeploymentName() {
+        return deploymentName;
     }
 
     @NotNull
-    public String getEnvironment() {
-        return environment;
+    public String getAvailabilitySet() {
+        return availabilitySet;
     }
 
-    public void setEnvironment(@NotNull String environment) {
-        this.environment = environment;
-    }
-
-    public String getDeploymentName() {
-        return deploymentName;
+    public void setAvailabilitySet(@NotNull String availabilitySet) {
+        this.availabilitySet = availabilitySet;
     }
 
     @NotNull

@@ -58,66 +58,25 @@ public class Node {
 
     protected PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
+    private boolean hasRefreshAction;
+
     public Node(String id, String name) {
-        this(id, name, null, null, false);
+        this(id, name, null, null, false, false);
     }
 
     public Node(String id, String name, Node parent, String iconPath, boolean hasRefreshAction) {
+        this(id, name, parent, iconPath, hasRefreshAction, false);
+    }
+
+    public Node(String id, String name, Node parent, String iconPath, boolean hasRefreshAction, boolean delayActionLoading) {
         this.id = id;
         this.name = name;
         this.parent = parent;
         this.iconPath = iconPath;
+        this.hasRefreshAction = hasRefreshAction;
 
-        // add the click action handler
-        addClickActionListener(new NodeActionListener() {
-            @Override
-            public void actionPerformed(NodeActionEvent e) {
-                onNodeClick(e);
-            }
-        });
-
-        // add the other actions
-        Map<String, Class<? extends NodeActionListener>> actions = initActions();
-        if(actions != null) {
-            for(Map.Entry<String, Class<? extends NodeActionListener>> entry : actions.entrySet()) {
-                try {
-                    // get default constructor
-                    Class<? extends NodeActionListener> listenerClass = entry.getValue();
-                    Constructor constructor = listenerClass.getDeclaredConstructor(getClass());
-
-                    // create an instance passing this object as a constructor argument
-                    // since we assume that this is an inner class
-                    NodeActionListener actionListener = (NodeActionListener)constructor.newInstance(this);
-                    addAction(entry.getKey(), actionListener);
-
-                } catch (InstantiationException e) {
-                    UIHelper.showException(e.getMessage(), e);
-                } catch (IllegalAccessException e) {
-                    UIHelper.showException(e.getMessage(), e);
-                } catch (NoSuchMethodException e) {
-                    UIHelper.showException(e.getMessage(), e);
-                } catch (InvocationTargetException e) {
-                    UIHelper.showException(e.getMessage(), e);
-                }
-            }
-        }
-
-        // add the refresh node action
-        if(hasRefreshAction) {
-            addAction("Refresh", new NodeActionListener() {
-                @Override
-                public void actionPerformed(NodeActionEvent e) {
-                    Futures.addCallback(load(), new FutureCallback<List<Node>>() {
-                        @Override
-                        public void onSuccess(List<Node> nodes) {}
-
-                        @Override
-                        public void onFailure(Throwable throwable) {
-                            UIHelper.showException("An error occurred while refreshing the service.", throwable);
-                        }
-                    });
-                }
-            });
+        if (!delayActionLoading) {
+            loadActions();
         }
     }
 
@@ -148,10 +107,10 @@ public class Node {
     }
 
     public boolean isDescendant(Node node) {
-        if(isDirectChild(node))
+        if (isDirectChild(node))
             return true;
-        for(Node child : childNodes) {
-            if(child.isDescendant(node))
+        for (Node child : childNodes) {
+            if (child.isDescendant(node))
                 return true;
         }
 
@@ -161,9 +120,9 @@ public class Node {
     // Walk up the tree till we find a parent node who's type
     // is equal to "clazz".
     public Node findParentByType(Class clazz) {
-        if(parent == null)
+        if (parent == null)
             return null;
-        if(parent.getClass().equals(clazz))
+        if (parent.getClass().equals(clazz))
             return parent;
         return parent.findParentByType(clazz);
     }
@@ -173,7 +132,7 @@ public class Node {
     }
 
     public void removeDirectChildNode(Node childNode) {
-        if(isDirectChild(childNode)) {
+        if (isDirectChild(childNode)) {
             // remove this node's child nodes (so they get an
             // opportunity to clean up after them)
             childNode.removeAllChildNodes();
@@ -185,7 +144,7 @@ public class Node {
     }
 
     public void removeAllChildNodes() {
-        while(!childNodes.isEmpty()) {
+        while (!childNodes.isEmpty()) {
             Node node = childNodes.get(0);
 
             // remove this node's child nodes (so they get an
@@ -221,11 +180,66 @@ public class Node {
     // to that action.
     public NodeAction addAction(String name, NodeActionListener actionListener) {
         NodeAction nodeAction = getNodeActionByName(name);
-        if(nodeAction == null) {
+        if (nodeAction == null) {
             addAction(nodeAction = new NodeAction(this, name));
         }
         nodeAction.addListener(actionListener);
         return nodeAction;
+    }
+
+    protected void loadActions() {
+        // add the click action handler
+        addClickActionListener(new NodeActionListener() {
+            @Override
+            public void actionPerformed(NodeActionEvent e) {
+                onNodeClick(e);
+            }
+        });
+
+        // add the refresh node action
+        if (hasRefreshAction) {
+            addAction("Refresh", new NodeActionListener() {
+                @Override
+                public void actionPerformed(NodeActionEvent e) {
+                    Futures.addCallback(load(), new FutureCallback<List<Node>>() {
+                        @Override
+                        public void onSuccess(List<Node> nodes) {
+                        }
+
+                        @Override
+                        public void onFailure(Throwable throwable) {
+                            UIHelper.showException("An error occurred while refreshing the service.", throwable);
+                        }
+                    });
+                }
+            });
+        }
+
+        // add the other actions
+        Map<String, Class<? extends NodeActionListener>> actions = initActions();
+
+        if (actions != null) {
+            for (Map.Entry<String, Class<? extends NodeActionListener>> entry : actions.entrySet()) {
+                try {
+                    // get default constructor
+                    Class<? extends NodeActionListener> listenerClass = entry.getValue();
+                    Constructor constructor = listenerClass.getDeclaredConstructor(getClass());
+
+                    // create an instance passing this object as a constructor argument
+                    // since we assume that this is an inner class
+                    NodeActionListener actionListener = (NodeActionListener) constructor.newInstance(this);
+                    addAction(entry.getKey(), actionListener);
+                } catch (InstantiationException e) {
+                    UIHelper.showException(e.getMessage(), e);
+                } catch (IllegalAccessException e) {
+                    UIHelper.showException(e.getMessage(), e);
+                } catch (NoSuchMethodException e) {
+                    UIHelper.showException(e.getMessage(), e);
+                } catch (InvocationTargetException e) {
+                    UIHelper.showException(e.getMessage(), e);
+                }
+            }
+        }
     }
 
     // sub-classes are expected to override this method and
@@ -241,7 +255,8 @@ public class Node {
     // sub-classes are expected to override this method and
     // add a handler for the case when something needs to be
     // done when the user left-clicks this node in the tree view
-    protected void onNodeClick(NodeActionEvent e) {}
+    protected void onNodeClick(NodeActionEvent e) {
+    }
 
     public List<NodeAction> getNodeActions() {
         return nodeActions;
@@ -261,7 +276,7 @@ public class Node {
     }
 
     public void addActions(Iterable<NodeAction> actions) {
-        for(NodeAction action : actions) {
+        for (NodeAction action : actions) {
             addAction(action);
         }
     }
@@ -292,7 +307,7 @@ public class Node {
 
     public Project getProject() {
         // delegate to parent node if there's one else return null
-        if(parent != null) {
+        if (parent != null) {
             return parent.getProject();
         }
 
@@ -318,8 +333,7 @@ public class Node {
         try {
             refreshItems();
             future.set(getChildNodes());
-        }
-        finally {
+        } finally {
             setLoading(false);
         }
     }
@@ -398,7 +412,7 @@ public class Node {
                         @Override
                         public void run() {
                             setName(nodeName);
-                            if(throwable != null) {
+                            if (throwable != null) {
                                 UIHelper.showException("An error occurred while loading " + getName() + ".", throwable);
                             }
                         }

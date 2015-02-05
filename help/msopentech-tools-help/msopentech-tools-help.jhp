@@ -11,6 +11,7 @@
 			<directory title="html">
 				<file title="AddApplicationDialogHelp.html"/>
 				<file title="AzureConfigurableHelp.html"/>
+				<file title="AzureModulePanelHelp.html"/>
 				<file title="AzureRolePanelHelp.html"/>
 				<file title="AzureWizardDialogHelp.html"/>
 				<file title="CacheDialogHelp.html"/>

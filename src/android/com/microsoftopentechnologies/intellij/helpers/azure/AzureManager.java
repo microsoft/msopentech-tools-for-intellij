@@ -103,7 +103,7 @@ public interface AzureManager {
 
     void uploadJobScript(UUID subscriptionId, String serviceName, String scriptName, String filePath) throws AzureCmdException;
 
-    List<LogEntry> listLog(UUID subscriptionId, String serviceName) throws AzureCmdException, ParseException;
+    List<LogEntry> listLog(UUID subscriptionId, String serviceName, String runtime) throws AzureCmdException, ParseException;
 
     List<String> getLocations(UUID subscriptionId) throws AzureCmdException;
 

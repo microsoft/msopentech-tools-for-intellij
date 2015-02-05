@@ -13,7 +13,6 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-
 package com.microsoftopentechnologies.intellij.helpers.azure.sdk;
 
 import com.microsoft.windowsazure.exception.ServiceException;
@@ -26,7 +25,7 @@ import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureManager;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIManager;
-import com.microsoftopentechnologies.intellij.model.vm.VirtualMachine;
+import com.microsoftopentechnologies.intellij.model.vm.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.net.HttpURLConnection;
@@ -48,15 +47,15 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
             return func.run();
         } catch (AzureCmdException e) {
             Throwable throwable = e.getCause();
-            if(throwable == null)
+            if (throwable == null)
                 throw e;
-            if(!(throwable instanceof ServiceException))
+            if (!(throwable instanceof ServiceException))
                 throw e;
 
-            ServiceException serviceException = (ServiceException)throwable;
-            if(serviceException.getHttpStatusCode() == HttpURLConnection.HTTP_UNAUTHORIZED) {
+            ServiceException serviceException = (ServiceException) throwable;
+            if (serviceException.getHttpStatusCode() == HttpURLConnection.HTTP_UNAUTHORIZED) {
                 // attempt token refresh
-                if(refreshAccessToken(subscriptionId)) {
+                if (refreshAccessToken(subscriptionId)) {
                     // retry request
                     return func.run();
                 }
@@ -72,15 +71,15 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
         AuthenticationResult token = apiManager.getAuthenticationTokenForSubscription(subscriptionId);
 
         // check if we have a refresh token to redeem
-        if(token != null && !StringHelper.isNullOrWhiteSpace(token.getRefreshToken())) {
+        if (token != null && !StringHelper.isNullOrWhiteSpace(token.getRefreshToken())) {
             AuthenticationContext context = null;
             try {
                 context = new AuthenticationContext(settings.getAdAuthority());
                 token = context.acquireTokenByRefreshToken(
-                            token,
-                            AzureRestAPIHelper.getTenantName(subscriptionId),
-                            settings.getAzureServiceManagementUri(),
-                            settings.getClientId());
+                        token,
+                        AzureRestAPIHelper.getTenantName(subscriptionId),
+                        settings.getAzureServiceManagementUri(),
+                        settings.getClientId());
             } catch (Exception e) {
                 token = null;
             } finally {
@@ -89,13 +88,24 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
                 }
             }
 
-            if(token != null) {
+            if (token != null) {
                 apiManager.setAuthenticationTokenForSubscription(subscriptionId, token);
                 return true;
             }
         }
 
         return false;
+    }
+
+    @NotNull
+    @Override
+    public List<CloudService> getCloudServices(@NotNull final String subscriptionId) throws AzureCmdException {
+        return runWithRetry(subscriptionId, new Func0<List<CloudService>>() {
+            @Override
+            public List<CloudService> run() throws AzureCmdException {
+                return sdkManager.getCloudServices(subscriptionId);
+            }
+        });
     }
 
     @NotNull
@@ -171,6 +181,115 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
             @Override
             public byte[] run() throws AzureCmdException {
                 return sdkManager.downloadRDP(vm);
+            }
+        });
+    }
+
+    @NotNull
+    @Override
+    public List<StorageAccount> getStorageAccounts(@NotNull final String subscriptionId) throws AzureCmdException {
+        return runWithRetry(subscriptionId, new Func0<List<StorageAccount>>() {
+            @Override
+            public List<StorageAccount> run() throws AzureCmdException {
+                return sdkManager.getStorageAccounts(subscriptionId);
+            }
+        });
+    }
+
+    @NotNull
+    @Override
+    public List<VirtualMachineImage> getVirtualMachineImages(@NotNull final String subscriptionId) throws AzureCmdException {
+        return runWithRetry(subscriptionId, new Func0<List<VirtualMachineImage>>() {
+            @Override
+            public List<VirtualMachineImage> run() throws AzureCmdException {
+                return sdkManager.getVirtualMachineImages(subscriptionId);
+            }
+        });
+    }
+
+    @NotNull
+    @Override
+    public List<VirtualMachineSize> getVirtualMachineSizes(@NotNull final String subscriptionId) throws AzureCmdException {
+        return runWithRetry(subscriptionId, new Func0<List<VirtualMachineSize>>() {
+            @Override
+            public List<VirtualMachineSize> run() throws AzureCmdException {
+                return sdkManager.getVirtualMachineSizes(subscriptionId);
+            }
+        });
+    }
+
+    @NotNull
+    @Override
+    public List<Location> getLocations(@NotNull final String subscriptionId) throws AzureCmdException {
+        return runWithRetry(subscriptionId, new Func0<List<Location>>() {
+            @Override
+            public List<Location> run() throws AzureCmdException {
+                return sdkManager.getLocations(subscriptionId);
+            }
+        });
+    }
+
+    @NotNull
+    @Override
+    public List<AffinityGroup> getAffinityGroups(@NotNull final String subscriptionId) throws AzureCmdException {
+        return runWithRetry(subscriptionId, new Func0<List<AffinityGroup>>() {
+            @Override
+            public List<AffinityGroup> run() throws AzureCmdException {
+                return sdkManager.getAffinityGroups(subscriptionId);
+            }
+        });
+    }
+
+    @Override
+    public void createStorageAccount(@NotNull final StorageAccount storageAccount) throws AzureCmdException {
+        runWithRetry(storageAccount.getSubscriptionId(), new Func0<Void>() {
+            @Override
+            public Void run() throws AzureCmdException {
+                sdkManager.createStorageAccount(storageAccount);
+                return null;
+            }
+        });
+    }
+
+    @Override
+    public void createCloudService(@NotNull final CloudService cloudService) throws AzureCmdException {
+        runWithRetry(cloudService.getSubscriptionId(), new Func0<Void>() {
+            @Override
+            public Void run() throws AzureCmdException {
+                sdkManager.createCloudService(cloudService);
+                return null;
+            }
+        });
+    }
+
+    @Override
+    public void createVirtualMachine(@NotNull final VirtualMachine virtualMachine,
+                                     @NotNull final VirtualMachineImage vmImage,
+                                     @NotNull final StorageAccount storageAccount,
+                                     @NotNull final String username,
+                                     @NotNull final String password)
+            throws AzureCmdException {
+        runWithRetry(virtualMachine.getSubscriptionId(), new Func0<Void>() {
+            @Override
+            public Void run() throws AzureCmdException {
+                sdkManager.createVirtualMachine(virtualMachine, vmImage, storageAccount, username, password);
+                return null;
+            }
+        });
+    }
+
+    @Override
+    public void createVirtualMachine(@NotNull final VirtualMachine virtualMachine,
+                                     @NotNull final VirtualMachineImage vmImage,
+                                     @NotNull final String mediaLocation,
+                                     @NotNull final String username,
+                                     @NotNull final String password)
+            throws AzureCmdException {
+        runWithRetry(virtualMachine.getSubscriptionId(), new Func0<Void>() {
+            @Override
+            public Void run() throws AzureCmdException {
+                sdkManager.createVirtualMachine(virtualMachine, vmImage, mediaLocation, username, password);
+                return null;
             }
         });
     }
