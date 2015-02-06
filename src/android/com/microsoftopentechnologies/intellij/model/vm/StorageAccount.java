@@ -61,9 +61,17 @@ public class StorageAccount implements ServiceTreeItem {
         return type;
     }
 
+    public void setType(@NotNull String type) {
+        this.type = type;
+    }
+
     @NotNull
     public String getLocation() {
         return location;
+    }
+
+    public void setLocation(@NotNull String location) {
+        this.location = location;
     }
 
     @NotNull
@@ -71,9 +79,17 @@ public class StorageAccount implements ServiceTreeItem {
         return affinityGroup;
     }
 
+    public void setAffinityGroup(@NotNull String affinityGroup) {
+        this.affinityGroup = affinityGroup;
+    }
+
     @NotNull
     public String getKey() {
         return key;
+    }
+
+    public void setKey(@NotNull String key) {
+        this.key = key;
     }
 
     @NotNull

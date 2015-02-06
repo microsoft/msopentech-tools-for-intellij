@@ -245,7 +245,7 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
                 @Override
                 public void setSelectedItem(Object o) {
                     if (createSA.equals(o)) {
-                        showNewCloudServiceForm();
+                        showNewStorageForm(selectedCS);
                     } else {
                         super.setSelectedItem(o);
                     }
@@ -350,7 +350,7 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
                     @Override
                     public void run() {
                         CloudService newCloudService = form.getCloudService();
-                        if(newCloudService != null) {
+                        if (newCloudService != null) {
                             fillCloudServices(newCloudService);
                         }
                     }
@@ -373,7 +373,7 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
                     @Override
                     public void run() {
                         StorageAccount newStorageAccount = form.getStorageAccount();
-                        if(newStorageAccount != null) {
+                        if (newStorageAccount != null) {
                             fillStorage(selectedCS, newStorageAccount);
                         }
                     }
