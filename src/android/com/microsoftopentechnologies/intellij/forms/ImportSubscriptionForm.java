@@ -126,6 +126,7 @@ public class ImportSubscriptionForm extends JDialog {
                     UIHelper.showException("The specified Subscriptions File does not exist.",
                             null,
                             "Invalid Subscriptions File Path",
+                            false,
                             false);
                 }
             }
