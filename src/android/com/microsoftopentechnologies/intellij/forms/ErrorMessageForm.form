@@ -80,7 +80,7 @@ limitations under the License.
               <forms/>
             </constraints>
             <properties>
-              <text value="Show advanced info"/>
+              <text value=""/>
             </properties>
           </component>
           <scrollpane id="a925d" binding="detailScroll">

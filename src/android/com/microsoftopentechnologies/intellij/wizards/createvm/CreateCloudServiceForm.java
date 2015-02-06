@@ -194,7 +194,7 @@ public class CreateCloudServiceForm extends JDialog {
             AzureSDKManagerImpl.getManager().createCloudService(cloudService);
         } catch (Exception e) {
             cloudService = null;
-            UIHelper.showException("Error creating cloud service", e);
+            UIHelper.showException("An error occurred while trying to create the specified cloud service", e, "Error Creating Storage Account", false, true);
         }
 
         onCreate.run();

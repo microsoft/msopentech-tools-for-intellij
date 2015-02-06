@@ -17,7 +17,6 @@
 package com.microsoftopentechnologies.intellij.wizards.createvm;
 
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.progress.PerformInBackgroundOption;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
@@ -33,6 +32,7 @@ import com.microsoftopentechnologies.intellij.model.vm.Endpoint;
 import com.microsoftopentechnologies.intellij.model.vm.VirtualMachine;
 import com.microsoftopentechnologies.intellij.serviceexplorer.azure.vm.VMNode;
 import com.microsoftopentechnologies.intellij.serviceexplorer.azure.vm.VMServiceModule;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.event.TableModelEvent;
@@ -117,7 +117,7 @@ public class EndpointStep extends WizardStep<CreateVMWizardModel> {
                 int col = endpointsTable.columnAtPoint(evt.getPoint());
                 if (col == 5) {
                     //Determine if click was on the "X" label
-                    if(endpointsTable.getWidth() - 30 < evt.getX()) {
+                    if (endpointsTable.getWidth() - 30 < evt.getX()) {
                         endpointTableModel.getData().remove(row);
                         endpointTableModel.fireTableDataChanged();
                     }
@@ -132,7 +132,7 @@ public class EndpointStep extends WizardStep<CreateVMWizardModel> {
                 boolean hasErrors = false;
                 for (int i = 0; i < endpointTableModel.getRowCount() && !hasErrors; i++) {
                     String errorFromRow = getErrorFromRow(i, endpointTableModel.getData());
-                    if(errorFromRow.length() > 0) {
+                    if (errorFromRow.length() > 0) {
                         hasErrors = true;
                     }
                 }
@@ -141,7 +141,7 @@ public class EndpointStep extends WizardStep<CreateVMWizardModel> {
             }
         });
 
-        if(model.getVirtualMachineImage().getOperatingSystemType().equals("Windows")) {
+        if (model.getVirtualMachineImage().getOperatingSystemType().equals("Windows")) {
             endpointTableModel.getData().add(new Endpoint("Powershell", "TCP", 5983, 5983));
             endpointTableModel.getData().add(new Endpoint("Remote Desktop", "TCP", 3389, 3389));
         } else {
@@ -170,12 +170,10 @@ public class EndpointStep extends WizardStep<CreateVMWizardModel> {
         ProgressManager.getInstance().run(new Task.Backgroundable(project, "Creating virtual machine...", false) {
 
             @Override
-            public void run(ProgressIndicator progressIndicator) {
+            public void run(@NotNull ProgressIndicator progressIndicator) {
                 progressIndicator.setIndeterminate(true);
 
                 try {
-
-
                     final VirtualMachine virtualMachine = new VirtualMachine(
                             model.getName(),
                             model.getCloudService().getName(),
@@ -188,7 +186,11 @@ public class EndpointStep extends WizardStep<CreateVMWizardModel> {
 
                     virtualMachine.getEndpoints().addAll(tableModel.getData());
 
-                    AzureSDKManagerImpl.getManager().createVirtualMachine(virtualMachine, model.getVirtualMachineImage(), model.getStorageAccount(), model.getUserName(), new String(model.getPassword()));
+                    AzureSDKManagerImpl.getManager().createVirtualMachine(virtualMachine,
+                            model.getVirtualMachineImage(),
+                            model.getStorageAccount(),
+                            model.getUserName(),
+                            new String(model.getPassword()));
 
                     ApplicationManager.getApplication().invokeLater(new Runnable() {
                         @Override
@@ -196,12 +198,20 @@ public class EndpointStep extends WizardStep<CreateVMWizardModel> {
                             try {
                                 node.addChildNode(new VMNode(node, virtualMachine));
                             } catch (AzureCmdException e) {
-                                UIHelper.showException("Error refreshing VM list", e);
+                                UIHelper.showException("An error occurred while trying to refresh the list of virtual machines",
+                                        e,
+                                        "Error Refreshing VM List",
+                                        false,
+                                        true);
                             }
                         }
                     });
                 } catch (AzureCmdException e) {
-                    UIHelper.showException("Error creating virtual machine", e);
+                    UIHelper.showException("An error occurred while trying to create the specified virtual machine",
+                            e,
+                            "Error Creating Virtual Machine",
+                            false,
+                            true);
                 }
             }
         });
@@ -213,7 +223,7 @@ public class EndpointStep extends WizardStep<CreateVMWizardModel> {
         endpointsTable = new JBTable() {
             @Override
             public TableCellRenderer getCellRenderer(int row, int col) {
-                switch(col){
+                switch (col) {
                     case 0:
                         return new ErrorRenderer();
                     case 4:
@@ -227,8 +237,8 @@ public class EndpointStep extends WizardStep<CreateVMWizardModel> {
 
             @Override
             public TableCellEditor getCellEditor(int row, int col) {
-                if(col == 4) {
-                    return new DefaultCellEditor(new ComboBox(new String[] { "TCP", "UDP" }));
+                if (col == 4) {
+                    return new DefaultCellEditor(new ComboBox(new String[]{"TCP", "UDP"}));
                 } else {
                     return super.getCellEditor(row, col);
                 }
@@ -260,28 +270,28 @@ public class EndpointStep extends WizardStep<CreateVMWizardModel> {
         boolean containsPrivatePort = false;
 
         for (Endpoint ep : list) {
-            if(ep != endpoint && ep.getName().equals(endpoint.getName())) {
+            if (ep != endpoint && ep.getName().equals(endpoint.getName())) {
                 containsName = true;
             }
 
-            if(ep != endpoint && ep.getProtocol().equals(endpoint.getProtocol()) && ep.getPrivatePort() == endpoint.getPrivatePort()) {
+            if (ep != endpoint && ep.getProtocol().equals(endpoint.getProtocol()) && ep.getPrivatePort() == endpoint.getPrivatePort()) {
                 containsPrivatePort = true;
             }
 
-            if(ep != endpoint && ep.getProtocol().equals(endpoint.getProtocol()) && ep.getPublicPort() == endpoint.getPublicPort()) {
+            if (ep != endpoint && ep.getProtocol().equals(endpoint.getProtocol()) && ep.getPublicPort() == endpoint.getPublicPort()) {
                 containsPublicPort = true;
             }
         }
 
-        if(containsName) {
+        if (containsName) {
             errors = errors + "The name must be unique. \n";
         }
 
-        if(containsPrivatePort) {
+        if (containsPrivatePort) {
             errors = errors + "The private port and the protocol conflicts with another in the virtual machine. \n";
         }
 
-        if(containsPublicPort) {
+        if (containsPublicPort) {
             errors = errors + "The public port and the protocol conflicts with another in the virtual machine. \n";
         }
 
@@ -314,7 +324,7 @@ public class EndpointStep extends WizardStep<CreateVMWizardModel> {
     private class ProtocolRenderer extends ComboBox implements TableCellRenderer {
 
         public ProtocolRenderer() {
-            super(new String[] { "TCP", "UDP" });
+            super(new String[]{"TCP", "UDP"});
         }
 
         @Override
@@ -325,7 +335,7 @@ public class EndpointStep extends WizardStep<CreateVMWizardModel> {
         }
     }
 
-    private class ErrorRenderer extends JLabel implements TableCellRenderer  {
+    private class ErrorRenderer extends JLabel implements TableCellRenderer {
 
         public ErrorRenderer() {
             setOpaque(false);
@@ -338,7 +348,7 @@ public class EndpointStep extends WizardStep<CreateVMWizardModel> {
             setHorizontalAlignment(CENTER);
             setFont(getFont().deriveFont(Font.BOLD));
 
-            if(jTable.getModel() != null && jTable.getModel() instanceof EndpointTableModel) {
+            if (jTable.getModel() != null && jTable.getModel() instanceof EndpointTableModel) {
                 EndpointTableModel endpointTableModel = (EndpointTableModel) jTable.getModel();
                 String errorList = getErrorFromRow(row, endpointTableModel.getData());
                 setToolTipText(errorList);
@@ -351,7 +361,7 @@ public class EndpointStep extends WizardStep<CreateVMWizardModel> {
 
     private class EndpointTableModel extends AbstractTableModel {
         private Vector<Endpoint> data = new Vector<Endpoint>();
-        private String[] columns = new String[]{ "", "Port name", "Public port", "Private port", "Protocol", "" };
+        private String[] columns = new String[]{"", "Port name", "Public port", "Private port", "Protocol", ""};
 
         @Override
         public int getRowCount() {
@@ -372,10 +382,11 @@ public class EndpointStep extends WizardStep<CreateVMWizardModel> {
         public boolean isCellEditable(int row, int col) {
             return (col > 0 && col < 5);
         }
+
         @Override
-        public Object getValueAt(int row, int column){
+        public Object getValueAt(int row, int column) {
             Endpoint endpoint = data.get(row);
-            switch(column) {
+            switch (column) {
                 case 1:
                     return endpoint.getName();
                 case 2:
@@ -392,7 +403,7 @@ public class EndpointStep extends WizardStep<CreateVMWizardModel> {
         @Override
         public void setValueAt(Object object, int row, int col) {
             Endpoint endpoint = data.get(row);
-            switch(col) {
+            switch (col) {
                 case 1:
                     endpoint.setName(object.toString());
                     break;
@@ -400,13 +411,15 @@ public class EndpointStep extends WizardStep<CreateVMWizardModel> {
                     try {
                         int publicPort = Integer.parseInt(object.toString());
                         endpoint.setPublicPort(publicPort);
-                    } catch (NumberFormatException ex) {}
+                    } catch (NumberFormatException ex) {
+                    }
                     break;
                 case 3:
-                    try{
+                    try {
                         int privatePort = Integer.parseInt(object.toString());
                         endpoint.setPrivatePort(privatePort);
-                    } catch (NumberFormatException ex) {}
+                    } catch (NumberFormatException ex) {
+                    }
                     break;
                 case 4:
                     endpoint.setProtocol(object.toString());
@@ -419,5 +432,4 @@ public class EndpointStep extends WizardStep<CreateVMWizardModel> {
             return data;
         }
     }
-
 }
