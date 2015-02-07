@@ -62,7 +62,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.microsoftopentechnologies.intellij.ui.messages.AzureBundle.message;
 import static com.microsoftopentechnologies.intellij.AzurePlugin.log;
@@ -460,7 +459,7 @@ public class DeployAction extends AnAction {
                     }
                     // if password has been changed by user
                     if (!pwd.equals(waProjManager.getRemoteAccessEncryptedPassword())) {
-                        String encryptedPwd = EncUtilHelper.encryptPassword(pwd, certPath, AzurePlugin.encFolder);
+                        String encryptedPwd = EncUtilHelper.encryptPassword(pwd, certPath, AzurePlugin.pluginFolder);
                         waProjManager.setRemoteAccessEncryptedPassword(encryptedPwd);
                     }
                     expDate = waProjManager.getRemoteAccessAccountExpiration();
@@ -490,7 +489,7 @@ public class DeployAction extends AnAction {
                                 return false;
                             }
                             // save password, encrypt always as storing for the first time
-                            String encryptedPwd = EncUtilHelper.encryptPassword(pwd, certPath, AzurePlugin.encFolder);
+                            String encryptedPwd = EncUtilHelper.encryptPassword(pwd, certPath, AzurePlugin.pluginFolder);
                             waProjManager.setRemoteAccessEncryptedPassword(encryptedPwd);
                             // save expiration date
                             GregorianCalendar currentCal = new GregorianCalendar();

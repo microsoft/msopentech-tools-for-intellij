@@ -126,6 +126,9 @@ limitations under the License.
         <action id="Actions.ModulePropertiesAction"
                 class="com.microsoftopentechnologies.intellij.actions.ModulePropertiesAction" text="Properties..."
                 description="Properties..." icon="/icons/small/cloudService.png"/>
+        <action id="Actions.LibraryConfigurationAction"
+                class="com.microsoftopentechnologies.intellij.actions.LibraryConfigurationAction" text="Libraries Configuration"
+                description="Libraries Configuration"/>
 
         <group id="AzurePopupGroup" text="Azure" description="Azure" icon="/icons/small/windowsAzure.png" popup="true"
                class="com.microsoftopentechnologies.intellij.actions.AzurePopupGroup">
@@ -136,6 +139,7 @@ limitations under the License.
             <reference ref="Actions.RolePropertiesAction"/>
             <separator/>
             <reference ref="Actions.ModulePropertiesAction"/>
+            <reference ref="Actions.LibraryConfigurationAction"/>
         </group>
 
         <group id="AzureToolbarGroup" text="Azure" description="Azure">

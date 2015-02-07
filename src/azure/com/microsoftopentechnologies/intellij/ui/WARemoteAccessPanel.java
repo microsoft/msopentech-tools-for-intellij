@@ -571,7 +571,7 @@ public class WARemoteAccessPanel implements AzureAbstractPanel {
                          */
                         String modifiedPwd = message("remAccDummyPwd");
                         if (!pwd.equals(modifiedPwd) && !pwd.isEmpty() && isPwdChanged) {
-                            String encryptedPwd = EncUtilHelper.encryptPassword(pwd, tempPath, AzurePlugin.encFolder);
+                            String encryptedPwd = EncUtilHelper.encryptPassword(pwd, tempPath, AzurePlugin.pluginFolder);
                             waProjManager.setRemoteAccessEncryptedPassword(encryptedPwd);
                         } else {
                             waProjManager.setRemoteAccessEncryptedPassword(pwd);
