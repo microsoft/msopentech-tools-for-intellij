@@ -22,7 +22,7 @@ import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.project.Project;
-import com.microsoftopentechnologies.intellij.components.MSOpenTechTools;
+import com.microsoftopentechnologies.intellij.components.MSOpenTechToolsApplication;
 import com.microsoftopentechnologies.intellij.components.PluginSettings;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.helpers.aadauth.AuthenticationContext;
@@ -95,7 +95,7 @@ public class ManageSubscriptionForm extends JDialog {
                     if (AzureRestAPIManager.getManager().getAuthenticationToken() != null) {
                         clearSubscriptions(false);
                     } else {
-                        PluginSettings settings = MSOpenTechTools.getCurrent().getSettings();
+                        PluginSettings settings = MSOpenTechToolsApplication.getCurrent().getSettings();
                         final AuthenticationContext context = new AuthenticationContext(settings.getAdAuthority());
 
                         Futures.addCallback(context.acquireTokenInteractiveAsync(
@@ -223,7 +223,7 @@ public class ManageSubscriptionForm extends JDialog {
                 model.removeRow(0);
             }
 
-            PropertiesComponent.getInstance().unsetValue(MSOpenTechTools.AppSettingsNames.SELECTED_SUBSCRIPTIONS);
+            PropertiesComponent.getInstance().unsetValue(MSOpenTechToolsApplication.AppSettingsNames.SELECTED_SUBSCRIPTIONS);
             ApplicationManager.getApplication().saveSettings();
 
             removeButton.setEnabled(false);

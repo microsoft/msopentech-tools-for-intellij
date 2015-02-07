@@ -137,16 +137,14 @@ public class ServiceCodeReferenceHelper {
     }
 
     public static Boolean isAndroidGradleModule(VirtualFile virtualFileDir) throws IOException {
-        VirtualFile buildGradleFile = null;
-
         for (VirtualFile file : virtualFileDir.getChildren()) {
             if (file.getName().contains("build.gradle")) {
-                buildGradleFile = file;
+                if(getStringAndCloseStream(file.getInputStream()).contains("com.android.tools.build"))
+                    return true;
             }
         }
 
-        return buildGradleFile != null &&
-                getString(buildGradleFile.getInputStream()).contains("apply plugin: 'com.android.application'");
+        return false;
     }
 
     private void addReferences(String zipPath, String libTemplate, String libName)
@@ -228,8 +226,7 @@ public class ServiceCodeReferenceHelper {
 
                         final VirtualFile mobileServiceRefFile = librariesFolder.createChildData(project, libTemplate);
 
-                        InputStream is = getTemplateResource(libTemplate);
-                        final String template = getString(is);
+                        final String template = getStringAndCloseStream(getTemplateResource(libTemplate));
                         ApplicationManager.getApplication().invokeAndWait(new Runnable() {
                             @Override
                             public void run() {
@@ -397,18 +394,28 @@ public class ServiceCodeReferenceHelper {
         return buffer.toByteArray();
     }
 
-    public static String getString(InputStream is) {
+    public static String getStringAndCloseStream(InputStream is) throws IOException {
         //Using the trick described in this link to read whole streams in one operation:
         //http://stackoverflow.com/a/5445161
-        Scanner s = new Scanner(is).useDelimiter("\\A");
-        return s.hasNext() ? s.next() : "";
+        try {
+            Scanner s = new Scanner(is).useDelimiter("\\A");
+            return s.hasNext() ? s.next() : "";
+        }
+        finally {
+            is.close();
+        }
     }
 
     @NotNull
-    public static String getString(@NotNull InputStream is, @NotNull String charsetName) {
+    public static String getStringAndCloseStream(@NotNull InputStream is, @NotNull String charsetName) throws IOException {
         //Using the trick described in this link to read whole streams in one operation:
         //http://stackoverflow.com/a/5445161
-        Scanner s = new Scanner(is, charsetName).useDelimiter("\\A");
-        return s.hasNext() ? s.next() : "";
+        try {
+            Scanner s = new Scanner(is, charsetName).useDelimiter("\\A");
+            return s.hasNext() ? s.next() : "";
+        }
+        finally {
+            is.close();
+        }
     }
 }

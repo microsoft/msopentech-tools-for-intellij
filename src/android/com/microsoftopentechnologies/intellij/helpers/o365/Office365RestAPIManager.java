@@ -31,7 +31,7 @@ import com.microsoft.directoryservices.odata.DirectoryObjectOperations;
 import com.microsoft.services.odata.ODataCollectionFetcher;
 import com.microsoft.services.odata.ODataEntityFetcher;
 import com.microsoft.services.odata.ODataOperations;
-import com.microsoftopentechnologies.intellij.components.MSOpenTechTools;
+import com.microsoftopentechnologies.intellij.components.MSOpenTechToolsApplication;
 import com.microsoftopentechnologies.intellij.components.PluginSettings;
 import com.microsoftopentechnologies.intellij.helpers.StringHelper;
 import com.microsoftopentechnologies.intellij.helpers.aadauth.AuthenticationContext;
@@ -110,9 +110,9 @@ public class Office365RestAPIManager implements Office365Manager {
         if (token != null) {
             Gson gson = new Gson();
             String json = gson.toJson(token, AuthenticationResult.class);
-            PropertiesComponent.getInstance().setValue(MSOpenTechTools.AppSettingsNames.O365_AUTHENTICATION_TOKEN, json);
+            PropertiesComponent.getInstance().setValue(MSOpenTechToolsApplication.AppSettingsNames.O365_AUTHENTICATION_TOKEN, json);
         } else {
-            PropertiesComponent.getInstance().unsetValue(MSOpenTechTools.AppSettingsNames.O365_AUTHENTICATION_TOKEN);
+            PropertiesComponent.getInstance().unsetValue(MSOpenTechToolsApplication.AppSettingsNames.O365_AUTHENTICATION_TOKEN);
         }
 
         // reference assignments in java are atomic; so we don't need a
@@ -125,7 +125,7 @@ public class Office365RestAPIManager implements Office365Manager {
     @Override
     public AuthenticationResult getAuthenticationToken() {
         if (authenticationToken == null) {
-            String json = PropertiesComponent.getInstance().getValue(MSOpenTechTools.AppSettingsNames.O365_AUTHENTICATION_TOKEN);
+            String json = PropertiesComponent.getInstance().getValue(MSOpenTechToolsApplication.AppSettingsNames.O365_AUTHENTICATION_TOKEN);
             if (!StringHelper.isNullOrWhiteSpace(json)) {
                 Gson gson = new Gson();
                 setAuthenticationToken(gson.fromJson(json, AuthenticationResult.class));
@@ -136,7 +136,7 @@ public class Office365RestAPIManager implements Office365Manager {
 
     @Override
     public void authenticate() throws IOException, ExecutionException, InterruptedException, ParseException {
-        PluginSettings settings = MSOpenTechTools.getCurrent().getSettings();
+        PluginSettings settings = MSOpenTechToolsApplication.getCurrent().getSettings();
         AuthenticationContext context = null;
         try {
             context = new AuthenticationContext(settings.getAdAuthority());
@@ -157,7 +157,7 @@ public class Office365RestAPIManager implements Office365Manager {
 
     private String getGraphApiUri() throws ParseException {
         if (graphApiUri == null) {
-            PluginSettings settings = MSOpenTechTools.getCurrent().getSettings();
+            PluginSettings settings = MSOpenTechToolsApplication.getCurrent().getSettings();
             setGraphApiUri(GRAPH_API_URI_TEMPLATE.
                     replace("{base_uri}", settings.getGraphApiUri()).
                     replace("{tenant_domain}", getTenantDomain()).
@@ -233,7 +233,7 @@ public class Office365RestAPIManager implements Office365Manager {
             final SettableFuture<T> wrappedFuture) throws ParseException {
 
         // acquire token via refresh token
-        PluginSettings settings = MSOpenTechTools.getCurrent().getSettings();
+        PluginSettings settings = MSOpenTechToolsApplication.getCurrent().getSettings();
         AuthenticationContext context = null;
 
         // Now there might be multiple concurrent requests all of which are likely

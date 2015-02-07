@@ -39,7 +39,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Collection;
 
-public class MSOpenTechTools extends ApplicationComponent.Adapter {
+public class MSOpenTechToolsApplication extends ApplicationComponent.Adapter {
     // NOTE: If you add new setting names to this list, evaluate whether it should be cleared
     // when the plugin is upgraded/uninstalled and add the setting to the array "settings" in
     // the "cleanTempData" function below. Otherwise your setting will get retained across
@@ -66,16 +66,16 @@ public class MSOpenTechTools extends ApplicationComponent.Adapter {
     private static final String OUTLOOK_FILE_LIST_SERVICES_CODE = "//25fdea0c-8a15-457f-9b15-dacb4e7dc2b2";
     private static final VirtualFileListener vfl = getVirtualFileListener();
 
-    private static MSOpenTechTools current = null;
+    private static MSOpenTechToolsApplication current = null;
     private PluginSettings settings;
 
     // TODO: This needs to be the plugin ID from plugin.xml somehow.
     public static final String PLUGIN_ID = "com.microsoftopentechnologies.intellij";
 
-    public MSOpenTechTools() {
+    public MSOpenTechToolsApplication() {
     }
 
-    public static MSOpenTechTools getCurrent() {
+    public static MSOpenTechToolsApplication getCurrent() {
         return current;
     }
 
@@ -118,7 +118,7 @@ public class MSOpenTechTools extends ApplicationComponent.Adapter {
         try {
             reader = new BufferedReader(
                     new InputStreamReader(
-                            MSOpenTechTools.class.getResourceAsStream("/settings.json")));
+                            MSOpenTechToolsApplication.class.getResourceAsStream("/settings.json")));
             StringBuilder sb = new StringBuilder();
             String line;
 
@@ -187,7 +187,7 @@ public class MSOpenTechTools extends ApplicationComponent.Adapter {
                 final VirtualFile tempFolder = LocalFileSystem.getInstance().findFileByIoFile(new File(sb.toString()));
                 if (tempFolder != null && tempFolder.exists()) {
                     try {
-                        tempFolder.delete(MSOpenTechTools.getCurrent());
+                        tempFolder.delete(MSOpenTechToolsApplication.getCurrent());
                     } catch (IOException ignored) {
                     }
                 }

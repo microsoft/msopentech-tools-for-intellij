@@ -16,7 +16,7 @@
 package com.microsoftopentechnologies.intellij.helpers.azure.sdk;
 
 import com.microsoft.windowsazure.exception.ServiceException;
-import com.microsoftopentechnologies.intellij.components.MSOpenTechTools;
+import com.microsoftopentechnologies.intellij.components.MSOpenTechToolsApplication;
 import com.microsoftopentechnologies.intellij.components.PluginSettings;
 import com.microsoftopentechnologies.intellij.helpers.StringHelper;
 import com.microsoftopentechnologies.intellij.helpers.aadauth.AuthenticationContext;
@@ -66,7 +66,7 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
     }
 
     private boolean refreshAccessToken(String subscriptionId) {
-        PluginSettings settings = MSOpenTechTools.getCurrent().getSettings();
+        PluginSettings settings = MSOpenTechToolsApplication.getCurrent().getSettings();
         AzureManager apiManager = AzureRestAPIManager.getManager();
         AuthenticationResult token = apiManager.getAuthenticationTokenForSubscription(subscriptionId);
 

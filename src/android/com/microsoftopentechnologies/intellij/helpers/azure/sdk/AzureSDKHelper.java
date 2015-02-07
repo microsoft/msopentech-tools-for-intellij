@@ -27,7 +27,7 @@ import com.microsoft.windowsazure.management.compute.ComputeManagementService;
 import com.microsoft.windowsazure.management.configuration.ManagementConfiguration;
 import com.microsoft.windowsazure.management.storage.StorageManagementClient;
 import com.microsoft.windowsazure.management.storage.StorageManagementService;
-import com.microsoftopentechnologies.intellij.components.MSOpenTechTools;
+import com.microsoftopentechnologies.intellij.components.MSOpenTechToolsApplication;
 import com.microsoftopentechnologies.intellij.helpers.OpenSSLHelper;
 import com.microsoftopentechnologies.intellij.helpers.XmlHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureAuthenticationMode;
@@ -135,7 +135,7 @@ public class AzureSDKHelper {
         // though it will not be used. We also supply a no-op "credential provider". Ideally we want
         // the SDK to directly support the scenario we need.
 
-        String azureServiceManagementUri = MSOpenTechTools.getCurrent().getSettings().getAzureServiceManagementUri();
+        String azureServiceManagementUri = MSOpenTechToolsApplication.getCurrent().getSettings().getAzureServiceManagementUri();
 
         ClassLoader old = Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(AzureSDKHelper.class.getClassLoader());
@@ -200,7 +200,7 @@ public class AzureSDKHelper {
     @Nullable
     private static SubscriptionInfo getSubscriptionInfoFromPublishSettings(@NotNull String subscriptionId)
             throws SAXException, ParserConfigurationException, XPathExpressionException, IOException {
-        String publishSettings = PropertiesComponent.getInstance().getValue(MSOpenTechTools.AppSettingsNames.SUBSCRIPTION_FILE, "");
+        String publishSettings = PropertiesComponent.getInstance().getValue(MSOpenTechToolsApplication.AppSettingsNames.SUBSCRIPTION_FILE, "");
 
         if (publishSettings.isEmpty()) {
             return null;

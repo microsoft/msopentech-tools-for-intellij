@@ -18,7 +18,7 @@ package com.microsoftopentechnologies.intellij.helpers.azure;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import com.intellij.ide.util.PropertiesComponent;
-import com.microsoftopentechnologies.intellij.components.MSOpenTechTools;
+import com.microsoftopentechnologies.intellij.components.MSOpenTechToolsApplication;
 import com.microsoftopentechnologies.intellij.components.PluginSettings;
 import com.microsoftopentechnologies.intellij.helpers.NoSubscriptionException;
 import com.microsoftopentechnologies.intellij.helpers.OpenSSLHelper;
@@ -41,7 +41,6 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
 import javax.xml.xpath.*;
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -62,7 +61,7 @@ public class AzureRestAPIHelper {
 
     public static void removeSubscription(String subscriptionId) throws SAXException, ParserConfigurationException, XPathExpressionException, IOException, TransformerException {
 
-        String existingXml = PropertiesComponent.getInstance().getValue(MSOpenTechTools.AppSettingsNames.SUBSCRIPTION_FILE);
+        String existingXml = PropertiesComponent.getInstance().getValue(MSOpenTechToolsApplication.AppSettingsNames.SUBSCRIPTION_FILE);
 
         NodeList subscriptionList = (NodeList) XmlHelper.getXMLValue(existingXml, "//Subscription", XPathConstants.NODESET);
 
@@ -73,7 +72,7 @@ public class AzureRestAPIHelper {
         }
 
         String savedXml = XmlHelper.saveXmlToStreamWriter(subscriptionList.item(0).getOwnerDocument());
-        PropertiesComponent.getInstance().setValue(MSOpenTechTools.AppSettingsNames.SUBSCRIPTION_FILE, savedXml);
+        PropertiesComponent.getInstance().setValue(MSOpenTechToolsApplication.AppSettingsNames.SUBSCRIPTION_FILE, savedXml);
     }
 
     public static void importSubscription(File publishSettingsFile) throws AzureCmdException {
@@ -89,14 +88,14 @@ public class AzureRestAPIHelper {
 
             String xml = OpenSSLHelper.processCertificate(publishInfo);
 
-            if (!PropertiesComponent.getInstance().getValue(MSOpenTechTools.AppSettingsNames.SUBSCRIPTION_FILE, "").trim().isEmpty()) {
-                String existingXml = PropertiesComponent.getInstance().getValue(MSOpenTechTools.AppSettingsNames.SUBSCRIPTION_FILE);
+            if (!PropertiesComponent.getInstance().getValue(MSOpenTechToolsApplication.AppSettingsNames.SUBSCRIPTION_FILE, "").trim().isEmpty()) {
+                String existingXml = PropertiesComponent.getInstance().getValue(MSOpenTechToolsApplication.AppSettingsNames.SUBSCRIPTION_FILE);
 
                 NodeList subscriptionList = (NodeList) XmlHelper.getXMLValue(existingXml, "//Subscription", XPathConstants.NODESET);
                 Node newSubscription = ((NodeList) XmlHelper.getXMLValue(xml, "//Subscription", XPathConstants.NODESET)).item(0);
 
                 if (subscriptionList.getLength() == 0) {
-                    PropertiesComponent.getInstance().setValue(MSOpenTechTools.AppSettingsNames.SUBSCRIPTION_FILE, xml);
+                    PropertiesComponent.getInstance().setValue(MSOpenTechToolsApplication.AppSettingsNames.SUBSCRIPTION_FILE, xml);
                 } else {
 
                     Document ownerDocument = subscriptionList.item(0).getOwnerDocument();
@@ -114,10 +113,10 @@ public class AzureRestAPIHelper {
 
                     String modifiedXml = XmlHelper.saveXmlToStreamWriter(node.getOwnerDocument());
 
-                    PropertiesComponent.getInstance().setValue(MSOpenTechTools.AppSettingsNames.SUBSCRIPTION_FILE, modifiedXml);
+                    PropertiesComponent.getInstance().setValue(MSOpenTechToolsApplication.AppSettingsNames.SUBSCRIPTION_FILE, modifiedXml);
                 }
             } else {
-                PropertiesComponent.getInstance().setValue(MSOpenTechTools.AppSettingsNames.SUBSCRIPTION_FILE, xml);
+                PropertiesComponent.getInstance().setValue(MSOpenTechToolsApplication.AppSettingsNames.SUBSCRIPTION_FILE, xml);
             }
         } catch (AzureCmdException ex) {
             throw ex;
@@ -445,7 +444,7 @@ public class AzureRestAPIHelper {
     public static AuthenticationResult acquireTokenInteractive(
             String subscriptionId, AzureManager apiManager) throws IOException, CertificateException, NoSuchAlgorithmException, UnrecoverableKeyException, ExecutionException, ParserConfigurationException, InterruptedException, XPathExpressionException, SAXException, KeyManagementException, KeyStoreException, AzureCmdException, NoSubscriptionException {
 
-        PluginSettings settings = MSOpenTechTools.getCurrent().getSettings();
+        PluginSettings settings = MSOpenTechToolsApplication.getCurrent().getSettings();
         AuthenticationContext context = null;
         AuthenticationResult token = null;
         boolean isForSubscription = !StringHelper.isNullOrWhiteSpace(subscriptionId);
@@ -487,7 +486,7 @@ public class AzureRestAPIHelper {
             String subscriptionId,
             boolean useRefreshToken) throws IOException, KeyManagementException, NoSuchAlgorithmException, UnrecoverableKeyException, KeyStoreException, CertificateException, ParserConfigurationException, XPathExpressionException, SAXException, InterruptedException, ExecutionException, AzureCmdException, NoSubscriptionException {
 
-        PluginSettings settings = MSOpenTechTools.getCurrent().getSettings();
+        PluginSettings settings = MSOpenTechToolsApplication.getCurrent().getSettings();
         AzureManager apiManager = AzureRestAPIManager.getManager();
 
         // get the default token if there is no subscription ID; otherwise fetch
@@ -549,10 +548,10 @@ public class AzureRestAPIHelper {
     }
 
     private static String getPlatformUserAgent() {
-        String version = MSOpenTechTools.getCurrent().getSettings().getPluginVersion();
+        String version = MSOpenTechToolsApplication.getCurrent().getSettings().getPluginVersion();
         return String.format(
                 "%s/%s (lang=%s; os=%s; version=%s)",
-                MSOpenTechTools.PLUGIN_ID,
+                MSOpenTechToolsApplication.PLUGIN_ID,
                 version,
                 "Java",
                 System.getProperty("os.name"),
@@ -562,7 +561,7 @@ public class AzureRestAPIHelper {
     public static String getTenantName(String subscriptionId) throws IOException, CertificateException, NoSuchAlgorithmException, UnrecoverableKeyException, ExecutionException, ParserConfigurationException, InterruptedException, SAXException, AzureCmdException, NoSubscriptionException, KeyStoreException, XPathExpressionException, KeyManagementException {
         // get tenant id from subscription if this request is for an
         // azure subscription
-        String tenantName = MSOpenTechTools.getCurrent().getSettings().getTenantName();
+        String tenantName = MSOpenTechToolsApplication.getCurrent().getSettings().getTenantName();
         if (!StringHelper.isNullOrWhiteSpace(subscriptionId)) {
             Subscription subscription = AzureRestAPIManager.getManager().getSubscriptionFromId(subscriptionId);
             if (subscription != null) {
@@ -586,7 +585,7 @@ public class AzureRestAPIHelper {
             XPathExpressionException,
             SAXException {
 
-        String publishSettings = PropertiesComponent.getInstance().getValue(MSOpenTechTools.AppSettingsNames.SUBSCRIPTION_FILE, "");
+        String publishSettings = PropertiesComponent.getInstance().getValue(MSOpenTechToolsApplication.AppSettingsNames.SUBSCRIPTION_FILE, "");
         if (publishSettings.isEmpty())
             return null;
 

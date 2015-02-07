@@ -19,7 +19,7 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.gson.Gson;
 import com.intellij.ide.util.PropertiesComponent;
-import com.microsoftopentechnologies.intellij.components.MSOpenTechTools;
+import com.microsoftopentechnologies.intellij.components.MSOpenTechToolsApplication;
 import com.microsoftopentechnologies.intellij.helpers.CustomJsonSlurper;
 import com.microsoftopentechnologies.intellij.helpers.NoSubscriptionException;
 import com.microsoftopentechnologies.intellij.helpers.StringHelper;
@@ -81,20 +81,20 @@ public class AzureRestAPIManager implements AzureManager {
     public AzureAuthenticationMode getAuthenticationMode() {
         return AzureAuthenticationMode.valueOf(
                 PropertiesComponent.getInstance().getValue(
-                        MSOpenTechTools.AppSettingsNames.AZURE_AUTHENTICATION_MODE,
+                        MSOpenTechToolsApplication.AppSettingsNames.AZURE_AUTHENTICATION_MODE,
                         AzureAuthenticationMode.Unknown.toString()));
     }
 
     @Override
     public void setAuthenticationMode(AzureAuthenticationMode azureAuthenticationMode) {
         PropertiesComponent.getInstance().setValue(
-                MSOpenTechTools.AppSettingsNames.AZURE_AUTHENTICATION_MODE,
+                MSOpenTechToolsApplication.AppSettingsNames.AZURE_AUTHENTICATION_MODE,
                 azureAuthenticationMode.toString());
     }
 
     public AuthenticationResult getAuthenticationTokenForSubscription(String subscriptionId) {
         // build key for the properties cache
-        String key = MSOpenTechTools.AppSettingsNames.AZURE_AUTHENTICATION_TOKEN + "_" + subscriptionId;
+        String key = MSOpenTechToolsApplication.AppSettingsNames.AZURE_AUTHENTICATION_TOKEN + "_" + subscriptionId;
 
         // check if the token is already available in our cache
         if (authenticationTokenSubscriptionMap.containsKey(key)) {
@@ -122,7 +122,7 @@ public class AzureRestAPIManager implements AzureManager {
             String subscriptionId,
             AuthenticationResult authenticationToken) {
         // build key for the properties cache
-        String key = MSOpenTechTools.AppSettingsNames.AZURE_AUTHENTICATION_TOKEN + "_" + subscriptionId;
+        String key = MSOpenTechToolsApplication.AppSettingsNames.AZURE_AUTHENTICATION_TOKEN + "_" + subscriptionId;
 
         authenticationTokenSubscriptionMapLock.lock();
         try {
@@ -152,7 +152,7 @@ public class AzureRestAPIManager implements AzureManager {
     @Override
     public AuthenticationResult getAuthenticationToken() {
         if (authenticationToken == null) {
-            String json = PropertiesComponent.getInstance().getValue(MSOpenTechTools.AppSettingsNames.AZURE_AUTHENTICATION_TOKEN);
+            String json = PropertiesComponent.getInstance().getValue(MSOpenTechToolsApplication.AppSettingsNames.AZURE_AUTHENTICATION_TOKEN);
 
             if (!StringHelper.isNullOrWhiteSpace(json)) {
                 Gson gson = new Gson();
@@ -182,7 +182,7 @@ public class AzureRestAPIManager implements AzureManager {
                 json = gson.toJson(this.authenticationToken, AuthenticationResult.class);
             }
 
-            PropertiesComponent.getInstance().setValue(MSOpenTechTools.AppSettingsNames.AZURE_AUTHENTICATION_TOKEN, json);
+            PropertiesComponent.getInstance().setValue(MSOpenTechToolsApplication.AppSettingsNames.AZURE_AUTHENTICATION_TOKEN, json);
         } finally {
             authenticationTokenLock.unlock();
         }
@@ -190,7 +190,7 @@ public class AzureRestAPIManager implements AzureManager {
 
     @Override
     public void clearSubscriptions() throws AzureCmdException {
-        PropertiesComponent.getInstance().unsetValue(MSOpenTechTools.AppSettingsNames.SUBSCRIPTION_FILE);
+        PropertiesComponent.getInstance().unsetValue(MSOpenTechToolsApplication.AppSettingsNames.SUBSCRIPTION_FILE);
         subscriptionsLock.lock();
 
         try {
@@ -265,7 +265,7 @@ public class AzureRestAPIManager implements AzureManager {
             AzureAuthenticationMode mode = getAuthenticationMode();
 
             if (mode == AzureAuthenticationMode.SubscriptionSettings) {
-                String subscriptionFile = PropertiesComponent.getInstance().getValue(MSOpenTechTools.AppSettingsNames.SUBSCRIPTION_FILE, "");
+                String subscriptionFile = PropertiesComponent.getInstance().getValue(MSOpenTechToolsApplication.AppSettingsNames.SUBSCRIPTION_FILE, "");
 
 
                 NodeList subscriptionList = (NodeList) XmlHelper.getXMLValue(subscriptionFile, "//Subscription", XPathConstants.NODESET);
@@ -283,7 +283,7 @@ public class AzureRestAPIManager implements AzureManager {
 
                 if (subscriptionList.getLength() > 0) {
                     String savedXml = XmlHelper.saveXmlToStreamWriter(subscriptionList.item(0).getOwnerDocument());
-                    PropertiesComponent.getInstance().setValue(MSOpenTechTools.AppSettingsNames.SUBSCRIPTION_FILE, savedXml);
+                    PropertiesComponent.getInstance().setValue(MSOpenTechToolsApplication.AppSettingsNames.SUBSCRIPTION_FILE, savedXml);
                 }
             } else if (mode == AzureAuthenticationMode.ActiveDirectory) {
                 for (Subscription subscription : subscriptions) {
@@ -295,7 +295,7 @@ public class AzureRestAPIManager implements AzureManager {
                     selectedIds.add(uuid.toString());
                 }
 
-                PropertiesComponent.getInstance().setValue(MSOpenTechTools.AppSettingsNames.SELECTED_SUBSCRIPTIONS, StringUtils.join(selectedIds, ","));
+                PropertiesComponent.getInstance().setValue(MSOpenTechToolsApplication.AppSettingsNames.SELECTED_SUBSCRIPTIONS, StringUtils.join(selectedIds, ","));
             }
         } catch (Exception e) {
             throw new AzureCmdException("Error getting subscription list", e);
@@ -303,7 +303,7 @@ public class AzureRestAPIManager implements AzureManager {
     }
 
     public ArrayList<Subscription> getSubscriptionListFromCert() throws SAXException, ParserConfigurationException, XPathExpressionException, IOException {
-        String subscriptionFile = PropertiesComponent.getInstance().getValue(MSOpenTechTools.AppSettingsNames.SUBSCRIPTION_FILE, "");
+        String subscriptionFile = PropertiesComponent.getInstance().getValue(MSOpenTechToolsApplication.AppSettingsNames.SUBSCRIPTION_FILE, "");
 
         if (subscriptionFile.trim().isEmpty()) {
             return null;
@@ -331,8 +331,8 @@ public class AzureRestAPIManager implements AzureManager {
         ArrayList<UUID> selectedIds = new ArrayList<UUID>();
         String selectedSubscriptions = null;
 
-        if (PropertiesComponent.getInstance().isValueSet(MSOpenTechTools.AppSettingsNames.SELECTED_SUBSCRIPTIONS)) {
-            selectedSubscriptions = PropertiesComponent.getInstance().getValue(MSOpenTechTools.AppSettingsNames.SELECTED_SUBSCRIPTIONS, "");
+        if (PropertiesComponent.getInstance().isValueSet(MSOpenTechToolsApplication.AppSettingsNames.SELECTED_SUBSCRIPTIONS)) {
+            selectedSubscriptions = PropertiesComponent.getInstance().getValue(MSOpenTechToolsApplication.AppSettingsNames.SELECTED_SUBSCRIPTIONS, "");
         }
 
         if (selectedSubscriptions != null && !selectedSubscriptions.isEmpty()) {
@@ -342,7 +342,7 @@ public class AzureRestAPIManager implements AzureManager {
         }
 
         String subscriptionXml = AzureRestAPIHelper.getRestApiCommand("subscriptions", null);
-        PropertiesComponent.getInstance().setValue(MSOpenTechTools.AppSettingsNames.SUBSCRIPTION_FILE, subscriptionXml);
+        PropertiesComponent.getInstance().setValue(MSOpenTechToolsApplication.AppSettingsNames.SUBSCRIPTION_FILE, subscriptionXml);
         NodeList subscriptionList = (NodeList) XmlHelper.getXMLValue(subscriptionXml, "//Subscription", XPathConstants.NODESET);
 
         subscriptionsLock.lock();
