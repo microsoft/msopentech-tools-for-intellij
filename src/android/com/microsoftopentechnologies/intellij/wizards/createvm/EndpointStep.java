@@ -40,13 +40,11 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.Arrays;
 import java.util.Vector;
 
 public class EndpointStep extends WizardStep<CreateVMWizardModel> {
@@ -162,7 +160,7 @@ public class EndpointStep extends WizardStep<CreateVMWizardModel> {
 
         EndpointTableModel endpointTableModel = (EndpointTableModel) endpointsTable.getModel();
 
-        if(model.getEndpoints() == null) {
+        if (model.getEndpoints() == null) {
             if (model.getVirtualMachineImage().getOperatingSystemType().equals("Windows")) {
                 endpointTableModel.getData().add(new Endpoint("Powershell", "TCP", 5983, 5983));
                 endpointTableModel.getData().add(new Endpoint("Remote Desktop", "TCP", 3389, 3389));
@@ -171,11 +169,10 @@ public class EndpointStep extends WizardStep<CreateVMWizardModel> {
             }
         } else {
             endpointTableModel.getData().removeAllElements();
-            for(Endpoint ep : model.getEndpoints()) {
+            for (Endpoint ep : model.getEndpoints()) {
                 endpointTableModel.getData().add(ep);
             }
         }
-
 
 
         return rootPanel;
@@ -183,7 +180,8 @@ public class EndpointStep extends WizardStep<CreateVMWizardModel> {
 
     @Override
     public WizardStep onPrevious(CreateVMWizardModel model) {
-        model.setEndpoints(((EndpointTableModel) endpointsTable.getModel()).getData().toArray(new Endpoint[] {}));
+        Vector<Endpoint> endpointData = ((EndpointTableModel) endpointsTable.getModel()).getData();
+        model.setEndpoints(endpointData.toArray(new Endpoint[endpointData.size()]));
 
         return super.onPrevious(model);
     }
@@ -199,7 +197,7 @@ public class EndpointStep extends WizardStep<CreateVMWizardModel> {
                 progressIndicator.setIndeterminate(true);
 
                 try {
-                    final VirtualMachine virtualMachine = new VirtualMachine(
+                    VirtualMachine virtualMachine = new VirtualMachine(
                             model.getName(),
                             model.getCloudService().getName(),
                             model.getCloudService().getProductionDeployment(),
@@ -217,11 +215,15 @@ public class EndpointStep extends WizardStep<CreateVMWizardModel> {
                             model.getUserName(),
                             new String(model.getPassword()));
 
+                    virtualMachine = AzureSDKManagerImpl.getManager().refreshVirtualMachineInformation(virtualMachine);
+
+                    final VirtualMachine vm = virtualMachine;
+
                     ApplicationManager.getApplication().invokeLater(new Runnable() {
                         @Override
                         public void run() {
                             try {
-                                node.addChildNode(new VMNode(node, virtualMachine));
+                                node.addChildNode(new VMNode(node, vm));
                             } catch (AzureCmdException e) {
                                 UIHelper.showException("An error occurred while trying to refresh the list of virtual machines",
                                         e,
@@ -368,7 +370,7 @@ public class EndpointStep extends WizardStep<CreateVMWizardModel> {
 
         @Override
         public Component getTableCellRendererComponent(JTable jTable, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
-            setPreferredSize(new Dimension(getSize().height, 15));
+            setPreferredSize(new Dimension(getSize().width, 15));
             setForeground(Color.red);
             setHorizontalAlignment(CENTER);
             setFont(getFont().deriveFont(Font.BOLD));
@@ -436,15 +438,17 @@ public class EndpointStep extends WizardStep<CreateVMWizardModel> {
                     try {
                         int publicPort = Integer.parseInt(object.toString());
                         endpoint.setPublicPort(publicPort);
-                    } catch (NumberFormatException ex) {
+                    } catch (NumberFormatException ignored) {
                     }
+
                     break;
                 case 3:
                     try {
                         int privatePort = Integer.parseInt(object.toString());
                         endpoint.setPrivatePort(privatePort);
-                    } catch (NumberFormatException ex) {
+                    } catch (NumberFormatException ignored) {
                     }
+
                     break;
                 case 4:
                     endpoint.setProtocol(object.toString());

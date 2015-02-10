@@ -70,6 +70,10 @@ public class VirtualMachine implements ServiceTreeItem {
         return deploymentName;
     }
 
+    public void setDeploymentName(@NotNull String deploymentName) {
+        this.deploymentName = deploymentName;
+    }
+
     @NotNull
     public String getAvailabilitySet() {
         return availabilitySet;

@@ -187,8 +187,9 @@ public class CreateCloudServiceForm extends JDialog {
 
         try {
             String name = nameTextField.getText();
-            String region = (regionOrAffinityGroupComboBox.getSelectedItem() instanceof Location) ? regionOrAffinityGroupComboBox.getSelectedItem().toString() : "";
-            String affinityGroup = (regionOrAffinityGroupComboBox.getSelectedItem() instanceof AffinityGroup) ? regionOrAffinityGroupComboBox.getSelectedItem().toString() : "";
+            Object regionOrAffinity = regionOrAffinityGroupComboBox.getSelectedItem();
+            String region = (regionOrAffinity instanceof Location) ? regionOrAffinity.toString() : "";
+            String affinityGroup = (regionOrAffinity instanceof AffinityGroup) ? regionOrAffinity.toString() : "";
 
             cloudService = new CloudService(name, region, affinityGroup, "", true, "", true, subscription.getId().toString());
             AzureSDKManagerImpl.getManager().createCloudService(cloudService);
