@@ -17,6 +17,7 @@
 package com.microsoftopentechnologies.intellij.wizards.createvm;
 
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
@@ -27,7 +28,6 @@ import com.microsoftopentechnologies.intellij.model.Subscription;
 import com.microsoftopentechnologies.intellij.model.vm.AffinityGroup;
 import com.microsoftopentechnologies.intellij.model.vm.CloudService;
 import com.microsoftopentechnologies.intellij.model.vm.Location;
-import com.intellij.openapi.progress.ProgressIndicator;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -190,10 +190,11 @@ public class CreateCloudServiceForm extends JDialog {
             String region = (regionOrAffinityGroupComboBox.getSelectedItem() instanceof Location) ? regionOrAffinityGroupComboBox.getSelectedItem().toString() : "";
             String affinityGroup = (regionOrAffinityGroupComboBox.getSelectedItem() instanceof AffinityGroup) ? regionOrAffinityGroupComboBox.getSelectedItem().toString() : "";
 
-            cloudService = new CloudService(name, region, affinityGroup, "", "", subscription.getId().toString());
+            cloudService = new CloudService(name, region, affinityGroup, "", true, "", true, subscription.getId().toString());
             AzureSDKManagerImpl.getManager().createCloudService(cloudService);
         } catch (Exception e) {
-            UIHelper.showException("Error creating cloud service", e);
+            cloudService = null;
+            UIHelper.showException("An error occurred while trying to create the specified cloud service", e, "Error Creating Storage Account", false, true);
         }
 
         onCreate.run();

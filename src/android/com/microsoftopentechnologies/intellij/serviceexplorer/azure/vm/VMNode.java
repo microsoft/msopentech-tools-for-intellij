@@ -45,7 +45,7 @@ public class VMNode extends Node {
     private static final String VM_STATUS_RUNNING = "Running";
     private static final String VM_STATUS_SUSPENDED = "Suspended";
     public static final String ACTION_DELETE = "Delete";
-    public static final String ACTION_DOWNLOAD_RDP_FILE = "Download RDP file";
+    public static final String ACTION_DOWNLOAD_RDP_FILE = "Connect Remote Desktop";
     public static final String ACTION_SHUTDOWN = "Shutdown";
     public static final String ACTION_START = "Start";
     public static final String ACTION_RESTART = "Restart";

@@ -13,7 +13,6 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-
 package com.microsoftopentechnologies.intellij.wizards.createvm;
 
 import com.intellij.openapi.application.ApplicationManager;
@@ -29,6 +28,7 @@ import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerI
 import com.microsoftopentechnologies.intellij.model.vm.CloudService;
 import com.microsoftopentechnologies.intellij.model.vm.StorageAccount;
 import com.microsoftopentechnologies.intellij.model.vm.VirtualMachineImage;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
@@ -36,11 +36,11 @@ import javax.swing.event.HyperlinkListener;
 import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.Vector;
 
 public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
-
     private Project project;
     private CreateVMWizardModel model;
     private JPanel rootPanel;
@@ -50,26 +50,18 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
     private JComboBox storageComboBox;
     private JCheckBox availabilitySetCheckBox;
     private JComboBox availabilityComboBox;
-    private List<StorageAccount> storageAccounts;
-    private List<CloudService> cloudServices;
-
+    private Map<String, StorageAccount> storageAccounts;
+    private Map<String, CloudService> cloudServices;
+    private final Object csMonitor = new Object();
+    private final Object saMonitor = new Object();
 
     public CloudServiceStep(CreateVMWizardModel mModel, final Project project) {
-
         super("Cloud Service Settings");
 
         this.project = project;
         this.model = mModel;
 
         model.configStepList(createVmStepsList, 3);
-
-        cloudServiceComboBox.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent itemEvent) {
-                fillStorage(null);
-                fillAvailabilitySets();
-            }
-        });
 
         cloudServiceComboBox.setRenderer(new DefaultListCellRenderer() {
             @Override
@@ -112,8 +104,8 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
         imageDescriptionTextPane.addHyperlinkListener(new HyperlinkListener() {
             @Override
             public void hyperlinkUpdate(HyperlinkEvent hyperlinkEvent) {
-                if(hyperlinkEvent.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-                    if(Desktop.isDesktopSupported()) {
+                if (hyperlinkEvent.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+                    if (Desktop.isDesktopSupported()) {
                         try {
                             Desktop.getDesktop().browse(hyperlinkEvent.getURL().toURI());
                         } catch (Exception e) {
@@ -131,43 +123,19 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
 
         model.getCurrentNavigationState().NEXT.setEnabled(false);
 
-        if(storageAccounts == null) {
-            ProgressManager.getInstance().run(new Task.Backgroundable(project, "Loading storage account...", false) {
-                @Override
-                public void run(ProgressIndicator progressIndicator) {
-                    try {
-                        progressIndicator.setIndeterminate(true);
-
-                        storageAccounts = AzureSDKManagerImpl.getManager().getStorageAccounts(model.getSubscription().getId().toString());
-
-                        ApplicationManager.getApplication().invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                fillStorage(null);
-                            }
-                        });
-
-                    } catch (AzureCmdException e) {
-                        UIHelper.showException("Error trying to get storage account list", e);
-                    }
-                }
-            });
-        }
-
         final VirtualMachineImage virtualMachineImage = model.getVirtualMachineImage();
         imageDescriptionTextPane.setText(model.getHtmlFromVMImage(virtualMachineImage));
         imageDescriptionTextPane.setCaretPosition(0);
 
         fillCloudServices(null);
-        fillStorage(null);
+        fillStorage(null, null);
 
         return rootPanel;
-
     }
 
     @Override
     public WizardStep onNext(CreateVMWizardModel model) {
-        if(!(storageComboBox.getSelectedItem() instanceof StorageAccount)) {
+        if (!(storageComboBox.getSelectedItem() instanceof StorageAccount)) {
             JOptionPane.showMessageDialog(null, "Must select a storage account", "Error creating the virtual machine", JOptionPane.ERROR_MESSAGE);
             return this;
         }
@@ -175,112 +143,198 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
         model.setCloudService((CloudService) cloudServiceComboBox.getSelectedItem());
         model.setStorageAccount((StorageAccount) storageComboBox.getSelectedItem());
         model.setAvailabilitySet(availabilitySetCheckBox.isSelected() ?
-               (availabilityComboBox.getSelectedItem() == null
-                ? availabilityComboBox.getEditor().getItem().toString()
-                : availabilityComboBox.getSelectedItem().toString())
-            : "");
+                (availabilityComboBox.getSelectedItem() == null
+                        ? availabilityComboBox.getEditor().getItem().toString()
+                        : availabilityComboBox.getSelectedItem().toString())
+                : "");
 
         return super.onNext(model);
     }
 
     private void fillCloudServices(final CloudService selected) {
-        cloudServiceComboBox.setModel(new DefaultComboBoxModel(new String[] { "<Loading...>" }));
+        if (cloudServices == null) {
+            final String createCS = "<< Create new cloud service >>";
 
-        ProgressManager.getInstance().run(new Task.Backgroundable(project, "Loading cloud services...", false) {
-            @Override
-            public void run(ProgressIndicator progressIndicator) {
-                try {
-                    progressIndicator.setIndeterminate(true);
-
-                    if (cloudServices == null) {
-                        cloudServices = AzureSDKManagerImpl.getManager().getCloudServices(model.getSubscription().getId().toString());
+            DefaultComboBoxModel loadingCSModel = new DefaultComboBoxModel(
+                    new String[]{createCS, "<Loading...>"}) {
+                @Override
+                public void setSelectedItem(Object o) {
+                    if (createCS.equals(o)) {
+                        showNewCloudServiceForm();
+                    } else {
+                        super.setSelectedItem(o);
                     }
+                }
+            };
 
-                    ApplicationManager.getApplication().invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            fillStorage(null);
+            loadingCSModel.setSelectedItem(null);
 
-                            cloudServiceComboBox.setModel(new DefaultComboBoxModel(cloudServices.toArray()) {
-                                @Override
-                                public void setSelectedItem(Object o) {
-                                    if (o instanceof String) {
-                                        if (o.toString().trim().length() > 0) {
-                                            showNewCloudServiceForm();
-                                        }
-                                    } else {
-                                        super.setSelectedItem(o);
-                                        fillStorage(null);
+            cloudServiceComboBox.setModel(loadingCSModel);
+
+            ProgressManager.getInstance().run(new Task.Backgroundable(project, "Loading cloud services...", false) {
+                @Override
+                public void run(@NotNull ProgressIndicator progressIndicator) {
+                    try {
+                        progressIndicator.setIndeterminate(true);
+
+                        synchronized (csMonitor) {
+                            if (cloudServices == null) {
+                                cloudServices = new TreeMap<String, CloudService>();
+
+                                for (CloudService cloudService : AzureSDKManagerImpl.getManager().getCloudServices(model.getSubscription().getId().toString())) {
+                                    if (cloudService.isProductionDeploymentVM()) {
+                                        cloudServices.put(cloudService.getName(), cloudService);
                                     }
                                 }
-
-                            });
-
-                            cloudServiceComboBox.insertItemAt("<< Create new cloud service >>", 0);
-
-                            if(selected != null) {
-                                cloudServiceComboBox.setSelectedItem(selected);
                             }
                         }
-                    });
 
-                } catch (AzureCmdException e) {
-                    UIHelper.showException("Error trying to get cloud services list", e);
-                }
-            }
-        });
-    }
-
-    private void fillStorage(StorageAccount selected) {
-
-        Object item = cloudServiceComboBox.getSelectedItem();
-
-        if(!(item instanceof CloudService) && cloudServices != null && cloudServices.size() > 0) {
-            item = cloudServices.get(0);
-        }
-
-        Vector<StorageAccount> accounts = new Vector<StorageAccount>();
-
-        if(item != null && storageAccounts != null && item instanceof CloudService) {
-            CloudService selectedItem = (CloudService) item;
-
-            for (StorageAccount storageAccount : storageAccounts) {
-                if (storageAccount.getLocation().equals(selectedItem.getLocation())) {
-                    accounts.add(storageAccount);
-                }
-            }
-
-        }
-
-
-        storageComboBox.setModel(new DefaultComboBoxModel(accounts) {
-            @Override
-            public void setSelectedItem(Object o) {
-                if (o instanceof String) {
-                    if(o.toString().trim().length() > 0) {
-                        showNewStorageForm();
+                        refreshCloudServices(selected);
+                    } catch (AzureCmdException e) {
+                        cloudServices = null;
+                        UIHelper.showException("Error trying to get cloud services list", e);
                     }
-                } else {
-                    super.setSelectedItem(o);
                 }
-            }
-        });
-
-        storageComboBox.insertItemAt("<< Create new storage account >>", 0);
-
-        if(selected != null) {
-            storageComboBox.setSelectedItem(selected);
+            });
+        } else {
+            refreshCloudServices(selected);
         }
-
-        model.getCurrentNavigationState().NEXT.setEnabled(accounts.size() > 0);
     }
 
-    private void fillAvailabilitySets() {
-        if(cloudServiceComboBox.getSelectedItem() instanceof CloudService) {
-            CloudService selectedItem = (CloudService) cloudServiceComboBox.getSelectedItem();
-            availabilityComboBox.setModel(new DefaultComboBoxModel(selectedItem.getAvailabilitySets().toArray()));
+    private void refreshCloudServices(final CloudService selected) {
+        if (selected != null && !cloudServices.containsKey(selected.getName())) {
+            cloudServices.put(selected.getName(), selected);
+        }
+
+        ApplicationManager.getApplication().invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                final String createCS = "<< Create new cloud service >>";
+
+                DefaultComboBoxModel refreshedCSModel = new DefaultComboBoxModel(cloudServices.values().toArray()) {
+                    @Override
+                    public void setSelectedItem(Object o) {
+                        if (createCS.equals(o)) {
+                            showNewCloudServiceForm();
+                        } else if (o instanceof CloudService) {
+                            super.setSelectedItem(o);
+                            fillStorage((CloudService) o, null);
+                            fillAvailabilitySets((CloudService) o);
+                        } else {
+                            super.setSelectedItem(o);
+                            fillStorage(null, null);
+                            fillAvailabilitySets(null);
+                        }
+                    }
+                };
+
+                refreshedCSModel.insertElementAt(createCS, 0);
+                refreshedCSModel.setSelectedItem(selected);
+
+                cloudServiceComboBox.setModel(refreshedCSModel);
+            }
+        });
+    }
+
+    private void fillStorage(final CloudService selectedCS, final StorageAccount selectedSA) {
+        if (storageAccounts == null) {
+            final String createSA = "<< Create new storage account >>";
+
+            DefaultComboBoxModel loadingSAModel = new DefaultComboBoxModel(
+                    new String[]{createSA, "<Loading...>"}) {
+                @Override
+                public void setSelectedItem(Object o) {
+                    if (createSA.equals(o)) {
+                        showNewStorageForm(selectedCS);
+                    } else {
+                        super.setSelectedItem(o);
+                    }
+                }
+            };
+
+            loadingSAModel.setSelectedItem(null);
+
+            storageComboBox.setModel(loadingSAModel);
+
+            ProgressManager.getInstance().run(new Task.Backgroundable(project, "Loading storage account...", false) {
+                @Override
+                public void run(@NotNull ProgressIndicator progressIndicator) {
+                    try {
+                        progressIndicator.setIndeterminate(true);
+
+                        synchronized (saMonitor) {
+                            if (storageAccounts == null) {
+                                storageAccounts = new TreeMap<String, StorageAccount>();
+
+                                for (StorageAccount storageAccount : AzureSDKManagerImpl.getManager().getStorageAccounts(model.getSubscription().getId().toString())) {
+                                    storageAccounts.put(storageAccount.getName(), storageAccount);
+                                }
+                            }
+                        }
+
+                        refreshStorageAccounts(selectedCS, selectedSA);
+                    } catch (AzureCmdException e) {
+                        storageAccounts = null;
+                        UIHelper.showException("Error trying to get storage account list", e);
+                    }
+                }
+            });
         } else {
-            availabilityComboBox.setModel(new DefaultComboBoxModel(new String[] {}));
+            refreshStorageAccounts(selectedCS, selectedSA);
+        }
+    }
+
+    private void refreshStorageAccounts(final CloudService selectedCS, final StorageAccount selectedSA) {
+        if (selectedSA != null && !storageAccounts.containsKey(selectedSA.getName())) {
+            storageAccounts.put(selectedSA.getName(), selectedSA);
+        }
+
+        ApplicationManager.getApplication().invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                Vector<StorageAccount> accounts = new Vector<StorageAccount>();
+
+                if (selectedCS != null) {
+                    for (StorageAccount storageAccount : storageAccounts.values()) {
+                        if (storageAccount.getLocation().equals(selectedCS.getLocation())) {
+                            accounts.add(storageAccount);
+                        }
+                    }
+                }
+
+                final String createSA = "<< Create new storage account >>";
+
+                DefaultComboBoxModel refreshedSAModel = new DefaultComboBoxModel(accounts) {
+                    @Override
+                    public void setSelectedItem(Object o) {
+                        if (createSA.equals(o)) {
+                            showNewStorageForm(selectedCS);
+                        } else {
+                            super.setSelectedItem(o);
+                        }
+                    }
+                };
+
+                refreshedSAModel.insertElementAt(createSA, 0);
+
+                if (selectedCS != null && selectedSA != null && selectedSA.getLocation().equals(selectedCS.getLocation())) {
+                    refreshedSAModel.setSelectedItem(selectedSA);
+                    model.getCurrentNavigationState().NEXT.setEnabled(true);
+                } else {
+                    refreshedSAModel.setSelectedItem(null);
+                    model.getCurrentNavigationState().NEXT.setEnabled(false);
+                }
+
+                storageComboBox.setModel(refreshedSAModel);
+            }
+        });
+    }
+
+    private void fillAvailabilitySets(CloudService selectedCS) {
+        if (selectedCS != null) {
+            availabilityComboBox.setModel(new DefaultComboBoxModel(selectedCS.getAvailabilitySets().toArray()));
+        } else {
+            availabilityComboBox.setModel(new DefaultComboBoxModel(new String[]{}));
         }
     }
 
@@ -296,16 +350,18 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
                     @Override
                     public void run() {
                         CloudService newCloudService = form.getCloudService();
-                        cloudServices.add(newCloudService);
-                        fillCloudServices(newCloudService);
+                        if (newCloudService != null) {
+                            fillCloudServices(newCloudService);
+                        }
                     }
                 });
             }
         });
+
         form.setVisible(true);
     }
 
-    private void showNewStorageForm() {
+    private void showNewStorageForm(final CloudService selectedCS) {
         final CreateStorageAccountForm form = new CreateStorageAccountForm();
         form.fillFields(model.getSubscription(), project);
         UIHelper.packAndCenterJDialog(form);
@@ -317,8 +373,9 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
                     @Override
                     public void run() {
                         StorageAccount newStorageAccount = form.getStorageAccount();
-                        storageAccounts.add(newStorageAccount);
-                        fillStorage(newStorageAccount);
+                        if (newStorageAccount != null) {
+                            fillStorage(selectedCS, newStorageAccount);
+                        }
                     }
                 });
             }

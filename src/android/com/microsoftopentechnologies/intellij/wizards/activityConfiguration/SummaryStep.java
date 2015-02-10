@@ -327,6 +327,7 @@ public class SummaryStep extends WizardStep<AddServiceWizardModel> {
                 UIHelper.showException("An error occurred while trying to associate the Office 365 application - " + message,
                         ex.getCause(),
                         "Error associating Office 365 application",
+                        false,
                         false);
             } else {
                 UIHelper.showException("An error occurred while trying to associate the Office 365 application",

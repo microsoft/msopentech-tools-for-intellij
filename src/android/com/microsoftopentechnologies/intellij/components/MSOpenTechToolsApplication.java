@@ -50,7 +50,6 @@ public class MSOpenTechToolsApplication extends ApplicationComponent.Adapter {
         public static final String SELECTED_SUBSCRIPTIONS = "com.microsoftopentechnologies.intellij.SelectedSubscriptions";
         public static final String AZURE_AUTHENTICATION_MODE = "com.microsoftopentechnologies.intellij.AzureAuthenticationMode";
         public static final String AZURE_AUTHENTICATION_TOKEN = "com.microsoftopentechnologies.intellij.AzureAuthenticationToken";
-        public static final String CLEAN_TEMP_DATA = "com.microsoftopentechnologies.intellij.CleanTempData";
         public static final String CURRENT_PLUGIN_VERSION = "com.microsoftopentechnologies.intellij.PluginVersion";
     }
 
@@ -98,7 +97,6 @@ public class MSOpenTechToolsApplication extends ApplicationComponent.Adapter {
                     "settings for the MSOpenTech Tools plugin.", e);
         }
 
-        // delete android studio activity templates
         cleanTempData(PropertiesComponent.getInstance());
 
         VirtualFileManager.getInstance().addVirtualFileListener(vfl);
@@ -139,11 +137,6 @@ public class MSOpenTechToolsApplication extends ApplicationComponent.Adapter {
     }
 
     private void cleanTempData(PropertiesComponent propComp) {
-        String cleanTempData = propComp.getValue(AppSettingsNames.CLEAN_TEMP_DATA, "");
-
-        //Setted for constant cleaning for testing
-        //cleanTempData = "";
-
         // check the plugin version stored in the properties; if it
         // doesn't match with the current plugin version then we clear
         // all stored options
@@ -171,37 +164,6 @@ public class MSOpenTechToolsApplication extends ApplicationComponent.Adapter {
 
         // save the current plugin version
         properties.setValue(AppSettingsNames.CURRENT_PLUGIN_VERSION, getSettings().getPluginVersion());
-
-        try {
-            if (cleanTempData.isEmpty() || !cleanTempData.equals(settings.getPluginVersion())) {
-
-                String tmpdir = System.getProperty("java.io.tmpdir");
-                StringBuilder sb = new StringBuilder();
-                sb.append(tmpdir);
-
-                if (!tmpdir.endsWith(File.separator))
-                    sb.append(File.separator);
-
-                sb.append("TempAzure");
-
-                final VirtualFile tempFolder = LocalFileSystem.getInstance().findFileByIoFile(new File(sb.toString()));
-                if (tempFolder != null && tempFolder.exists()) {
-                    try {
-                        tempFolder.delete(MSOpenTechToolsApplication.getCurrent());
-                    } catch (IOException ignored) {
-                    }
-                }
-
-                propComp.setValue(AppSettingsNames.CLEAN_TEMP_DATA, settings.getPluginVersion());
-
-                AndroidStudioHelper.newActivityTemplateManager(true, this);
-
-            } else {
-                AndroidStudioHelper.newActivityTemplateManager(false, this);
-            }
-        } catch (Exception e) {
-            UIHelper.showException("Error copying templates", e);
-        }
     }
 
     private static VirtualFileListener getVirtualFileListener() {

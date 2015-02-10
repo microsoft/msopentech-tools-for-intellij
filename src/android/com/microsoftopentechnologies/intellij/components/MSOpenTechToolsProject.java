@@ -19,15 +19,15 @@ import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.UnmodifiableIterator;
+import com.google.common.io.ByteStreams;
+import com.google.common.io.Files;
 import com.intellij.openapi.components.AbstractProjectComponent;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoftopentechnologies.intellij.helpers.ServiceCodeReferenceHelper;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -35,6 +35,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 public class MSOpenTechToolsProject extends AbstractProjectComponent {
     private static final String TEMPLATES_ROOT_DIR = "build/intermediates/exploded-aar/Microsoft/templates/%s";
@@ -66,36 +68,68 @@ public class MSOpenTechToolsProject extends AbstractProjectComponent {
             // we proceed only if "templates.zip" doesn't already exist in the path
             File templatesZip = new File(rootDir, TEMPLATE_ZIP_NAME);
             if(!templatesZip.exists()) {
-                templatesZip = getTemplatesZip();
+                File cachedZip = getTemplatesZip();
+                Files.copy(cachedZip, templatesZip);
             }
 
         } catch (IOException ignored) {}
     }
 
     private File getTemplatesZip() {
+        // we cache the templates zip for the current version of the plugin
+        File cachedZip = new File(System.getProperty("java.io.tmpdir"),
+                String.format(
+                        CACHED_TEMPLATE_ZIP_NAME,
+                        MSOpenTechToolsApplication.getCurrent().getSettings().getPluginVersion()));
+
+        BufferedReader reader = null;
+        InputStream inputStream = null;
+        ZipOutputStream outputStream = null;
+
         try {
-            // we cache the templates zip for the current version of the plugin
-            File cachedZip = new File(System.getProperty("java.io.tmpdir"),
-                    String.format(
-                            CACHED_TEMPLATE_ZIP_NAME,
-                            MSOpenTechToolsApplication.getCurrent().getSettings().getPluginVersion()));
-            if (cachedZip.exists()) {
-                return cachedZip;
+            if (!cachedZip.exists()) {
+                // read list of files to copy to zip and create the zip file
+                outputStream = new ZipOutputStream(
+                        new BufferedOutputStream(new FileOutputStream(cachedZip)));
+
+                reader = new BufferedReader(
+                        new InputStreamReader(
+                                MSOpenTechToolsProject.class.getResourceAsStream(
+                                        TEMPLATES_RESOURCE_PATH + "fileList.txt")));
+                String line = null;
+                while ((line = reader.readLine()) != null) {
+                    inputStream = MSOpenTechToolsProject.class.getResourceAsStream(
+                            TEMPLATES_RESOURCE_PATH + line
+                    );
+
+                    ZipEntry entry = new ZipEntry(line);
+                    outputStream.putNextEntry(entry);
+
+                    ByteStreams.copy(inputStream, outputStream);
+                    inputStream.close();
+                    inputStream = null;
+                }
+                reader.close(); reader = null;
+                outputStream.close(); outputStream = null;
             }
-
-            // build list of files to copy to zip
-            File jarFile = new File(getClass().getProtectionDomain().getCodeSource().getLocation().getPath());
-            List<InputStream> inputFiles;
-
-            if (jarFile.isFile()) {
-                inputFiles = extractFilesFromJar(jarFile);
-            }
-
-            // create the zip file
         } catch (IOException e) {
             UIHelper.showException("Unable to open plugin jar file.", e);
         }
+        finally {
+            try {
+                if (reader != null) {
+                    reader.close();
+                }
+                if(inputStream != null) {
+                    inputStream.close();
+                }
+                if(outputStream != null) {
+                    outputStream.close();
+                }
+            }
+            catch (IOException ignored) {}
+        }
 
-        return null;
+        return cachedZip;
     }
 }

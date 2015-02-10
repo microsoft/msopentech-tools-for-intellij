@@ -16,7 +16,6 @@
 
 package com.microsoftopentechnologies.intellij.wizards.createvm;
 
-import com.google.common.util.concurrent.ListenableFuture;
 import com.intellij.openapi.application.ApplicationNamesInfo;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.wizard.WizardModel;
@@ -75,7 +74,7 @@ public class CreateVMWizardModel extends WizardModel {
 
 
     public CreateVMWizardModel(VMServiceModule node) {
-        super(ApplicationNamesInfo.getInstance().getFullProductName() + " - Create VM Wizard");
+        super(ApplicationNamesInfo.getInstance().getFullProductName() + " - Create new Virtual Machine");
 
         Project project = node.getProject();
 

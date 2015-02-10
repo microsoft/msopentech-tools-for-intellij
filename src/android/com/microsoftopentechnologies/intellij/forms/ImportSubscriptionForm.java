@@ -15,6 +15,7 @@
  */
 package com.microsoftopentechnologies.intellij.forms;
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -51,6 +52,8 @@ public class ImportSubscriptionForm extends JDialog {
 
         final ImportSubscriptionForm form = this;
 
+        mainPanel.getRootPane().setDefaultButton(null);
+
         browseButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
@@ -78,6 +81,14 @@ public class ImportSubscriptionForm extends JDialog {
                         if (virtualFile != null) {
                             txtFile.setText(virtualFile.getPath());
                             importButton.setEnabled(true);
+                            mainPanel.getRootPane().setDefaultButton(importButton);
+                            ApplicationManager.getApplication().invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    importButton.requestFocus();
+                                }
+                            });
+
                         }
                     }
                 });
@@ -115,6 +126,7 @@ public class ImportSubscriptionForm extends JDialog {
                     UIHelper.showException("The specified Subscriptions File does not exist.",
                             null,
                             "Invalid Subscriptions File Path",
+                            false,
                             false);
                 }
             }

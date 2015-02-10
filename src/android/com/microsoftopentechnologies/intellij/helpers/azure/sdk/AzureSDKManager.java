@@ -69,4 +69,7 @@ public interface AzureSDKManager {
     void createVirtualMachine(@NotNull VirtualMachine virtualMachine, @NotNull VirtualMachineImage vmImage,
                               @NotNull String mediaLocation, @NotNull String username, @NotNull String password)
             throws AzureCmdException;
+
+    @NotNull
+    StorageAccount refreshStorageAccountInformation(@NotNull StorageAccount storageAccount) throws AzureCmdException;
 }

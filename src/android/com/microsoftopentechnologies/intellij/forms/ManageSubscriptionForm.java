@@ -203,7 +203,9 @@ public class ManageSubscriptionForm extends JDialog {
         int res = JOptionPane.showConfirmDialog(this, (isSigningOut
                         ? "Are you sure you would like to clear all subscriptions?"
                         : "Are you sure you would like to sign out?"),
-                "Clear Subscriptions",
+                (isSigningOut
+                        ? "Clear Subscriptions"
+                        : "Sign out"),
                 JOptionPane.YES_NO_OPTION,
                 JOptionPane.INFORMATION_MESSAGE);
 

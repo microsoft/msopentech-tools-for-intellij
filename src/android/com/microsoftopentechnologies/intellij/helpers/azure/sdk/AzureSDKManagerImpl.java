@@ -43,6 +43,7 @@ import com.microsoft.windowsazure.management.storage.StorageAccountOperations;
 import com.microsoft.windowsazure.management.storage.StorageManagementClient;
 import com.microsoft.windowsazure.management.storage.models.StorageAccountCreateParameters;
 import com.microsoft.windowsazure.management.storage.models.StorageAccountGetKeysResponse;
+import com.microsoft.windowsazure.management.storage.models.StorageAccountGetResponse;
 import com.microsoft.windowsazure.management.storage.models.StorageAccountListResponse;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureAuthenticationMode;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
@@ -115,7 +116,11 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
 
                 DeploymentGetResponse prodDGR = productionFuture.get();
                 String productionDeployment = prodDGR.getName();
-                String stagingDeployment = stagingFuture.get().getName();
+                boolean productionDeploymentVM = isDeploymentVM(prodDGR);
+
+                DeploymentGetResponse stagingDGR = stagingFuture.get();
+                String stagingDeployment = stagingDGR.getName();
+                boolean stagingDeploymentVM = isDeploymentVM(stagingDGR);
 
                 CloudService cloudService = new CloudService(
                         hostedService.getServiceName() != null ? hostedService.getServiceName() : "",
@@ -126,7 +131,9 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
                                 hostedService.getProperties().getAffinityGroup() :
                                 "",
                         productionDeployment != null ? productionDeployment : "",
+                        productionDeploymentVM,
                         stagingDeployment != null ? stagingDeployment : "",
+                        stagingDeploymentVM,
                         subscriptionId);
 
                 cloudService = loadAvailabilitySets(prodDGR, cloudService);
@@ -147,6 +154,21 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
                 }
             }
         }
+    }
+
+    private boolean isDeploymentVM(@NotNull DeploymentGetResponse dgr) {
+        boolean deploymentVM = true;
+
+        if (dgr.getRoles() != null) {
+            for (Role role : dgr.getRoles()) {
+                if (!PERSISTENT_VM_ROLE.equals(role.getRoleType())) {
+                    deploymentVM = false;
+                    break;
+                }
+            }
+        }
+
+        return deploymentVM;
     }
 
     @NotNull
@@ -620,6 +642,46 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         }
     }
 
+    @Override
+    @NotNull
+    public StorageAccount refreshStorageAccountInformation(@NotNull StorageAccount storageAccount) throws AzureCmdException {
+        StorageManagementClient client = null;
+
+        try {
+            client = getStorageManagementClient(storageAccount.getSubscriptionId());
+            StorageAccountOperations sao = getStorageAccountOperations(client);
+            StorageAccountGetResponse sagr = sao.get(storageAccount.getName());
+
+            if (sagr == null) {
+                throw new Exception("Unable to retrieve Operation");
+            }
+
+            OperationStatusResponse osr = getOperationStatusResponse(client, sagr);
+            validateOperationStatus(osr);
+
+            if (sagr.getStorageAccount() == null) {
+                throw new Exception("Invalid Storage Account information. No Storage Account matches the specified data.");
+            }
+
+            StorageAccount sa = getStorageAccount(storageAccount.getSubscriptionId(), client, sagr.getStorageAccount());
+            storageAccount.setType(sa.getType());
+            storageAccount.setLocation(sa.getLocation());
+            storageAccount.setAffinityGroup(sa.getAffinityGroup());
+            storageAccount.setKey(sa.getKey());
+
+            return storageAccount;
+        } catch (Throwable t) {
+            throw new AzureCmdException("Error refreshing the Storage Account information", t);
+        } finally {
+            if (client != null) {
+                try {
+                    client.close();
+                } catch (IOException ignored) {
+                }
+            }
+        }
+    }
+
     @NotNull
     private static ComputeManagementClient getComputeManagementClient(@NotNull String subscriptionId) throws Exception {
         ComputeManagementClient client = AzureSDKHelper.getComputeManagementClient(subscriptionId);
@@ -975,6 +1037,41 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         return osr;
     }
 
+    @Nullable
+    private static OperationStatusResponse getOperationStatusResponse(@NotNull StorageManagementClient client,
+                                                                      @NotNull OperationResponse or)
+            throws InterruptedException, java.util.concurrent.ExecutionException, ServiceException {
+        OperationStatusResponse osr = client.getOperationStatusAsync(or.getRequestId()).get();
+        int delayInSeconds = 30;
+
+        if (client.getLongRunningOperationInitialTimeout() >= 0) {
+            delayInSeconds = client.getLongRunningOperationInitialTimeout();
+        }
+
+        while (osr.getStatus() == OperationStatus.InProgress) {
+            Thread.sleep(delayInSeconds * 1000);
+            osr = client.getOperationStatusAsync(or.getRequestId()).get();
+            delayInSeconds = 30;
+
+            if (client.getLongRunningOperationRetryTimeout() >= 0) {
+                delayInSeconds = client.getLongRunningOperationRetryTimeout();
+            }
+        }
+
+        if (osr.getStatus() != OperationStatus.Succeeded) {
+            if (osr.getError() != null) {
+                ServiceException ex = new ServiceException(osr.getError().getCode() + " : " + osr.getError().getMessage());
+                ex.setErrorCode(osr.getError().getCode());
+                ex.setErrorMessage(osr.getError().getMessage());
+                throw ex;
+            } else {
+                throw new ServiceException("");
+            }
+        }
+
+        return osr;
+    }
+
     @NotNull
     private static CloudService loadAvailabilitySets(@NotNull DeploymentGetResponse deployment,
                                                      @NotNull CloudService cloudService)
@@ -1080,12 +1177,16 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
                                            @NotNull StorageAccount storageAccount)
             throws URISyntaxException, InvalidKeyException, StorageException {
         Calendar calendar = GregorianCalendar.getInstance();
-        String blobName = String.format("%s-%s-%04d-%02d-%02d.vhd",
+        String blobName = String.format("%s-%s-0-%04d%02d%02d%02d%02d%02d%04d.vhd",
                 virtualMachine.getServiceName(),
                 virtualMachine.getName(),
                 calendar.get(Calendar.YEAR),
                 calendar.get(Calendar.MONTH) + 1,
-                calendar.get(Calendar.DATE));
+                calendar.get(Calendar.DATE),
+                calendar.get(Calendar.HOUR_OF_DAY),
+                calendar.get(Calendar.MINUTE),
+                calendar.get(Calendar.SECOND),
+                calendar.get(Calendar.MILLISECOND));
 
         CloudStorageAccount csa = CloudStorageAccount.parse("DefaultEndpointsProtocol=http;" +
                 "AccountName=" + storageAccount.getName() + ";" +

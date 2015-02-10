@@ -17,8 +17,6 @@
 
 package com.microsoftopentechnologies.intellij.wizards.createvm;
 
-import com.intellij.openapi.application.Application;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.ui.wizard.WizardNavigationState;
 import com.intellij.ui.wizard.WizardStep;
 import com.microsoftopentechnologies.intellij.forms.ManageSubscriptionForm;
@@ -80,6 +78,8 @@ public class SubscriptionStep extends WizardStep<CreateVMWizardModel> {
 
         loadSubscriptions();
 
+        // model.getCurrentNavigationState().NEXT.setEnabled(false);
+
         return rootPanel;
     }
 
@@ -94,12 +94,8 @@ public class SubscriptionStep extends WizardStep<CreateVMWizardModel> {
                 model.setSubscription(subscriptions.get(0));
             }
 
-            ApplicationManager.getApplication().invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    model.getCurrentNavigationState().NEXT.setEnabled(!subscriptions.isEmpty());
-                }
-            });
+
+            model.getCurrentNavigationState().NEXT.setEnabled(!subscriptions.isEmpty());
 
         } catch (AzureCmdException e) {
             UIHelper.showException("Error retrieving subscription list", e);

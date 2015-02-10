@@ -26,7 +26,6 @@ import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerImpl;
 import com.microsoftopentechnologies.intellij.model.Subscription;
 import com.microsoftopentechnologies.intellij.model.vm.AffinityGroup;
-import com.microsoftopentechnologies.intellij.model.vm.CloudService;
 import com.microsoftopentechnologies.intellij.model.vm.Location;
 import com.microsoftopentechnologies.intellij.model.vm.StorageAccount;
 
@@ -34,9 +33,8 @@ import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.*;
-import java.awt.List;
 import java.awt.event.*;
-import java.util.*;
+import java.util.Vector;
 
 
 public class CreateStorageAccountForm extends JDialog {
@@ -175,10 +173,12 @@ public class CreateStorageAccountForm extends JDialog {
 
             storageAccount = new StorageAccount(name, replication, region, affinityGroup, "", subscription.getId().toString());
             AzureSDKManagerImpl.getManager().createStorageAccount(storageAccount);
+            AzureSDKManagerImpl.getManager().refreshStorageAccountInformation(storageAccount);
 
             onCreate.run();
         } catch (AzureCmdException e) {
-            UIHelper.showException("Error creating cloud service", e);
+            storageAccount = null;
+            UIHelper.showException("An error occurred while trying to create the specified storage account.", e, "Error Creating Storage Account", false, true);
         }
 
         setCursor(Cursor.getDefaultCursor());
