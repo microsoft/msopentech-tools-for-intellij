@@ -1,5 +1,5 @@
 /**
- * Copyright 2014 Microsoft Open Technologies Inc.
+ * Copyright 2015 Microsoft Open Technologies Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -15,16 +15,8 @@
  */
 package com.microsoftopentechnologies.intellij.ui.components;
 
-import com.intellij.ui.wizard.WizardStep;
-import com.microsoftopentechnologies.intellij.ui.AzureWizardModel;
+import com.intellij.openapi.ui.ValidationInfo;
 
-public abstract class AzureWizardStep extends WizardStep<AzureWizardModel> implements Validatable {
-
-    protected AzureWizardStep(String title, String explanation) {
-        super(title, explanation, null);
-    }
-
-    public String getHelpId() {
-        return "windows_azure_project";
-    }
+public interface Validatable {
+    ValidationInfo doValidate();
 }
