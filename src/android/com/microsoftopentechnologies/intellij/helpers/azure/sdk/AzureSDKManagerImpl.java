@@ -229,6 +229,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
                 throw new Exception("Invalid Virtual Machine information. No Roles match the VM data.");
             }
 
+            vm.setDeploymentName(deployment.getName() != null ? deployment.getName() : "");
             vm.setAvailabilitySet(vmRole.getAvailabilitySetName() != null ? vmRole.getAvailabilitySetName() : "");
             vm.setSize(vmRole.getRoleSize() != null ? vmRole.getRoleSize() : "");
             vm.setStatus(deployment.getStatus() != null ? deployment.getStatus().toString() : "");
@@ -618,17 +619,16 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     public void createVirtualMachine(@NotNull VirtualMachine virtualMachine, @NotNull VirtualMachineImage vmImage,
                                      @NotNull String mediaLocation, @NotNull String username, @NotNull String password)
             throws AzureCmdException {
-
         ComputeManagementClient client = null;
 
         try {
             client = getComputeManagementClient(virtualMachine.getSubscriptionId());
             VirtualMachineOperations vmo = getVirtualMachineOperations(client);
 
-            if (!virtualMachine.getDeploymentName().isEmpty()) {
-                createVM(vmo, virtualMachine, vmImage, mediaLocation, username, password);
-            } else {
+            if (virtualMachine.getDeploymentName().isEmpty()) {
                 createVMDeployment(vmo, virtualMachine, vmImage, mediaLocation, username, password);
+            } else {
+                createVM(vmo, virtualMachine, vmImage, mediaLocation, username, password);
             }
         } catch (Throwable t) {
             throw new AzureCmdException("Error creating the VM", t);
@@ -880,31 +880,9 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
 
     @NotNull
     private static DeploymentGetResponse getDeployment(@NotNull ComputeManagementClient client,
-                                                       @NotNull String serviceName,
-                                                       @NotNull String deploymentName)
-            throws Exception {
-        try {
-            DeploymentGetResponse dgr = getDeploymentOperations(client).getByName(serviceName, deploymentName);
-
-            if (dgr == null) {
-                throw new Exception("Unable to retrieve Deployment information");
-            }
-
-            return dgr;
-        } catch (ServiceException se) {
-            if (se.getHttpStatusCode() == 404) {
-                return new DeploymentGetResponse();
-            } else {
-                throw se;
-            }
-        }
-    }
-
-    @NotNull
-    private static DeploymentGetResponse getDeployment(@NotNull ComputeManagementClient client,
                                                        @NotNull VirtualMachine vm)
             throws Exception {
-        return getDeployment(client, vm.getServiceName(), vm.getDeploymentName());
+        return getDeployment(client, vm.getServiceName(), DeploymentSlot.Production);
     }
 
     @NotNull
