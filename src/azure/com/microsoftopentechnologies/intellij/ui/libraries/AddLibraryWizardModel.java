@@ -1,5 +1,5 @@
 /**
- * Copyright 2014 Microsoft Open Technologies Inc.
+ * Copyright 2015 Microsoft Open Technologies Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package com.microsoftopentechnologies.intellij.ui.libraries;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.ui.wizard.WizardModel;
+import com.microsoftopentechnologies.intellij.ui.components.Validatable;
 
 import static com.microsoftopentechnologies.intellij.ui.messages.AzureBundle.message;
 
@@ -49,7 +50,6 @@ public class AddLibraryWizardModel extends WizardModel {
     }
 
     public ValidationInfo doValidate() {
-        return null;
-//        return ((AzureWizardStep) getCurrentStep()).doValidate();
+        return ((Validatable) getCurrentStep()).doValidate();
     }
 }

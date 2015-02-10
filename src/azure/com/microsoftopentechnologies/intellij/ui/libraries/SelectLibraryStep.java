@@ -4,12 +4,13 @@ import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.ui.wizard.WizardNavigationState;
 import com.intellij.ui.wizard.WizardStep;
 import com.microsoftopentechnologies.intellij.actions.LibraryConfigurationAction;
+import com.microsoftopentechnologies.intellij.ui.components.Validatable;
 
 import javax.swing.*;
 
 import static com.microsoftopentechnologies.intellij.ui.messages.AzureBundle.message;
 
-public class SelectLibraryStep extends WizardStep<AddLibraryWizardModel> {
+public class SelectLibraryStep extends WizardStep<AddLibraryWizardModel> implements Validatable {
     private JPanel rootPanel;
     private JList libraryList;
     private final AddLibraryWizardModel myModel;
@@ -43,14 +44,9 @@ public class SelectLibraryStep extends WizardStep<AddLibraryWizardModel> {
         }
     }
 
-    //    @Override
+    @Override
     public ValidationInfo doValidate() {
         return null;
-    }
-
-    ValidationInfo createValidationInfo(String message, JComponent component) {
-        myModel.getCurrentNavigationState().NEXT.setEnabled(false);
-        return new ValidationInfo(message, component);
     }
 
     @Override

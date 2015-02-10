@@ -2,6 +2,7 @@ package com.microsoftopentechnologies.intellij.ui.libraries;
 
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.ui.ValidationInfo;
@@ -130,14 +131,46 @@ class LibraryPropertiesPanel {
 
     public boolean onFinish() {
         if (azureLibrary == LibraryConfigurationAction.ACS_FILTER) {
+            if (doValidate() != null) {
+                return false;
+            }
             configureDeployment();
         }
         return true;
     }
 
-    //    @Override
     public ValidationInfo doValidate() {
-        return null;
+        boolean isEdit  = isEdit();
+        StringBuilder errorMessage = new StringBuilder();
+
+        // Display error if acs login page URL is null. Applicable for first time and edit scenarios.
+        if(acsTxt.getText().isEmpty() || acsTxt.getText().equalsIgnoreCase(message("acsTxt")))
+            errorMessage.append(message("acsTxtErr")).append("\n");
+
+        // Display error if relying part realm is null. Applicable for first time and edit scenarios.
+        if(relTxt.getText().isEmpty())
+            errorMessage.append(message("relTxtErr")).append("\n");
+
+        // if certificate location does not end with .cer then display error
+        if(!certTxt.getText().isEmpty() &&  !certTxt.getText().toLowerCase().endsWith(".cer"))
+            errorMessage.append(message("certTxtInvalidExt")).append("\n");
+
+        // Display error if cert location is empty for first time and for edit scenarios if
+        // embedded cert option is not selected
+        if((!isEdit && certTxt.getText().isEmpty()) || (isEdit && certTxt.getText().isEmpty() && !embedCertCheck.isSelected()))
+            errorMessage.append(message("certTxtErr")).append("\n");
+
+        // For first time , if embedded cert option is selected , display error if file does not exist at source
+        if (!isEdit && !certTxt.getText().isEmpty() && embedCertCheck.isSelected() == true) {
+            if(!new File(CerPfxUtil.getCertificatePath(certTxt.getText())).exists()) {
+                errorMessage.append(message("acsNoValidCert")).append("\n");
+            }
+        }
+        if (errorMessage.length() > 0) {
+            return new ValidationInfo(errorMessage.toString());
+        } else {
+            return null;
+        }
     }
 
     ValidationInfo createValidationInfo(String message, JComponent component) {

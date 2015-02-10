@@ -1,5 +1,5 @@
 /**
- * Copyright 2014 Microsoft Open Technologies Inc.
+ * Copyright 2015 Microsoft Open Technologies Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,13 +17,15 @@ package com.microsoftopentechnologies.intellij.ui.libraries;
 
 import javax.swing.*;
 
-
+import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.ui.wizard.WizardNavigationState;
 import com.intellij.ui.wizard.WizardStep;
+import com.microsoftopentechnologies.intellij.actions.LibraryConfigurationAction;
+import com.microsoftopentechnologies.intellij.ui.components.Validatable;
 
 import static com.microsoftopentechnologies.intellij.ui.messages.AzureBundle.message;
 
-public class LibraryPropertiesStep extends WizardStep<AddLibraryWizardModel> {
+public class LibraryPropertiesStep extends WizardStep<AddLibraryWizardModel> implements Validatable {
 
     private LibraryPropertiesPanel libraryPropertiesPanel;
     private final AddLibraryWizardModel myModel;
@@ -36,8 +38,17 @@ public class LibraryPropertiesStep extends WizardStep<AddLibraryWizardModel> {
 
     @Override
     public JComponent prepare(final WizardNavigationState state) {
-        state.FINISH.setEnabled(true);
         return libraryPropertiesPanel.prepare(state);
+    }
+
+    @Override
+    public ValidationInfo doValidate() {
+        if (myModel.getSelectedLibrary() == LibraryConfigurationAction.ACS_FILTER) {
+            ValidationInfo result = libraryPropertiesPanel.doValidate();
+            myModel.getCurrentNavigationState().FINISH.setEnabled(result == null);
+        }
+        return null;
+//        return libraryPropertiesPanel.doValidate();
     }
 
     @Override
