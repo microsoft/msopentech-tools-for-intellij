@@ -127,8 +127,8 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
         imageDescriptionTextPane.setText(model.getHtmlFromVMImage(virtualMachineImage));
         imageDescriptionTextPane.setCaretPosition(0);
 
-        fillCloudServices(null);
-        fillStorage(null, null);
+        fillCloudServices(model.getCloudService());
+        fillStorage(model.getCloudService(), model.getStorageAccount());
 
         return rootPanel;
     }
@@ -218,7 +218,7 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
                             showNewCloudServiceForm();
                         } else if (o instanceof CloudService) {
                             super.setSelectedItem(o);
-                            fillStorage((CloudService) o, null);
+                            fillStorage((CloudService) o, model.getStorageAccount());
                             fillAvailabilitySets((CloudService) o);
                         } else {
                             super.setSelectedItem(o);
