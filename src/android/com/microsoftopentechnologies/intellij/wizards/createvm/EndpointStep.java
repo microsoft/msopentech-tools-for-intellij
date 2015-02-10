@@ -40,11 +40,13 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.Arrays;
 import java.util.Vector;
 
 public class EndpointStep extends WizardStep<CreateVMWizardModel> {
@@ -93,20 +95,19 @@ public class EndpointStep extends WizardStep<CreateVMWizardModel> {
             public void actionPerformed(ActionEvent actionEvent) {
                 EndpointTableModel endpointsTableModel = (EndpointTableModel) endpointsTable.getModel();
 
-                Endpoint endpoint = (portNameComboBox.getSelectedItem() instanceof Endpoint)
-                        ? (Endpoint) portNameComboBox.getSelectedItem()
-                        : new Endpoint(portNameComboBox.getSelectedItem().toString(), "TCP", 0, 0);
-
-                endpointsTableModel.getData().add(endpoint);
+                if (portNameComboBox.getSelectedItem() instanceof Endpoint) {
+                    Endpoint selectedItem = (Endpoint) portNameComboBox.getSelectedItem();
+                    endpointsTableModel.getData().add(new Endpoint(
+                            selectedItem.getName(),
+                            selectedItem.getProtocol(),
+                            selectedItem.getPrivatePort(),
+                            selectedItem.getPublicPort()));
+                } else {
+                    endpointsTableModel.getData().add(new Endpoint(portNameComboBox.getSelectedItem().toString(), "TCP", 0, 0));
+                }
                 endpointsTableModel.fireTableDataChanged();
             }
         });
-
-    }
-
-    @Override
-    public JComponent prepare(WizardNavigationState wizardNavigationState) {
-        rootPanel.revalidate();
 
         final EndpointTableModel endpointTableModel = new EndpointTableModel();
 
@@ -141,14 +142,15 @@ public class EndpointStep extends WizardStep<CreateVMWizardModel> {
             }
         });
 
-        if (model.getVirtualMachineImage().getOperatingSystemType().equals("Windows")) {
-            endpointTableModel.getData().add(new Endpoint("Powershell", "TCP", 5983, 5983));
-            endpointTableModel.getData().add(new Endpoint("Remote Desktop", "TCP", 3389, 3389));
-        } else {
-            endpointTableModel.getData().add(new Endpoint("SSH", "TCP", 22, 22));
-        }
+        endpointsTable.setTableHeader(null);
 
         endpointsTable.setModel(endpointTableModel);
+
+    }
+
+    @Override
+    public JComponent prepare(WizardNavigationState wizardNavigationState) {
+        rootPanel.revalidate();
 
         endpointsTable.getColumnModel().getColumn(0).setPreferredWidth(15);
         endpointsTable.getColumnModel().getColumn(1).setPreferredWidth(150);
@@ -157,10 +159,33 @@ public class EndpointStep extends WizardStep<CreateVMWizardModel> {
         endpointsTable.getColumnModel().getColumn(4).setPreferredWidth(60);
         endpointsTable.getColumnModel().getColumn(5).setPreferredWidth(205);
 
-        endpointsTable.setTableHeader(null);
+
+        EndpointTableModel endpointTableModel = (EndpointTableModel) endpointsTable.getModel();
+
+        if(model.getEndpoints() == null) {
+            if (model.getVirtualMachineImage().getOperatingSystemType().equals("Windows")) {
+                endpointTableModel.getData().add(new Endpoint("Powershell", "TCP", 5983, 5983));
+                endpointTableModel.getData().add(new Endpoint("Remote Desktop", "TCP", 3389, 3389));
+            } else {
+                endpointTableModel.getData().add(new Endpoint("SSH", "TCP", 22, 22));
+            }
+        } else {
+            endpointTableModel.getData().removeAllElements();
+            for(Endpoint ep : model.getEndpoints()) {
+                endpointTableModel.getData().add(ep);
+            }
+        }
+
 
 
         return rootPanel;
+    }
+
+    @Override
+    public WizardStep onPrevious(CreateVMWizardModel model) {
+        model.setEndpoints(((EndpointTableModel) endpointsTable.getModel()).getData().toArray(new Endpoint[] {}));
+
+        return super.onPrevious(model);
     }
 
     @Override
