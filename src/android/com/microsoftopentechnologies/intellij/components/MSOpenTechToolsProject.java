@@ -23,7 +23,7 @@ import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
 import com.intellij.openapi.components.AbstractProjectComponent;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.*;
 import com.microsoftopentechnologies.intellij.helpers.ServiceCodeReferenceHelper;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 
@@ -48,31 +48,70 @@ public class MSOpenTechToolsProject extends AbstractProjectComponent {
         super(project);
     }
 
+    private VirtualFileListener virtualFileListener = null;
+    private boolean templatesCreated = false;
+
     @Override
     public void projectOpened() {
         try {
+            templatesCreated = false;
+
+            // if a new project is being created then this method is called before
+            // any file is created; we install a file listener to handle the template
+            // file creation in case the project being created is an Android gradle
+            // project
+            virtualFileListener = new VirtualFileAdapter() {
+                @Override
+                public void contentsChanged(VirtualFileEvent event) {
+                    super.fileCreated(event);
+
+                    // if this is a build.gradle file and is an android build file then
+                    // copy the template files
+                    try {
+                        if(!templatesCreated &&
+                                event.getFileName().contains("build.gradle") &&
+                                ServiceCodeReferenceHelper.isAndroidGradleBuildFile(event.getFile())) {
+                            createActivityTemplates();
+                        }
+                    } catch (IOException ignored) {}
+                }
+            };
+            VirtualFileManager.getInstance().addVirtualFileListener(virtualFileListener);
+
             // get project root dir and check if this is an Android project
-            VirtualFile baseDir = myProject.getBaseDir();
-            if (!ServiceCodeReferenceHelper.isAndroidGradleModule(baseDir)) {
+            if (!ServiceCodeReferenceHelper.isAndroidGradleModule(myProject.getBaseDir())) {
                 return;
             }
 
-            // create the root dir to contain our templates zip if the
-            // dir doesn't exist already
-            File rootDir = new File(baseDir.getPath(),
-                    String.format(
-                            TEMPLATES_ROOT_DIR,
-                            MSOpenTechToolsApplication.getCurrent().getSettings().getPluginVersion()));
-            rootDir.mkdirs();
-
-            // we proceed only if "templates.zip" doesn't already exist in the path
-            File templatesZip = new File(rootDir, TEMPLATE_ZIP_NAME);
-            if(!templatesZip.exists()) {
-                File cachedZip = getTemplatesZip();
-                Files.copy(cachedZip, templatesZip);
-            }
+            createActivityTemplates();
 
         } catch (IOException ignored) {}
+    }
+
+    @Override
+    public void projectClosed() {
+        if(virtualFileListener != null) {
+            VirtualFileManager.getInstance().removeVirtualFileListener(virtualFileListener);
+        }
+    }
+
+    private void createActivityTemplates() throws IOException {
+        // create the root dir to contain our templates zip if the
+        // dir doesn't exist already
+        File rootDir = new File(myProject.getBaseDir().getPath(),
+                String.format(
+                        TEMPLATES_ROOT_DIR,
+                        MSOpenTechToolsApplication.getCurrent().getSettings().getPluginVersion()));
+        rootDir.mkdirs();
+
+        // we proceed only if "templates.zip" doesn't already exist in the path
+        File templatesZip = new File(rootDir, TEMPLATE_ZIP_NAME);
+        if(!templatesZip.exists()) {
+            File cachedZip = getTemplatesZip();
+            Files.copy(cachedZip, templatesZip);
+        }
+
+        templatesCreated = true;
     }
 
     private File getTemplatesZip() {

@@ -118,15 +118,19 @@ public class ServiceCodeReferenceHelper {
         }
     }
 
-    public static Boolean isAndroidGradleModule(VirtualFile virtualFileDir) throws IOException {
+    public static boolean isAndroidGradleModule(VirtualFile virtualFileDir) throws IOException {
         for (VirtualFile file : virtualFileDir.getChildren()) {
             if (file.getName().contains("build.gradle")) {
-                if(getStringAndCloseStream(file.getInputStream()).contains("com.android.tools.build"))
+                if(isAndroidGradleBuildFile(file))
                     return true;
             }
         }
 
         return false;
+    }
+
+    public static boolean isAndroidGradleBuildFile(VirtualFile buildGradleFile) throws IOException {
+        return getStringAndCloseStream(buildGradleFile.getInputStream()).contains("com.android.tools.build");
     }
     
      private void addReferences(String zipPath)
