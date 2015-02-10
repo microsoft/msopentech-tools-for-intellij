@@ -152,6 +152,18 @@ public class MSOpenTechToolsProject extends AbstractProjectComponent {
                 outputStream.close(); outputStream = null;
             }
         }
+        catch (IOException e) {
+            // if creation of the zip file fails and leaves a partially
+            // created zip file in the file system then we delete it so
+            // that we attempt creating it again the next time around
+            // which we wouldn't if we discover that the file exists
+            // already
+            if(cachedZip.exists()) {
+                cachedZip.delete();
+            }
+
+            throw e;
+        }
         finally {
             try {
                 if (reader != null) {
