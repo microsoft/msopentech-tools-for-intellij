@@ -114,7 +114,7 @@ public class MSOpenTechToolsProject extends AbstractProjectComponent {
         templatesCreated = true;
     }
 
-    private File getTemplatesZip() {
+    private File getTemplatesZip() throws IOException {
         // we cache the templates zip for the current version of the plugin
         File cachedZip = new File(System.getProperty("java.io.tmpdir"),
                 String.format(
@@ -151,8 +151,6 @@ public class MSOpenTechToolsProject extends AbstractProjectComponent {
                 reader.close(); reader = null;
                 outputStream.close(); outputStream = null;
             }
-        } catch (IOException e) {
-            UIHelper.showException("Unable to open plugin jar file.", e);
         }
         finally {
             try {
