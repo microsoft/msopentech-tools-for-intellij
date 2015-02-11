@@ -29,7 +29,7 @@ limitations under the License.
 	
 </#if>
 <#if includeListServices>
-	<dependency mavenUrl="com.microsoft.services:list-services:(,1.0)@aar" />
+	<dependency mavenUrl="com.microsoft.services:sharepoint-services:(,1.0)@aar" />
 	
 </#if>
     <merge from="AndroidManifest.xml.ftl"

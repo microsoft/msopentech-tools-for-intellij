@@ -1,0 +1,32 @@
+<?xml version='1.0' encoding='ISO-8859-1'?>
+<!DOCTYPE map PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 2.0//EN"
+                     "http://java.sun.com/products/javahelp/map_2_0.dtd">
+
+<map version="1.0">
+	<mapID target="new_certificate_dialog" url="html/NewCertificateDialogHelp.html"/>
+	<mapID target="new_hosted_service" url="html/NewHostedServiceDialogHelp.html"/>
+	<mapID target="new_storage_account" url="html/NewStorageAccountDialogHelp.html"/>
+	<mapID target="publish_project_command" url="html/DeployWizardDialogHelp.html"/>
+	<mapID target="storage_account_dialog" url="html/EditStorageAccountDialogHelp.html"/>
+	<mapID target="unpublish_project_command" url="html/UndeployWizardDialogHelp.html"/>
+	<mapID target="windows_azure_addapp_dialog" url="html/AddApplicationDialogHelp.html"/>
+	<mapID target="windows_azure_cache_dialog" url="html/CacheDialogHelp.html"/>
+	<mapID target="windows_azure_caching_page" url="html/CachingPanelHelp.html"/>
+	<mapID target="windows_azure_certificates_page" url="html/CertificatesPanelHelp.html"/>
+	<mapID target="windows_azure_components_page" url="html/ComponentsPanelHelp.html"/>
+	<mapID target="windows_azure_debug_config" url="html/DebugConfigurationDialogHelp.html"/>
+	<mapID target="windows_azure_debug_page" url="html/DebuggingPanelHelp.html"/>
+	<mapID target="windows_azure_endpoint_page" url="html/RoleEndpointsPanelHelp.html"/>
+	<mapID target="windows_azure_envvar_page" url="html/EnvVarsPanelHelp.html"/>
+	<mapID target="windows_azure_importexport_dialog" url="html/ImportExportDialogHelp.html"/>
+	<mapID target="windows_azure_loadbalance_page" url="html/LoadBalancingPanelHelp.html"/>
+	<mapID target="windows_azure_localstorage_page" url="html/LocalStoragePanelHelp.html"/>
+	<mapID target="windows_azure_project" url="html/AzureWizardDialogHelp.html"/>
+	<mapID target="windows_azure_project_properties" url="html/AzureConfigurableHelp.html"/>
+	<mapID target="windows_azure_project_remote_access_property" url="html/WARemoteAccessPanelHelp.html"/>
+	<mapID target="windows_azure_role" url="html/AzureRolePanelHelp.html"/>
+	<mapID target="windows_azure_project_roles" url="html/RolesPanelHelp.html"/>
+	<mapID target="windows_azure_serverconfiguration_page" url="html/ServerConfigurationConfigurableHelp.html"/>
+	<mapID target="windows_azure_ssl_offloading_page" url="html/SSLOffloadingPanelHelp.html"/>
+	<mapID target="windows_azure_project_project_property" url="html/AzureModulePanelHelp.html"/>
+</map>

@@ -77,7 +77,7 @@ public class ServerConfigurationConfigurable implements SearchableConfigurable, 
     @Nullable
     @Override
     public String getHelpTopic() {
-        return null;
+        return "windows_azure_serverconfiguration_page";
     }
 
     @Nullable

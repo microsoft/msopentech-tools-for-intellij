@@ -120,6 +120,11 @@ public class SSLOffloadingPanel extends BaseConfigurable implements SearchableCo
                     }
                 }
                 removeErrorMsg();
+                try {
+                    handlePageComplete(true);
+                } catch (ConfigurationException e1) {
+                    // ignore
+                }
             }
         };
     }
@@ -564,7 +569,7 @@ public class SSLOffloadingPanel extends BaseConfigurable implements SearchableCo
     @Nullable
     @Override
     public String getHelpTopic() {
-        return null;
+        return "windows_azure_ssl_offloading_page";
     }
 
     @Nullable

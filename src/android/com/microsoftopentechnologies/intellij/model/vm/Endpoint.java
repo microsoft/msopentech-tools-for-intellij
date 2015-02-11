@@ -65,4 +65,19 @@ public class Endpoint implements ServiceTreeItem {
         return name + (loading ? " (loading...)" : "");
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setProtocol(String protocol) {
+        this.protocol = protocol;
+    }
+
+    public void setPrivatePort(int privatePort) {
+        this.privatePort = privatePort;
+    }
+
+    public void setPublicPort(int publicPort) {
+        this.publicPort = publicPort;
+    }
 }

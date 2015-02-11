@@ -1,0 +1,31 @@
+<?xml version='1.0' encoding='ISO-8859-1'?>
+<!DOCTYPE index PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Index Version 2.0//EN"
+                       "http://java.sun.com/products/javahelp/index_2_0.dtd">
+
+<index version="2.0">
+	<indexitem text="About Add Application" target="windows_azure_addapp_dialog" />
+	<indexitem text="About Add Component" target="windows_azure_importexport_dialog" />
+	<indexitem text="About Azure Role" target="windows_azure_role" />
+	<indexitem text="About Azure Deployment Project" target="windows_azure_project" />
+	<indexitem text="About Azure Roles" target="windows_azure_project_roles" />
+	<indexitem text="About Caching" target="windows_azure_caching_page" />
+	<indexitem text="About Certificates" target="windows_azure_certificates_page" />
+	<indexitem text="About Debug Configuration" target="windows_azure_debug_config" />
+	<indexitem text="About Debugging" target="windows_azure_debug_page" />
+	<indexitem text="About Endpoints" target="windows_azure_endpoint_page" />
+	<indexitem text="About Environment Variables" target="windows_azure_envvar_page" />
+	<indexitem text="About Load Balancing" target="windows_azure_loadbalance_page" />
+	<indexitem text="About Local Storage" target="windows_azure_localstorage_page" />
+	<indexitem text="About Named Cache" target="windows_azure_cache_dialog" />
+	<indexitem text="About New Certificate" target="new_certificate_dialog" />
+	<indexitem text="About Remote Access" target="windows_azure_project_remote_access_property" />
+	<indexitem text="About Server Configuration" target="windows_azure_serverconfiguration_page" />
+	<indexitem text="About SSL Offloading" target="windows_azure_ssl_offloading_page" />
+	<indexitem text="About Storage Account" target="storage_account_dialog" />
+	<indexitem text="ComponentsPanelHelp" target="windows_azure_components_page" />
+	<indexitem text="Create a New Cloud Service" target="new_hosted_service" />
+	<indexitem text="Create a New Storage Account" target="new_storage_account" />
+	<indexitem text="Publish to Azure from Eclipse" target="publish_project_command" />
+	<indexitem text="Unpublish a Deployment from Azure Cloud" target="unpublish_project_command" />
+	<indexitem text="AzureModulePanelHelp" target="windows_azure_project_project_property" />
+</index>

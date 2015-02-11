@@ -39,7 +39,10 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.UUID;
@@ -58,8 +61,7 @@ public class ManageSubscriptionForm extends JDialog {
     public ManageSubscriptionForm(final Project project) {
         this.project = project;
 
-        final ManageSubscriptionForm form = this;
-        this.setTitle("Manage subscriptions");
+        this.setTitle("Manage Subscriptions");
         this.setModal(true);
         this.setContentPane(mainPanel);
 
@@ -72,17 +74,13 @@ public class ManageSubscriptionForm extends JDialog {
             }
 
             public Class<?> getColumnClass(int colIndex) {
-
                 return getValueAt(0, colIndex).getClass();
-
             }
         };
 
         model.addColumn("");
         model.addColumn("Name");
         model.addColumn("Id");
-
-
 
         subscriptionTable.setModel(model);
 
@@ -94,12 +92,9 @@ public class ManageSubscriptionForm extends JDialog {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-
-                    if(AzureRestAPIManager.getManager().getAuthenticationToken() != null) {
-                        clearSubscriptions();
+                    if (AzureRestAPIManager.getManager().getAuthenticationToken() != null) {
+                        clearSubscriptions(false);
                     } else {
-
-
                         PluginSettings settings = MSOpenTechTools.getCurrent().getSettings();
                         final AuthenticationContext context = new AuthenticationContext(settings.getAdAuthority());
 
@@ -127,11 +122,11 @@ public class ManageSubscriptionForm extends JDialog {
                                                 apiManager.clearSubscriptions();
 
                                                 refreshSignInCaption();
-
                                             } catch (AzureCmdException e1) {
                                                 UIHelper.showException("An error occurred while attempting to " +
                                                         "clear your old subscriptions.", e1);
                                             }
+
                                             loadList();
                                         }
                                     }, ModalityState.any());
@@ -154,7 +149,7 @@ public class ManageSubscriptionForm extends JDialog {
         removeButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                clearSubscriptions();
+                clearSubscriptions(true);
             }
         });
 
@@ -204,10 +199,13 @@ public class ManageSubscriptionForm extends JDialog {
         signInButton.setText(isNotSigned ? "Sign In ..." : "Sign Out");
     }
 
-
-    private void clearSubscriptions() {
-        int res = JOptionPane.showConfirmDialog(this, "Are you sure you would like to clear all subscriptions?",
-                "Clear Subscriptions",
+    private void clearSubscriptions(boolean isSigningOut) {
+        int res = JOptionPane.showConfirmDialog(this, (isSigningOut
+                        ? "Are you sure you would like to clear all subscriptions?"
+                        : "Are you sure you would like to sign out?"),
+                (isSigningOut
+                        ? "Clear Subscriptions"
+                        : "Sign out"),
                 JOptionPane.YES_NO_OPTION,
                 JOptionPane.INFORMATION_MESSAGE);
 
@@ -222,11 +220,12 @@ public class ManageSubscriptionForm extends JDialog {
             }
 
             DefaultTableModel model = (DefaultTableModel) subscriptionTable.getModel();
+
             while (model.getRowCount() > 0) {
                 model.removeRow(0);
             }
 
-            PropertiesComponent.getInstance().setValue(MSOpenTechTools.AppSettingsNames.SELECTED_SUBSCRIPTIONS, "");
+            PropertiesComponent.getInstance().unsetValue(MSOpenTechTools.AppSettingsNames.SELECTED_SUBSCRIPTIONS);
             ApplicationManager.getApplication().saveSettings();
 
             removeButton.setEnabled(false);
@@ -241,17 +240,18 @@ public class ManageSubscriptionForm extends JDialog {
 
             TableModel model = subscriptionTable.getModel();
 
-            for(int i = 0; i < model.getRowCount(); i++) {
+            for (int i = 0; i < model.getRowCount(); i++) {
                 Boolean selected = (Boolean) model.getValueAt(i, 0);
-                if(selected)
+
+                if (selected) {
                     selectedList.add(UUID.fromString(model.getValueAt(i, 2).toString()));
+                }
             }
 
             AzureRestAPIManager.getManager().setSelectedSubscriptions(selectedList);
 
-
             //Saving the project is necessary to save the changes on the PropertiesComponent
-            if(project != null) {
+            if (project != null) {
                 project.save();
             }
 
@@ -267,8 +267,9 @@ public class ManageSubscriptionForm extends JDialog {
 
         refreshSignInCaption();
 
-        while (model.getRowCount() > 0)
+        while (model.getRowCount() > 0) {
             model.removeRow(0);
+        }
 
         form.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
@@ -282,16 +283,16 @@ public class ManageSubscriptionForm extends JDialog {
             @Override
             public void run() {
                 try {
-
-                    while (model.getRowCount() > 0)
+                    while (model.getRowCount() > 0) {
                         model.removeRow(0);
+                    }
 
                     subscriptionList = AzureRestAPIManager.getManager().getFullSubscriptionList();
 
                     if (subscriptionList != null && subscriptionList.size() > 0) {
                         for (Subscription subs : subscriptionList) {
                             Vector<Object> row = new Vector<Object>();
-                            row.add(new Boolean(subs.isSelected()));
+                            row.add(subs.isSelected());
                             row.add(subs.getName());
                             row.add(subs.getId().toString());
                             model.addRow(row);
@@ -307,9 +308,7 @@ public class ManageSubscriptionForm extends JDialog {
                     form.setCursor(Cursor.getDefaultCursor());
                     UIHelper.showException("Error getting subscription list", e);
                 }
-
             }
         });
-
     }
 }

@@ -420,7 +420,7 @@ public class CachingPanel extends BaseConfigurable implements SearchableConfigur
     @Nullable
     @Override
     public String getHelpTopic() {
-        return null;
+        return "windows_azure_caching_page";
     }
 
     @Nullable

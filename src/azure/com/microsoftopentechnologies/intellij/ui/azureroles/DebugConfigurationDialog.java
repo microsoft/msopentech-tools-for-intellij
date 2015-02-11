@@ -194,4 +194,9 @@ public class DebugConfigurationDialog extends DialogWrapper {
         }
         return null;
     }
+
+    @Override
+    public String getHelpId() {
+        return "windows_azure_debug_config";
+    }
 }

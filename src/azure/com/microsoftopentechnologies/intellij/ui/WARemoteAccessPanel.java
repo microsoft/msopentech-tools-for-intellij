@@ -19,6 +19,7 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.ValidationInfo;
+import com.intellij.openapi.vfs.LocalFileSystem;
 import com.interopbridges.tools.windowsazure.WindowsAzureInvalidProjectOperationException;
 import com.interopbridges.tools.windowsazure.WindowsAzureProjectManager;
 import com.michaelbaranov.microba.calendar.DatePicker;
@@ -570,7 +571,7 @@ public class WARemoteAccessPanel implements AzureAbstractPanel {
                          */
                         String modifiedPwd = message("remAccDummyPwd");
                         if (!pwd.equals(modifiedPwd) && !pwd.isEmpty() && isPwdChanged) {
-                            String encryptedPwd = EncUtilHelper.encryptPassword(pwd, tempPath, AzurePlugin.encFolder);
+                            String encryptedPwd = EncUtilHelper.encryptPassword(pwd, tempPath, AzurePlugin.pluginFolder);
                             waProjManager.setRemoteAccessEncryptedPassword(encryptedPwd);
                         } else {
                             waProjManager.setRemoteAccessEncryptedPassword(pwd);
@@ -593,7 +594,7 @@ public class WARemoteAccessPanel implements AzureAbstractPanel {
             PluginUtil.displayErrorDialogAndLog(message("remAccErrTitle"), message("remAccErDateParse"), e);
             return false;
         }
-//        WAEclipseHelper.refreshWorkspace(Messages.remAccWarning, Messages.remAccWarnMsg);
+        LocalFileSystem.getInstance().findFileByPath(PluginUtil.getModulePath(myModule)).refresh(true, true);
         isFrmEncLink = false;
         return true;
     }
@@ -613,6 +614,11 @@ public class WARemoteAccessPanel implements AzureAbstractPanel {
             PluginUtil.displayErrorDialog( message("remAccSyntaxErr"), message("proPageErrMsgBox1") + message("proPageErrMsgBox2"));
             log(message("remAccErProjLoad"), e);
         }
+    }
+
+    @Override
+    public String getHelpTopic() {
+        return "windows_azure_project_remote_access_property";
     }
 
 }

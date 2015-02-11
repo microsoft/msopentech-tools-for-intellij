@@ -95,7 +95,7 @@ public class EnvVarsPanel extends BaseConfigurable implements SearchableConfigur
     @Nullable
     @Override
     public String getHelpTopic() {
-        return null;
+        return "windows_azure_envvar_page";
     }
 
     @Nullable

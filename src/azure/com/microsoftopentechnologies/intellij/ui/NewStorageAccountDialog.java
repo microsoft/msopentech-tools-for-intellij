@@ -213,4 +213,9 @@ public class NewStorageAccountDialog extends DialogWrapper {
     protected JComponent createTitlePane() {
         return new TitlePanel(message("storageNew"), message("storageCreateNew"));
     }
+
+    @Override
+    public String getHelpId() {
+        return "new_storage_account";
+    }
 }

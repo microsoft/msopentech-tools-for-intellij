@@ -15,12 +15,15 @@
  */
 package com.microsoftopentechnologies.intellij.forms;
 
+import com.microsoftopentechnologies.intellij.helpers.StringHelper;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class ErrorMessageForm extends JDialog {
+    public static final String advancedInfoText = "Show advanced info";
     private JPanel contentPane;
     private JButton buttonOK;
     private JLabel lblError;
@@ -45,11 +48,14 @@ public class ErrorMessageForm extends JDialog {
                 setDetailsVisible(showAdvancedInfoCheckBox.isSelected());
             }
         });
+
+        showAdvancedInfoCheckBox.setText(advancedInfoText);
     }
 
     public void showErrorMessageForm(String errorMessage, String details) {
         lblError.setText("<html><p>" + (errorMessage.length() > 260 ? errorMessage.substring(0, 260) + "..." : errorMessage) + "</p></html>");
         detailTextArea.setText(details);
+        showAdvancedInfoCheckBox.setEnabled(!StringHelper.isNullOrWhiteSpace(details));
         this.setResizable(false);
     }
 

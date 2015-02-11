@@ -84,6 +84,11 @@ public class StorageAccountPanel implements AzureAbstractPanel {
         return null;
     }
 
+    @Override
+    public String getHelpTopic() {
+        return null;
+    }
+
     public JComponent getPanel() {
         return contentPane;
     }

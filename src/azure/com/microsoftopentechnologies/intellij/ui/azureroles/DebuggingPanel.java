@@ -321,7 +321,7 @@ public class DebuggingPanel extends BaseConfigurable implements SearchableConfig
     @Nullable
     @Override
     public String getHelpTopic() {
-        return null;
+        return "windows_azure_debug_page";
     }
 
     @Nullable

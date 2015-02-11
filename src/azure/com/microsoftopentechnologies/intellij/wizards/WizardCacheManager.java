@@ -197,7 +197,6 @@ public final class WizardCacheManager {
             Subscription s = subs.get(i);
 
             if (s.getSubscriptionID().equals(subscriptionId)) {
-
                 publishData.getPublishProfile().getSubscriptions().remove(i);
                 PUBLISHS.set(index, publishData);
                 if (publishData.getPublishProfile().getSubscriptions().size() == 0) {
@@ -473,17 +472,18 @@ public final class WizardCacheManager {
 					 * Get collection of storage services in each subscription.
 					 */
 					StorageServices services = publishData.getStoragesPerSubscription().get(sub.getId());
-					for (StorageService strgService : services) {
-						List<URI> endpoints = strgService.getStorageAccountProperties().getEndpoints();
-						if (endpoints.get(0).toString().startsWith("https://")) {
-							endpoints.set(0, URI.create(endpoints.get(0).toString().replaceFirst("https://", "http://")));
-							endpoints.set(1, URI.create(endpoints.get(1).toString().replaceFirst("https://", "http://")));
-							endpoints.set(2, URI.create(endpoints.get(2).toString().replaceFirst("https://", "http://")));
+					if (services != null) {
+						for (StorageService strgService : services) {
+							List<URI> endpoints = strgService.getStorageAccountProperties().getEndpoints();
+							if (endpoints.get(0).toString().startsWith("https://")) {
+								endpoints.set(0, URI.create(endpoints.get(0).toString().replaceFirst("https://", "http://")));
+								endpoints.set(1, URI.create(endpoints.get(1).toString().replaceFirst("https://", "http://")));
+								endpoints.set(2, URI.create(endpoints.get(2).toString().replaceFirst("https://", "http://")));
+							}
 						}
 					}
 				}
-			}
-			catch (InterruptedException e) {
+			} catch (InterruptedException e) {
 				if (loadSubscriptionsFuture != null) {
 					loadSubscriptionsFuture.cancel(true);
 				}

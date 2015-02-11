@@ -34,7 +34,6 @@ public class RolesConfigurable extends SearchableConfigurable.Parent.Abstract {
     private Module module;
     private WindowsAzureProjectManager waProjManager;
     private WindowsAzureRole windowsAzureRole;
-    private final boolean isNew;
 
     private AzureRolePanel panel;
 
@@ -42,8 +41,7 @@ public class RolesConfigurable extends SearchableConfigurable.Parent.Abstract {
         this.module = module;
         this.waProjManager = waProjManager;
         this.windowsAzureRole = windowsAzureRole;
-        this.isNew = isNew;
-        panel = new AzureRolePanel(module, waProjManager, windowsAzureRole);
+        panel = new AzureRolePanel(module, waProjManager, windowsAzureRole, isNew);
     }
 
     @Override
@@ -81,7 +79,7 @@ public class RolesConfigurable extends SearchableConfigurable.Parent.Abstract {
     @Nullable
     @Override
     public String getHelpTopic() {
-        return null;
+        return panel.getHelpTopic();
     }
 
     @Nullable
@@ -92,7 +90,7 @@ public class RolesConfigurable extends SearchableConfigurable.Parent.Abstract {
 
     @Override
     public boolean isModified() {
-        return isNew || panel.isModified();
+        return panel.isModified();
     }
 
     @Override

@@ -212,7 +212,7 @@ public class LoadBalancingPanel extends BaseConfigurable implements SearchableCo
     @Nullable
     @Override
     public String getHelpTopic() {
-        return null;
+        return "windows_azure_loadbalance_page";
     }
 
     @Nullable

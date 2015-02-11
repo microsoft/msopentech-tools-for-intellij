@@ -15,16 +15,16 @@
  */
 package com.microsoftopentechnologies.intellij.ui.components;
 
-import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.ui.wizard.WizardStep;
 import com.microsoftopentechnologies.intellij.ui.AzureWizardModel;
 
-public abstract class AzureWizardStep extends WizardStep<AzureWizardModel> {
+public abstract class AzureWizardStep extends WizardStep<AzureWizardModel> implements Validatable {
 
     protected AzureWizardStep(String title, String explanation) {
         super(title, explanation, null);
     }
 
-    public abstract ValidationInfo doValidate();
-
+    public String getHelpId() {
+        return "windows_azure_project";
+    }
 }

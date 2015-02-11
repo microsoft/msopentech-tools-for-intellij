@@ -16,20 +16,15 @@
 
 package com.microsoftopentechnologies.intellij.helpers;
 
-import com.google.common.base.Utf8;
-import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
-import io.netty.handler.codec.base64.Base64Encoder;
 import sun.misc.IOUtils;
 
 import javax.swing.*;
-import javax.swing.filechooser.FileSystemView;
 import javax.xml.bind.DatatypeConverter;
 import java.io.*;
-import java.net.URL;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 
@@ -38,10 +33,6 @@ public class AndroidStudioHelper {
     private static final String mobileServicesTemplateName = "AzureServicesActivity";
     private static final String officeTemplateName = "Office365Activity";
 
-    public static boolean isAndroidStudio() {
-        return ApplicationInfo.getInstance().getVersionName().startsWith("Android Studio");
-    }
-
     public static void newActivityTemplateManager(boolean deleteTemplates, Object caller) throws IOException, InterruptedException {
         String templatePath = URLDecoder.decode(ApplicationComponent.class.getResource("").getPath().replace("file:/", ""), "UTF-8");
         templatePath = templatePath.replace("/", File.separator);
@@ -49,9 +40,11 @@ public class AndroidStudioHelper {
         templatePath = templatePath + File.separator + "plugins" + File.separator + "android" + File.separator;
         templatePath = templatePath + "lib" + File.separator + "templates" + File.separator + "activities" + File.separator;
 
-        String[] env = null;
+        if (System.getProperty("os.name").toLowerCase().startsWith("mac") && !templatePath.startsWith(File.separator)) {
+            templatePath = File.separator + templatePath;
+        }
 
-        if(deleteTemplates || !new File(templatePath + mobileServicesTemplateName).exists()) {
+        if (deleteTemplates || !new File(templatePath + mobileServicesTemplateName).exists()) {
             String tmpDir = getTempLocation();
             copyResourcesRecursively(new File(tmpDir));
 
@@ -60,14 +53,14 @@ public class AndroidStudioHelper {
             if (System.getProperty("os.name").toLowerCase().startsWith("windows")) {
                 try {
 
-                    if(deleteTemplates) {
+                    if (deleteTemplates) {
                         VirtualFile mobileTemplate = LocalFileSystem.getInstance().findFileByIoFile(new File(templatePath + mobileServicesTemplateName));
                         VirtualFile officeTemplate = LocalFileSystem.getInstance().findFileByIoFile(new File(templatePath + officeTemplateName));
 
-                        if(mobileTemplate != null)
+                        if (mobileTemplate != null)
                             mobileTemplate.delete(caller);
 
-                        if(officeTemplate != null)
+                        if (officeTemplate != null)
                             officeTemplate.delete(caller);
 
                     }
@@ -88,18 +81,18 @@ public class AndroidStudioHelper {
 
 
                     String[] tmpCmd = {
-                         "cmd",
-                        "/c",
-                        tmpDir + "WindowsTemplateCopy.exe",
-                        param,
+                            "cmd",
+                            "/c",
+                            tmpDir + "WindowsTemplateCopy.exe",
+                            param,
                     };
 
                     ArrayList<String> tempenvlist = new ArrayList<String>();
-                    for(String envval : System.getenv().keySet())
+                    for (String envval : System.getenv().keySet())
                         tempenvlist.add(String.format("%s=%s", envval, System.getenv().get(envval)));
 
                     tempenvlist.add("PRECOMPILE_STREAMLINE_FILES=1");
-                    env = new String[tempenvlist.size()];
+                    String[] env = new String[tempenvlist.size()];
                     tempenvlist.toArray(env);
 
                     Runtime rt = Runtime.getRuntime();
@@ -109,7 +102,7 @@ public class AndroidStudioHelper {
                     //wait for elevate command to finish
                     Thread.sleep(3000);
 
-                    if(!new File(templatePath + mobileServicesTemplateName).exists() || errorCode != 0)
+                    if (!new File(templatePath + mobileServicesTemplateName).exists() || errorCode != 0)
                         UIHelper.showException("Error copying template files. Please refer to documentation to copy manually.", new Exception());
                 }
             } else if (System.getProperty("os.name").toLowerCase().startsWith("mac")) {
@@ -117,35 +110,35 @@ public class AndroidStudioHelper {
                 String[] deleteAndCopy = {
                         "osascript",
                         "-e",
-                        "do shell script \"rm -r \\\"/" + templatePath + mobileServicesTemplateName + "\\\"\"",
+                        "do shell script \"rm -r \\\"/" + templatePath + mobileServicesTemplateName + "\\\"\" with administrator privileges",
                         "-e",
-                        "do shell script \"rm -r \\\"/" + templatePath + officeTemplateName + "\\\"\"",
+                        "do shell script \"rm -r \\\"/" + templatePath + officeTemplateName + "\\\"\" with administrator privileges",
                         "-e",
-                        "do shell script \"cp -Rp \\\"" + tmpDir + mobileServicesTemplateName + "\\\" \\\"/" + templatePath + "\\\"\"",
+                        "do shell script \"cp -Rp \\\"" + tmpDir + mobileServicesTemplateName + "\\\" \\\"/" + templatePath + "\\\"\" with administrator privileges",
                         "-e",
-                        "do shell script \"cp -Rp \\\"" + tmpDir + officeTemplateName + "\\\" \\\"/" + templatePath + "\\\"\""
+                        "do shell script \"cp -Rp \\\"" + tmpDir + officeTemplateName + "\\\" \\\"/" + templatePath + "\\\"\" with administrator privileges"
                 };
 
                 String[] copy = {
                         "osascript",
                         "-e",
-                        "do shell script \"cp -Rp \\\"" + tmpDir + mobileServicesTemplateName + "\\\" \\\"/" + templatePath + "\\\"\"",
+                        "do shell script \"cp -Rp \\\"" + tmpDir + mobileServicesTemplateName + "\\\" \\\"/" + templatePath + "\\\"\" with administrator privileges",
                         "-e",
-                        "do shell script \"cp -Rp \\\"" + tmpDir + officeTemplateName + "\\\" \\\"/" + templatePath + "\\\"\""
+                        "do shell script \"cp -Rp \\\"" + tmpDir + officeTemplateName + "\\\" \\\"/" + templatePath + "\\\"\" with administrator privileges"
                 };
 
                 exec(deleteTemplates ? deleteAndCopy : copy, tmpDir);
             } else {
                 try {
 
-                    if(deleteTemplates) {
+                    if (deleteTemplates) {
                         VirtualFile mobileTemplate = LocalFileSystem.getInstance().findFileByIoFile(new File(templatePath + mobileServicesTemplateName));
                         VirtualFile officeTemplate = LocalFileSystem.getInstance().findFileByIoFile(new File(templatePath + officeTemplateName));
 
-                        if(mobileTemplate != null)
+                        if (mobileTemplate != null)
                             mobileTemplate.delete(caller);
 
-                        if(officeTemplate != null)
+                        if (officeTemplate != null)
                             officeTemplate.delete(caller);
 
                     }
@@ -224,7 +217,7 @@ public class AndroidStudioHelper {
         BufferedReader in = new BufferedReader(new InputStreamReader(fileList));
 
         String line;
-        while((line = in.readLine()) != null) {
+        while ((line = in.readLine()) != null) {
 
             String[] pathParts = line.split("/");
             String fileName = pathParts[pathParts.length - 1];
@@ -276,7 +269,7 @@ public class AndroidStudioHelper {
         StringBuilder sb = new StringBuilder();
         sb.append(tmpdir);
 
-        if(!tmpdir.endsWith(File.separator))
+        if (!tmpdir.endsWith(File.separator))
             sb.append(File.separator);
 
         sb.append("TempAzure");
@@ -289,28 +282,26 @@ public class AndroidStudioHelper {
         InputStream is;
         boolean isError;
 
-        public StreamGobbler(InputStream is, boolean isError)
-        {
+        public StreamGobbler(InputStream is, boolean isError) {
             this.is = is;
             this.isError = isError;
         }
 
-        public void run()
-        {
-            try
-            {
+        public void run() {
+            try {
                 InputStreamReader isr = new InputStreamReader(is);
                 BufferedReader br = new BufferedReader(isr);
-                String line=null;
+                String line;
                 StringBuilder sb = new StringBuilder();
-                while ( (line = br.readLine()) != null)
-                    sb.append(line + "\n");
+                while ((line = br.readLine()) != null) {
+                    sb.append(line).append("\n");
+                }
 
                 is.close();
 
                 String streamContent = sb.toString();
 
-                if(isError && !streamContent.isEmpty())
+                if (isError && !streamContent.isEmpty())
                     UIHelper.showException("Error copying Microsoft Services templates", new AzureCmdException("Error copying Microsoft Services templates", "Error: " + streamContent));
 
             } catch (IOException ioe) {

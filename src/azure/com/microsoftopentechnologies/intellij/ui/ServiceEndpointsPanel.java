@@ -76,6 +76,11 @@ public class ServiceEndpointsPanel implements AzureAbstractPanel {
         return null;
     }
 
+    @Override
+    public String getHelpTopic() {
+        return null;
+    }
+
     private ItemListener createPrefNameCmbListener() {
         return new ItemListener() {
             @Override

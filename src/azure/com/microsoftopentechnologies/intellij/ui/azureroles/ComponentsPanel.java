@@ -94,7 +94,7 @@ public class ComponentsPanel extends BaseConfigurable implements SearchableConfi
     @Nullable
     @Override
     public String getHelpTopic() {
-        return null;
+        return "windows_azure_components_page";
     }
 
     @Nullable

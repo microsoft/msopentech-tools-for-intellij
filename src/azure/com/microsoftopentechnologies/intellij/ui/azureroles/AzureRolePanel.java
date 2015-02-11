@@ -16,7 +16,7 @@
 package com.microsoftopentechnologies.intellij.ui.azureroles;
 
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.options.Configurable;
+import com.intellij.openapi.options.BaseConfigurable;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
@@ -25,21 +25,21 @@ import com.interopbridges.tools.windowsazure.WindowsAzureInvalidProjectOperation
 import com.interopbridges.tools.windowsazure.WindowsAzureNamedCache;
 import com.interopbridges.tools.windowsazure.WindowsAzureProjectManager;
 import com.interopbridges.tools.windowsazure.WindowsAzureRole;
-import com.microsoftopentechnologies.intellij.AzurePlugin;
 import com.microsoftopentechnologies.intellij.util.PluginUtil;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.io.File;
 import java.util.Iterator;
 import java.util.Map;
 
 import static com.microsoftopentechnologies.intellij.ui.messages.AzureBundle.message;
 
-public class AzureRolePanel implements Configurable {
+public class AzureRolePanel extends BaseConfigurable {
     private String[] arrVMSize = {"A9", "A8", "A7", "A6", "A5", "ExtraLarge", "Large", "Medium", "Small", "ExtraSmall"};
 
     private JPanel contentPane;
@@ -51,10 +51,11 @@ public class AzureRolePanel implements Configurable {
     private WindowsAzureProjectManager waProjManager;
     private WindowsAzureRole windowsAzureRole;
 
-    public AzureRolePanel(Module module, WindowsAzureProjectManager waProjManager, WindowsAzureRole windowsAzureRole) {
+    public AzureRolePanel(Module module, WindowsAzureProjectManager waProjManager, WindowsAzureRole windowsAzureRole, boolean isNew) {
         this.module = module;
         this.waProjManager = waProjManager;
         this.windowsAzureRole = windowsAzureRole;
+        setModified(isNew);
         init();
     }
 
@@ -63,8 +64,10 @@ public class AzureRolePanel implements Configurable {
         comboVMSize.setModel(new DefaultComboBoxModel(arrVMSize));
         comboVMSize.setSelectedItem(arrVMSize[getVMSizeIndex()]);
         comboVMSize.addItemListener(createComboVMSizeListener());
+        txtRoleName.getDocument().addDocumentListener(createModifyListener());
         try {
             txtNoOfInstances.setText(windowsAzureRole.getInstances());
+            txtNoOfInstances.getDocument().addDocumentListener(createModifyListener());
         } catch (WindowsAzureInvalidProjectOperationException e) {
             PluginUtil.displayErrorDialogAndLog(message("adRolErrTitle"), message("adRolErrMsgBox1") + message("adRolErrMsgBox2"), e);
         }
@@ -75,12 +78,32 @@ public class AzureRolePanel implements Configurable {
             @Override
             public void itemStateChanged(ItemEvent e) {
                 handleSmallVMCacheConf();
+                setModified(true);
 //                // Set VM Size in role
 //                try {
 //                    windowsAzureRole.setVMSize((String) comboVMSize.getSelectedItem());
 //                } catch (WindowsAzureInvalidProjectOperationException ex) {
 //                    PluginUtil.displayErrorDialogAndLog(message("adRolErrTitle"), message("adRolErrMsgBox1") + message("adRolErrMsgBox2"), ex);
 //                }
+            }
+        };
+    }
+
+    private DocumentListener createModifyListener() {
+        return new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                setModified(true);
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                setModified(true);
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                setModified(true);
             }
         };
     }
@@ -184,17 +207,6 @@ public class AzureRolePanel implements Configurable {
         return contentPane;
     }
 
-    public boolean isModified() {
-        try {
-            return !(txtRoleName.getText().equals(windowsAzureRole.getName()) &&
-                    comboVMSize.getSelectedIndex() == getVMSizeIndex() &&
-                    txtNoOfInstances.getText().equals(windowsAzureRole.getInstances()));
-        } catch (WindowsAzureInvalidProjectOperationException e) {
-            AzurePlugin.log(message("error"), e);
-            return false;
-        }
-    }
-
     @Override
     public void apply() throws ConfigurationException {
         try {
@@ -208,9 +220,8 @@ public class AzureRolePanel implements Configurable {
         try {
             okToProceed = handleHighAvailabilityFeature(okToProceed);
             waProjManager.save();
-            LocalFileSystem.getInstance().findFileByPath(PluginUtil.getModulePath(module) + File.separator + message("resCLPkgXML")).refresh(true, false);
-            LocalFileSystem.getInstance().findFileByPath(PluginUtil.getModulePath(module) + File.separator + message("cscfgDefaultFileName")).refresh(true, false);
-            LocalFileSystem.getInstance().findFileByPath(PluginUtil.getModulePath(module) + File.separator + message("csdefDefaultFileName")).refresh(true, false);
+            setModified(false);
+            LocalFileSystem.getInstance().findFileByPath(PluginUtil.getModulePath(module)).refresh(true, true);
         } catch (WindowsAzureInvalidProjectOperationException e) {
             PluginUtil.displayErrorDialogAndLog(message("adRolErrTitle"), message("adRolErrMsgBox1") + message("adRolErrMsgBox2"), e);
         }
@@ -300,13 +311,7 @@ public class AzureRolePanel implements Configurable {
 
     @Override
     public void reset() {
-        txtRoleName.setText(windowsAzureRole.getName());
-        comboVMSize.setSelectedItem(arrVMSize[getVMSizeIndex()]);
-        try {
-            txtNoOfInstances.setText(windowsAzureRole.getInstances());
-        } catch (WindowsAzureInvalidProjectOperationException e) {
-            PluginUtil.displayErrorDialogAndLog(message("adRolErrTitle"), message("adRolErrMsgBox1") + message("adRolErrMsgBox2"), e);
-        }
+        setModified(false);
     }
 
     @Override
@@ -322,6 +327,6 @@ public class AzureRolePanel implements Configurable {
     @Nullable
     @Override
     public String getHelpTopic() {
-        return null;
+        return "windows_azure_role";
     }
 }

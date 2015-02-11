@@ -315,7 +315,7 @@ public class RoleEndpointsPanel extends BaseConfigurable implements AzureAbstrac
     @Nullable
     @Override
     public String getHelpTopic() {
-        return null;
+        return "windows_azure_endpoint_page";
     }
 
     @Nullable

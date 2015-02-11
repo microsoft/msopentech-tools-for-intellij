@@ -121,10 +121,9 @@ public class CertificatesPanel extends BaseConfigurable implements AzureAbstract
         return null;
     }
 
-    @Nullable
     @Override
     public String getHelpTopic() {
-        return null;
+        return "windows_azure_certificates_page";
     }
 
     @Nullable

@@ -16,28 +16,14 @@
 package com.microsoftopentechnologies.intellij.helpers;
 
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.fileEditor.FileEditor;
-import com.intellij.openapi.fileEditor.FileEditorManager;
-import com.intellij.openapi.progress.ProgressIndicator;
-import com.intellij.openapi.progress.ProgressManager;
-import com.intellij.openapi.progress.Task;
-import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vfs.LocalFileSystem;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoftopentechnologies.intellij.forms.ErrorMessageForm;
 import com.microsoftopentechnologies.intellij.forms.ImportSubscriptionForm;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIManager;
-import com.microsoftopentechnologies.intellij.model.*;
-import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.*;
-import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.UUID;
 
 public class UIHelper {
     public static void packAndCenterJDialog(JDialog form) {
@@ -52,45 +38,41 @@ public class UIHelper {
     }
 
     public static void showException(final String message, final Throwable ex, final String title) {
+
+        showException(message, ex, title, !(ex instanceof AzureCmdException), false);
+    }
+
+    public static void showException(final String message,
+                                     final Throwable ex,
+                                     final String title,
+                                     final boolean appendEx,
+                                     final boolean suggestDetail) {
         ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
             public void run() {
-                String headerMessage = message + " ";
-                String details = "";
+                // TODO: Verify if this side-effect is legacy code and remove it
+                if (ex instanceof AzureCmdException) {
+                    String errorLog = ((AzureCmdException) ex).getErrorLog();
 
-                if (ex != null) {
-                    StringWriter sw = new StringWriter();
-                    ex.printStackTrace(new PrintWriter(sw));
-                    String stackTrace = sw.toString();
+                    //Not showing error if no account info found
+                    if (errorLog != null &&
+                            (errorLog.contains("No publish settings file found.") ||
+                                    errorLog.contains("No account information found."))) {
+                        JOptionPane.showMessageDialog(null, "No account information found. Please import subscription information.", "Error", JOptionPane.ERROR_MESSAGE);
 
-                    if (ex instanceof AzureCmdException) {
-                        String errorLog = ((AzureCmdException) ex).getErrorLog();
+                        // TODO: This should probably be showing the "Manage Subscriptions" form instead since
+                        // we also support A/D auth now.
+                        ImportSubscriptionForm isf = new ImportSubscriptionForm();
+                        UIHelper.packAndCenterJDialog(isf);
+                        isf.setVisible(true);
 
-                        if (errorLog == null) {
-                            errorLog = stackTrace;
-                        } else {
-                            //Not showing error if no account info found
-                            if (errorLog.contains("No publish settings file found.") ||
-                                    errorLog.contains("No account information found.")) {
-                                JOptionPane.showMessageDialog(null, "No account information found. Please import subscription information.", "Error", JOptionPane.ERROR_MESSAGE);
-
-                                // TODO: This should probably be showing the "Manage Subscriptions" form instead since
-                                // we also support A/D auth now.
-                                ImportSubscriptionForm isf = new ImportSubscriptionForm();
-                                UIHelper.packAndCenterJDialog(isf);
-                                isf.setVisible(true);
-
-                                return;
-                            }
-                        }
-
-                        details = errorLog;
-                    } else {
-                        details = stackTrace;
-                        String exMessage = (ex.getLocalizedMessage() == null || ex.getLocalizedMessage().isEmpty()) ? ex.getMessage() : ex.getLocalizedMessage();
-                        headerMessage = headerMessage + exMessage;
+                        return;
                     }
                 }
+
+                String headerMessage = getHeaderMessage(message, ex, appendEx, suggestDetail);
+
+                String details = getDetails(ex);
 
                 ErrorMessageForm em = new ErrorMessageForm(title);
                 em.setCursor(Cursor.getDefaultCursor());
@@ -101,115 +83,44 @@ public class UIHelper {
         });
     }
 
+    private static String getHeaderMessage(String message, Throwable ex, boolean appendEx, boolean suggestDetail) {
+        String headerMessage = message.trim();
+
+        if (ex != null && appendEx) {
+            String exMessage = (ex.getLocalizedMessage() == null || ex.getLocalizedMessage().isEmpty()) ? ex.getMessage() : ex.getLocalizedMessage();
+            String separator = headerMessage.matches("^.*\\d$||^.*\\w$") ? ". " : " ";
+            headerMessage = headerMessage + separator + exMessage;
+        }
+
+        if (suggestDetail) {
+            String separator = headerMessage.matches("^.*\\d$||^.*\\w$") ? ". " : " ";
+            headerMessage = headerMessage + separator + "Click on '" + ErrorMessageForm.advancedInfoText + "' for detailed information on the cause of the error.";
+        }
+
+        return headerMessage;
+    }
+
+    private static String getDetails(Throwable ex) {
+        String details = "";
+
+        if (ex != null) {
+            StringWriter sw = new StringWriter();
+            ex.printStackTrace(new PrintWriter(sw));
+            details = sw.toString();
+
+            if (ex instanceof AzureCmdException) {
+                String errorLog = ((AzureCmdException) ex).getErrorLog();
+                if (errorLog != null) {
+                    details = errorLog;
+                }
+            }
+        }
+
+        return details;
+    }
 
     public static ImageIcon loadIcon(String name) {
         java.net.URL url = UIHelper.class.getResource("/com/microsoftopentechnologies/intellij/icons/" + name);
         return new ImageIcon(url);
     }
-
-
-    public static void saveScript(Project project, final DefaultMutableTreeNode selectedNode, final Script script, final String serviceName, final String subscriptionId) throws AzureCmdException {
-        VirtualFile editorFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(new File(script.getLocalFilePath(serviceName)));
-        if (editorFile != null) {
-            FileEditor[] fe = FileEditorManager.getInstance(project).getAllEditors(editorFile);
-
-            if (fe.length > 0 && fe[0].isModified()) {
-                int i = JOptionPane.showConfirmDialog(null, "The file is modified. Do you want to save pending changes?", "Upload Script", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE);
-                switch (i) {
-                    case JOptionPane.YES_OPTION:
-                        ApplicationManager.getApplication().saveAll();
-                        break;
-                    case JOptionPane.CANCEL_OPTION:
-                    case JOptionPane.CLOSED_OPTION:
-                        return;
-                }
-            }
-
-            ProgressManager.getInstance().run(new Task.Backgroundable(project, "Uploading table script", false) {
-                @Override
-                public void run(@NotNull ProgressIndicator progressIndicator) {
-                    try {
-                        progressIndicator.setIndeterminate(true);
-                        AzureRestAPIManager.getManager().uploadTableScript(UUID.fromString(subscriptionId), serviceName, script.getName(), script.getLocalFilePath(serviceName));
-
-                        ApplicationManager.getApplication().invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (script.getSelfLink() == null)
-                                    script.setSelfLink("");
-                                selectedNode.setUserObject(script);
-                            }
-                        });
-                    } catch (AzureCmdException e) {
-                        UIHelper.showException("Error uploading script", e);
-                    }
-                }
-            });
-
-
-        }
-    }
-
-    public static void saveCustomAPI(Project project, final CustomAPI customAPI, final String serviceName, final String subscriptionId) throws AzureCmdException {
-        VirtualFile editorFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(new File(customAPI.getLocalFilePath(serviceName)));
-        if (editorFile != null) {
-            FileEditor[] fe = FileEditorManager.getInstance(project).getAllEditors(editorFile);
-
-            if (fe.length > 0 && fe[0].isModified()) {
-                int i = JOptionPane.showConfirmDialog(null, "The file is modified. Do you want to save pending changes?", "Upload Script", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE);
-                switch (i) {
-                    case JOptionPane.YES_OPTION:
-                        ApplicationManager.getApplication().saveAll();
-                        break;
-                    case JOptionPane.CANCEL_OPTION:
-                    case JOptionPane.CLOSED_OPTION:
-                        return;
-                }
-            }
-
-            ProgressManager.getInstance().run(new Task.Backgroundable(project, "Uploading custom api script", false) {
-                @Override
-                public void run(@NotNull ProgressIndicator progressIndicator) {
-                    try {
-                        progressIndicator.setIndeterminate(true);
-                        AzureRestAPIManager.getManager().uploadAPIScript(UUID.fromString(subscriptionId), serviceName, customAPI.getName(), customAPI.getLocalFilePath(serviceName));
-                    } catch (AzureCmdException e) {
-                        UIHelper.showException("Error uploading script", e);
-                    }
-                }
-            });
-        }
-    }
-
-    public static void saveJob(Project project, final Job job, final String serviceName, final String subscriptionId) throws AzureCmdException {
-        VirtualFile editorFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(new File(job.getLocalFilePath(serviceName)));
-        if (editorFile != null) {
-            FileEditor[] fe = FileEditorManager.getInstance(project).getAllEditors(editorFile);
-
-            if (fe.length > 0 && fe[0].isModified()) {
-                int i = JOptionPane.showConfirmDialog(null, "The file is modified. Do you want to save pending changes?", "Upload Script", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE);
-                switch (i) {
-                    case JOptionPane.YES_OPTION:
-                        ApplicationManager.getApplication().saveAll();
-                        break;
-                    case JOptionPane.CANCEL_OPTION:
-                    case JOptionPane.CLOSED_OPTION:
-                        return;
-                }
-            }
-
-            ProgressManager.getInstance().run(new Task.Backgroundable(project, "Uploading job script", false) {
-                @Override
-                public void run(@NotNull ProgressIndicator progressIndicator) {
-                    try {
-                        progressIndicator.setIndeterminate(true);
-                        AzureRestAPIManager.getManager().uploadJobScript(UUID.fromString(subscriptionId), serviceName, job.getName(), job.getLocalFilePath(serviceName));
-                    } catch (AzureCmdException e) {
-                        UIHelper.showException("Error uploading script", e);
-                    }
-                }
-            });
-        }
-    }
 }
-

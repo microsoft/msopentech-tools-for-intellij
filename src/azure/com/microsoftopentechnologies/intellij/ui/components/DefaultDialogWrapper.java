@@ -69,5 +69,11 @@ public class DefaultDialogWrapper extends DialogWrapper {
     protected JComponent createCenterPanel() {
         return contentPanel.getPanel();
     }
+
+    @Nullable
+    @Override
+    protected String getHelpId() {
+        return contentPanel.getHelpTopic();
+    }
 }
 

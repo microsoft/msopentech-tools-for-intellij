@@ -41,7 +41,7 @@ import static com.microsoftopentechnologies.intellij.ui.messages.AzureBundle.mes
 public class AzurePlugin extends AbstractProjectComponent {
     private static final Logger LOG = Logger.getInstance("#com.microsoftopentechnologies.intellij.AzurePlugin");
     public static final String PLUGIN_ID = "msopentech-tools-for-intellij";
-    private static final String COMPONENTSETS_VERSION = "2.5.1"; // todo: temporary fix!
+    private static final String COMPONENTSETS_VERSION = "2.5.2"; // todo: temporary fix!
     private static final String PREFERENCESETS_VERSION = "2.5.1";
     public final static int REST_SERVICE_MAX_RETRY_COUNT = 7;
 
@@ -53,7 +53,7 @@ public class AzurePlugin extends AbstractProjectComponent {
 
     public static File cmpntFile = new File(WAHelper.getTemplateFile(message("cmpntFileName")));
     public static String prefFilePath = WAHelper.getTemplateFile(message("prefFileName"));
-    public static String encFolder = String.format("%s%s%s", PathManager.getPluginsPath(), File.separator, AzurePlugin.PLUGIN_ID);
+    public static String pluginFolder = String.format("%s%s%s", PathManager.getPluginsPath(), File.separator, AzurePlugin.PLUGIN_ID);
 
     private static final EventListenerList DEPLOYMENT_EVENT_LISTENERS = new EventListenerList();
     public static List<DeploymentEventListener> depEveList = new ArrayList<DeploymentEventListener>();

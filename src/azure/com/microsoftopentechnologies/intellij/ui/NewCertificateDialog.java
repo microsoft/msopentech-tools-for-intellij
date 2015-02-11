@@ -167,4 +167,9 @@ public class NewCertificateDialog extends DialogWrapper {
     protected JComponent createTitlePane() {
         return new TitlePanel(message("newCertDlgCertTxt"), message("newCertDlgCertMsg"));
     }
+
+    @Override
+    protected String getHelpId() {
+        return "new_certificate_dialog";
+    }
 }
