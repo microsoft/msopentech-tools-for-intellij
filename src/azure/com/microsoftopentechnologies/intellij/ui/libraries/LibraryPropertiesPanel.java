@@ -2,16 +2,15 @@ package com.microsoftopentechnologies.intellij.ui.libraries;
 
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.ui.wizard.WizardNavigationState;
 import com.microsoftopentechnologies.azurecommons.wacommonutil.CerPfxUtil;
 import com.microsoftopentechnologies.azuremanagementutil.util.Base64;
 import com.microsoftopentechnologies.intellij.AzurePlugin;
 import com.microsoftopentechnologies.intellij.actions.LibraryConfigurationAction;
+import com.microsoftopentechnologies.intellij.ui.AzureAbstractPanel;
 import com.microsoftopentechnologies.intellij.ui.util.UIUtils;
 import com.microsoftopentechnologies.intellij.util.PluginUtil;
 
@@ -29,7 +28,7 @@ import java.text.SimpleDateFormat;
 
 import static com.microsoftopentechnologies.intellij.ui.messages.AzureBundle.message;
 
-class LibraryPropertiesPanel {
+class LibraryPropertiesPanel implements AzureAbstractPanel {
     private static final int BUFF_SIZE = 1024;
 
     private JPanel rootPanel;
@@ -44,19 +43,16 @@ class LibraryPropertiesPanel {
     private JCheckBox requiresHttpsCheck;
     private JLabel libraryVersion;
     private JLabel location;
-    private final AddLibraryWizardModel myModel;
     private AzureLibrary azureLibrary;
     private Module module;
 
-    public LibraryPropertiesPanel(final AddLibraryWizardModel model) {
-        myModel = model;
-        module = model.getMyModule();
+    public LibraryPropertiesPanel(Module module, AzureLibrary azureLibrary) {
+        this.module = module;
+        this.azureLibrary = azureLibrary;
         init();
     }
 
     public void init() {
-//        acsFilterPanel.setVisible(azureLibrary == SelectLibraryStep.ACS_FILTER);
-
         acsTxt.setText(message("acsTxt"));
         certTxt.getTextField().getDocument().addDocumentListener(createCertTxtListener());
         Messages.configureMessagePaneUi(certInfoTxt, message("embedCertDefTxt"));
@@ -120,8 +116,7 @@ class LibraryPropertiesPanel {
         };
     }
 
-    public JComponent prepare(final WizardNavigationState state) {
-        azureLibrary = myModel.getSelectedLibrary();
+    public JComponent prepare() {
         acsFilterPanel.setVisible(azureLibrary == LibraryConfigurationAction.ACS_FILTER);
         libraryVersion.setText(azureLibrary.getName());
         location.setText((String.format("%s%s%s", AzurePlugin.pluginFolder, File.separator, azureLibrary.getLocation())));
@@ -137,6 +132,30 @@ class LibraryPropertiesPanel {
             configureDeployment();
         }
         return true;
+    }
+
+    @Override
+    public JComponent getPanel() {
+        return prepare();
+    }
+
+    @Override
+    public String getDisplayName() {
+        return null;
+    }
+
+    @Override
+    public boolean doOKAction() {
+        return false;
+    }
+
+    @Override
+    public String getSelectedValue() {
+        return null;
+    }
+
+    public boolean isExported() {
+        return depCheck.isSelected();
     }
 
     public ValidationInfo doValidate() {
@@ -173,9 +192,9 @@ class LibraryPropertiesPanel {
         }
     }
 
-    ValidationInfo createValidationInfo(String message, JComponent component) {
-        myModel.getCurrentNavigationState().NEXT.setEnabled(false);
-        return new ValidationInfo(message, component);
+    @Override
+    public String getHelpTopic() {
+        return null;
     }
 
     /**
@@ -205,24 +224,15 @@ class LibraryPropertiesPanel {
     private String createWebXml() {
         String path = null;
         try {
-            String cmpntFileLoc = String.format("%s%s%s", PluginUtil.getModulePath(module), File.separator, message("depDirLoc"));
+            File cmpntFileLoc = new File(String.format("%s%s%s", PluginUtil.getModulePath(module), File.separator, message("depDirLoc")));
             String cmpntFile = String.format("%s%s%s", cmpntFileLoc, File.separator, message("depFileName"));
-//            if (!new File(cmpntFile).exists()) {
-//                URL url = Activator.getDefault().getBundle().getEntry(message("resFileLoc"));
-//                URL fileURL = FileLocator.toFileURL(url);
-//                URL resolve = FileLocator.resolve(fileURL);
-//                File file = new File(resolve.getFile());
-//                FileInputStream fis = new FileInputStream(file);
-//                File outputFile = new File(cmpntFile);
-//                OutputStream fos = new FileOutputStream(outputFile);
-//                writeFile(fis , fos);
-//                path = cmpntFile;
-//            } else {
+            if (!cmpntFileLoc.exists()) {
+                cmpntFileLoc.mkdirs();
+            }
+            AzurePlugin.copyResourceFile(message("resFileLoc"), cmpntFile);
             path = cmpntFile;
-//            }
         } catch (Exception e) {
             PluginUtil.displayErrorDialogAndLog(message("acsErrTtl"), message("fileCrtErrMsg"), e);
-//            finishVal = false;
         }
         return new File(path).getPath();
     }

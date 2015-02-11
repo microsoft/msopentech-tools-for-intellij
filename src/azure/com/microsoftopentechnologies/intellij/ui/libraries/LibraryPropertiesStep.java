@@ -33,12 +33,12 @@ public class LibraryPropertiesStep extends WizardStep<AddLibraryWizardModel> imp
     public LibraryPropertiesStep(String title, final AddLibraryWizardModel model) {
         super(title, message("libraryPropertiesDesc"));
         myModel = model;
-        libraryPropertiesPanel = new LibraryPropertiesPanel(model);
     }
 
     @Override
     public JComponent prepare(final WizardNavigationState state) {
-        return libraryPropertiesPanel.prepare(state);
+        libraryPropertiesPanel = new LibraryPropertiesPanel(myModel.getMyModule(), myModel.getSelectedLibrary());
+        return libraryPropertiesPanel.prepare();
     }
 
     @Override
@@ -53,6 +53,11 @@ public class LibraryPropertiesStep extends WizardStep<AddLibraryWizardModel> imp
 
     @Override
     public boolean onFinish() {
-        return  (libraryPropertiesPanel.onFinish() && super.onFinish());
+        boolean result = libraryPropertiesPanel.onFinish();
+        if (result) {
+            myModel.setExported(libraryPropertiesPanel.isExported());
+            return super.onFinish();
+        }
+        return false;
     }
 }

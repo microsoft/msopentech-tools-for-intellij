@@ -27,6 +27,7 @@ public class AddLibraryWizardModel extends WizardModel {
     private LibraryPropertiesStep libraryPropertiesStep;
     private Module myModule;
     private AzureLibrary selectedLibrary;
+    private boolean exported;
 
     public AddLibraryWizardModel(final Module module) {
         super(message("addLibraryTitle"));
@@ -43,6 +44,14 @@ public class AddLibraryWizardModel extends WizardModel {
 
     public AzureLibrary getSelectedLibrary() {
         return selectedLibrary;
+    }
+
+    public void setExported(boolean exported) {
+        this.exported = exported;
+    }
+
+    public boolean isExported() {
+        return exported;
     }
 
     public Module getMyModule() {

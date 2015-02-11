@@ -5,7 +5,9 @@ import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.roots.ModifiableRootModel;
 import com.intellij.openapi.roots.ModuleRootManager;
+import com.intellij.openapi.roots.OrderEntry;
 import com.intellij.openapi.roots.OrderRootType;
+import com.intellij.openapi.roots.impl.ModuleLibraryOrderEntryImpl;
 import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.roots.libraries.ui.OrderRoot;
 import com.intellij.openapi.roots.ui.configuration.projectRoot.LibrariesContainer;
@@ -16,6 +18,7 @@ import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.ui.*;
 import com.intellij.ui.components.JBList;
 import com.microsoftopentechnologies.intellij.AzurePlugin;
+import com.microsoftopentechnologies.intellij.ui.components.DefaultDialogWrapper;
 import com.microsoftopentechnologies.intellij.util.PluginUtil;
 import org.jetbrains.annotations.Nullable;
 
@@ -87,6 +90,13 @@ public class LibrariesConfigurationDialog extends DialogWrapper {
             try {
                 final ModifiableRootModel modifiableModel = ModuleRootManager.getInstance(module).getModifiableModel();
                 Library newLibrary = LibrariesContainerFactory.createContainer(modifiableModel).createLibrary(/*libraryName*/azureLibrary.getName(), level, new ArrayList<OrderRoot>());
+                if (model.isExported()) {
+                    for (OrderEntry orderEntry : modifiableModel.getOrderEntries()) {
+                        if (orderEntry instanceof ModuleLibraryOrderEntryImpl && ((ModuleLibraryOrderEntryImpl) orderEntry).getLibraryName().equals(azureLibrary.getName())) {
+                            ((ModuleLibraryOrderEntryImpl) orderEntry).setExported(true);
+                        }
+                    }
+                }
                 Library.ModifiableModel newLibraryModel = newLibrary.getModifiableModel();
                 File file = new File(String.format("%s%s%s", AzurePlugin.pluginFolder, File.separator, azureLibrary.getLocation()));
                 addLibraryRoot(file, newLibraryModel);
@@ -124,6 +134,8 @@ public class LibrariesConfigurationDialog extends DialogWrapper {
     }
 
     private void editLibrary() {
-
+        DefaultDialogWrapper libraryProperties = new DefaultDialogWrapper(module.getProject(),
+                new LibraryPropertiesPanel(module, (AzureLibrary) librariesList.getSelectedValue()));
+        libraryProperties.show();
     }
 }

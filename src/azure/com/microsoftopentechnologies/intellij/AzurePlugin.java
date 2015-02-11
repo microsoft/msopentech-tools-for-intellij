@@ -186,11 +186,11 @@ public class AzurePlugin extends AbstractProjectComponent {
     }
 
     /**
-     * Method copy specified file in eclipse plugins folder.
+     * Method copies specified file from plugin resources
      * @param resourceFile
      * @param destFile
      */
-    private void copyResourceFile(String resourceFile, String destFile) {
+    public static void copyResourceFile(String resourceFile, String destFile) {
         try {
             InputStream is = ((PluginClassLoader)AzurePlugin.class.getClassLoader()).findResource(resourceFile).openStream();
             File outputFile = new File(destFile);
