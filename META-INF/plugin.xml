@@ -83,7 +83,7 @@ limitations under the License.
 
     <application-components>
         <component>
-            <implementation-class>com.microsoftopentechnologies.intellij.components.MSOpenTechTools</implementation-class>
+            <implementation-class>com.microsoftopentechnologies.intellij.components.MSOpenTechToolsApplication</implementation-class>
         </component>
         <component>
             <implementation-class>com.microsoftopentechnologies.intellij.AzureActionsComponent</implementation-class>
@@ -93,6 +93,10 @@ limitations under the License.
     <project-components>
         <component>
             <implementation-class>com.microsoftopentechnologies.intellij.AzurePlugin</implementation-class>
+            <loadForDefaultProject/>
+        </component>
+        <component>
+            <implementation-class>com.microsoftopentechnologies.intellij.components.MSOpenTechToolsProject</implementation-class>
             <loadForDefaultProject/>
         </component>
     </project-components>

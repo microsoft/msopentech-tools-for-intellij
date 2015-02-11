@@ -39,7 +39,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Collection;
 
-public class MSOpenTechTools extends ApplicationComponent.Adapter {
+public class MSOpenTechToolsApplication extends ApplicationComponent.Adapter {
     // NOTE: If you add new setting names to this list, evaluate whether it should be cleared
     // when the plugin is upgraded/uninstalled and add the setting to the array "settings" in
     // the "cleanTempData" function below. Otherwise your setting will get retained across
@@ -50,7 +50,6 @@ public class MSOpenTechTools extends ApplicationComponent.Adapter {
         public static final String SELECTED_SUBSCRIPTIONS = "com.microsoftopentechnologies.intellij.SelectedSubscriptions";
         public static final String AZURE_AUTHENTICATION_MODE = "com.microsoftopentechnologies.intellij.AzureAuthenticationMode";
         public static final String AZURE_AUTHENTICATION_TOKEN = "com.microsoftopentechnologies.intellij.AzureAuthenticationToken";
-        public static final String CLEAN_TEMP_DATA = "com.microsoftopentechnologies.intellij.CleanTempData";
         public static final String CURRENT_PLUGIN_VERSION = "com.microsoftopentechnologies.intellij.PluginVersion";
     }
 
@@ -66,16 +65,16 @@ public class MSOpenTechTools extends ApplicationComponent.Adapter {
     private static final String OUTLOOK_FILE_LIST_SERVICES_CODE = "//25fdea0c-8a15-457f-9b15-dacb4e7dc2b2";
     private static final VirtualFileListener vfl = getVirtualFileListener();
 
-    private static MSOpenTechTools current = null;
+    private static MSOpenTechToolsApplication current = null;
     private PluginSettings settings;
 
     // TODO: This needs to be the plugin ID from plugin.xml somehow.
     public static final String PLUGIN_ID = "com.microsoftopentechnologies.intellij";
 
-    public MSOpenTechTools() {
+    public MSOpenTechToolsApplication() {
     }
 
-    public static MSOpenTechTools getCurrent() {
+    public static MSOpenTechToolsApplication getCurrent() {
         return current;
     }
 
@@ -98,7 +97,6 @@ public class MSOpenTechTools extends ApplicationComponent.Adapter {
                     "settings for the MSOpenTech Tools plugin.", e);
         }
 
-        // delete android studio activity templates
         cleanTempData(PropertiesComponent.getInstance());
 
         VirtualFileManager.getInstance().addVirtualFileListener(vfl);
@@ -118,7 +116,7 @@ public class MSOpenTechTools extends ApplicationComponent.Adapter {
         try {
             reader = new BufferedReader(
                     new InputStreamReader(
-                            MSOpenTechTools.class.getResourceAsStream("/settings.json")));
+                            MSOpenTechToolsApplication.class.getResourceAsStream("/settings.json")));
             StringBuilder sb = new StringBuilder();
             String line;
 
@@ -139,11 +137,6 @@ public class MSOpenTechTools extends ApplicationComponent.Adapter {
     }
 
     private void cleanTempData(PropertiesComponent propComp) {
-        String cleanTempData = propComp.getValue(AppSettingsNames.CLEAN_TEMP_DATA, "");
-
-        //Setted for constant cleaning for testing
-        //cleanTempData = "";
-
         // check the plugin version stored in the properties; if it
         // doesn't match with the current plugin version then we clear
         // all stored options
@@ -171,37 +164,6 @@ public class MSOpenTechTools extends ApplicationComponent.Adapter {
 
         // save the current plugin version
         properties.setValue(AppSettingsNames.CURRENT_PLUGIN_VERSION, getSettings().getPluginVersion());
-
-        try {
-            if (cleanTempData.isEmpty() || !cleanTempData.equals(settings.getPluginVersion())) {
-
-                String tmpdir = System.getProperty("java.io.tmpdir");
-                StringBuilder sb = new StringBuilder();
-                sb.append(tmpdir);
-
-                if (!tmpdir.endsWith(File.separator))
-                    sb.append(File.separator);
-
-                sb.append("TempAzure");
-
-                final VirtualFile tempFolder = LocalFileSystem.getInstance().findFileByIoFile(new File(sb.toString()));
-                if (tempFolder != null && tempFolder.exists()) {
-                    try {
-                        tempFolder.delete(MSOpenTechTools.getCurrent());
-                    } catch (IOException ignored) {
-                    }
-                }
-
-                propComp.setValue(AppSettingsNames.CLEAN_TEMP_DATA, settings.getPluginVersion());
-
-                AndroidStudioHelper.newActivityTemplateManager(true, this);
-
-            } else {
-                AndroidStudioHelper.newActivityTemplateManager(false, this);
-            }
-        } catch (Exception e) {
-            UIHelper.showException("Error copying templates", e);
-        }
     }
 
     private static VirtualFileListener getVirtualFileListener() {

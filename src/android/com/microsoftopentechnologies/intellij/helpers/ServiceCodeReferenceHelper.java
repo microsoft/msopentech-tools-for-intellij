@@ -118,7 +118,22 @@ public class ServiceCodeReferenceHelper {
         }
     }
 
-    private void addReferences(String zipPath)
+    public static boolean isAndroidGradleModule(VirtualFile virtualFileDir) throws IOException {
+        for (VirtualFile file : virtualFileDir.getChildren()) {
+            if (file.getName().contains("build.gradle")) {
+                if(isAndroidGradleBuildFile(file))
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static boolean isAndroidGradleBuildFile(VirtualFile buildGradleFile) throws IOException {
+        return getStringAndCloseStream(buildGradleFile.getInputStream()).contains("com.android.tools.build");
+    }
+    
+     private void addReferences(String zipPath)
             throws IOException, ParserConfigurationException, SAXException, XPathExpressionException, TransformerException {
         //Downloads libraries
         String path = System.getProperty("java.io.tmpdir");
@@ -245,18 +260,28 @@ public class ServiceCodeReferenceHelper {
         return buffer.toByteArray();
     }
 
-    public static String getString(InputStream is) {
+    public static String getStringAndCloseStream(InputStream is) throws IOException {
         //Using the trick described in this link to read whole streams in one operation:
         //http://stackoverflow.com/a/5445161
-        Scanner s = new Scanner(is).useDelimiter("\\A");
-        return s.hasNext() ? s.next() : "";
+        try {
+            Scanner s = new Scanner(is).useDelimiter("\\A");
+            return s.hasNext() ? s.next() : "";
+        }
+        finally {
+            is.close();
+        }
     }
 
     @NotNull
-    public static String getString(@NotNull InputStream is, @NotNull String charsetName) {
+    public static String getStringAndCloseStream(@NotNull InputStream is, @NotNull String charsetName) throws IOException {
         //Using the trick described in this link to read whole streams in one operation:
         //http://stackoverflow.com/a/5445161
-        Scanner s = new Scanner(is, charsetName).useDelimiter("\\A");
-        return s.hasNext() ? s.next() : "";
+        try {
+            Scanner s = new Scanner(is, charsetName).useDelimiter("\\A");
+            return s.hasNext() ? s.next() : "";
+        }
+        finally {
+            is.close();
+        }
     }
 }
