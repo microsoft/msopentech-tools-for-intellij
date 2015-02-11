@@ -18,6 +18,7 @@ package com.microsoftopentechnologies.intellij.helpers.azure.sdk;
 import com.microsoft.windowsazure.exception.ServiceException;
 import com.microsoftopentechnologies.intellij.components.MSOpenTechTools;
 import com.microsoftopentechnologies.intellij.components.PluginSettings;
+import com.microsoftopentechnologies.intellij.helpers.NoSubscriptionException;
 import com.microsoftopentechnologies.intellij.helpers.StringHelper;
 import com.microsoftopentechnologies.intellij.helpers.aadauth.AuthenticationContext;
 import com.microsoftopentechnologies.intellij.helpers.aadauth.AuthenticationResult;
@@ -27,9 +28,19 @@ import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIManager;
 import com.microsoftopentechnologies.intellij.model.vm.*;
 import org.jetbrains.annotations.NotNull;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPathExpressionException;
+import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
     protected AzureSDKManager sdkManager;
@@ -81,7 +92,17 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
                         settings.getAzureServiceManagementUri(),
                         settings.getClientId());
             } catch (Exception e) {
-                token = null;
+                // if the error is HTTP status code 400 then we need to
+                // do interactive auth
+                if(e.getMessage().contains("HTTP status code 400")) {
+                    try {
+                        token = AzureRestAPIHelper.acquireTokenInteractive(subscriptionId, apiManager);
+                    } catch (Exception ignored) {
+                        token = null;
+                    }
+                } else {
+                    token = null;
+                }
             } finally {
                 if (context != null) {
                     context.dispose();
