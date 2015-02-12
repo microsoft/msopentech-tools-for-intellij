@@ -56,7 +56,7 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
     private final Object saMonitor = new Object();
 
     public CloudServiceStep(CreateVMWizardModel mModel, final Project project) {
-        super("Cloud Service Settings");
+        super("Cloud Service Settings", null, null);
 
         this.project = project;
         this.model = mModel;

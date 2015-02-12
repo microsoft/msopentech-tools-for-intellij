@@ -42,7 +42,7 @@ public class SubscriptionStep extends WizardStep<CreateVMWizardModel> {
     private JComboBox subscriptionComboBox;
 
     public SubscriptionStep(final CreateVMWizardModel model) {
-        super("Choose a Subscription", null);
+        super("Choose a Subscription", null, null);
 
         this.model = model;
 
