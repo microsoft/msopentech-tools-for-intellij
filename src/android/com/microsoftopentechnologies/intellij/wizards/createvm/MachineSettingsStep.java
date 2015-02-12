@@ -57,7 +57,7 @@ public class MachineSettingsStep extends WizardStep<CreateVMWizardModel> {
 
 
     public MachineSettingsStep(CreateVMWizardModel mModel, Project project) {
-        super("Virtual Machine Basic Settings", null);
+        super("Virtual Machine Basic Settings", null, null);
 
         this.project = project;
         this.model = mModel;
