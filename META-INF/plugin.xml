@@ -69,7 +69,8 @@ limitations under the License.
                 factoryClass="com.microsoftopentechnologies.intellij.activitylog.ActivityLogToolWindowFactory"
                 id="Azure Activity Log"
                 canCloseContents="true"
-                icon="/icons/RoleFolder.gif"/>
+                icon="/icons/RoleFolder.gif"
+                conditionClass="com.microsoftopentechnologies.intellij.activitylog.ActivityLogToolWindowFactoryCondition"/>
         <moduleType id="AZURE_MODULE"
                     implementationClass="com.microsoftopentechnologies.intellij.module.AzureModuleType"/>
         <moduleConfigurationEditorProvider
