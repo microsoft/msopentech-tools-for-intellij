@@ -18,11 +18,10 @@ package com.microsoftopentechnologies.intellij.serviceexplorer.azure.mobileservi
 
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
-import com.intellij.openapi.application.ApplicationManager;
 import com.microsoftopentechnologies.intellij.forms.TableForm;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIManager;
+import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManager;
 import com.microsoftopentechnologies.intellij.model.Column;
 import com.microsoftopentechnologies.intellij.model.Script;
 import com.microsoftopentechnologies.intellij.model.Service;

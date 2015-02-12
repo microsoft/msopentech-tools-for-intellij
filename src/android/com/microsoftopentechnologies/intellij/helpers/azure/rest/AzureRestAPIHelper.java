@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package com.microsoftopentechnologies.intellij.helpers.azure;
+package com.microsoftopentechnologies.intellij.helpers.azure.rest;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import com.intellij.ide.util.PropertiesComponent;
@@ -27,6 +27,9 @@ import com.microsoftopentechnologies.intellij.helpers.XmlHelper;
 import com.microsoftopentechnologies.intellij.helpers.aadauth.AuthenticationContext;
 import com.microsoftopentechnologies.intellij.helpers.aadauth.AuthenticationResult;
 import com.microsoftopentechnologies.intellij.helpers.aadauth.PromptValue;
+import com.microsoftopentechnologies.intellij.helpers.azure.AzureAuthenticationMode;
+import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
+import com.microsoftopentechnologies.intellij.helpers.azure.AzureManager;
 import com.microsoftopentechnologies.intellij.model.Subscription;
 
 import org.jetbrains.annotations.Nullable;

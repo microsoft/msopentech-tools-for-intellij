@@ -17,7 +17,7 @@
 package com.microsoftopentechnologies.intellij.serviceexplorer.azure.vm;
 
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIManager;
+import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManager;
 import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerImpl;
 import com.microsoftopentechnologies.intellij.model.Subscription;
 import com.microsoftopentechnologies.intellij.model.vm.VirtualMachine;
@@ -27,7 +27,6 @@ import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionListener
 import com.microsoftopentechnologies.intellij.wizards.createvm.CreateVMWizard;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 

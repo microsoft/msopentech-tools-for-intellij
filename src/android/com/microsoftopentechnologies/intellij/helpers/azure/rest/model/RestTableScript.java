@@ -14,26 +14,35 @@
  *  limitations under the License.
  */
 
-package com.microsoftopentechnologies.intellij.helpers;
-
-import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
-import groovy.json.JsonSlurper;
+package com.microsoftopentechnologies.intellij.helpers.azure.rest.model;
 
 
-public class CustomJsonSlurper {
-    private JsonSlurper slurper;
+public class RestTableScript {
+    private String operation;
+    private String selflink;
+    private int sizeBytes;
 
-    public CustomJsonSlurper() {
-        slurper = new JsonSlurper();
-
-
+    public String getOperation() {
+        return operation;
     }
 
-    public Object parseText(String json) throws AzureCmdException {
-        try {
-            return slurper.parseText(json);
-        } catch (Throwable ex) {
-            throw new AzureCmdException(json, json);
-        }
+    public void setOperation(String operation) {
+        this.operation = operation;
+    }
+
+    public String getSelflink() {
+        return selflink;
+    }
+
+    public void setSelflink(String selflink) {
+        this.selflink = selflink;
+    }
+
+    public int getSizeBytes() {
+        return sizeBytes;
+    }
+
+    public void setSizeBytes(int sizeBytes) {
+        this.sizeBytes = sizeBytes;
     }
 }
