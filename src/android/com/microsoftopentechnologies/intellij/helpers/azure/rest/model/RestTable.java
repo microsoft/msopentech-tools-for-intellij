@@ -21,7 +21,7 @@ import java.util.List;
 public class RestTable {
     private String idType;
     private String hasDeleted;
-    private List<Metric> metrics;
+    private Metric metrics;
     private String name;
     private String selflink;
 
@@ -41,13 +41,6 @@ public class RestTable {
         this.hasDeleted = hasDeleted;
     }
 
-    public List<Metric> getMetrics() {
-        return metrics;
-    }
-
-    public void setMetrics(List<Metric> metrics) {
-        this.metrics = metrics;
-    }
 
     public String getName() {
         return name;
@@ -63,6 +56,14 @@ public class RestTable {
 
     public void setSelflink(String selflink) {
         this.selflink = selflink;
+    }
+
+    public Metric getMetrics() {
+        return metrics;
+    }
+
+    public void setMetrics(Metric metrics) {
+        this.metrics = metrics;
     }
 
     public class Metric {

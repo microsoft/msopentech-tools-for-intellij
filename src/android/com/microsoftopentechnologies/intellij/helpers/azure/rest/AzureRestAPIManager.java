@@ -1001,7 +1001,7 @@ public class AzureRestAPIManager implements AzureManager {
 
                 logEntry.setMessage(item.getMessage());
                 logEntry.setSource(item.getSource());
-                logEntry.setType(item.getSource());
+                logEntry.setType(item.getType());
 
                 SimpleDateFormat ISO8601DATEFORMAT;
 
