@@ -60,7 +60,7 @@ public class EndpointStep extends WizardStep<CreateVMWizardModel> {
     private Project project;
 
     public EndpointStep(final CreateVMWizardModel model, Project project, VMServiceModule node) {
-        super("Endpoint Settings", null);
+        super("Endpoint Settings", null, null);
 
         this.node = node;
         this.project = project;
