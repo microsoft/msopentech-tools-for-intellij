@@ -35,20 +35,6 @@ public class CreateVMWizard extends WizardDialog<CreateVMWizardModel> {
         return new Dimension(790, 467);
     }
 
-    @Override
-    protected JComponent createCenterPanel() {
-        JPanel centerPanel = (JPanel) super.createCenterPanel();
-
-        if(centerPanel.getLayout() instanceof BorderLayout) {
-            BorderLayout borderLayout = (BorderLayout) centerPanel.getLayout();
-            Component westComponent = borderLayout.getLayoutComponent(BorderLayout.WEST);
-            if (westComponent != null) {
-                centerPanel.remove(westComponent);
-            }
-        }
-
-        return centerPanel;
-    }
 
     @Override
     protected JComponent createSouthPanel() {
