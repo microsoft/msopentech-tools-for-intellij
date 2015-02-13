@@ -75,7 +75,10 @@ limitations under the License.
                     implementationClass="com.microsoftopentechnologies.intellij.module.AzureModuleType"/>
         <moduleConfigurationEditorProvider
                 implementation="com.microsoftopentechnologies.intellij.module.AzureModuleConfigurationEditorProvider"/>
-        <projectConfigurable instance="com.microsoftopentechnologies.intellij.AzureConfigurable"/>
+        <projectConfigurable groupId="root"
+                id="com.microsoftopentechnologies.intellij.AzureConfigurable"
+                provider="com.microsoftopentechnologies.intellij.AzureConfigurableProvider"
+                dynamic="true"/>
         <iconProvider implementation="com.microsoftopentechnologies.intellij.AzureIconProvider"
                       order="before javaDirectory"/>
         <projectService serviceInterface="com.microsoftopentechnologies.intellij.AzureSettings"
