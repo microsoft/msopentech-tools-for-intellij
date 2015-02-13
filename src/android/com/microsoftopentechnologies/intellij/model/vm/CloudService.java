@@ -22,34 +22,80 @@ import java.util.Set;
 import java.util.TreeSet;
 
 public class CloudService implements ServiceTreeItem {
+    public static class Deployment {
+        private String name;
+        private String slot;
+        private Set<String> virtualMachines;
+        private Set<String> computeRoles;
+        private String virtualNetwork;
+        private Set<String> availabilitySets;
+
+        private Deployment(@NotNull String slot) {
+            this.slot = slot;
+            this.name = "";
+            this.virtualNetwork = "";
+            this.virtualMachines = new TreeSet<String>();
+            this.computeRoles = new TreeSet<String>();
+            this.availabilitySets = new TreeSet<String>();
+        }
+
+        @NotNull
+        public String getSlot() {
+            return slot;
+        }
+
+        @NotNull
+        public String getName() {
+            return name;
+        }
+
+        public void setName(@NotNull String name) {
+            this.name = name;
+        }
+
+        @NotNull
+        public Set<String> getVirtualMachines() {
+            return virtualMachines;
+        }
+
+        @NotNull
+        public Set<String> getComputeRoles() {
+            return computeRoles;
+        }
+
+        @NotNull
+        public String getVirtualNetwork() {
+            return virtualNetwork;
+        }
+
+        public void setVirtualNetwork(@NotNull String virtualNetwork) {
+            this.virtualNetwork = virtualNetwork;
+        }
+
+        @NotNull
+        public Set<String> getAvailabilitySets() {
+            return availabilitySets;
+        }
+    }
+
     private boolean loading;
     private String name;
     private String location;
     private String affinityGroup;
-    private String productionDeployment;
-    private boolean productionDeploymentVM;
-    private String stagingDeployment;
-    private boolean stagingDeploymentVM;
+    private Deployment productionDeployment;
+    private Deployment stagingDeployment;
     private String subscriptionId;
-    private Set<String> availabilitySets;
 
     public CloudService(@NotNull String name,
                         @NotNull String location,
                         @NotNull String affinityGroup,
-                        @NotNull String productionDeployment,
-                        boolean productionDeploymentVM,
-                        @NotNull String stagingDeployment,
-                        boolean stagingDeploymentVM,
                         @NotNull String subscriptionId) {
         this.name = name;
         this.location = location;
         this.affinityGroup = affinityGroup;
-        this.productionDeployment = productionDeployment;
-        this.productionDeploymentVM = productionDeploymentVM;
-        this.stagingDeployment = stagingDeployment;
-        this.stagingDeploymentVM = stagingDeploymentVM;
+        this.productionDeployment = new Deployment("Production");
+        this.stagingDeployment = new Deployment("Staging");
         this.subscriptionId = subscriptionId;
-        this.availabilitySets = new TreeSet<String>();
     }
 
     @Override
@@ -78,31 +124,18 @@ public class CloudService implements ServiceTreeItem {
     }
 
     @NotNull
-    public String getProductionDeployment() {
+    public Deployment getProductionDeployment() {
         return productionDeployment;
     }
 
-    public boolean isProductionDeploymentVM() {
-        return productionDeploymentVM;
-    }
-
     @NotNull
-    public String getStagingDeployment() {
+    public Deployment getStagingDeployment() {
         return stagingDeployment;
-    }
-
-    public boolean isStagingDeploymentVM() {
-        return stagingDeploymentVM;
     }
 
     @NotNull
     public String getSubscriptionId() {
         return subscriptionId;
-    }
-
-    @NotNull
-    public Set<String> getAvailabilitySets() {
-        return availabilitySets;
     }
 
     @Override

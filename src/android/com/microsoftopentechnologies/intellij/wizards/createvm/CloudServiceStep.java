@@ -28,6 +28,7 @@ import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerI
 import com.microsoftopentechnologies.intellij.model.vm.CloudService;
 import com.microsoftopentechnologies.intellij.model.vm.StorageAccount;
 import com.microsoftopentechnologies.intellij.model.vm.VirtualMachineImage;
+import com.microsoftopentechnologies.intellij.model.vm.VirtualNetwork;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -50,8 +51,11 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
     private JComboBox storageComboBox;
     private JCheckBox availabilitySetCheckBox;
     private JComboBox availabilityComboBox;
+    private JComboBox networkComboBox;
+    private JComboBox subnetComboBox;
     private Map<String, StorageAccount> storageAccounts;
     private Map<String, CloudService> cloudServices;
+    private Map<String, VirtualNetwork> virtualNetworks;
     private final Object csMonitor = new Object();
     private final Object saMonitor = new Object();
 
@@ -182,7 +186,7 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
                                 cloudServices = new TreeMap<String, CloudService>();
 
                                 for (CloudService cloudService : AzureSDKManagerImpl.getManager().getCloudServices(model.getSubscription().getId().toString())) {
-                                    if (cloudService.isProductionDeploymentVM()) {
+                                    if (cloudService.getProductionDeployment().getComputeRoles().size() == 0) {
                                         cloudServices.put(cloudService.getName(), cloudService);
                                     }
                                 }
@@ -332,7 +336,7 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
 
     private void fillAvailabilitySets(CloudService selectedCS) {
         if (selectedCS != null) {
-            availabilityComboBox.setModel(new DefaultComboBoxModel(selectedCS.getAvailabilitySets().toArray()));
+            availabilityComboBox.setModel(new DefaultComboBoxModel(selectedCS.getProductionDeployment().getAvailabilitySets().toArray()));
         } else {
             availabilityComboBox.setModel(new DefaultComboBoxModel(new String[]{}));
         }

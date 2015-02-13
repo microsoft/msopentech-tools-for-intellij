@@ -22,18 +22,35 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class VirtualMachine implements ServiceTreeItem {
+    public static enum Status {
+        Unknown,
+        Ready,
+        Stopped,
+        StoppedDeallocated,
+        Busy,
+        Creating,
+        Starting,
+        Stopping,
+        Deleting,
+        Restarting,
+        Cycling,
+        FailedStarting,
+        Unresponsive,
+        Preparing
+    }
+
     private boolean loading;
     private String name;
     private String serviceName;
     private String deploymentName;
     private String availabilitySet;
     private String size;
-    private String status;
+    private Status status;
     private String subscriptionId;
     private List<Endpoint> endpoints;
 
     public VirtualMachine(@NotNull String name, @NotNull String serviceName, @NotNull String deploymentName,
-                          @NotNull String availabilitySet, @NotNull String size, @NotNull String status,
+                          @NotNull String availabilitySet, @NotNull String size, @NotNull Status status,
                           @NotNull String subscriptionId) {
         this.name = name;
         this.serviceName = serviceName;
@@ -93,11 +110,11 @@ public class VirtualMachine implements ServiceTreeItem {
     }
 
     @NotNull
-    public String getStatus() {
+    public Status getStatus() {
         return status;
     }
 
-    public void setStatus(@NotNull String status) {
+    public void setStatus(@NotNull Status status) {
         this.status = status;
     }
 

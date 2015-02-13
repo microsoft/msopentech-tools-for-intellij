@@ -15,22 +15,16 @@
  */
 package com.microsoftopentechnologies.intellij.serviceexplorer.azure.vm;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.SettableFuture;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
-import com.intellij.openapi.progress.ProgressIndicator;
-import com.intellij.openapi.progress.ProgressManager;
-import com.intellij.openapi.progress.Task;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerImpl;
 import com.microsoftopentechnologies.intellij.model.vm.Endpoint;
 import com.microsoftopentechnologies.intellij.model.vm.VirtualMachine;
+import com.microsoftopentechnologies.intellij.model.vm.VirtualMachine.Status;
 import com.microsoftopentechnologies.intellij.serviceexplorer.*;
-import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.io.File;
@@ -42,8 +36,6 @@ public class VMNode extends Node {
     private static final String WAIT_ICON_PATH = "virtualmachinewait.png";
     private static final String STOP_ICON_PATH = "virtualmachinestop.png";
     private static final String RUN_ICON_PATH = "virtualmachinerun.png";
-    private static final String VM_STATUS_RUNNING = "Running";
-    private static final String VM_STATUS_SUSPENDED = "Suspended";
     public static final String ACTION_DELETE = "Delete";
     public static final String ACTION_DOWNLOAD_RDP_FILE = "Connect Remote Desktop";
     public static final String ACTION_SHUTDOWN = "Shutdown";
@@ -61,12 +53,15 @@ public class VMNode extends Node {
     }
 
     private String getVMIconPath() {
-        String status = virtualMachine.getStatus();
-        if (status.equals(VM_STATUS_RUNNING))
-            return RUN_ICON_PATH;
-        if (status.equals(VM_STATUS_SUSPENDED))
-            return STOP_ICON_PATH;
-        return WAIT_ICON_PATH;
+        switch (virtualMachine.getStatus()) {
+            case Ready:
+                return RUN_ICON_PATH;
+            case Stopped:
+            case StoppedDeallocated:
+                return STOP_ICON_PATH;
+            default:
+                return WAIT_ICON_PATH;
+        }
     }
 
     @Override
@@ -105,10 +100,10 @@ public class VMNode extends Node {
     @Override
     public List<NodeAction> getNodeActions() {
         // enable/disable menu items according to VM status
-        getNodeActionByName(ACTION_SHUTDOWN).setEnabled(virtualMachine.getStatus().equals(VM_STATUS_RUNNING));
-        getNodeActionByName(ACTION_START).setEnabled(!virtualMachine.getStatus().equals(VM_STATUS_RUNNING));
-        getNodeActionByName(ACTION_RESTART).setEnabled(virtualMachine.getStatus().equals(VM_STATUS_RUNNING));
-        getNodeActionByName(ACTION_DOWNLOAD_RDP_FILE).setEnabled(virtualMachine.getStatus().equals(VM_STATUS_RUNNING));
+        getNodeActionByName(ACTION_SHUTDOWN).setEnabled(virtualMachine.getStatus().equals(Status.Ready));
+        getNodeActionByName(ACTION_START).setEnabled(!virtualMachine.getStatus().equals(Status.Ready));
+        getNodeActionByName(ACTION_RESTART).setEnabled(virtualMachine.getStatus().equals(Status.Ready));
+        getNodeActionByName(ACTION_DOWNLOAD_RDP_FILE).setEnabled(virtualMachine.getStatus().equals(Status.Ready));
 
         return super.getNodeActions();
     }
@@ -165,14 +160,12 @@ public class VMNode extends Node {
                 if (saveFile.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
                     File rdpFile = saveFile.getSelectedFile();
 
-                    if (!rdpFile.exists()) {
-                        rdpFile.createNewFile();
+                    if (rdpFile.exists() || rdpFile.createNewFile()) {
+                        FileOutputStream fileOutputStream = new FileOutputStream(rdpFile);
+                        fileOutputStream.write(AzureSDKManagerImpl.getManager().downloadRDP(virtualMachine));
+                        fileOutputStream.flush();
+                        fileOutputStream.close();
                     }
-
-                    FileOutputStream fileOutputStream = new FileOutputStream(rdpFile);
-                    fileOutputStream.write(AzureSDKManagerImpl.getManager().downloadRDP(virtualMachine));
-                    fileOutputStream.flush();
-                    fileOutputStream.close();
                 }
             } catch (Exception ex) {
                 UIHelper.showException("Error downloading RDP file:", ex);
@@ -221,7 +214,8 @@ public class VMNode extends Node {
             }
         }
 
-        protected void runVMAction() throws AzureCmdException {}
+        protected void runVMAction() throws AzureCmdException {
+        }
     }
 
     public class ShutdownVMAction extends VMNodeActionListener {

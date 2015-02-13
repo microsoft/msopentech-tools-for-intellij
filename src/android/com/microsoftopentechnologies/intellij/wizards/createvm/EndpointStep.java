@@ -200,10 +200,10 @@ public class EndpointStep extends WizardStep<CreateVMWizardModel> {
                     VirtualMachine virtualMachine = new VirtualMachine(
                             model.getName(),
                             model.getCloudService().getName(),
-                            model.getCloudService().getProductionDeployment(),
+                            model.getCloudService().getProductionDeployment().getName(),
                             model.getAvailabilitySet(),
                             model.getSize().getName(),
-                            "",
+                            VirtualMachine.Status.Unknown,
                             model.getSubscription().getId().toString()
                     );
 

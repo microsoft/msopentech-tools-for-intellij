@@ -18,7 +18,6 @@ package com.microsoftopentechnologies.intellij.helpers.azure.sdk;
 import com.microsoft.windowsazure.exception.ServiceException;
 import com.microsoftopentechnologies.intellij.components.MSOpenTechToolsApplication;
 import com.microsoftopentechnologies.intellij.components.PluginSettings;
-import com.microsoftopentechnologies.intellij.helpers.NoSubscriptionException;
 import com.microsoftopentechnologies.intellij.helpers.StringHelper;
 import com.microsoftopentechnologies.intellij.helpers.aadauth.AuthenticationContext;
 import com.microsoftopentechnologies.intellij.helpers.aadauth.AuthenticationResult;
@@ -28,19 +27,9 @@ import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIManager;
 import com.microsoftopentechnologies.intellij.model.vm.*;
 import org.jetbrains.annotations.NotNull;
-import org.xml.sax.SAXException;
 
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.XPathExpressionException;
-import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
     protected AzureSDKManager sdkManager;
@@ -94,7 +83,7 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
             } catch (Exception e) {
                 // if the error is HTTP status code 400 then we need to
                 // do interactive auth
-                if(e.getMessage().contains("HTTP status code 400")) {
+                if (e.getMessage().contains("HTTP status code 400")) {
                     try {
                         token = AzureRestAPIHelper.acquireTokenInteractive(subscriptionId, apiManager);
                     } catch (Exception ignored) {
@@ -257,6 +246,17 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
             @Override
             public List<AffinityGroup> run() throws AzureCmdException {
                 return sdkManager.getAffinityGroups(subscriptionId);
+            }
+        });
+    }
+
+    @NotNull
+    @Override
+    public List<VirtualNetwork> getVirtualNetworks(@NotNull final String subscriptionId) throws AzureCmdException {
+        return runWithRetry(subscriptionId, new Func0<List<VirtualNetwork>>() {
+            @Override
+            public List<VirtualNetwork> run() throws AzureCmdException {
+                return sdkManager.getVirtualNetworks(subscriptionId);
             }
         });
     }

@@ -39,6 +39,10 @@ import com.microsoft.windowsazure.management.models.AffinityGroupListResponse;
 import com.microsoft.windowsazure.management.models.LocationsListResponse;
 import com.microsoft.windowsazure.management.models.RoleSizeListResponse;
 import com.microsoft.windowsazure.management.models.RoleSizeListResponse.RoleSize;
+import com.microsoft.windowsazure.management.network.NetworkManagementClient;
+import com.microsoft.windowsazure.management.network.NetworkOperations;
+import com.microsoft.windowsazure.management.network.models.NetworkListResponse;
+import com.microsoft.windowsazure.management.network.models.NetworkListResponse.VirtualNetworkSite;
 import com.microsoft.windowsazure.management.storage.StorageAccountOperations;
 import com.microsoft.windowsazure.management.storage.StorageManagementClient;
 import com.microsoft.windowsazure.management.storage.models.StorageAccountCreateParameters;
@@ -49,6 +53,7 @@ import com.microsoftopentechnologies.intellij.helpers.azure.AzureAuthenticationM
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIManager;
 import com.microsoftopentechnologies.intellij.model.vm.*;
+import com.microsoftopentechnologies.intellij.model.vm.VirtualMachine.Status;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -60,10 +65,32 @@ import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 public class AzureSDKManagerImpl implements AzureSDKManager {
+
+    private static class StatusLiterals {
+        private static final String UNKNOWN = "Unknown";
+        private static final String READY_ROLE = "ReadyRole";
+        private static final String STOPPED_VM = "StoppedVM";
+        private static final String STOPPED_DEALLOCATED = "StoppedDeallocated";
+        private static final String BUSY_ROLE = "BusyRole";
+        private static final String CREATING_VM = "CreatingVM";
+        private static final String CREATING_ROLE = "CreatingRole";
+        private static final String STARTING_VM = "StartingVM";
+        private static final String STARTING_ROLE = "StartingRole";
+        private static final String STOPPING_VM = "StoppingVM";
+        private static final String STOPPING_ROLE = "StoppingRole";
+        private static final String DELETING_VM = "DeletingVM";
+        private static final String RESTARTING_ROLE = "RestartingRole";
+        private static final String CYCLING_ROLE = "CyclingRole";
+        private static final String FAILED_STARTING_VM = "FailedStartingVM";
+        private static final String FAILED_STARTING_ROLE = "FailedStartingRole";
+        private static final String UNRESPONSIVE_ROLE = "UnresponsiveRole";
+        private static final String PREPARING = "Preparing";
+    }
+
     private static final String PERSISTENT_VM_ROLE = "PersistentVMRole";
     private static final String NETWORK_CONFIGURATION = "NetworkConfiguration";
-    public static final String PLATFORM_IMAGE = "Platform";
-    public static final String USER_IMAGE = "User";
+    private static final String PLATFORM_IMAGE = "Platform";
+    private static final String USER_IMAGE = "User";
     private static final String WINDOWS_OS_TYPE = "Windows";
     private static final String LINUX_OS_TYPE = "Linux";
     private static final String WINDOWS_PROVISIONING_CONFIGURATION = "WindowsProvisioningConfiguration";
@@ -115,12 +142,8 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
                         DeploymentSlot.Staging);
 
                 DeploymentGetResponse prodDGR = productionFuture.get();
-                String productionDeployment = prodDGR.getName();
-                boolean productionDeploymentVM = isDeploymentVM(prodDGR);
 
                 DeploymentGetResponse stagingDGR = stagingFuture.get();
-                String stagingDeployment = stagingDGR.getName();
-                boolean stagingDeploymentVM = isDeploymentVM(stagingDGR);
 
                 CloudService cloudService = new CloudService(
                         hostedService.getServiceName() != null ? hostedService.getServiceName() : "",
@@ -130,13 +153,12 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
                         hostedService.getProperties() != null && hostedService.getProperties().getAffinityGroup() != null ?
                                 hostedService.getProperties().getAffinityGroup() :
                                 "",
-                        productionDeployment != null ? productionDeployment : "",
-                        productionDeploymentVM,
-                        stagingDeployment != null ? stagingDeployment : "",
-                        stagingDeploymentVM,
                         subscriptionId);
 
-                cloudService = loadAvailabilitySets(prodDGR, cloudService);
+                loadDeployment(prodDGR, cloudService);
+
+                cloudService = loadDeployment(prodDGR, cloudService);
+                cloudService = loadDeployment(stagingDGR, cloudService);
 
                 csList.add(cloudService);
             }
@@ -154,21 +176,6 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
                 }
             }
         }
-    }
-
-    private boolean isDeploymentVM(@NotNull DeploymentGetResponse dgr) {
-        boolean deploymentVM = true;
-
-        if (dgr.getRoles() != null) {
-            for (Role role : dgr.getRoles()) {
-                if (!PERSISTENT_VM_ROLE.equals(role.getRoleType())) {
-                    deploymentVM = false;
-                    break;
-                }
-            }
-        }
-
-        return deploymentVM;
     }
 
     @NotNull
@@ -232,7 +239,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
             vm.setDeploymentName(deployment.getName() != null ? deployment.getName() : "");
             vm.setAvailabilitySet(vmRole.getAvailabilitySetName() != null ? vmRole.getAvailabilitySetName() : "");
             vm.setSize(vmRole.getRoleSize() != null ? vmRole.getRoleSize() : "");
-            vm.setStatus(deployment.getStatus() != null ? deployment.getStatus().toString() : "");
+            vm.setStatus(getVMStatus(deployment, vmRole));
 
             vm.getEndpoints().clear();
             vm = loadEndpoints(vmRole, vm);
@@ -533,6 +540,46 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         }
     }
 
+    @NotNull
+    @Override
+    public List<VirtualNetwork> getVirtualNetworks(@NotNull String subscriptionId) throws AzureCmdException {
+        List<VirtualNetwork> vnList = new ArrayList<VirtualNetwork>();
+        NetworkManagementClient client = null;
+
+        try {
+            client = getNetworkManagementClient(subscriptionId);
+
+            ArrayList<VirtualNetworkSite> virtualNetworkSites =
+                    getNetworks(client).getVirtualNetworkSites();
+
+            if (virtualNetworkSites == null) {
+                return vnList;
+            }
+
+            for (VirtualNetworkSite virtualNetworkSite : virtualNetworkSites) {
+                vnList.add(new VirtualNetwork(
+                        virtualNetworkSite.getName() != null ? virtualNetworkSite.getName() : "",
+                        virtualNetworkSite.getId() != null ? virtualNetworkSite.getId() : "",
+                        virtualNetworkSite.getLocation() != null ? virtualNetworkSite.getLocation() : "",
+                        virtualNetworkSite.getAffinityGroup() != null ? virtualNetworkSite.getAffinityGroup() : "",
+                        subscriptionId));
+            }
+
+            return vnList;
+        } catch (ExecutionException e) {
+            throw new AzureCmdException("Error retrieving the VM list", e.getCause());
+        } catch (Throwable t) {
+            throw new AzureCmdException("Error retrieving the VM list", t);
+        } finally {
+            if (client != null) {
+                try {
+                    client.close();
+                } catch (IOException ignored) {
+                }
+            }
+        }
+    }
+
     @Override
     public void createStorageAccount(@NotNull StorageAccount storageAccount) throws AzureCmdException {
         StorageManagementClient client = null;
@@ -705,6 +752,17 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     }
 
     @NotNull
+    private static NetworkManagementClient getNetworkManagementClient(@NotNull String subscriptionId) throws Exception {
+        NetworkManagementClient client = AzureSDKHelper.getNetworkManagementClient(subscriptionId);
+
+        if (client == null) {
+            throw new Exception("Unable to instantiate Network Management client");
+        }
+
+        return client;
+    }
+
+    @NotNull
     private static ManagementClient getManagementClient(@NotNull String subscriptionId) throws Exception {
         ManagementClient client = AzureSDKHelper.getManagementClient(subscriptionId);
 
@@ -821,6 +879,18 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         }
 
         return sao;
+    }
+
+    @NotNull
+    private static NetworkOperations getNetworkOperations(@NotNull NetworkManagementClient client)
+            throws Exception {
+        NetworkOperations no = client.getNetworksOperations();
+
+        if (no == null) {
+            throw new Exception("Unable to retrieve Network information");
+        }
+
+        return no;
     }
 
     @NotNull
@@ -970,6 +1040,17 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         return roles;
     }
 
+    @NotNull
+    private NetworkListResponse getNetworks(@NotNull NetworkManagementClient client) throws Exception {
+        NetworkListResponse nlr = getNetworkOperations(client).list();
+
+        if (nlr == null) {
+            throw new Exception("Unable to retrieve Networks information");
+        }
+
+        return nlr;
+    }
+
     private static void validateOperationStatus(@Nullable OperationStatusResponse osr) throws Exception {
         if (osr == null) {
             throw new Exception("Unable to retrieve Operation Status");
@@ -1051,24 +1132,51 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     }
 
     @NotNull
-    private static CloudService loadAvailabilitySets(@NotNull DeploymentGetResponse deployment,
-                                                     @NotNull CloudService cloudService)
+    private static CloudService loadDeployment(@NotNull DeploymentGetResponse deployment,
+                                               @NotNull CloudService cloudService)
             throws Exception {
-        if (deployment.getRoles() != null) {
-            Set<String> availabilitySets = cloudService.getAvailabilitySets();
+        if (deployment.getDeploymentSlot() != null) {
+            CloudService.Deployment dep;
 
-            for (Role role : deployment.getRoles()) {
-                if (role.getRoleType() != null &&
-                        role.getRoleType().equals(PERSISTENT_VM_ROLE) &&
-                        role.getAvailabilitySetName() != null &&
-                        !role.getAvailabilitySetName().isEmpty()) {
-                    availabilitySets.add(role.getAvailabilitySetName());
+            switch (deployment.getDeploymentSlot()) {
+                case Production:
+                    dep = cloudService.getProductionDeployment();
+                    break;
+                case Staging:
+                    dep = cloudService.getStagingDeployment();
+                    break;
+                default:
+                    return cloudService;
+            }
+
+            dep.setVirtualNetwork(deployment.getVirtualNetworkName() != null ? deployment.getVirtualNetworkName() : "");
+
+            if (deployment.getRoles() != null) {
+                Set<String> virtualMachines = dep.getVirtualMachines();
+                Set<String> computeRoles = dep.getComputeRoles();
+                Set<String> availabilitySets = dep.getAvailabilitySets();
+
+                for (Role role : deployment.getRoles()) {
+                    if (role.getRoleType() != null && role.getRoleType().equals(PERSISTENT_VM_ROLE)) {
+                        if (role.getRoleName() != null && !role.getRoleName().isEmpty()) {
+                            virtualMachines.add(role.getRoleName());
+                        }
+
+                        if (role.getAvailabilitySetName() != null && !role.getAvailabilitySetName().isEmpty()) {
+                            availabilitySets.add(role.getAvailabilitySetName());
+                        }
+                    } else {
+                        if (role.getRoleName() != null && !role.getRoleName().isEmpty()) {
+                            computeRoles.add(role.getRoleName());
+                        }
+                    }
                 }
             }
         }
 
         return cloudService;
     }
+
 
     @NotNull
     private static List<VirtualMachine> loadVirtualMachines(@NotNull ComputeManagementClient client,
@@ -1091,7 +1199,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
                         deployment.getName() != null ? deployment.getName() : "",
                         role.getAvailabilitySetName() != null ? role.getAvailabilitySetName() : "",
                         role.getRoleSize() != null ? role.getRoleSize() : "",
-                        deployment.getStatus() != null ? deployment.getStatus().toString() : "",
+                        getVMStatus(deployment, role),
                         subscriptionId);
 
                 vm = loadEndpoints(role, vm);
@@ -1177,7 +1285,8 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     }
 
     @NotNull
-    private static ListenableFuture<List<VirtualMachineImage>> getOSImagesAsync(@NotNull final ComputeManagementClient client) {
+    private static ListenableFuture<List<VirtualMachineImage>> getOSImagesAsync(
+            @NotNull final ComputeManagementClient client) {
         final SettableFuture<List<VirtualMachineImage>> future = SettableFuture.create();
 
         ApplicationManager.getApplication().executeOnPooledThread(new Runnable() {
@@ -1228,7 +1337,8 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     }
 
     @NotNull
-    private static ListenableFuture<List<VirtualMachineImage>> getVMImagesAsync(@NotNull final ComputeManagementClient client) {
+    private static ListenableFuture<List<VirtualMachineImage>> getVMImagesAsync(
+            @NotNull final ComputeManagementClient client) {
         final SettableFuture<List<VirtualMachineImage>> future = SettableFuture.create();
 
         ApplicationManager.getApplication().executeOnPooledThread(new Runnable() {
@@ -1481,5 +1591,68 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         }
 
         return netConfSet;
+    }
+
+    @NotNull
+    private static Status getVMStatus(@NotNull DeploymentGetResponse deployment, @NotNull Role role) {
+        Status result = Status.Unknown;
+
+        if (deployment.getRoleInstances() != null) {
+            RoleInstance vmRoleInstance = null;
+
+            for (RoleInstance roleInstance : deployment.getRoleInstances()) {
+                if (roleInstance.getRoleName() != null && roleInstance.getRoleName().equals(role.getRoleName())) {
+                    vmRoleInstance = roleInstance;
+                    break;
+                }
+            }
+
+            if (vmRoleInstance != null && vmRoleInstance.getInstanceStatus() != null) {
+                result = getRoleStatus(vmRoleInstance.getInstanceStatus());
+            }
+        }
+
+        return result;
+    }
+
+    @NotNull
+    private static Status getRoleStatus(@NotNull String instanceStatus) {
+        Status result = Status.Unknown;
+
+        if (instanceStatus.equals(StatusLiterals.UNKNOWN)) {
+            result = Status.Unknown;
+        } else if (instanceStatus.equals(StatusLiterals.READY_ROLE)) {
+            result = Status.Ready;
+        } else if (instanceStatus.equals(StatusLiterals.STOPPED_VM)) {
+            result = Status.Stopped;
+        } else if (instanceStatus.equals(StatusLiterals.STOPPED_DEALLOCATED)) {
+            result = Status.StoppedDeallocated;
+        } else if (instanceStatus.equals(StatusLiterals.BUSY_ROLE)) {
+            result = Status.Busy;
+        } else if (instanceStatus.equals(StatusLiterals.CREATING_VM) ||
+                instanceStatus.equals(StatusLiterals.CREATING_ROLE)) {
+            result = Status.Creating;
+        } else if (instanceStatus.equals(StatusLiterals.STARTING_VM) ||
+                instanceStatus.equals(StatusLiterals.STARTING_ROLE)) {
+            result = Status.Starting;
+        } else if (instanceStatus.equals(StatusLiterals.STOPPING_VM) ||
+                instanceStatus.equals(StatusLiterals.STOPPING_ROLE)) {
+            result = Status.Stopping;
+        } else if (instanceStatus.equals(StatusLiterals.DELETING_VM)) {
+            result = Status.Deleting;
+        } else if (instanceStatus.equals(StatusLiterals.RESTARTING_ROLE)) {
+            result = Status.Restarting;
+        } else if (instanceStatus.equals(StatusLiterals.CYCLING_ROLE)) {
+            result = Status.Cycling;
+        } else if (instanceStatus.equals(StatusLiterals.FAILED_STARTING_VM) ||
+                instanceStatus.equals(StatusLiterals.FAILED_STARTING_ROLE)) {
+            result = Status.FailedStarting;
+        } else if (instanceStatus.equals(StatusLiterals.UNRESPONSIVE_ROLE)) {
+            result = Status.Unresponsive;
+        } else if (instanceStatus.equals(StatusLiterals.PREPARING)) {
+            result = Status.Preparing;
+        }
+
+        return result;
     }
 }

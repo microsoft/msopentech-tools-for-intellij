@@ -57,6 +57,9 @@ public interface AzureSDKManager {
     @NotNull
     List<AffinityGroup> getAffinityGroups(@NotNull String subscriptionId) throws AzureCmdException;
 
+    @NotNull
+    List<VirtualNetwork> getVirtualNetworks(@NotNull String subscriptionId) throws AzureCmdException;
+
     void createStorageAccount(@NotNull StorageAccount storageAccount) throws AzureCmdException;
 
     void createCloudService(@NotNull CloudService cloudService) throws AzureCmdException;

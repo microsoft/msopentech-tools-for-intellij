@@ -28,6 +28,7 @@ import com.microsoftopentechnologies.intellij.model.Subscription;
 import com.microsoftopentechnologies.intellij.model.vm.AffinityGroup;
 import com.microsoftopentechnologies.intellij.model.vm.CloudService;
 import com.microsoftopentechnologies.intellij.model.vm.Location;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -115,7 +116,6 @@ public class CreateCloudServiceForm extends JDialog {
                 validateEmptyFields();
             }
         });
-
     }
 
     private void validateEmptyFields() {
@@ -134,7 +134,7 @@ public class CreateCloudServiceForm extends JDialog {
 
         ProgressManager.getInstance().run(new Task.Backgroundable(project, "Loading regions...", false) {
             @Override
-            public void run(ProgressIndicator progressIndicator) {
+            public void run(@NotNull ProgressIndicator progressIndicator) {
                 progressIndicator.setIndeterminate(true);
 
                 try {
@@ -191,7 +191,7 @@ public class CreateCloudServiceForm extends JDialog {
             String region = (regionOrAffinity instanceof Location) ? regionOrAffinity.toString() : "";
             String affinityGroup = (regionOrAffinity instanceof AffinityGroup) ? regionOrAffinity.toString() : "";
 
-            cloudService = new CloudService(name, region, affinityGroup, "", true, "", true, subscription.getId().toString());
+            cloudService = new CloudService(name, region, affinityGroup, subscription.getId().toString());
             AzureSDKManagerImpl.getManager().createCloudService(cloudService);
         } catch (Exception e) {
             cloudService = null;
