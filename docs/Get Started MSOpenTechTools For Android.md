@@ -1,8 +1,9 @@
-﻿# Get started with MS Open Tech Tools for Android #
-This tutorial shows you how to add a cloud-based backend services to an Android app using Azure Mobile Services, Notification Hub and Office365 Services. 
+# Get started with MS Open Tech Tools for Android #
+This tutorial shows you how to install MS Open Tech Tools for Android, add cloud-based back-end services to an Android app using Azure Mobile Services, Notification Hub, and Office365 Services. It also provides a Services Explorer tool window to manage Azure assets like Azure Virtual Machine or Azure Mobile Services.
+ 
 ### Prerequisites ##
-This tutorial is based on a Microsoft Services plugin that is working with both [IntelliJ IDEA](http://www.jetbrains.com/idea/) and [Android Studio](http://developer.android.com/sdk/installing/studio.html). 
-At minimum you’ll need to install the: 
+The Microsoft Services plugin works with both [IntelliJ IDEA](http://www.jetbrains.com/idea/) and [Android Studio](http://developer.android.com/sdk/installing/studio.html). 
+To use the plugin, you must install the following : 
 
 1. Android SDK - [http://developer.android.com/sdk/index.html](http://developer.android.com/sdk/index.html) minimum version is Android 2.3 / API 9. 
 
@@ -11,22 +12,23 @@ At minimum you’ll need to install the:
 Once you have the Azure account, download the .publishsettings file 
 [https://manage.windowsazure.com/publishsettings](https://manage.windowsazure.com/publishsettings) 
 
-For windows OS you may need to manually install the appropriate Open SSL version to your local machine and add that location in the system environment variable PATH.
+In addition, you must have Open SSL installed. Many Linux distributions have pre-compiled OpenSSL packages installed. For the Windows OS, you can  manually install latest Open SSL version from [http://www.openssl.org/about/binaries.html](http://www.openssl.org/about/binaries.html)
+
+Once you have installed Open SSL to your local machine, add the installation location to the system environment variable PATH.
 
 For example, if you run on Win64 you’ll need to install Win64 OpenSSL v1.0.1j. to local folder for example C:\OpenSSL-Win64\. After installation is complete open the Windows System environment variables and in the PATH add “C:\OpenSSL-Win64\bin”.
+
 ### Install Microsoft Open Tech Plugin  
-Both IntelliJ and Android Studio allows to install the plugin by browsing repositories or by installing the plugin from the disk.
- 
-Unless you contribute to the open source repository from GitHub we recommend you to download the plugin from the Jet Brains repository instead of downloading the one from GitHub   [https://github.com/MSOpenTech/msopentech-tools-for-intellij](https://github.com/MSOpenTech/msopentech-tools-for-intellij) on your local folder. 
 
-Install Plugin inside IntelliJ or Android Studio
+Both IntelliJ and Android Studio allow you to install the plugin by following the usual plugin installation steps that involves navigating to File > Settings > Plugins.
 
-Developer follows the usual plugin installation steps provided by IntelliJ by going to File > Settings >Plugins
 In the Settings window select Plugins and in the Plugin window select Browse repositories. 
 
-![](https://raw.githubusercontent.com/MSOpenTech/msopentech-tools-for-intellij/master/docs/media/IntelliJ_InstallPlugin.png?token=AFgG-AymdnnkT9cj1uKO98LMXdLGIcnlks5UWDaPwA%3D%3D)
+![](./media/IntelliJ_InstallPlugin_Browse.png)
  
-Search by MSOpenTech or Android or Azure ...
+You may search for the plugin by using keywords like "MSOpenTech" or "Azure" or "Office". 
+
+### Install the plugin inside IntelliJ or Android Studio
 
 ![](https://raw.githubusercontent.com/MSOpenTech/msopentech-tools-for-intellij/master/docs/media/IntelliJ_InstallPlugin_Browse.png?token=AFgG-G40JYAZvn3Mu65bW8JTfSW_dCrkks5UWDbXwA%3D%3D)
  
@@ -84,9 +86,9 @@ In the activity template select the services you are interested in. Based on you
 
 This will prompt you to set up the Azure subscriptions and manage the Azure Mobile service you want to connect to the project without having to go back and forth between the Azure portal and Android Studio. 
 
-### B.	Manage Subscriptions ##
+### <a name="managesub">B.	Manage Subscriptions<a/> ##
 
-![](https://raw.githubusercontent.com/MSOpenTech/msopentech-tools-for-intellij/master/docs/media/AS_ManageSubscriptionsEmpty.png?token=AFgG-AyTNLfHOfPhLYRLfPxOawUG_6v8ks5UWDpbwA%3D%3D)
+![](./media/AS_ManageSubscriptionsEmpty.png)
  
 To get the Azure subscription you need to either download the Azure publish settings file by selecting Add Subscription/Import either by selecting the Add Subscription/SignIn
 
@@ -139,7 +141,7 @@ After selecting Next button you will be prompted with the summary of the changes
  
 The following was created to the project: helper classes for Notification Hub and Azure Mobile Services and an Azure Service Activity.  Inside the Azure Service activity you will see a starter code that obtains the mobileServiceClient object for basic operations with the tables and custom APIs and an example of how to configure the NotificationHub. 
 
-# [MISSING IMAGE]  #
+
  
 ### Connect to an Azure Mobile Service and Notification Hub and generate the helper classes ##
 ### A.	Create an Azure Services Activity 
@@ -157,7 +159,7 @@ Clicking Finish will allow developer to login and register to the Office365 serv
  
 After selecting the appropriate permissions for the application the developer will see a screen with the summary of all the changes applied to the project.  
 
-![](https://raw.githubusercontent.com/MSOpenTech/msopentech-tools-for-intellij/master/docs/media/AS_SummaryOffice365.png?token=AFgG-Gdv5_wR81CSEOW2fucs07Alw68dks5UWD4-wA%3D%3D)
+![](./media/AS_SummaryOffice365.png)
 
 The following SDKs are added to the project in the libraries:
 
@@ -172,3 +174,57 @@ This following java classes will be generated
 -	ListServicesClient 
 
 ![](https://raw.githubusercontent.com/MSOpenTech/msopentech-tools-for-intellij/master/docs/media/AS_Office365HelperClass.png?token=AFgG-H-mCCuyFWfHjjlVrp1gmFi__69hks5UWD3DwA%3D%3D)
+
+### Using The Services Explorer
+
+The IntelliJ and Android Studio plugin has a Services Explorer that allows you to manage Microsoft Azure services without having to open a browser and log in to the Azure management portal.
+Currently the Services Explorer allows you to manage Azure Mobile Services and Virtual Machines. 
+
+![](media/MSOTToolServiceExplorer01.png)
+
+The following procedure shows you how to create and manage a VM using the Services Explorer.
+
+Go to View > Tool Windows > Services Explorer from the menu bar to open the Services Explorer navigation tree.
+
+![](media/MSOTToolQuickAccessMenu.png)
+
+Before you can create a VM you must sign in to your subscription or import your Azure publish settings file. 
+
+To manage your subscriptions, right click the Azure root node in the navigation tree. For more information on importing the settings, see the <a href="#managesub">Manage Subscriptions</a> section above.
+
+Once you have finished signing in, you can create a new VM.
+
+Expand the Azure root node and right click Virtual Machines, then select Create VM from the context menu.
+
+On the Create new Virtual Machine Subscription dialog, from the dropdown, select the subscription in which you will create the new VM and click Next.
+
+On the Create new Virtual Machine Select Image dialog, select image from which to create your new VM. 
+
+![](media/MSOTToolCreateVM07.png)
+
+On the Create new Virtual Machine Machine Settings dialog, enter a name for the virtual machine that you will use to identify it. This name should be descriptive of how you are using the VM, but short enough to be easy to use.
+From the Size dropdown, select a size for your VM.
+Enter a user name and password for the administrative user of the VM and click Next.
+
+![](media/MSOTToolCreateVM08.png)
+
+On the Create new Virtual Machine Cloud Service dialog, select the Cloud service and Storage account in which the VM will be created. If you are creating a Cloud Service and Storage account, the names you select must be unique within all of Microsoft Azure.
+
+![](media/MSOTToolCreateVM09.png)
+
+On the Create new Virtual Machine Endpoints dialog, add any additional endpoints that your VM will use and click Next. For example, this is where you would add endpoint for SSH.
+
+![](media/MSOTToolCreateVM12.png)
+
+### Managing VMs
+
+Once you have created a VM, it shows up in your Services Explorer navigation tree under the Virtual Machines node.
+
+To manage your VM, you can right click the machine name to open the management context menu.
+
+
+![](media/MSOTToolManageVM.png)
+
+From the context menu, you can Start, Restart, Shutdown, Refresh, and Delete the VM as needed.
+
+You can also create an RDP session file that you can use to open an RDP connection to Windows VMs.
