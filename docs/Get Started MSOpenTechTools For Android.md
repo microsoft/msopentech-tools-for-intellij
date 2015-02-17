@@ -1,5 +1,5 @@
 # Get started with MS Open Tech Tools for Android #
-This tutorial shows you how to install MS Open Tech Tools for Android, add cloud-based back-end services to an Android app using Azure Mobile Services, Notification Hub, and Office365 Services. It also provides a Services Explorer tool window to manage Azure assets like Azure Virtual Machine or Azure Mobile Services.
+This tutorial shows you how to install MS Open Tech Tools for Android, add cloud-based back-end services to an Android app using Azure Mobile Services, Notification Hub, and Office365 Services. It also provides information on the Services Explorer tool window which you can use to manage Azure assets such as Azure Virtual Machine or Azure Mobile Services.
  
 ### Prerequisites ##
 The Microsoft Services plugin works with both [IntelliJ IDEA](http://www.jetbrains.com/idea/) and [Android Studio](http://developer.android.com/sdk/installing/studio.html). 
@@ -177,7 +177,8 @@ This following java classes will be generated
 
 ### Using The Services Explorer
 
-The IntelliJ and Android Studio plugin has a Services Explorer that allows you to manage Microsoft Azure services without having to open a browser and log in to the Azure management portal.
+The IntelliJ and Android Studio plugin provides a Services Explorer that allows you to manage Microsoft Azure services without having to open a browser and log in to the Azure management portal.
+
 Currently the Services Explorer allows you to manage Azure Mobile Services and Virtual Machines. 
 
 ![](media/MSOTToolServiceExplorer01.png)
@@ -188,7 +189,7 @@ Go to View > Tool Windows > Services Explorer from the menu bar to open the Serv
 
 ![](media/MSOTToolQuickAccessMenu.png)
 
-Before you can create a VM you must sign in to your subscription or import your Azure publish settings file. 
+Before you can create a VM, you must sign in to your subscription or import your Azure publish settings file. 
 
 To manage your subscriptions, right click the Azure root node in the navigation tree. For more information on importing the settings, see the <a href="#managesub">Manage Subscriptions</a> section above.
 
@@ -196,23 +197,43 @@ Once you have finished signing in, you can create a new VM.
 
 Expand the Azure root node and right click Virtual Machines, then select Create VM from the context menu.
 
-On the Create new Virtual Machine Subscription dialog, from the dropdown, select the subscription in which you will create the new VM and click Next.
+From the dropdown on the Create new Virtual Machine Subscription dialog,xxxl select the subscription in which you will create the new VM and click Next.
 
-On the Create new Virtual Machine Select Image dialog, select image from which to create your new VM. 
+On the Create new Virtual Machine Select Image dialog, select an image type in the Image type dropdown list box, and then select a virtual machine images in the Image Label list box. When you're done, click Next.
 
 ![](media/MSOTToolCreateVM07.png)
 
+You can choose the following image types.
+
+- Public Images lists virtual machine images of operating systems and server software such as Windows Server and SQL Server.
+- MSDN Images lists virtual machine images of software available to MSDN subscribers, such as Visual Studio and Microsoft Dynamics.
+- Private Images lists specialized and generalized virtual machine images that you've created.
+
+You can click a virtual machine image name to see information about the image on the right side of the page.
+
+ To learn about specialized and generalized virtual machines, see [VM Image](http://azure.microsoft.com/blog/2014/04/14/vm-image-blog-post/). See [How to Capture a Windows Virtual Machine to Use as a Template](http://azure.microsoft.com/en-us/documentation/articles/virtual-machines-capture-image-windows-server/) for information about how to turn a virtual machine into a template that you can use to quickly create new pre-configured virtual machines.
+
 On the Create new Virtual Machine Machine Settings dialog, enter a name for the virtual machine that you will use to identify it. This name should be descriptive of how you are using the VM, but short enough to be easy to use.
-From the Size dropdown, select a size for your VM.
+
+From the Size dropdown, select a size for your VM. After you create an Azure virtual machine in Visual Studio, you can change its size and other settings in the [Azure Management Portal](https://manage.windowsazure.com/).
+
+Note: If you choose larger sizes for the virtual machine, extra charges may apply. See [Virtual Machines Pricing Details](http://azure.microsoft.com/en-us/pricing/details/virtual-machines/) for more information. 
+
 Enter a user name and password for the administrative user of the VM and click Next.
 
 ![](media/MSOTToolCreateVM08.png)
 
-On the Create new Virtual Machine Cloud Service dialog, select the Cloud service and Storage account in which the VM will be created. If you are creating a Cloud Service and Storage account, the names you select must be unique within all of Microsoft Azure.
+On the Create new Virtual Machine Cloud Service dialog, select the Cloud service and Storage account in which the VM will be created. If you are creating a new Cloud Service or a new Storage account, the names you select must be unique within all of Microsoft Azure. For more information, see [Cloud Services](http://azure.microsoft.com/en-us/services/cloud-services/) and [About Azure Storage Accounts](http://azure.microsoft.com/en-us/documentation/articles/storage-whatis-account/).
+
+If you want your virtual machine to belong to an availability set (optional), select the Specify an availability set check box and then choose an availability set in the dropdown list box. When you're done, choose the Next button.
+
+Adding your virtual machine to an availability set helps your application stay available during network failures, local disk hardware failures, and any planned downtime. You need to use the Azure Management Portal to create virtual networks, subnets, and availability sets. For more information, see [Manage the Availability of Virtual Machines](http://azure.microsoft.com/en-us/documentation/articles/virtual-machines-manage-availability/).
 
 ![](media/MSOTToolCreateVM09.png)
 
-On the Create new Virtual Machine Endpoints dialog, add any additional endpoints that your VM will use and click Next. For example, this is where you would add endpoint for SSH.
+On the Create new Virtual Machine Endpoints dialog, add any additional endpoints that your VM will use and click Next. For example, this is where you would add an endpoint for SSH.
+
+The endpoints that are available depend on the cloud service you selected for your virtual machine. For more information, see [Azure Service Endpoints](https://msdn.microsoft.com/library/azure/dn268600.aspx).
 
 ![](media/MSOTToolCreateVM12.png)
 
