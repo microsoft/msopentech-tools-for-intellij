@@ -197,7 +197,7 @@ Once you have finished signing in, you can create a new VM.
 
 Expand the Azure root node and right click Virtual Machines, then select Create VM from the context menu.
 
-From the dropdown on the Create new Virtual Machine Subscription dialog,xxxl select the subscription in which you will create the new VM and click Next.
+From the dropdown on the Create new Virtual Machine Subscription dialog, select the subscription in which you will create the new VM and click Next.
 
 On the Create new Virtual Machine Select Image dialog, select an image type in the Image type dropdown list box, and then select a virtual machine images in the Image Label list box. When you're done, click Next.
 
