@@ -44,18 +44,20 @@ public class VirtualMachine implements ServiceTreeItem {
     private String serviceName;
     private String deploymentName;
     private String availabilitySet;
+    private String subnet;
     private String size;
     private Status status;
     private String subscriptionId;
     private List<Endpoint> endpoints;
 
     public VirtualMachine(@NotNull String name, @NotNull String serviceName, @NotNull String deploymentName,
-                          @NotNull String availabilitySet, @NotNull String size, @NotNull Status status,
-                          @NotNull String subscriptionId) {
+                          @NotNull String availabilitySet, @NotNull String subnet, @NotNull String size,
+                          @NotNull Status status, @NotNull String subscriptionId) {
         this.name = name;
         this.serviceName = serviceName;
         this.deploymentName = deploymentName;
         this.availabilitySet = availabilitySet;
+        this.subnet = subnet;
         this.size = size;
         this.status = status;
         this.subscriptionId = subscriptionId;
@@ -98,6 +100,15 @@ public class VirtualMachine implements ServiceTreeItem {
 
     public void setAvailabilitySet(@NotNull String availabilitySet) {
         this.availabilitySet = availabilitySet;
+    }
+
+    @NotNull
+    public String getSubnet() {
+        return subnet;
+    }
+
+    public void setSubnet(@NotNull String subnet) {
+        this.subnet = subnet;
     }
 
     @NotNull

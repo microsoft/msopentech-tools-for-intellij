@@ -58,6 +58,7 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
     private Map<String, VirtualNetwork> virtualNetworks;
     private final Object csMonitor = new Object();
     private final Object saMonitor = new Object();
+    private final Object vnMonitor = new Object();
 
     public CloudServiceStep(CreateVMWizardModel mModel, final Project project) {
         super("Cloud Service Settings", null, null);
@@ -133,6 +134,7 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
 
         fillCloudServices(model.getCloudService());
         fillStorage(model.getCloudService(), model.getStorageAccount());
+        fillVirtualNetworks(model.getVirtualNetwork(), model.getSubnet());
 
         return rootPanel;
     }
@@ -146,6 +148,10 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
 
         model.setCloudService((CloudService) cloudServiceComboBox.getSelectedItem());
         model.setStorageAccount((StorageAccount) storageComboBox.getSelectedItem());
+        model.setVirtualNetwork((VirtualNetwork) networkComboBox.getSelectedItem());
+        model.setSubnet(subnetComboBox.isEnabled() && subnetComboBox.getSelectedItem() != null ?
+                subnetComboBox.getSelectedItem().toString() :
+                "");
         model.setAvailabilitySet(availabilitySetCheckBox.isSelected() ?
                 (availabilityComboBox.getSelectedItem() == null
                         ? availabilityComboBox.getEditor().getItem().toString()
@@ -330,6 +336,76 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
                 }
 
                 storageComboBox.setModel(refreshedSAModel);
+            }
+        });
+    }
+
+    private void fillVirtualNetworks(final VirtualNetwork selectedVN, final String selectedSN) {
+        if (virtualNetworks == null) {
+            DefaultComboBoxModel loadingVNModel = new DefaultComboBoxModel(
+                    new String[]{"<Loading...>"});
+
+            loadingVNModel.setSelectedItem(null);
+
+            networkComboBox.setModel(loadingVNModel);
+
+            subnetComboBox.removeAllItems();
+            subnetComboBox.setEnabled(false);
+
+            ProgressManager.getInstance().run(new Task.Backgroundable(project, "Loading virtual networks...", false) {
+                @Override
+                public void run(@NotNull ProgressIndicator progressIndicator) {
+                    try {
+                        progressIndicator.setIndeterminate(true);
+
+                        synchronized (vnMonitor) {
+                            if (virtualNetworks == null) {
+                                virtualNetworks = new TreeMap<String, VirtualNetwork>();
+
+                                for (VirtualNetwork virtualNetwork : AzureSDKManagerImpl.getManager().getVirtualNetworks(model.getSubscription().getId().toString())) {
+                                    virtualNetworks.put(virtualNetwork.getName(), virtualNetwork);
+                                }
+                            }
+                        }
+
+                        refreshVirtualNetworks(selectedVN, selectedSN);
+                    } catch (AzureCmdException e) {
+                        cloudServices = null;
+                        UIHelper.showException("Error trying to get cloud services list", e);
+                    }
+                }
+            });
+        } else {
+            refreshVirtualNetworks(selectedVN, selectedSN);
+        }
+    }
+
+    private void refreshVirtualNetworks(final VirtualNetwork selectedVN, final String selectedSN) {
+        ApplicationManager.getApplication().invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                DefaultComboBoxModel refreshedVNModel = new DefaultComboBoxModel(virtualNetworks.values().toArray()) {
+                    @Override
+                    public void setSelectedItem(Object o) {
+                        super.setSelectedItem(o);
+                        subnetComboBox.removeAllItems();
+
+                        if (o instanceof VirtualNetwork) {
+                            for (String subnet : ((VirtualNetwork) o).getSubnets()) {
+                                subnetComboBox.addItem(subnet);
+                            }
+
+                            subnetComboBox.setSelectedItem(selectedSN);
+                            subnetComboBox.setEnabled(true);
+                        } else {
+                            subnetComboBox.setEnabled(false);
+                        }
+                    }
+                };
+
+                refreshedVNModel.setSelectedItem(selectedVN);
+
+                networkComboBox.setModel(refreshedVNModel);
             }
         });
     }

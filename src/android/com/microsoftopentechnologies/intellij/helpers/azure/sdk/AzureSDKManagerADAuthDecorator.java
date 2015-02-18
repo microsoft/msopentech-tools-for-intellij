@@ -287,13 +287,14 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
     public void createVirtualMachine(@NotNull final VirtualMachine virtualMachine,
                                      @NotNull final VirtualMachineImage vmImage,
                                      @NotNull final StorageAccount storageAccount,
+                                     @NotNull final String virtualNetwork,
                                      @NotNull final String username,
                                      @NotNull final String password)
             throws AzureCmdException {
         runWithRetry(virtualMachine.getSubscriptionId(), new Func0<Void>() {
             @Override
             public Void run() throws AzureCmdException {
-                sdkManager.createVirtualMachine(virtualMachine, vmImage, storageAccount, username, password);
+                sdkManager.createVirtualMachine(virtualMachine, vmImage, storageAccount, virtualNetwork, username, password);
                 return null;
             }
         });
@@ -303,13 +304,14 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
     public void createVirtualMachine(@NotNull final VirtualMachine virtualMachine,
                                      @NotNull final VirtualMachineImage vmImage,
                                      @NotNull final String mediaLocation,
+                                     @NotNull final String virtualNetwork,
                                      @NotNull final String username,
                                      @NotNull final String password)
             throws AzureCmdException {
         runWithRetry(virtualMachine.getSubscriptionId(), new Func0<Void>() {
             @Override
             public Void run() throws AzureCmdException {
-                sdkManager.createVirtualMachine(virtualMachine, vmImage, mediaLocation, username, password);
+                sdkManager.createVirtualMachine(virtualMachine, vmImage, mediaLocation, virtualNetwork, username, password);
                 return null;
             }
         });

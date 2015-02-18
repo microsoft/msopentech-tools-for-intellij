@@ -42,6 +42,7 @@ import com.microsoft.windowsazure.management.models.RoleSizeListResponse.RoleSiz
 import com.microsoft.windowsazure.management.network.NetworkManagementClient;
 import com.microsoft.windowsazure.management.network.NetworkOperations;
 import com.microsoft.windowsazure.management.network.models.NetworkListResponse;
+import com.microsoft.windowsazure.management.network.models.NetworkListResponse.Subnet;
 import com.microsoft.windowsazure.management.network.models.NetworkListResponse.VirtualNetworkSite;
 import com.microsoft.windowsazure.management.storage.StorageAccountOperations;
 import com.microsoft.windowsazure.management.storage.StorageManagementClient;
@@ -53,6 +54,7 @@ import com.microsoftopentechnologies.intellij.helpers.azure.AzureAuthenticationM
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIManager;
 import com.microsoftopentechnologies.intellij.model.vm.*;
+import com.microsoftopentechnologies.intellij.model.vm.CloudService.Deployment;
 import com.microsoftopentechnologies.intellij.model.vm.VirtualMachine.Status;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -242,7 +244,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
             vm.setStatus(getVMStatus(deployment, vmRole));
 
             vm.getEndpoints().clear();
-            vm = loadEndpoints(vmRole, vm);
+            vm = loadNetworkConfiguration(vmRole, vm);
 
             return vm;
         } catch (Throwable t) {
@@ -557,12 +559,24 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
             }
 
             for (VirtualNetworkSite virtualNetworkSite : virtualNetworkSites) {
-                vnList.add(new VirtualNetwork(
+                VirtualNetwork vn = new VirtualNetwork(
                         virtualNetworkSite.getName() != null ? virtualNetworkSite.getName() : "",
                         virtualNetworkSite.getId() != null ? virtualNetworkSite.getId() : "",
                         virtualNetworkSite.getLocation() != null ? virtualNetworkSite.getLocation() : "",
                         virtualNetworkSite.getAffinityGroup() != null ? virtualNetworkSite.getAffinityGroup() : "",
-                        subscriptionId));
+                        subscriptionId);
+
+                if (virtualNetworkSite.getSubnets() != null) {
+                    Set<String> vnSubnets = vn.getSubnets();
+
+                    for (Subnet subnet : virtualNetworkSite.getSubnets()) {
+                        if (subnet.getName() != null && !subnet.getName().isEmpty()) {
+                            vnSubnets.add(subnet.getName());
+                        }
+                    }
+                }
+
+                vnList.add(vn);
             }
 
             return vnList;
@@ -648,13 +662,13 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
 
     @Override
     public void createVirtualMachine(@NotNull VirtualMachine virtualMachine, @NotNull VirtualMachineImage vmImage,
-                                     @NotNull StorageAccount storageAccount, @NotNull String username,
-                                     @NotNull String password)
+                                     @NotNull StorageAccount storageAccount, @NotNull String virtualNetwork,
+                                     @NotNull String username, @NotNull String password)
             throws AzureCmdException {
         try {
             String mediaLocation = getMediaLocation(virtualMachine, storageAccount);
 
-            createVirtualMachine(virtualMachine, vmImage, mediaLocation, username, password);
+            createVirtualMachine(virtualMachine, vmImage, mediaLocation, virtualNetwork, username, password);
         } catch (AzureCmdException e) {
             throw e;
         } catch (Throwable t) {
@@ -664,7 +678,8 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
 
     @Override
     public void createVirtualMachine(@NotNull VirtualMachine virtualMachine, @NotNull VirtualMachineImage vmImage,
-                                     @NotNull String mediaLocation, @NotNull String username, @NotNull String password)
+                                     @NotNull String mediaLocation, @NotNull String virtualNetwork,
+                                     @NotNull String username, @NotNull String password)
             throws AzureCmdException {
         ComputeManagementClient client = null;
 
@@ -673,7 +688,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
             VirtualMachineOperations vmo = getVirtualMachineOperations(client);
 
             if (virtualMachine.getDeploymentName().isEmpty()) {
-                createVMDeployment(vmo, virtualMachine, vmImage, mediaLocation, username, password);
+                createVMDeployment(vmo, virtualMachine, vmImage, mediaLocation, virtualNetwork, username, password);
             } else {
                 createVM(vmo, virtualMachine, vmImage, mediaLocation, username, password);
             }
@@ -1136,7 +1151,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
                                                @NotNull CloudService cloudService)
             throws Exception {
         if (deployment.getDeploymentSlot() != null) {
-            CloudService.Deployment dep;
+            Deployment dep;
 
             switch (deployment.getDeploymentSlot()) {
                 case Production:
@@ -1149,6 +1164,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
                     return cloudService;
             }
 
+            dep.setName(deployment.getName() != null ? deployment.getName() : "");
             dep.setVirtualNetwork(deployment.getVirtualNetworkName() != null ? deployment.getVirtualNetworkName() : "");
 
             if (deployment.getRoles() != null) {
@@ -1198,11 +1214,12 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
                         serviceName,
                         deployment.getName() != null ? deployment.getName() : "",
                         role.getAvailabilitySetName() != null ? role.getAvailabilitySetName() : "",
+                        "",
                         role.getRoleSize() != null ? role.getRoleSize() : "",
                         getVMStatus(deployment, role),
                         subscriptionId);
 
-                vm = loadEndpoints(role, vm);
+                vm = loadNetworkConfiguration(role, vm);
 
                 vmList.add(vm);
             }
@@ -1212,7 +1229,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     }
 
     @NotNull
-    private static VirtualMachine loadEndpoints(@NotNull Role role, @NotNull VirtualMachine vm) {
+    private static VirtualMachine loadNetworkConfiguration(@NotNull Role role, @NotNull VirtualMachine vm) {
         if (role.getConfigurationSets() == null) {
             return vm;
         }
@@ -1221,15 +1238,22 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
 
         for (ConfigurationSet configurationSet : role.getConfigurationSets()) {
             if (configurationSet.getConfigurationSetType() != null
-                    && configurationSet.getConfigurationSetType().equals(NETWORK_CONFIGURATION)
-                    && configurationSet.getInputEndpoints() != null) {
-                for (InputEndpoint inputEndpoint : configurationSet.getInputEndpoints()) {
-                    endpoints.add(new Endpoint(
-                            inputEndpoint.getName() != null ? inputEndpoint.getName() : "",
-                            inputEndpoint.getProtocol() != null ? inputEndpoint.getProtocol() : "",
-                            inputEndpoint.getLocalPort(),
-                            inputEndpoint.getPort()));
+                    && configurationSet.getConfigurationSetType().equals(NETWORK_CONFIGURATION)) {
+                if (configurationSet.getInputEndpoints() != null) {
+                    for (InputEndpoint inputEndpoint : configurationSet.getInputEndpoints()) {
+                        endpoints.add(new Endpoint(
+                                inputEndpoint.getName() != null ? inputEndpoint.getName() : "",
+                                inputEndpoint.getProtocol() != null ? inputEndpoint.getProtocol() : "",
+                                inputEndpoint.getLocalPort(),
+                                inputEndpoint.getPort()));
+                    }
                 }
+
+                if (configurationSet.getSubnetNames() != null && configurationSet.getSubnetNames().size() == 1) {
+                    vm.setSubnet(configurationSet.getSubnetNames().get(0));
+                }
+
+                break;
             }
         }
 
@@ -1492,7 +1516,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
 
         vmcp.getConfigurationSets().add(getProvisioningConfigurationSet(virtualMachine, vmImage, username, password));
 
-        if (virtualMachine.getEndpoints().size() > 0) {
+        if (virtualMachine.getEndpoints().size() > 0 || !virtualMachine.getSubnet().isEmpty()) {
             vmcp.getConfigurationSets().add(getNetworkConfigurationSet(virtualMachine));
         }
 
@@ -1505,12 +1529,17 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
                                            @NotNull VirtualMachine virtualMachine,
                                            @NotNull VirtualMachineImage vmImage,
                                            @NotNull String mediaLocation,
+                                           @NotNull String virtualNetwork,
                                            @NotNull String username,
                                            @NotNull String password) throws Exception {
         VirtualMachineCreateDeploymentParameters vmcdp = new VirtualMachineCreateDeploymentParameters();
         vmcdp.setName(virtualMachine.getName());
         vmcdp.setLabel(virtualMachine.getName());
         vmcdp.setDeploymentSlot(DeploymentSlot.Production);
+
+        if (!virtualNetwork.isEmpty()) {
+            vmcdp.setVirtualNetworkName(virtualNetwork);
+        }
 
         Role role = new Role();
         role.setRoleName(virtualMachine.getName());
@@ -1534,7 +1563,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
 
         role.getConfigurationSets().add(getProvisioningConfigurationSet(virtualMachine, vmImage, username, password));
 
-        if (virtualMachine.getEndpoints().size() > 0) {
+        if (virtualMachine.getEndpoints().size() > 0 || !virtualMachine.getSubnet().isEmpty()) {
             role.getConfigurationSets().add(getNetworkConfigurationSet(virtualMachine));
         }
 
@@ -1588,6 +1617,10 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
             inputEndpoint.setPort(endpoint.getPublicPort());
 
             inputEndpoints.add(inputEndpoint);
+        }
+
+        if (!virtualMachine.getSubnet().isEmpty()) {
+            netConfSet.getSubnetNames().add(virtualMachine.getSubnet());
         }
 
         return netConfSet;

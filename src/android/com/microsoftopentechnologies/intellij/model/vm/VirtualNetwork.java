@@ -18,12 +18,16 @@ package com.microsoftopentechnologies.intellij.model.vm;
 import com.microsoftopentechnologies.intellij.model.ServiceTreeItem;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Set;
+import java.util.TreeSet;
+
 public class VirtualNetwork implements ServiceTreeItem {
     private boolean loading;
     private String name;
     private String id;
     private String location;
     private String affinityGroup;
+    private Set<String> subnets;
     private String subscriptionId;
 
     public VirtualNetwork(@NotNull String name,
@@ -35,6 +39,7 @@ public class VirtualNetwork implements ServiceTreeItem {
         this.id = id;
         this.location = location;
         this.affinityGroup = affinityGroup;
+        this.subnets = new TreeSet<String>();
         this.subscriptionId = subscriptionId;
     }
 
@@ -74,6 +79,11 @@ public class VirtualNetwork implements ServiceTreeItem {
 
     public void setAffinityGroup(@NotNull String affinityGroup) {
         this.affinityGroup = affinityGroup;
+    }
+
+    @NotNull
+    public Set<String> getSubnets() {
+        return subnets;
     }
 
     @NotNull

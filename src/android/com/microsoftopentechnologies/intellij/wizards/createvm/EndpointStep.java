@@ -202,6 +202,7 @@ public class EndpointStep extends WizardStep<CreateVMWizardModel> {
                             model.getCloudService().getName(),
                             model.getCloudService().getProductionDeployment().getName(),
                             model.getAvailabilitySet(),
+                            model.getSubnet(),
                             model.getSize().getName(),
                             VirtualMachine.Status.Unknown,
                             model.getSubscription().getId().toString()
@@ -212,6 +213,7 @@ public class EndpointStep extends WizardStep<CreateVMWizardModel> {
                     AzureSDKManagerImpl.getManager().createVirtualMachine(virtualMachine,
                             model.getVirtualMachineImage(),
                             model.getStorageAccount(),
+                            model.getVirtualNetwork() != null ? model.getVirtualNetwork().getName() : "",
                             model.getUserName(),
                             new String(model.getPassword()));
 

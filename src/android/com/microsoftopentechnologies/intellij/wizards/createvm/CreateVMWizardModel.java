@@ -69,6 +69,8 @@ public class CreateVMWizardModel extends WizardModel {
     private char[] password;
     private CloudService cloudService;
     private StorageAccount storageAccount;
+    private VirtualNetwork virtualNetwork;
+    private String subnet;
     private String availabilitySet;
     private Endpoint[] endpoints;
 
@@ -87,30 +89,30 @@ public class CreateVMWizardModel extends WizardModel {
     }
 
     public String[] getStepTitleList() {
-        return new String[] {
-            "Subscription",
-            "Select Image",
-            "Machine Settings",
-            "Cloud Service",
-            "Endpoints"
+        return new String[]{
+                "Subscription",
+                "Select Image",
+                "Machine Settings",
+                "Cloud Service",
+                "Endpoints"
         };
     }
 
     public String getHtmlFromVMImage(VirtualMachineImage virtualMachineImage) {
         String html = BASE_HTML_VM_IMAGE;
-        html = html.replace("#TITLE#",virtualMachineImage.getLabel());
-        html = html.replace("#DESCRIPTION#",virtualMachineImage.getDescription());
+        html = html.replace("#TITLE#", virtualMachineImage.getLabel());
+        html = html.replace("#DESCRIPTION#", virtualMachineImage.getDescription());
         html = html.replace("#PUBLISH_DATE#", new SimpleDateFormat("dd-M-yyyy").format(virtualMachineImage.getPublishedDate().getTime()));
-        html = html.replace("#PUBLISH_NAME#",virtualMachineImage.getPublisherName());
-        html = html.replace("#OS#",virtualMachineImage.getOperatingSystemType());
-        html = html.replace("#LOCATION#",virtualMachineImage.getLocation());
+        html = html.replace("#PUBLISH_NAME#", virtualMachineImage.getPublisherName());
+        html = html.replace("#OS#", virtualMachineImage.getOperatingSystemType());
+        html = html.replace("#LOCATION#", virtualMachineImage.getLocation());
 
-        html = html.replace("#PRIVACY#",virtualMachineImage.getPrivacyUri().isEmpty()
+        html = html.replace("#PRIVACY#", virtualMachineImage.getPrivacyUri().isEmpty()
                 ? ""
                 : "<p><a href='" + virtualMachineImage.getPrivacyUri() + "' style=\"font-family: 'Segoe UI';font-size: 12pt;\">Privacy statement</a></p>");
 
 
-        html = html.replace("#LICENCE#",virtualMachineImage.getEulaUri().isEmpty()
+        html = html.replace("#LICENCE#", virtualMachineImage.getEulaUri().isEmpty()
                 ? ""
                 : "<p><a href='" + virtualMachineImage.getEulaUri() + "' style=\"font-family: 'Segoe UI';font-size: 12pt;\">Licence agreement</a></p>");
 
@@ -142,7 +144,7 @@ public class CreateVMWizardModel extends WizardModel {
         jList.setCellRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(JList jList, Object o, int i, boolean b, boolean b1) {
-                return super.getListCellRendererComponent(jList, "  " + o.toString() , i, b, b1);
+                return super.getListCellRendererComponent(jList, "  " + o.toString(), i, b, b1);
             }
         });
 
@@ -187,12 +189,12 @@ public class CreateVMWizardModel extends WizardModel {
         this.password = password;
     }
 
-    public String getAvailabilitySet() {
-        return availabilitySet;
+    public CloudService getCloudService() {
+        return cloudService;
     }
 
-    public void setAvailabilitySet(String availabilitySet) {
-        this.availabilitySet = availabilitySet;
+    public void setCloudService(CloudService cloudService) {
+        this.cloudService = cloudService;
     }
 
     public StorageAccount getStorageAccount() {
@@ -203,12 +205,28 @@ public class CreateVMWizardModel extends WizardModel {
         this.storageAccount = storageAccount;
     }
 
-    public CloudService getCloudService() {
-        return cloudService;
+    public VirtualNetwork getVirtualNetwork() {
+        return virtualNetwork;
     }
 
-    public void setCloudService(CloudService cloudService) {
-        this.cloudService = cloudService;
+    public void setVirtualNetwork(VirtualNetwork virtualNetwork) {
+        this.virtualNetwork = virtualNetwork;
+    }
+
+    public String getSubnet() {
+        return subnet;
+    }
+
+    public void setSubnet(String subnet) {
+        this.subnet = subnet;
+    }
+
+    public String getAvailabilitySet() {
+        return availabilitySet;
+    }
+
+    public void setAvailabilitySet(String availabilitySet) {
+        this.availabilitySet = availabilitySet;
     }
 
     public Endpoint[] getEndpoints() {
@@ -218,4 +236,6 @@ public class CreateVMWizardModel extends WizardModel {
     public void setEndpoints(Endpoint[] endpoints) {
         this.endpoints = endpoints;
     }
+
+
 }

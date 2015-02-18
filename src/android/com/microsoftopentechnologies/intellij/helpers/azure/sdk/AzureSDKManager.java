@@ -65,12 +65,13 @@ public interface AzureSDKManager {
     void createCloudService(@NotNull CloudService cloudService) throws AzureCmdException;
 
     void createVirtualMachine(@NotNull VirtualMachine virtualMachine, @NotNull VirtualMachineImage vmImage,
-                              @NotNull StorageAccount storageAccount, @NotNull String username,
-                              @NotNull String password)
+                              @NotNull StorageAccount storageAccount, @NotNull String virtualNetwork,
+                              @NotNull String username, @NotNull String password)
             throws AzureCmdException;
 
     void createVirtualMachine(@NotNull VirtualMachine virtualMachine, @NotNull VirtualMachineImage vmImage,
-                              @NotNull String mediaLocation, @NotNull String username, @NotNull String password)
+                              @NotNull String mediaLocation, @NotNull String virtualNetwork,
+                              @NotNull String username, @NotNull String password)
             throws AzureCmdException;
 
     @NotNull
