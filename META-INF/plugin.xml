@@ -16,7 +16,7 @@ limitations under the License.
 -->
 <idea-plugin version="2">
     <id>com.microsoftopentechnologies.intellij</id>
-    <name>MSOpenTech Tools</name>
+    <name>MS Open Tech Tools</name>
     <version>0.1.36</version>
     <vendor email="msopentech@microsoft.com" logo="/com/microsoftopentechnologies/intellij/icons/logo.png" url="http://msopentech.com">Microsoft Open Technologies, Inc.</vendor>
 
@@ -69,12 +69,16 @@ limitations under the License.
                 factoryClass="com.microsoftopentechnologies.intellij.activitylog.ActivityLogToolWindowFactory"
                 id="Azure Activity Log"
                 canCloseContents="true"
-                icon="/icons/RoleFolder.gif"/>
+                icon="/icons/RoleFolder.gif"
+                conditionClass="com.microsoftopentechnologies.intellij.activitylog.ActivityLogToolWindowFactoryCondition"/>
         <moduleType id="AZURE_MODULE"
                     implementationClass="com.microsoftopentechnologies.intellij.module.AzureModuleType"/>
         <moduleConfigurationEditorProvider
                 implementation="com.microsoftopentechnologies.intellij.module.AzureModuleConfigurationEditorProvider"/>
-        <projectConfigurable instance="com.microsoftopentechnologies.intellij.AzureConfigurable"/>
+        <projectConfigurable groupId="root"
+                id="com.microsoftopentechnologies.intellij.AzureConfigurable"
+                provider="com.microsoftopentechnologies.intellij.AzureConfigurableProvider"
+                dynamic="true"/>
         <iconProvider implementation="com.microsoftopentechnologies.intellij.AzureIconProvider"
                       order="before javaDirectory"/>
         <projectService serviceInterface="com.microsoftopentechnologies.intellij.AzureSettings"
