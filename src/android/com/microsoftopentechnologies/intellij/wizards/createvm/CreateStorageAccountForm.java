@@ -21,20 +21,20 @@ import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
+import com.intellij.ui.ListCellRendererWrapper;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerImpl;
 import com.microsoftopentechnologies.intellij.model.Subscription;
 import com.microsoftopentechnologies.intellij.model.vm.AffinityGroup;
-import com.microsoftopentechnologies.intellij.model.vm.CloudService;
 import com.microsoftopentechnologies.intellij.model.vm.Location;
 import com.microsoftopentechnologies.intellij.model.vm.StorageAccount;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.*;
-import java.awt.List;
 import java.awt.event.*;
 import java.util.*;
 
@@ -103,13 +103,12 @@ public class CreateStorageAccountForm extends JDialog {
             }
         }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
-        regionOrAffinityGroupComboBox.setRenderer(new DefaultListCellRenderer() {
+        regionOrAffinityGroupComboBox.setRenderer(new ListCellRendererWrapper<Object>() {
             @Override
-            public Component getListCellRendererComponent(JList jList, Object o, int i, boolean b, boolean b1) {
-
-                return (o instanceof String) ?
-                        super.getListCellRendererComponent(jList, o, i, b, b1)
-                        : super.getListCellRendererComponent(jList, "  " + o.toString(), i, b, b1);
+            public void customize(JList jList, Object o, int i, boolean b, boolean b1) {
+                if (!(o instanceof String)) {
+                   setText("  " + o.toString());
+                }
             }
         });
 
@@ -138,10 +137,10 @@ public class CreateStorageAccountForm extends JDialog {
         });
 
         replicationComboBox.setModel(new DefaultComboBoxModel(ReplicationTypes.values()));
-        replicationComboBox.setRenderer(new DefaultListCellRenderer() {
+        replicationComboBox.setRenderer(new ListCellRendererWrapper<ReplicationTypes>() {
             @Override
-            public Component getListCellRendererComponent(JList jList, Object o, int i, boolean b, boolean b1) {
-                return super.getListCellRendererComponent(jList, ((ReplicationTypes) o).getDescription(), i, b, b1);
+            public void customize(JList jList, ReplicationTypes o, int i, boolean b, boolean b1) {
+                setText(o.getDescription());
             }
         });
     }
@@ -200,7 +199,7 @@ public class CreateStorageAccountForm extends JDialog {
 
         ProgressManager.getInstance().run(new Task.Backgroundable(project, "Loading regions...", false) {
             @Override
-            public void run(ProgressIndicator progressIndicator) {
+            public void run(@NotNull ProgressIndicator progressIndicator) {
 
                 progressIndicator.setIndeterminate(true);
 

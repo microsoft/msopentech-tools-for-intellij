@@ -21,13 +21,14 @@ import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
-import com.intellij.ui.components.JBScrollPane;
+import com.intellij.ui.ListCellRendererWrapper;
 import com.intellij.ui.wizard.WizardNavigationState;
 import com.intellij.ui.wizard.WizardStep;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerImpl;
 import com.microsoftopentechnologies.intellij.model.vm.VirtualMachineImage;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
@@ -37,9 +38,6 @@ import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
@@ -143,7 +141,7 @@ public class SelectImageStep extends WizardStep<CreateVMWizardModel> {
 
         model.configStepList(createVmStepsList, 1);
 
-        final ArrayList imageTypeList = new ArrayList();
+        final ArrayList<Object> imageTypeList = new ArrayList<Object>();
         imageTypeList.add("Public Images");
         imageTypeList.addAll(Arrays.asList(PublicImages.values()));
         imageTypeList.add("MSDN Images");
@@ -161,17 +159,16 @@ public class SelectImageStep extends WizardStep<CreateVMWizardModel> {
             }
         });
 
-        imageTypeComboBox.setRenderer(new DefaultListCellRenderer() {
+        imageTypeComboBox.setRenderer(new ListCellRendererWrapper<Object>() {
             @Override
-            public Component getListCellRendererComponent(JList jList, Object o, int i, boolean b, boolean b1) {
+            public void customize(JList jList, Object o, int i, boolean b, boolean b1) {
                 if (o instanceof Enum) {
-                    return super.getListCellRendererComponent(jList, "  " + o.toString(), i, b, b1);
+                    setText("  " + o.toString());
                 } else {
-                    JLabel label = new JLabel(o.toString());
-                    Font f = label.getFont();
-                    label.setFont(f.deriveFont(f.getStyle()
+                    //Gets the default label font
+                    Font f =  UIManager.getFont("Label.font");
+                    setFont(f.deriveFont(f.getStyle()
                             | Font.BOLD | Font.ITALIC));
-                    return label;
                 }
             }
         });
@@ -245,7 +242,7 @@ public class SelectImageStep extends WizardStep<CreateVMWizardModel> {
 
             ProgressManager.getInstance().run(new Task.Backgroundable(project, "Loading virtual machine images...", false) {
                 @Override
-                public void run(ProgressIndicator progressIndicator) {
+                public void run(@NotNull ProgressIndicator progressIndicator) {
                     progressIndicator.setIndeterminate(true);
 
                     try {

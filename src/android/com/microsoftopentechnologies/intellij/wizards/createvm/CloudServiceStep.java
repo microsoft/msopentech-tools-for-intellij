@@ -21,6 +21,7 @@ import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
+import com.intellij.ui.ListCellRendererWrapper;
 import com.intellij.ui.wizard.WizardNavigationState;
 import com.intellij.ui.wizard.WizardStep;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
@@ -29,6 +30,7 @@ import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerI
 import com.microsoftopentechnologies.intellij.model.vm.CloudService;
 import com.microsoftopentechnologies.intellij.model.vm.StorageAccount;
 import com.microsoftopentechnologies.intellij.model.vm.VirtualMachineImage;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
@@ -71,26 +73,22 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
             }
         });
 
-        cloudServiceComboBox.setRenderer(new DefaultListCellRenderer() {
+        cloudServiceComboBox.setRenderer(new ListCellRendererWrapper<Object>() {
             @Override
-            public Component getListCellRendererComponent(JList jList, Object o, int i, boolean b, boolean b1) {
+            public void customize(JList jList, Object o, int i, boolean b, boolean b1) {
                 if (o instanceof CloudService) {
                     CloudService sa = (CloudService) o;
-                    return super.getListCellRendererComponent(jList, String.format("%s (%s)", sa.getName(), sa.getLocation()), i, b, b1);
-                } else {
-                    return super.getListCellRendererComponent(jList, o, i, b, b1);
+                    setText(String.format("%s (%s)", sa.getName(), sa.getLocation()));
                 }
             }
         });
 
-        storageComboBox.setRenderer(new DefaultListCellRenderer() {
+        storageComboBox.setRenderer(new ListCellRendererWrapper<Object>() {
             @Override
-            public Component getListCellRendererComponent(JList jList, Object o, int i, boolean b, boolean b1) {
+            public void customize(JList jList, Object o, int i, boolean b, boolean b1) {
                 if (o instanceof StorageAccount) {
                     StorageAccount sa = (StorageAccount) o;
-                    return super.getListCellRendererComponent(jList, String.format("%s (%s)", sa.getName(), sa.getLocation()), i, b, b1);
-                } else {
-                    return super.getListCellRendererComponent(jList, o, i, b, b1);
+                    setText(String.format("%s (%s)", sa.getName(), sa.getLocation()));
                 }
             }
         });
@@ -134,7 +132,7 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
         if(storageAccounts == null) {
             ProgressManager.getInstance().run(new Task.Backgroundable(project, "Loading storage account...", false) {
                 @Override
-                public void run(ProgressIndicator progressIndicator) {
+                public void run(@NotNull ProgressIndicator progressIndicator) {
                     try {
                         progressIndicator.setIndeterminate(true);
 
@@ -188,7 +186,7 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
 
         ProgressManager.getInstance().run(new Task.Backgroundable(project, "Loading cloud services...", false) {
             @Override
-            public void run(ProgressIndicator progressIndicator) {
+            public void run(@NotNull ProgressIndicator progressIndicator) {
                 try {
                     progressIndicator.setIndeterminate(true);
 
