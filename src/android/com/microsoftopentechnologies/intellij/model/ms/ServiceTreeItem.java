@@ -5,7 +5,7 @@
  *  you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ *	 http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  *  distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,17 +14,10 @@
  *  limitations under the License.
  */
 
-package com.microsoftopentechnologies.intellij.serviceexplorer.azure.mobileservice;
+package com.microsoftopentechnologies.intellij.model.ms;
 
-import com.microsoftopentechnologies.intellij.model.ms.Column;
-import com.microsoftopentechnologies.intellij.serviceexplorer.Node;
 
-public class TableColumnNode extends Node {
-    public static final String ICON_PATH = "column.png";
-    protected Column column;
-
-    public TableColumnNode(Node parent, Column column) {
-        super(column.getName(), column.toString(), parent, ICON_PATH, false);
-        this.column = column;
-    }
+public interface ServiceTreeItem {
+    boolean isLoading();
+    void setLoading(boolean loading);
 }

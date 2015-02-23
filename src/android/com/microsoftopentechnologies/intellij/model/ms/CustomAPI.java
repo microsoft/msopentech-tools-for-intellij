@@ -13,40 +13,24 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-
-package com.microsoftopentechnologies.intellij.model;
+ 
+package com.microsoftopentechnologies.intellij.model.ms;
 
 import java.io.File;
 
-public class Script implements MobileServiceScriptTreeItem {
 
-    private String operation;
-    private String selfLink;
-    private int bytes;
+public class CustomAPI implements MobileServiceScriptTreeItem{
+    private String name;
     private boolean loading;
-    private String scriptName;
-
-    public String getName() {
-        return scriptName;
-    }
-
-    public void setName(String scriptName) {
-        this.scriptName = scriptName;
-    }
+    private CustomAPIPermissions customAPIPermissions;
 
 
-
-    public static String[] getOperationList() {
-        return new String[]{
-                "insert",
-                "update",
-                "delete",
-                "read"
-        };
+    @Override
+    public String toString() {
+        return name + (loading ? " (loading...)" : "");
     }
 
     public String getLocalFilePath(String serviceName) {
-
         String tmpdir = System.getProperty("java.io.tmpdir");
         StringBuilder sb = new StringBuilder();
         sb.append(tmpdir);
@@ -58,16 +42,15 @@ public class Script implements MobileServiceScriptTreeItem {
         sb.append(File.separator);
         sb.append(serviceName);
         sb.append(File.separator);
-        sb.append(scriptName);
+        sb.append("CustomAPI");
         sb.append(File.separator);
-        sb.append(operation);
+        sb.append(name);
         sb.append(".js");
 
         return sb.toString();
     }
 
     public String getLocalDirPath(String serviceName) {
-
         String tmpdir = System.getProperty("java.io.tmpdir");
         StringBuilder sb = new StringBuilder();
         sb.append(tmpdir);
@@ -79,39 +62,17 @@ public class Script implements MobileServiceScriptTreeItem {
         sb.append(File.separator);
         sb.append(serviceName);
         sb.append(File.separator);
-        sb.append(scriptName);
+        sb.append("CustomAPI");
 
         return sb.toString();
     }
 
-
-    @Override
-    public String toString() {
-        return operation + ".js"  + (loading ? " (loading...)" : "");
+    public String getName() {
+        return name;
     }
 
-    public String getOperation() {
-        return operation;
-    }
-
-    public void setOperation(String operation) {
-        this.operation = operation;
-    }
-
-    public String getSelfLink() {
-        return selfLink;
-    }
-
-    public void setSelfLink(String selfLink) {
-        this.selfLink = selfLink;
-    }
-
-    public int getBytes() {
-        return bytes;
-    }
-
-    public void setBytes(int bytes) {
-        this.bytes = bytes;
+    public void setName(String name) {
+        this.name = name;
     }
 
     @Override
@@ -122,5 +83,13 @@ public class Script implements MobileServiceScriptTreeItem {
     @Override
     public void setLoading(boolean loading) {
         this.loading = loading;
+    }
+
+    public CustomAPIPermissions getCustomAPIPermissions() {
+        return customAPIPermissions;
+    }
+
+    public void setCustomAPIPermissions(CustomAPIPermissions customAPIPermissions) {
+        this.customAPIPermissions = customAPIPermissions;
     }
 }

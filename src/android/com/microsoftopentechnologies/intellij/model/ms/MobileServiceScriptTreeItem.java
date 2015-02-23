@@ -13,12 +13,11 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
- 
-package com.microsoftopentechnologies.intellij.model;
 
-public enum PermissionType {
-    User,
-    Application,
-    Admin,
-    Public
+package com.microsoftopentechnologies.intellij.model.ms;
+
+public interface MobileServiceScriptTreeItem extends ServiceTreeItem {
+    String getLocalFilePath(String serviceName);
+    String getLocalDirPath(String serviceName);
+    String getName();
 }

@@ -22,9 +22,9 @@ import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureAuthenticationMode;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureManager;
-import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIManager;
-import com.microsoftopentechnologies.intellij.model.Service;
-import com.microsoftopentechnologies.intellij.model.Subscription;
+import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManager;
+import com.microsoftopentechnologies.intellij.model.ms.MobileService;
+import com.microsoftopentechnologies.intellij.model.ms.Subscription;
 import com.microsoftopentechnologies.intellij.serviceexplorer.Node;
 import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionEvent;
 import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionListener;
@@ -51,8 +51,8 @@ public class MobileServiceModule extends Node {
         ArrayList<Subscription> subscriptionList = AzureRestAPIManager.getManager().getSubscriptionList();
         if(subscriptionList != null) {
             for (Subscription subscription : subscriptionList) {
-                List<Service> mobileServices = AzureRestAPIManager.getManager().getServiceList(subscription.getId());
-                for(Service mobileService : mobileServices) {
+                List<MobileService> mobileServices = AzureRestAPIManager.getManager().getServiceList(subscription.getId());
+                for(MobileService mobileService : mobileServices) {
                     addChildNode(new MobileServiceNode(this, mobileService));
                 }
             }

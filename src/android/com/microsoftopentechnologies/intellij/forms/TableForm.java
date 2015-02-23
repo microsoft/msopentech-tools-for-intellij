@@ -21,12 +21,11 @@ import com.google.common.collect.Iterables;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
-import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIManager;
-import com.microsoftopentechnologies.intellij.model.PermissionItem;
-import com.microsoftopentechnologies.intellij.model.PermissionType;
-import com.microsoftopentechnologies.intellij.model.Table;
-import com.microsoftopentechnologies.intellij.model.TablePermissions;
-import org.apache.commons.lang.ArrayUtils;
+import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManager;
+import com.microsoftopentechnologies.intellij.model.ms.PermissionItem;
+import com.microsoftopentechnologies.intellij.model.ms.PermissionType;
+import com.microsoftopentechnologies.intellij.model.ms.Table;
+import com.microsoftopentechnologies.intellij.model.ms.TablePermissions;
 
 import javax.swing.*;
 import java.awt.*;
@@ -35,7 +34,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.UUID;
 
 

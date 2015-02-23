@@ -15,7 +15,7 @@
  */
 
 
-package com.microsoftopentechnologies.intellij.model;
+package com.microsoftopentechnologies.intellij.model.ms;
 
 public class SqlDb {
     private int id;

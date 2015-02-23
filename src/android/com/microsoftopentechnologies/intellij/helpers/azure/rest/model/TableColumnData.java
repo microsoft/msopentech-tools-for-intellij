@@ -14,13 +14,14 @@
  *  limitations under the License.
  */
 
-package com.microsoftopentechnologies.intellij.model;
+package com.microsoftopentechnologies.intellij.helpers.azure.rest.model;
 
-
-public class SqlServer{
+public class TableColumnData {
     private String name;
-    private String admin;
-    private String region;
+    private String type;
+    private String selflink;
+    private boolean indexed;
+    private boolean zumoIndex;
 
     public String getName() {
         return name;
@@ -30,24 +31,35 @@ public class SqlServer{
         this.name = name;
     }
 
-    public String getAdmin() {
-        return admin;
+    public String getType() {
+        return type;
     }
 
-    public void setAdmin(String admin) {
-        this.admin = admin;
+    public void setType(String type) {
+        this.type = type;
     }
 
-    public String getRegion() {
-        return region;
+    public String getSelflink() {
+        return selflink;
     }
 
-    public void setRegion(String region) {
-        this.region = region;
+    public void setSelflink(String selflink) {
+        this.selflink = selflink;
     }
 
-    @Override
-    public String toString() {
-        return String.format("%s (%s)", name, region) ;
+    public boolean isIndexed() {
+        return indexed;
+    }
+
+    public void setIndexed(boolean indexed) {
+        this.indexed = indexed;
+    }
+
+    public boolean isZumoIndex() {
+        return zumoIndex;
+    }
+
+    public void setZumoIndex(boolean zumoIndex) {
+        this.zumoIndex = zumoIndex;
     }
 }

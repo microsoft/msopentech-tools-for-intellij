@@ -22,8 +22,8 @@ import com.intellij.ui.wizard.WizardStep;
 import com.microsoftopentechnologies.intellij.forms.ManageSubscriptionForm;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIManager;
-import com.microsoftopentechnologies.intellij.model.Subscription;
+import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManager;
+import com.microsoftopentechnologies.intellij.model.ms.Subscription;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;

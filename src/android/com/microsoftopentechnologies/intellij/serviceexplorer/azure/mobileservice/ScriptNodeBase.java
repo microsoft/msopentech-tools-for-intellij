@@ -25,9 +25,9 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.intellij.model.MobileServiceScriptTreeItem;
-import com.microsoftopentechnologies.intellij.model.Script;
-import com.microsoftopentechnologies.intellij.model.Service;
+import com.microsoftopentechnologies.intellij.model.ms.MobileServiceScriptTreeItem;
+import com.microsoftopentechnologies.intellij.model.ms.Script;
+import com.microsoftopentechnologies.intellij.model.ms.MobileService;
 import com.microsoftopentechnologies.intellij.serviceexplorer.Node;
 import org.jetbrains.annotations.NotNull;
 
@@ -41,14 +41,14 @@ public class ScriptNodeBase extends Node {
         super(id, name, parent, iconPath, hasRefreshAction);
     }
 
-    protected void downloadScript(Service mobileService, String scriptName, String localFilePath) throws AzureCmdException {}
+    protected void downloadScript(MobileService mobileService, String scriptName, String localFilePath) throws AzureCmdException {}
 
     protected void onNodeClickInternal(final MobileServiceScriptTreeItem script) {
         // TODO: This function is far too long and confusing. Refactor this to smaller well-defined sub-routines.
 
         // find the parent MobileServiceNode node
         MobileServiceNode mobileServiceNode = (MobileServiceNode)findParentByType(MobileServiceNode.class);
-        final Service mobileService = mobileServiceNode.getMobileService();
+        final MobileService mobileService = mobileServiceNode.getMobileService();
 
         VirtualFile scriptFile = LocalFileSystem.getInstance().findFileByIoFile(new File(script.getLocalFilePath(mobileService.getName())));
         boolean fileIsEditing = false;

@@ -15,7 +15,7 @@
  */
 package com.microsoftopentechnologies.intellij.model.vm;
 
-import com.microsoftopentechnologies.intellij.model.ServiceTreeItem;
+import com.microsoftopentechnologies.intellij.model.ms.ServiceTreeItem;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Set;
