@@ -16,27 +16,18 @@
 
 package com.microsoftopentechnologies.intellij.helpers.azure.rest.model;
 
-public class RestTableColumn {
-    private String name;
-    private String type;
+
+public class TableScriptData {
+    private String operation;
     private String selflink;
-    private boolean indexed;
-    private boolean zumoIndex;
+    private int sizeBytes;
 
-    public String getName() {
-        return name;
+    public String getOperation() {
+        return operation;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
+    public void setOperation(String operation) {
+        this.operation = operation;
     }
 
     public String getSelflink() {
@@ -47,19 +38,11 @@ public class RestTableColumn {
         this.selflink = selflink;
     }
 
-    public boolean isIndexed() {
-        return indexed;
+    public int getSizeBytes() {
+        return sizeBytes;
     }
 
-    public void setIndexed(boolean indexed) {
-        this.indexed = indexed;
-    }
-
-    public boolean isZumoIndex() {
-        return zumoIndex;
-    }
-
-    public void setZumoIndex(boolean zumoIndex) {
-        this.zumoIndex = zumoIndex;
+    public void setSizeBytes(int sizeBytes) {
+        this.sizeBytes = sizeBytes;
     }
 }

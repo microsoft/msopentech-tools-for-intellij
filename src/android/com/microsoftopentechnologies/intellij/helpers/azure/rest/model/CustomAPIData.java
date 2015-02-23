@@ -16,43 +16,52 @@
 
 package com.microsoftopentechnologies.intellij.helpers.azure.rest.model;
 
-public class RestTablePermissions {
-    private String selflink;
-    private String insert;
-    private String read;
-    private String update;
+public class CustomAPIData {
+    private String name;
+    private String get;
+    private String put;
+    private String post;
+    private String patch;
     private String delete;
 
-    public String getSelflink() {
-        return selflink;
+    public String getName() {
+        return name;
     }
 
-    public void setSelflink(String selflink) {
-        this.selflink = selflink;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public String getInsert() {
-        return insert;
+    public String getGet() {
+        return get;
     }
 
-    public void setInsert(String insert) {
-        this.insert = insert;
+    public void setGet(String get) {
+        this.get = get;
     }
 
-    public String getRead() {
-        return read;
+    public String getPut() {
+        return put;
     }
 
-    public void setRead(String read) {
-        this.read = read;
+    public void setPut(String put) {
+        this.put = put;
     }
 
-    public String getUpdate() {
-        return update;
+    public String getPost() {
+        return post;
     }
 
-    public void setUpdate(String update) {
-        this.update = update;
+    public void setPost(String post) {
+        this.post = post;
+    }
+
+    public String getPatch() {
+        return patch;
+    }
+
+    public void setPatch(String patch) {
+        this.patch = patch;
     }
 
     public String getDelete() {

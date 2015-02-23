@@ -85,13 +85,13 @@ public class SummaryStep extends WizardStep<AddServiceWizardModel> {
         summary.append("<html> <head> </head> <body style=\"font-family: sans serif;\"> <p style=\"margin-top: 0\">" +
                 "<b>Summary:</b></p> <ol> ");
 
-        if (this.model.getService() != null || this.model.getHubName() != null) {
-            if (this.model.getService() != null) {
+        if (this.model.getMobileService() != null || this.model.getHubName() != null) {
+            if (this.model.getMobileService() != null) {
                 summary.append("<li>Added a reference to the Azure Mobile Services library in project <b>");
                 summary.append(this.model.getProject().getName());
                 summary.append("</b>.</li> ");
                 summary.append("<li>Added a static method to instantiate MobileServiceClient, connecting to <b>");
-                summary.append(this.model.getService().getName());
+                summary.append(this.model.getMobileService().getName());
                 summary.append("</b>.</li> ");
             }
 
@@ -107,7 +107,7 @@ public class SummaryStep extends WizardStep<AddServiceWizardModel> {
             }
 
             summary.append("<li>Configured the Azure Services Activity referencing the mentioned static methods.</li> ");
-            if (this.model.getService() != null) {
+            if (this.model.getMobileService() != null) {
                 summary.append("<li>You can follow the link to <a href=\"https://github.com/Azure/azure-mobile-services/\">" +
                         "Azure Mobile Services SDK</a> to learn more about the referenced libraries.</li> ");
             }
@@ -158,7 +158,7 @@ public class SummaryStep extends WizardStep<AddServiceWizardModel> {
                     double totalSteps = model.getServiceTypes().size();
                     double steps = 0d;
 
-                    if (summaryStep.model.getService() != null) {
+                    if (summaryStep.model.getMobileService() != null) {
                         progressIndicator.setText("Setting up Azure Mobile Services");
                         summaryStep.associateMobileService();
                         steps++;
@@ -235,8 +235,8 @@ public class SummaryStep extends WizardStep<AddServiceWizardModel> {
         final Project project = this.model.getProject();
         final Module module = this.model.getModule();
         final String activityName = this.model.getActivityName();
-        final String appUrl = this.model.getService().getAppUrl();
-        final String appKey = this.model.getService().getAppKey();
+        final String appUrl = this.model.getMobileService().getAppUrl();
+        final String appKey = this.model.getMobileService().getAppKey();
 
         ApplicationManager.getApplication().invokeAndWait(new Runnable() {
             @Override

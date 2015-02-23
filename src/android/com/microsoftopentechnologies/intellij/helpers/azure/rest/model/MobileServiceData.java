@@ -18,7 +18,7 @@ package com.microsoftopentechnologies.intellij.helpers.azure.rest.model;
 
 import java.util.List;
 
-public class RestService {
+public class MobileServiceData {
     private String name;
     private String platform;
     private String type;

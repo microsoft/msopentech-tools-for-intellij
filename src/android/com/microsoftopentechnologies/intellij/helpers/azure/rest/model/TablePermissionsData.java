@@ -16,19 +16,12 @@
 
 package com.microsoftopentechnologies.intellij.helpers.azure.rest.model;
 
-
-public class RestTableScript {
-    private String operation;
+public class TablePermissionsData {
     private String selflink;
-    private int sizeBytes;
-
-    public String getOperation() {
-        return operation;
-    }
-
-    public void setOperation(String operation) {
-        this.operation = operation;
-    }
+    private String insert;
+    private String read;
+    private String update;
+    private String delete;
 
     public String getSelflink() {
         return selflink;
@@ -38,11 +31,35 @@ public class RestTableScript {
         this.selflink = selflink;
     }
 
-    public int getSizeBytes() {
-        return sizeBytes;
+    public String getInsert() {
+        return insert;
     }
 
-    public void setSizeBytes(int sizeBytes) {
-        this.sizeBytes = sizeBytes;
+    public void setInsert(String insert) {
+        this.insert = insert;
+    }
+
+    public String getRead() {
+        return read;
+    }
+
+    public void setRead(String read) {
+        this.read = read;
+    }
+
+    public String getUpdate() {
+        return update;
+    }
+
+    public void setUpdate(String update) {
+        this.update = update;
+    }
+
+    public String getDelete() {
+        return delete;
+    }
+
+    public void setDelete(String delete) {
+        this.delete = delete;
     }
 }

@@ -16,7 +16,7 @@
 
 package com.microsoftopentechnologies.intellij.helpers.azure.rest.model;
 
-public class RestJob {
+public class JobData {
     private String id;
     private String appName;
     private String name;

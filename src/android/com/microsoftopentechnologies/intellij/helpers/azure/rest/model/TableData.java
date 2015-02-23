@@ -18,7 +18,7 @@ package com.microsoftopentechnologies.intellij.helpers.azure.rest.model;
 
 import java.util.List;
 
-public class RestTable {
+public class TableData {
     private String idType;
     private String hasDeleted;
     private Metric metrics;

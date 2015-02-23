@@ -13,11 +13,12 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+ 
+package com.microsoftopentechnologies.intellij.model.ms;
 
-package com.microsoftopentechnologies.intellij.model;
-
-
-public interface ServiceTreeItem {
-    boolean isLoading();
-    void setLoading(boolean loading);
+public enum PermissionType {
+    User,
+    Application,
+    Admin,
+    Public
 }

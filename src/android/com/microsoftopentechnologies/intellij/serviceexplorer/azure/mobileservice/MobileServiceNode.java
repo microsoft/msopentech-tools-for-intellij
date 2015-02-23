@@ -29,10 +29,10 @@ import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureManager;
 import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManager;
-import com.microsoftopentechnologies.intellij.model.CustomAPI;
-import com.microsoftopentechnologies.intellij.model.Job;
-import com.microsoftopentechnologies.intellij.model.Service;
-import com.microsoftopentechnologies.intellij.model.Table;
+import com.microsoftopentechnologies.intellij.model.ms.CustomAPI;
+import com.microsoftopentechnologies.intellij.model.ms.Job;
+import com.microsoftopentechnologies.intellij.model.ms.MobileService;
+import com.microsoftopentechnologies.intellij.model.ms.Table;
 import com.microsoftopentechnologies.intellij.serviceexplorer.Node;
 import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionEvent;
 import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionListener;
@@ -51,16 +51,16 @@ public class MobileServiceNode extends Node {
     public static final String CUSTOM_APIS = "Custom APIs";
     public static final String SCHEDULED_JOBS = "Scheduled Jobs";
 
-    protected Service mobileService;
+    protected MobileService mobileService;
     protected boolean childNodesLoaded = false;
 
     protected Node tablesNode;      // the parent node for all table nodes
     protected Node customAPIsNode;  // the parent node for all custom api nodes
     protected Node jobsNode;        // the parent node for all scheduled job nodes
 
-    public MobileServiceNode(Node parent, Service service) {
-        super(service.getName(), service.getName(), parent, ICON_PATH, true, true);
-        mobileService = service;
+    public MobileServiceNode(Node parent, MobileService mobileService) {
+        super(mobileService.getName(), mobileService.getName(), parent, ICON_PATH, true, true);
+        this.mobileService = mobileService;
         loadActions();
     }
 
@@ -192,7 +192,7 @@ public class MobileServiceNode extends Node {
         }
     }
 
-    public Service getMobileService() {
+    public MobileService getMobileService() {
         return mobileService;
     }
 
@@ -346,6 +346,6 @@ public class MobileServiceNode extends Node {
     }
 
     private boolean isNodeRuntime() {
-        return Service.NODE_RUNTIME.equals(mobileService.getRuntime());
+        return MobileService.NODE_RUNTIME.equals(mobileService.getRuntime());
     }
 }

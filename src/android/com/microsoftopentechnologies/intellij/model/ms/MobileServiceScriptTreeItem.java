@@ -5,7 +5,7 @@
  *  you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ *	 http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  *  distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,16 +14,10 @@
  *  limitations under the License.
  */
 
-package com.microsoftopentechnologies.intellij.helpers.azure.rest.model;
+package com.microsoftopentechnologies.intellij.model.ms;
 
-public class RestRegion {
-    private String region;
-
-    public String getRegion() {
-        return region;
-    }
-
-    public void setRegion(String region) {
-        this.region = region;
-    }
+public interface MobileServiceScriptTreeItem extends ServiceTreeItem {
+    String getLocalFilePath(String serviceName);
+    String getLocalDirPath(String serviceName);
+    String getName();
 }

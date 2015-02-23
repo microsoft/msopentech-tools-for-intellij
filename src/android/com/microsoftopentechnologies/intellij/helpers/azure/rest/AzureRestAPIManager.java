@@ -29,8 +29,7 @@ import com.microsoftopentechnologies.intellij.helpers.azure.AzureAuthenticationM
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureManager;
 import com.microsoftopentechnologies.intellij.helpers.azure.rest.model.*;
-import com.microsoftopentechnologies.intellij.model.*;
-import com.microsoftopentechnologies.intellij.model.Service;
+import com.microsoftopentechnologies.intellij.model.ms.*;
 import org.apache.commons.lang.StringUtils;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -422,19 +421,19 @@ public class AzureRestAPIManager implements AzureManager {
     }
 
     @Override
-    public List<Service> getServiceList(UUID subscriptionId) throws AzureCmdException {
+    public List<MobileService> getServiceList(UUID subscriptionId) throws AzureCmdException {
         try {
             String path = String.format("/%s/services/mobileservices/mobileservices", subscriptionId.toString());
 
             String json = AzureRestAPIHelper.getRestApiCommand(path, subscriptionId.toString());
 
-            Type type = new TypeToken<ArrayList<RestService>>() {}.getType();
-            List<RestService> tempRes = new Gson().fromJson(json, type);
+            Type type = new TypeToken<ArrayList<MobileServiceData>>() {}.getType();
+            List<MobileServiceData> tempRes = new Gson().fromJson(json, type);
 
-            List<Service> res = new ArrayList<Service>();
+            List<MobileService> res = new ArrayList<MobileService>();
 
-            for (RestService item : tempRes) {
-                Service ser = new Service();
+            for (MobileServiceData item : tempRes) {
+                MobileService ser = new MobileService();
 
                 ser.setName(item.getName());
                 ser.setType(item.getType());
@@ -449,12 +448,12 @@ public class AzureRestAPIManager implements AzureManager {
                 ser.setSubcriptionId(subscriptionId);
 
                 if (item.getPlatform() != null && item.getPlatform().equals("dotNet")) {
-                    ser.setRuntime(Service.NET_RUNTIME);
+                    ser.setRuntime(MobileService.NET_RUNTIME);
                 } else {
-                    ser.setRuntime(Service.NODE_RUNTIME);
+                    ser.setRuntime(MobileService.NODE_RUNTIME);
                 }
 
-                for (RestService.Table table : item.getTables()) {
+                for (MobileServiceData.Table table : item.getTables()) {
                     Table t = new Table();
                     t.setName(table.getName());
                     t.setSelfLink(table.getSelflink());
@@ -478,11 +477,11 @@ public class AzureRestAPIManager implements AzureManager {
             String json = AzureRestAPIHelper.getRestApiCommand(path, subscriptionId.toString());
 
 
-            Type type = new TypeToken<ArrayList<RestRegion>>() {}.getType();
-            List<RestRegion> tempRes = new Gson().fromJson(json, type);
+            Type type = new TypeToken<ArrayList<RegionData>>() {}.getType();
+            List<RegionData> tempRes = new Gson().fromJson(json, type);
             List<String> res = new ArrayList<String>();
 
-            for (RestRegion item : tempRes) {
+            for (RegionData item : tempRes) {
                 res.add(item.getRegion());
             }
 
@@ -627,12 +626,12 @@ public class AzureRestAPIManager implements AzureManager {
 
             String json = AzureRestAPIHelper.getRestApiCommand(path, subscriptionId.toString());
 
-            Type type = new TypeToken<ArrayList<RestTable>>() {}.getType();
-            List<RestTable> tempRes = new Gson().fromJson(json, type);
+            Type type = new TypeToken<ArrayList<TableData>>() {}.getType();
+            List<TableData> tempRes = new Gson().fromJson(json, type);
 
             List<Table> res = new ArrayList<Table>();
 
-            for (RestTable item : tempRes) {
+            for (TableData item : tempRes) {
                 Table t = new Table();
                 t.setName(item.getName());
                 t.setSelfLink(item.getSelflink());
@@ -690,13 +689,13 @@ public class AzureRestAPIManager implements AzureManager {
 
             String json = AzureRestAPIHelper.getRestApiCommand(path, subscriptionId.toString());
             Gson gson = new Gson();
-            RestTable tempRes = gson.fromJson(json, RestTable.class);
+            TableData tempRes = gson.fromJson(json, TableData.class);
 
             Table t = new Table();
             t.setName(tempRes.getName());
             t.setSelfLink(tempRes.getSelflink());
 
-            RestTablePermissions restTablePermissions = gson.fromJson(AzureRestAPIHelper.getRestApiCommand(path + "/permissions", subscriptionId.toString()), RestTablePermissions.class);
+            TablePermissionsData restTablePermissions = gson.fromJson(AzureRestAPIHelper.getRestApiCommand(path + "/permissions", subscriptionId.toString()), TablePermissionsData.class);
 
             TablePermissions tablePermissions = new TablePermissions();
             tablePermissions.setInsert(PermissionItem.getPermitionType(restTablePermissions.getInsert()));
@@ -705,10 +704,10 @@ public class AzureRestAPIManager implements AzureManager {
             tablePermissions.setDelete(PermissionItem.getPermitionType(restTablePermissions.getDelete()));
             t.setTablePermissions(tablePermissions);
 
-            Type colType = new TypeToken<ArrayList<RestTableColumn>>() {}.getType();
-            List<RestTableColumn> colList = gson.fromJson(AzureRestAPIHelper.getRestApiCommand(path + "/columns", subscriptionId.toString()), colType);
+            Type colType = new TypeToken<ArrayList<TableColumnData>>() {}.getType();
+            List<TableColumnData> colList = gson.fromJson(AzureRestAPIHelper.getRestApiCommand(path + "/columns", subscriptionId.toString()), colType);
             if(colList != null) {
-                for (RestTableColumn column : colList) {
+                for (TableColumnData column : colList) {
                     Column c = new Column();
                     c.setName(column.getName());
                     c.setType(column.getType());
@@ -721,11 +720,11 @@ public class AzureRestAPIManager implements AzureManager {
             }
 
 
-            Type scrType = new TypeToken<ArrayList<RestTableScript>>() {}.getType();
-            List<RestTableScript> scrList = gson.fromJson(AzureRestAPIHelper.getRestApiCommand(path + "/scripts", subscriptionId.toString()), scrType);
+            Type scrType = new TypeToken<ArrayList<TableScriptData>>() {}.getType();
+            List<TableScriptData> scrList = gson.fromJson(AzureRestAPIHelper.getRestApiCommand(path + "/scripts", subscriptionId.toString()), scrType);
 
             if(scrList != null) {
-                for (RestTableScript script : scrList) {
+                for (TableScriptData script : scrList) {
                     Script s = new Script();
 
                     s.setOperation(script.getOperation());
@@ -785,12 +784,12 @@ public class AzureRestAPIManager implements AzureManager {
 
             String json = AzureRestAPIHelper.getRestApiCommand(path, subscriptionId.toString());
 
-            Type type = new TypeToken<ArrayList<RestCustomAPI>>() {}.getType();
-            List<RestCustomAPI> tempRes = new Gson().fromJson(json, type);
+            Type type = new TypeToken<ArrayList<CustomAPIData>>() {}.getType();
+            List<CustomAPIData> tempRes = new Gson().fromJson(json, type);
 
             List<CustomAPI> res = new ArrayList<CustomAPI>();
 
-            for (RestCustomAPI item : tempRes) {
+            for (CustomAPIData item : tempRes) {
                 CustomAPI c = new CustomAPI();
                 c.setName(item.getName());
                 CustomAPIPermissions permissions = new CustomAPIPermissions();
@@ -884,12 +883,12 @@ public class AzureRestAPIManager implements AzureManager {
 
             String json = AzureRestAPIHelper.getRestApiCommand(path, subscriptionId.toString());
 
-            Type type = new TypeToken<ArrayList<RestJob>>() {}.getType();
-            List<RestJob> tempRes = new Gson().fromJson(json, type);
+            Type type = new TypeToken<ArrayList<JobData>>() {}.getType();
+            List<JobData> tempRes = new Gson().fromJson(json, type);
 
             List<Job> res = new ArrayList<Job>();
 
-            for (RestJob item : tempRes) {
+            for (JobData item : tempRes) {
                 Job j = new Job();
                 j.setAppName(item.getAppName());
                 j.setName(item.getName());
@@ -992,11 +991,11 @@ public class AzureRestAPIManager implements AzureManager {
 
             String json = AzureRestAPIHelper.getRestApiCommand(path, subscriptionId.toString());
 
-            RestLog tempRes = new Gson().fromJson(json, RestLog.class);
+            LogData tempRes = new Gson().fromJson(json, LogData.class);
 
             List<LogEntry> res = new ArrayList<LogEntry>();
 
-            for (RestLog.LogEntry item : tempRes.getResults()) {
+            for (LogData.LogEntry item : tempRes.getResults()) {
                 LogEntry logEntry = new LogEntry();
 
                 logEntry.setMessage(item.getMessage());
@@ -1005,7 +1004,7 @@ public class AzureRestAPIManager implements AzureManager {
 
                 SimpleDateFormat ISO8601DATEFORMAT;
 
-                if (Service.NODE_RUNTIME.equals(runtime)) {
+                if (MobileService.NODE_RUNTIME.equals(runtime)) {
                     ISO8601DATEFORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.ENGLISH);
                 } else {
                     ISO8601DATEFORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.ENGLISH);

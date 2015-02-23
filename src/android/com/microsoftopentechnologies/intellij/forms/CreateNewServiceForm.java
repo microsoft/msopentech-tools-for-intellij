@@ -22,9 +22,9 @@ import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManager;
-import com.microsoftopentechnologies.intellij.model.SqlDb;
-import com.microsoftopentechnologies.intellij.model.SqlServer;
-import com.microsoftopentechnologies.intellij.model.Subscription;
+import com.microsoftopentechnologies.intellij.model.ms.SqlDb;
+import com.microsoftopentechnologies.intellij.model.ms.SqlServer;
+import com.microsoftopentechnologies.intellij.model.ms.Subscription;
 
 import javax.swing.*;
 import java.awt.*;

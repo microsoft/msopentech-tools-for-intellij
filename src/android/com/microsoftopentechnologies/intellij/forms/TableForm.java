@@ -22,10 +22,10 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManager;
-import com.microsoftopentechnologies.intellij.model.PermissionItem;
-import com.microsoftopentechnologies.intellij.model.PermissionType;
-import com.microsoftopentechnologies.intellij.model.Table;
-import com.microsoftopentechnologies.intellij.model.TablePermissions;
+import com.microsoftopentechnologies.intellij.model.ms.PermissionItem;
+import com.microsoftopentechnologies.intellij.model.ms.PermissionType;
+import com.microsoftopentechnologies.intellij.model.ms.Table;
+import com.microsoftopentechnologies.intellij.model.ms.TablePermissions;
 
 import javax.swing.*;
 import java.awt.*;

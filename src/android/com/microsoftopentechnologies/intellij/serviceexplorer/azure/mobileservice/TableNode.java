@@ -22,10 +22,10 @@ import com.microsoftopentechnologies.intellij.forms.TableForm;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManager;
-import com.microsoftopentechnologies.intellij.model.Column;
-import com.microsoftopentechnologies.intellij.model.Script;
-import com.microsoftopentechnologies.intellij.model.Service;
-import com.microsoftopentechnologies.intellij.model.Table;
+import com.microsoftopentechnologies.intellij.model.ms.Column;
+import com.microsoftopentechnologies.intellij.model.ms.Script;
+import com.microsoftopentechnologies.intellij.model.ms.MobileService;
+import com.microsoftopentechnologies.intellij.model.ms.Table;
 import com.microsoftopentechnologies.intellij.serviceexplorer.Node;
 import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionEvent;
 import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionListener;
@@ -52,7 +52,7 @@ public class TableNode extends Node {
     protected void refreshItems() throws AzureCmdException {
         // get the parent MobileServiceNode node
         MobileServiceNode mobileServiceNode = (MobileServiceNode)findParentByType(MobileServiceNode.class);
-        Service mobileService = mobileServiceNode.getMobileService();
+        MobileService mobileService = mobileServiceNode.getMobileService();
 
         // fetch table details
         Table tableInfo = AzureRestAPIManager.getManager().showTableDetails(
@@ -150,7 +150,7 @@ public class TableNode extends Node {
         public void actionPerformed(NodeActionEvent e) {
             // get the parent MobileServiceNode node
             MobileServiceNode mobileServiceNode = (MobileServiceNode)findParentByType(MobileServiceNode.class);
-            final Service mobileService = mobileServiceNode.getMobileService();
+            final MobileService mobileService = mobileServiceNode.getMobileService();
 
             runAsBackground("Editing table " + getName() + "...", new Runnable() {
                 @Override

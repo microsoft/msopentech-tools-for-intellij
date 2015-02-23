@@ -16,7 +16,7 @@
 
 package com.microsoftopentechnologies.intellij.serviceexplorer.azure.mobileservice;
 
-import com.microsoftopentechnologies.intellij.model.Column;
+import com.microsoftopentechnologies.intellij.model.ms.Column;
 import com.microsoftopentechnologies.intellij.serviceexplorer.Node;
 
 public class TableColumnNode extends Node {

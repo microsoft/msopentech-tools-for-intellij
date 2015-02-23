@@ -30,8 +30,8 @@ import com.microsoftopentechnologies.intellij.forms.CustomAPIForm;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManager;
-import com.microsoftopentechnologies.intellij.model.CustomAPI;
-import com.microsoftopentechnologies.intellij.model.Service;
+import com.microsoftopentechnologies.intellij.model.ms.CustomAPI;
+import com.microsoftopentechnologies.intellij.model.ms.MobileService;
 import com.microsoftopentechnologies.intellij.serviceexplorer.Node;
 import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionEvent;
 import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionListener;
@@ -65,7 +65,7 @@ public class CustomAPINode extends ScriptNodeBase {
     }
 
     @Override
-    protected void downloadScript(Service mobileService, String scriptName, String localFilePath) throws AzureCmdException {
+    protected void downloadScript(MobileService mobileService, String scriptName, String localFilePath) throws AzureCmdException {
         AzureRestAPIManager.getManager().downloadAPIScript(
                 mobileService.getSubcriptionId(),
                 mobileService.getName(),
@@ -79,7 +79,7 @@ public class CustomAPINode extends ScriptNodeBase {
             try {
                 // get the parent MobileServiceNode node
                 MobileServiceNode mobileServiceNode = (MobileServiceNode)findParentByType(MobileServiceNode.class);
-                Service mobileService = mobileServiceNode.getMobileService();
+                MobileService mobileService = mobileServiceNode.getMobileService();
                 saveCustomAPI(getProject(), mobileService.getName(), mobileService.getSubcriptionId());
             } catch (AzureCmdException e1) {
                 UIHelper.showException("Error uploading script:", e1);
@@ -123,7 +123,7 @@ public class CustomAPINode extends ScriptNodeBase {
         public void actionPerformed(NodeActionEvent e) {
             // get the parent MobileServiceNode node
             MobileServiceNode mobileServiceNode = (MobileServiceNode)findParentByType(MobileServiceNode.class);
-            Service mobileService = mobileServiceNode.getMobileService();
+            MobileService mobileService = mobileServiceNode.getMobileService();
 
             final CustomAPIForm form = new CustomAPIForm();
             form.setEditingCustomAPI(customAPI);

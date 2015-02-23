@@ -32,7 +32,7 @@ import com.microsoftopentechnologies.intellij.helpers.azure.AzureAuthenticationM
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureManager;
 import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManager;
-import com.microsoftopentechnologies.intellij.model.Subscription;
+import com.microsoftopentechnologies.intellij.model.ms.Subscription;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;

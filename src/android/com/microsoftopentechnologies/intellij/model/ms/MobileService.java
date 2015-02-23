@@ -14,18 +14,18 @@
  *  limitations under the License.
  */
 
-package com.microsoftopentechnologies.intellij.model;
+package com.microsoftopentechnologies.intellij.model.ms;
 
 import java.util.ArrayList;
 import java.util.UUID;
 
-public class Service implements ServiceTreeItem {
+public class MobileService implements ServiceTreeItem {
     public static final String NODE_RUNTIME = "JavaScript";
     public static final String NET_RUNTIME = ".NET Framework";
 
     private boolean loading;
 
-    public Service() {
+    public MobileService() {
         tables = new ArrayList<Table>();
     }
 

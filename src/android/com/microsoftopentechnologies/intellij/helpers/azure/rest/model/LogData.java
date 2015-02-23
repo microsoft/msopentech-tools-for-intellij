@@ -18,7 +18,7 @@ package com.microsoftopentechnologies.intellij.helpers.azure.rest.model;
 
 import java.util.List;
 
-public class RestLog {
+public class LogData {
 
     private List<LogEntry> results;
 
