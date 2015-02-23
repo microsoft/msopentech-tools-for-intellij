@@ -21,6 +21,7 @@ import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
+import com.intellij.ui.ListCellRendererWrapper;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerImpl;
@@ -83,13 +84,12 @@ public class CreateCloudServiceForm extends JDialog {
             }
         }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
-        regionOrAffinityGroupComboBox.setRenderer(new DefaultListCellRenderer() {
+        regionOrAffinityGroupComboBox.setRenderer(new ListCellRendererWrapper<Object>() {
             @Override
-            public Component getListCellRendererComponent(JList jList, Object o, int i, boolean b, boolean b1) {
-
-                return (o instanceof String) ?
-                        super.getListCellRendererComponent(jList, o, i, b, b1)
-                        : super.getListCellRendererComponent(jList, "  " + o.toString(), i, b, b1);
+            public void customize(JList jList, Object o, int i, boolean b, boolean b1) {
+                if(!(o instanceof String)) {
+                    setText("  " + o.toString());
+                }
             }
         });
 
