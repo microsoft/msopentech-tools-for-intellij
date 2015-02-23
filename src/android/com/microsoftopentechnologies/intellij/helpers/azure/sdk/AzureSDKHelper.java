@@ -25,6 +25,8 @@ import com.microsoft.windowsazure.management.ManagementService;
 import com.microsoft.windowsazure.management.compute.ComputeManagementClient;
 import com.microsoft.windowsazure.management.compute.ComputeManagementService;
 import com.microsoft.windowsazure.management.configuration.ManagementConfiguration;
+import com.microsoft.windowsazure.management.network.NetworkManagementClient;
+import com.microsoft.windowsazure.management.network.NetworkManagementService;
 import com.microsoft.windowsazure.management.storage.StorageManagementClient;
 import com.microsoft.windowsazure.management.storage.StorageManagementService;
 import com.microsoftopentechnologies.intellij.components.MSOpenTechToolsApplication;
@@ -84,6 +86,26 @@ public class AzureSDKHelper {
         }
 
         StorageManagementClient client = StorageManagementService.create(configuration);
+
+        // add a request filter for tacking on the A/D auth token if the current authentication
+        // mode is active directory
+        if (AzureRestAPIManager.getManager().getAuthenticationMode() == AzureAuthenticationMode.ActiveDirectory) {
+            return client.withRequestFilterFirst(new AuthTokenRequestFilter(subscriptionId));
+        }
+
+        return client;
+    }
+
+    @Nullable
+    public static NetworkManagementClient getNetworkManagementClient(@NotNull String subscriptionId)
+            throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException, XPathExpressionException, ParserConfigurationException, SAXException {
+        Configuration configuration = getConfiguration(subscriptionId);
+
+        if (configuration == null) {
+            return null;
+        }
+
+        NetworkManagementClient client = NetworkManagementService.create(configuration);
 
         // add a request filter for tacking on the A/D auth token if the current authentication
         // mode is active directory

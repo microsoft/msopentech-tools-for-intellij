@@ -16,6 +16,8 @@
 
 package com.microsoftopentechnologies.intellij.model.ms;
 
+import com.microsoftopentechnologies.intellij.model.ServiceTreeItem;
+
 import java.util.ArrayList;
 import java.util.UUID;
 

@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package com.microsoftopentechnologies.intellij.model.ms;
+package com.microsoftopentechnologies.intellij.model;
 
 
 public interface ServiceTreeItem {

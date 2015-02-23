@@ -15,30 +15,49 @@
  */
 package com.microsoftopentechnologies.intellij.model.vm;
 
-import com.microsoftopentechnologies.intellij.model.ms.ServiceTreeItem;
+import com.microsoftopentechnologies.intellij.model.ServiceTreeItem;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class VirtualMachine implements ServiceTreeItem {
+    public static enum Status {
+        Unknown,
+        Ready,
+        Stopped,
+        StoppedDeallocated,
+        Busy,
+        Creating,
+        Starting,
+        Stopping,
+        Deleting,
+        Restarting,
+        Cycling,
+        FailedStarting,
+        Unresponsive,
+        Preparing
+    }
+
     private boolean loading;
     private String name;
     private String serviceName;
     private String deploymentName;
     private String availabilitySet;
+    private String subnet;
     private String size;
-    private String status;
+    private Status status;
     private String subscriptionId;
     private List<Endpoint> endpoints;
 
     public VirtualMachine(@NotNull String name, @NotNull String serviceName, @NotNull String deploymentName,
-                          @NotNull String availabilitySet, @NotNull String size, @NotNull String status,
-                          @NotNull String subscriptionId) {
+                          @NotNull String availabilitySet, @NotNull String subnet, @NotNull String size,
+                          @NotNull Status status, @NotNull String subscriptionId) {
         this.name = name;
         this.serviceName = serviceName;
         this.deploymentName = deploymentName;
         this.availabilitySet = availabilitySet;
+        this.subnet = subnet;
         this.size = size;
         this.status = status;
         this.subscriptionId = subscriptionId;
@@ -84,6 +103,15 @@ public class VirtualMachine implements ServiceTreeItem {
     }
 
     @NotNull
+    public String getSubnet() {
+        return subnet;
+    }
+
+    public void setSubnet(@NotNull String subnet) {
+        this.subnet = subnet;
+    }
+
+    @NotNull
     public String getSize() {
         return size;
     }
@@ -93,11 +121,11 @@ public class VirtualMachine implements ServiceTreeItem {
     }
 
     @NotNull
-    public String getStatus() {
+    public Status getStatus() {
         return status;
     }
 
-    public void setStatus(@NotNull String status) {
+    public void setStatus(@NotNull Status status) {
         this.status = status;
     }
 

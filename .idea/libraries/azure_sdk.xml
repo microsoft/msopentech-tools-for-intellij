@@ -20,6 +20,7 @@
       <root url="jar://$PROJECT_DIR$/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/dependencies/azure-management-0.7.0.jar!/" />
       <root url="jar://$PROJECT_DIR$/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/dependencies/azure-management-compute-0.7.0.jar!/" />
       <root url="jar://$PROJECT_DIR$/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/dependencies/azure-management-storage-0.7.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/dependencies/azure-management-network-0.7.0.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES>
@@ -32,6 +33,7 @@
       <root url="jar://$PROJECT_DIR$/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/dependencies/azure-management-0.7.0-sources.jar!/" />
       <root url="jar://$PROJECT_DIR$/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/dependencies/azure-management-compute-0.7.0-sources.jar!/" />
       <root url="jar://$PROJECT_DIR$/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/dependencies/azure-management-storage-0.7.0-sources.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/dependencies/azure-management-network-0.7.0-sources.jar!/" />
     </SOURCES>
   </library>
 </component>

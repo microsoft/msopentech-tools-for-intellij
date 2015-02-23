@@ -18,16 +18,29 @@ package com.microsoftopentechnologies.intellij.model.vm;
 import com.microsoftopentechnologies.intellij.model.ServiceTreeItem;
 import org.jetbrains.annotations.NotNull;
 
-public class AffinityGroup implements ServiceTreeItem {
+import java.util.Set;
+import java.util.TreeSet;
+
+public class VirtualNetwork implements ServiceTreeItem {
     private boolean loading;
     private String name;
-    private String label;
+    private String id;
     private String location;
+    private String affinityGroup;
+    private Set<String> subnets;
+    private String subscriptionId;
 
-    public AffinityGroup(@NotNull String name, @NotNull String label, @NotNull String location) {
+    public VirtualNetwork(@NotNull String name,
+                          @NotNull String id,
+                          @NotNull String location,
+                          @NotNull String affinityGroup,
+                          @NotNull String subscriptionId) {
         this.name = name;
-        this.label = label;
+        this.id = id;
         this.location = location;
+        this.affinityGroup = affinityGroup;
+        this.subnets = new TreeSet<String>();
+        this.subscriptionId = subscriptionId;
     }
 
     @Override
@@ -46,8 +59,8 @@ public class AffinityGroup implements ServiceTreeItem {
     }
 
     @NotNull
-    public String getLabel() {
-        return label;
+    public String getId() {
+        return id;
     }
 
     @NotNull
@@ -55,8 +68,31 @@ public class AffinityGroup implements ServiceTreeItem {
         return location;
     }
 
+    public void setLocation(@NotNull String location) {
+        this.location = location;
+    }
+
+    @NotNull
+    public String getAffinityGroup() {
+        return affinityGroup;
+    }
+
+    public void setAffinityGroup(@NotNull String affinityGroup) {
+        this.affinityGroup = affinityGroup;
+    }
+
+    @NotNull
+    public Set<String> getSubnets() {
+        return subnets;
+    }
+
+    @NotNull
+    public String getSubscriptionId() {
+        return subscriptionId;
+    }
+
     @Override
     public String toString() {
-        return label + (loading ? " (loading...)" : "");
+        return name + (loading ? " (loading...)" : "");
     }
 }

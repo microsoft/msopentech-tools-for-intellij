@@ -116,7 +116,6 @@ public class CreateCloudServiceForm extends JDialog {
                 validateEmptyFields();
             }
         });
-
     }
 
     private void validateEmptyFields() {
@@ -192,7 +191,7 @@ public class CreateCloudServiceForm extends JDialog {
             String region = (regionOrAffinity instanceof Location) ? regionOrAffinity.toString() : "";
             String affinityGroup = (regionOrAffinity instanceof AffinityGroup) ? regionOrAffinity.toString() : "";
 
-            cloudService = new CloudService(name, region, affinityGroup, "", true, "", true, subscription.getId().toString());
+            cloudService = new CloudService(name, region, affinityGroup, subscription.getId().toString());
             AzureSDKManagerImpl.getManager().createCloudService(cloudService);
         } catch (Exception e) {
             cloudService = null;

@@ -16,8 +16,6 @@
 
 package com.microsoftopentechnologies.intellij.model;
 
-import com.microsoftopentechnologies.intellij.model.ms.ServiceTreeItem;
-
 public enum AzureType implements ServiceTreeItem {
 
     MobileServices ,
