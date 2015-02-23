@@ -68,12 +68,12 @@ public class CreateVMWizardModel extends WizardModel {
     private String userName;
     private char[] password;
     private CloudService cloudService;
+    private boolean filterByCloudService;
     private StorageAccount storageAccount;
     private VirtualNetwork virtualNetwork;
     private String subnet;
     private String availabilitySet;
     private Endpoint[] endpoints;
-
 
     public CreateVMWizardModel(VMServiceModule node) {
         super(ApplicationNamesInfo.getInstance().getFullProductName() + " - Create new Virtual Machine");
@@ -86,6 +86,7 @@ public class CreateVMWizardModel extends WizardModel {
         add(new CloudServiceStep(this, project));
         add(new EndpointStep(this, project, node));
 
+        filterByCloudService = true;
     }
 
     public String[] getStepTitleList() {
@@ -197,12 +198,12 @@ public class CreateVMWizardModel extends WizardModel {
         this.cloudService = cloudService;
     }
 
-    public StorageAccount getStorageAccount() {
-        return storageAccount;
+    public boolean isFilterByCloudService() {
+        return filterByCloudService;
     }
 
-    public void setStorageAccount(StorageAccount storageAccount) {
-        this.storageAccount = storageAccount;
+    public void setFilterByCloudService(boolean filterByCloudService) {
+        this.filterByCloudService = filterByCloudService;
     }
 
     public VirtualNetwork getVirtualNetwork() {
@@ -221,6 +222,14 @@ public class CreateVMWizardModel extends WizardModel {
         this.subnet = subnet;
     }
 
+    public StorageAccount getStorageAccount() {
+        return storageAccount;
+    }
+
+    public void setStorageAccount(StorageAccount storageAccount) {
+        this.storageAccount = storageAccount;
+    }
+
     public String getAvailabilitySet() {
         return availabilitySet;
     }
@@ -236,6 +245,4 @@ public class CreateVMWizardModel extends WizardModel {
     public void setEndpoints(Endpoint[] endpoints) {
         this.endpoints = endpoints;
     }
-
-
 }

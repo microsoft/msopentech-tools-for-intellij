@@ -16,6 +16,7 @@
 package com.microsoftopentechnologies.intellij.wizards.createvm;
 
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
@@ -37,11 +38,15 @@ import javax.swing.event.HyperlinkListener;
 import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.Vector;
+import java.util.*;
+import java.util.List;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
+    private static final String PRODUCTION = "Production";
+
     private Project project;
     private CreateVMWizardModel model;
     private JPanel rootPanel;
@@ -53,12 +58,18 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
     private JComboBox availabilityComboBox;
     private JComboBox networkComboBox;
     private JComboBox subnetComboBox;
-    private Map<String, StorageAccount> storageAccounts;
+
     private Map<String, CloudService> cloudServices;
+    private final Lock csLock = new ReentrantLock();
+    private final Condition csInitialized = csLock.newCondition();
+
     private Map<String, VirtualNetwork> virtualNetworks;
-    private final Object csMonitor = new Object();
-    private final Object saMonitor = new Object();
-    private final Object vnMonitor = new Object();
+    private final Lock vnLock = new ReentrantLock();
+    private final Condition vnInitialized = vnLock.newCondition();
+
+    private Map<String, StorageAccount> storageAccounts;
+    private final Lock saLock = new ReentrantLock();
+    private final Condition saInitialized = saLock.newCondition();
 
     public CloudServiceStep(CreateVMWizardModel mModel, final Project project) {
         super("Cloud Service Settings", null, null);
@@ -95,7 +106,15 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
         storageComboBox.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent itemEvent) {
-                model.getCurrentNavigationState().NEXT.setEnabled(storageComboBox.getSelectedItem() instanceof StorageAccount);
+                validateNext();
+            }
+        });
+
+        subnetComboBox.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent itemEvent) {
+                model.setSubnet((String) subnetComboBox.getSelectedItem());
+                validateNext();
             }
         });
 
@@ -132,9 +151,15 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
         imageDescriptionTextPane.setText(model.getHtmlFromVMImage(virtualMachineImage));
         imageDescriptionTextPane.setCaretPosition(0);
 
-        fillCloudServices(model.getCloudService());
-        fillStorage(model.getCloudService(), model.getStorageAccount());
-        fillVirtualNetworks(model.getVirtualNetwork(), model.getSubnet());
+        retrieveCloudServices(model.getVirtualNetwork(), model.isFilterByCloudService());
+        retrieveVirtualNetworks();
+        retrieveStorageAccounts(model.getCloudService());
+
+        if (model.isFilterByCloudService()) {
+            fillCloudServices(null, true);
+        } else {
+            fillVirtualNetworks(null, true);
+        }
 
         return rootPanel;
     }
@@ -161,16 +186,48 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
         return super.onNext(model);
     }
 
-    private void fillCloudServices(final CloudService selected) {
+    private void retrieveCloudServices(final VirtualNetwork selectedVN, final boolean cascade) {
+        ProgressManager.getInstance().run(new Task.Backgroundable(project, "Loading cloud services...", false) {
+            @Override
+            public void run(@NotNull ProgressIndicator progressIndicator) {
+                progressIndicator.setIndeterminate(true);
+
+                csLock.lock();
+
+                try {
+                    if (cloudServices == null) {
+                        try {
+                            List<CloudService> services = AzureSDKManagerImpl.getManager()
+                                    .getCloudServices(model.getSubscription().getId().toString());
+                            cloudServices = new TreeMap<String, CloudService>();
+
+                            for (CloudService cloudService : services) {
+                                if (cloudService.getProductionDeployment().getComputeRoles().size() == 0) {
+                                    cloudServices.put(cloudService.getName(), cloudService);
+                                }
+                            }
+
+                            csInitialized.signalAll();
+                        } catch (AzureCmdException e) {
+                            cloudServices = null;
+                            UIHelper.showException("Error trying to get cloud services list", e);
+                        }
+                    }
+                } finally {
+                    csLock.unlock();
+                }
+            }
+        });
+
         if (cloudServices == null) {
             final String createCS = "<< Create new cloud service >>";
 
-            DefaultComboBoxModel loadingCSModel = new DefaultComboBoxModel(
+            final DefaultComboBoxModel loadingCSModel = new DefaultComboBoxModel(
                     new String[]{createCS, "<Loading...>"}) {
                 @Override
                 public void setSelectedItem(Object o) {
                     if (createCS.equals(o)) {
-                        showNewCloudServiceForm();
+                        showNewCloudServiceForm(selectedVN, cascade);
                     } else {
                         super.setSelectedItem(o);
                     }
@@ -178,79 +235,374 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
             };
 
             loadingCSModel.setSelectedItem(null);
-
-            cloudServiceComboBox.setModel(loadingCSModel);
-
-            ProgressManager.getInstance().run(new Task.Backgroundable(project, "Loading cloud services...", false) {
+            ApplicationManager.getApplication().invokeAndWait(new Runnable() {
                 @Override
-                public void run(@NotNull ProgressIndicator progressIndicator) {
-                    try {
-                        progressIndicator.setIndeterminate(true);
-
-                        synchronized (csMonitor) {
-                            if (cloudServices == null) {
-                                cloudServices = new TreeMap<String, CloudService>();
-
-                                for (CloudService cloudService : AzureSDKManagerImpl.getManager().getCloudServices(model.getSubscription().getId().toString())) {
-                                    if (cloudService.getProductionDeployment().getComputeRoles().size() == 0) {
-                                        cloudServices.put(cloudService.getName(), cloudService);
-                                    }
-                                }
-                            }
-                        }
-
-                        refreshCloudServices(selected);
-                    } catch (AzureCmdException e) {
-                        cloudServices = null;
-                        UIHelper.showException("Error trying to get cloud services list", e);
-                    }
+                public void run() {
+                    cloudServiceComboBox.setModel(loadingCSModel);
                 }
-            });
-        } else {
-            refreshCloudServices(selected);
+            }, ModalityState.any());
         }
     }
 
-    private void refreshCloudServices(final CloudService selected) {
-        if (selected != null && !cloudServices.containsKey(selected.getName())) {
-            cloudServices.put(selected.getName(), selected);
-        }
-
-        ApplicationManager.getApplication().invokeLater(new Runnable() {
+    private void fillCloudServices(final VirtualNetwork selectedVN,
+                                   final boolean cascade) {
+        ApplicationManager.getApplication().executeOnPooledThread(new Runnable() {
             @Override
             public void run() {
-                final String createCS = "<< Create new cloud service >>";
+                CloudService selectedCS = model.getCloudService();
+                model.setFilterByCloudService(cascade);
 
-                DefaultComboBoxModel refreshedCSModel = new DefaultComboBoxModel(cloudServices.values().toArray()) {
-                    @Override
-                    public void setSelectedItem(Object o) {
-                        if (createCS.equals(o)) {
-                            showNewCloudServiceForm();
-                        } else if (o instanceof CloudService) {
-                            super.setSelectedItem(o);
-                            fillStorage((CloudService) o, model.getStorageAccount());
-                            fillAvailabilitySets((CloudService) o);
-                        } else {
-                            super.setSelectedItem(o);
-                            fillStorage(null, null);
-                            fillAvailabilitySets(null);
-                        }
+                csLock.lock();
+
+                try {
+                    while (cloudServices == null) {
+                        csInitialized.await();
                     }
-                };
 
-                refreshedCSModel.insertElementAt(createCS, 0);
-                refreshedCSModel.setSelectedItem(selected);
+                    if (selectedCS != null && !cloudServices.containsKey(selectedCS.getName())) {
+                        cloudServices.put(selectedCS.getName(), selectedCS);
+                    }
+                } catch (InterruptedException e) {
+                    UIHelper.showException("An error occurred while trying load the cloud services list", e,
+                            "Error Loading Cloud Services", false, true);
+                } finally {
+                    csLock.unlock();
+                }
 
-                cloudServiceComboBox.setModel(refreshedCSModel);
+                refreshCloudServices(selectedCS, selectedVN, cascade);
             }
         });
     }
 
-    private void fillStorage(final CloudService selectedCS, final StorageAccount selectedSA) {
+    private void refreshCloudServices(CloudService selectedCS,
+                                      VirtualNetwork selectedVN,
+                                      boolean cascade) {
+        final DefaultComboBoxModel refreshedCSModel = getCloudServiceModel(selectedCS, selectedVN, cascade);
+
+        ApplicationManager.getApplication().invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                cloudServiceComboBox.setModel(refreshedCSModel);
+            }
+        }, ModalityState.any());
+    }
+
+    private DefaultComboBoxModel getCloudServiceModel(CloudService selectedCS,
+                                                      final VirtualNetwork selectedVN,
+                                                      final boolean cascade) {
+        Collection<CloudService> services = filterCS(selectedVN);
+
+        final String createCS = "<< Create new cloud service >>";
+
+        DefaultComboBoxModel refreshedCSModel = new DefaultComboBoxModel(services.toArray()) {
+            private final String clear = "(Clear selection...)";
+            private boolean doCascade = cascade;
+
+            @Override
+            public void setSelectedItem(Object o) {
+                if (clear.equals(o)) {
+                    removeElement(o);
+                    setSelectedItem(null);
+                } else {
+                    if (createCS.equals(o)) {
+                        showNewCloudServiceForm(selectedVN, doCascade);
+                    } else if (o instanceof CloudService) {
+                        super.setSelectedItem(o);
+                        model.setCloudService((CloudService) o);
+
+                        if (getIndexOf(clear) == -1) {
+                            addElement(clear);
+                        }
+
+                        if (doCascade) {
+                            fillVirtualNetworks((CloudService) o, false);
+                        }
+
+                        fillStorage((CloudService) o);
+                        fillAvailabilitySets((CloudService) o);
+                    } else {
+                        super.setSelectedItem(o);
+                        model.setCloudService(null);
+
+                        if (doCascade) {
+                            fillVirtualNetworks(null, false);
+                        }
+
+                        fillStorage(null);
+                        fillAvailabilitySets(null);
+                    }
+
+                    doCascade = doCascade || selectedVN == null;
+                }
+            }
+        };
+
+        refreshedCSModel.insertElementAt(createCS, 0);
+
+        if (selectedCS != null && services.contains(selectedCS) && (cascade || selectedVN != null)) {
+            refreshedCSModel.setSelectedItem(selectedCS);
+        } else {
+            model.setCloudService(null);
+            refreshedCSModel.setSelectedItem(null);
+        }
+
+        return refreshedCSModel;
+    }
+
+    private Collection<CloudService> filterCS(VirtualNetwork selectedVN) {
+        Collection<CloudService> services = selectedVN == null ? cloudServices.values() : new Vector<CloudService>();
+
+        if (selectedVN != null) {
+            for (CloudService cloudService : cloudServices.values()) {
+                if ((isDeploymentEmpty(cloudService, PRODUCTION) && areSameRegion(cloudService, selectedVN)) ||
+                        areSameNetwork(cloudService, selectedVN)) {
+                    services.add(cloudService);
+                }
+            }
+        }
+
+        return services;
+    }
+
+    private void retrieveVirtualNetworks() {
+        ProgressManager.getInstance().run(new Task.Backgroundable(project, "Loading virtual networks...", false) {
+            @Override
+            public void run(@NotNull ProgressIndicator progressIndicator) {
+                progressIndicator.setIndeterminate(true);
+
+                vnLock.lock();
+
+                try {
+                    if (virtualNetworks == null) {
+                        try {
+                            List<VirtualNetwork> networks = AzureSDKManagerImpl.getManager()
+                                    .getVirtualNetworks(model.getSubscription().getId().toString());
+                            virtualNetworks = new TreeMap<String, VirtualNetwork>();
+
+                            for (VirtualNetwork virtualNetwork : networks) {
+                                virtualNetworks.put(virtualNetwork.getName(), virtualNetwork);
+                            }
+
+                            vnInitialized.signalAll();
+                        } catch (AzureCmdException e) {
+                            virtualNetworks = null;
+                            UIHelper.showException("Error trying to get virtual networks list", e);
+                        }
+                    }
+                } finally {
+                    vnLock.unlock();
+                }
+            }
+        });
+
+        if (virtualNetworks == null) {
+            final DefaultComboBoxModel loadingVNModel = new DefaultComboBoxModel(
+                    new String[]{"<Loading...>"});
+
+            loadingVNModel.setSelectedItem(null);
+
+            ApplicationManager.getApplication().invokeAndWait(new Runnable() {
+                @Override
+                public void run() {
+                    networkComboBox.setModel(loadingVNModel);
+
+                    subnetComboBox.removeAllItems();
+                    subnetComboBox.setEnabled(false);
+                }
+            }, ModalityState.any());
+        }
+    }
+
+    private void fillVirtualNetworks(final CloudService selectedCS,
+                                     final boolean cascade) {
+        ApplicationManager.getApplication().executeOnPooledThread(new Runnable() {
+            @Override
+            public void run() {
+                VirtualNetwork selectedVN = model.getVirtualNetwork();
+                String selectedSN = model.getSubnet();
+
+                vnLock.lock();
+
+                try {
+                    while (virtualNetworks == null) {
+                        vnInitialized.await();
+                    }
+                } catch (InterruptedException e) {
+                    UIHelper.showException("An error occurred while trying load the virtual networks list", e,
+                            "Error Loading Virtual Networks", false, true);
+                } finally {
+                    vnLock.unlock();
+                }
+
+                refreshVirtualNetworks(selectedCS, selectedVN, selectedSN, cascade);
+            }
+        });
+    }
+
+    private void refreshVirtualNetworks(final CloudService selectedCS,
+                                        VirtualNetwork selectedVN,
+                                        String selectedSN,
+                                        boolean cascade) {
+        final DefaultComboBoxModel refreshedVNModel = getVirtualNetworkModel(selectedCS, selectedVN, selectedSN, cascade);
+
+        ApplicationManager.getApplication().invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                networkComboBox.setModel(refreshedVNModel);
+                networkComboBox.setEnabled(selectedCS == null || isDeploymentEmpty(selectedCS, PRODUCTION));
+            }
+        }, ModalityState.any());
+    }
+
+    private DefaultComboBoxModel getVirtualNetworkModel(final CloudService selectedCS,
+                                                        VirtualNetwork selectedVN,
+                                                        final String selectedSN,
+                                                        final boolean cascade) {
+        Vector<VirtualNetwork> networks = filterVN(selectedCS);
+
+        if (selectedCS != null && !selectedCS.getProductionDeployment().getVirtualNetwork().isEmpty()) {
+            selectedVN = networks.size() == 1 ? networks.get(0) : null;
+        }
+
+        DefaultComboBoxModel refreshedVNModel = new DefaultComboBoxModel(networks) {
+            private final String none = "(None)";
+            private boolean doCascade = cascade;
+
+            @Override
+            public void setSelectedItem(final Object o) {
+                if (none.equals(o)) {
+                    removeElement(o);
+                    setSelectedItem(null);
+                } else {
+                    super.setSelectedItem(o);
+
+                    if (o instanceof VirtualNetwork) {
+                        model.setVirtualNetwork((VirtualNetwork) o);
+
+                        if (getIndexOf(none) == -1) {
+                            insertElementAt(none, 0);
+                        }
+
+                        ApplicationManager.getApplication().invokeAndWait(new Runnable() {
+                            @Override
+                            public void run() {
+                                boolean validSubnet = false;
+
+                                subnetComboBox.removeAllItems();
+
+                                for (String subnet : ((VirtualNetwork) o).getSubnets()) {
+                                    subnetComboBox.addItem(subnet);
+
+                                    if (subnet.equals(selectedSN)) {
+                                        validSubnet = true;
+                                    }
+                                }
+
+                                if (validSubnet) {
+                                    subnetComboBox.setSelectedItem(selectedSN);
+                                } else {
+                                    model.setSubnet(null);
+                                    subnetComboBox.setSelectedItem(null);
+                                }
+
+                                subnetComboBox.setEnabled(true);
+                            }
+                        }, ModalityState.any());
+
+                        if (doCascade) {
+                            fillCloudServices((VirtualNetwork) o, false);
+                        }
+                    } else {
+                        model.setVirtualNetwork(null);
+
+                        ApplicationManager.getApplication().invokeAndWait(new Runnable() {
+                            @Override
+                            public void run() {
+                                subnetComboBox.removeAllItems();
+                                subnetComboBox.setEnabled(false);
+                            }
+                        }, ModalityState.any());
+
+                        if (doCascade) {
+                            fillCloudServices(null, false);
+                        }
+                    }
+
+                    doCascade = doCascade || selectedCS == null;
+                }
+            }
+        };
+
+        if (selectedVN != null && networks.contains(selectedVN) && (cascade || selectedCS != null)) {
+            refreshedVNModel.setSelectedItem(selectedVN);
+        } else {
+            model.setVirtualNetwork(null);
+            refreshedVNModel.setSelectedItem(null);
+        }
+
+        return refreshedVNModel;
+    }
+
+    private Vector<VirtualNetwork> filterVN(CloudService selectedCS) {
+        Vector<VirtualNetwork> networks = selectedCS == null ?
+                new Vector<VirtualNetwork>(virtualNetworks.values()) :
+                new Vector<VirtualNetwork>();
+
+        if (selectedCS != null) {
+            if (isDeploymentEmpty(selectedCS, PRODUCTION)) {
+                for (VirtualNetwork virtualNetwork : virtualNetworks.values()) {
+                    if (areSameRegion(selectedCS, virtualNetwork)) {
+                        networks.add(virtualNetwork);
+                    }
+                }
+            } else if (!selectedCS.getProductionDeployment().getVirtualNetwork().isEmpty()) {
+                for (VirtualNetwork virtualNetwork : virtualNetworks.values()) {
+                    if (areSameNetwork(selectedCS, virtualNetwork)) {
+                        networks.add(virtualNetwork);
+                        break;
+                    }
+                }
+            }
+        }
+
+        return networks;
+    }
+
+    private void retrieveStorageAccounts(final CloudService selectedCS) {
+        ProgressManager.getInstance().run(new Task.Backgroundable(project, "Loading storage accounts...", false) {
+            @Override
+            public void run(@NotNull ProgressIndicator progressIndicator) {
+                progressIndicator.setIndeterminate(true);
+
+                saLock.lock();
+
+                try {
+                    if (storageAccounts == null) {
+                        try {
+                            List<StorageAccount> accounts = AzureSDKManagerImpl.getManager()
+                                    .getStorageAccounts(model.getSubscription().getId().toString());
+                            storageAccounts = new TreeMap<String, StorageAccount>();
+
+                            for (StorageAccount storageAccount : accounts) {
+                                storageAccounts.put(storageAccount.getName(), storageAccount);
+                            }
+
+                            saInitialized.signalAll();
+                        } catch (AzureCmdException e) {
+                            storageAccounts = null;
+                            UIHelper.showException("Error trying to get storage accounts list", e);
+                        }
+                    }
+                } finally {
+                    saLock.unlock();
+                }
+            }
+        });
+
         if (storageAccounts == null) {
             final String createSA = "<< Create new storage account >>";
 
-            DefaultComboBoxModel loadingSAModel = new DefaultComboBoxModel(
+            final DefaultComboBoxModel loadingSAModel = new DefaultComboBoxModel(
                     new String[]{createSA, "<Loading...>"}) {
                 @Override
                 public void setSelectedItem(Object o) {
@@ -264,161 +616,114 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
 
             loadingSAModel.setSelectedItem(null);
 
-            storageComboBox.setModel(loadingSAModel);
-
-            ProgressManager.getInstance().run(new Task.Backgroundable(project, "Loading storage account...", false) {
+            ApplicationManager.getApplication().invokeAndWait(new Runnable() {
                 @Override
-                public void run(@NotNull ProgressIndicator progressIndicator) {
-                    try {
-                        progressIndicator.setIndeterminate(true);
-
-                        synchronized (saMonitor) {
-                            if (storageAccounts == null) {
-                                storageAccounts = new TreeMap<String, StorageAccount>();
-
-                                for (StorageAccount storageAccount : AzureSDKManagerImpl.getManager().getStorageAccounts(model.getSubscription().getId().toString())) {
-                                    storageAccounts.put(storageAccount.getName(), storageAccount);
-                                }
-                            }
-                        }
-
-                        refreshStorageAccounts(selectedCS, selectedSA);
-                    } catch (AzureCmdException e) {
-                        storageAccounts = null;
-                        UIHelper.showException("Error trying to get storage account list", e);
-                    }
+                public void run() {
+                    storageComboBox.setModel(loadingSAModel);
                 }
-            });
-        } else {
-            refreshStorageAccounts(selectedCS, selectedSA);
+            }, ModalityState.any());
         }
+    }
+
+    private void fillStorage(final CloudService selectedCS) {
+        ApplicationManager.getApplication().executeOnPooledThread(new Runnable() {
+            @Override
+            public void run() {
+                StorageAccount selectedSA = model.getStorageAccount();
+
+                saLock.lock();
+
+                try {
+                    while (storageAccounts == null) {
+                        saInitialized.await();
+                    }
+
+                    if (selectedSA != null && !storageAccounts.containsKey(selectedSA.getName())) {
+                        storageAccounts.put(selectedSA.getName(), selectedSA);
+                    }
+                } catch (InterruptedException e) {
+                    UIHelper.showException("An error occurred while trying load the storage accounts list", e,
+                            "Error Loading Storage Accounts", false, true);
+                } finally {
+                    saLock.unlock();
+                }
+
+                refreshStorageAccounts(selectedCS, selectedSA);
+            }
+        });
     }
 
     private void refreshStorageAccounts(final CloudService selectedCS, final StorageAccount selectedSA) {
-        if (selectedSA != null && !storageAccounts.containsKey(selectedSA.getName())) {
-            storageAccounts.put(selectedSA.getName(), selectedSA);
-        }
+        final DefaultComboBoxModel refreshedSAModel = getStorageAccountModel(selectedCS, selectedSA);
 
-        ApplicationManager.getApplication().invokeLater(new Runnable() {
+        ApplicationManager.getApplication().invokeAndWait(new Runnable() {
             @Override
             public void run() {
-                Vector<StorageAccount> accounts = new Vector<StorageAccount>();
-
-                if (selectedCS != null) {
-                    for (StorageAccount storageAccount : storageAccounts.values()) {
-                        if (storageAccount.getLocation().equals(selectedCS.getLocation())) {
-                            accounts.add(storageAccount);
-                        }
-                    }
-                }
-
-                final String createSA = "<< Create new storage account >>";
-
-                DefaultComboBoxModel refreshedSAModel = new DefaultComboBoxModel(accounts) {
-                    @Override
-                    public void setSelectedItem(Object o) {
-                        if (createSA.equals(o)) {
-                            showNewStorageForm(selectedCS);
-                        } else {
-                            super.setSelectedItem(o);
-                        }
-                    }
-                };
-
-                refreshedSAModel.insertElementAt(createSA, 0);
-
-                if (selectedCS != null && selectedSA != null && selectedSA.getLocation().equals(selectedCS.getLocation())) {
-                    refreshedSAModel.setSelectedItem(selectedSA);
-                    model.getCurrentNavigationState().NEXT.setEnabled(true);
-                } else {
-                    refreshedSAModel.setSelectedItem(null);
-                    model.getCurrentNavigationState().NEXT.setEnabled(false);
-                }
-
                 storageComboBox.setModel(refreshedSAModel);
+                model.getCurrentNavigationState().NEXT.setEnabled(selectedCS != null &&
+                        selectedSA != null &&
+                        selectedSA.getLocation().equals(selectedCS.getLocation()));
             }
-        });
+        }, ModalityState.any());
     }
 
-    private void fillVirtualNetworks(final VirtualNetwork selectedVN, final String selectedSN) {
-        if (virtualNetworks == null) {
-            DefaultComboBoxModel loadingVNModel = new DefaultComboBoxModel(
-                    new String[]{"<Loading...>"});
+    private DefaultComboBoxModel getStorageAccountModel(final CloudService selectedCS, StorageAccount selectedSA) {
+        Vector<StorageAccount> accounts = filterSA(selectedCS);
 
-            loadingVNModel.setSelectedItem(null);
+        final String createSA = "<< Create new storage account >>";
 
-            networkComboBox.setModel(loadingVNModel);
-
-            subnetComboBox.removeAllItems();
-            subnetComboBox.setEnabled(false);
-
-            ProgressManager.getInstance().run(new Task.Backgroundable(project, "Loading virtual networks...", false) {
-                @Override
-                public void run(@NotNull ProgressIndicator progressIndicator) {
-                    try {
-                        progressIndicator.setIndeterminate(true);
-
-                        synchronized (vnMonitor) {
-                            if (virtualNetworks == null) {
-                                virtualNetworks = new TreeMap<String, VirtualNetwork>();
-
-                                for (VirtualNetwork virtualNetwork : AzureSDKManagerImpl.getManager().getVirtualNetworks(model.getSubscription().getId().toString())) {
-                                    virtualNetworks.put(virtualNetwork.getName(), virtualNetwork);
-                                }
-                            }
-                        }
-
-                        refreshVirtualNetworks(selectedVN, selectedSN);
-                    } catch (AzureCmdException e) {
-                        cloudServices = null;
-                        UIHelper.showException("Error trying to get cloud services list", e);
-                    }
+        final DefaultComboBoxModel refreshedSAModel = new DefaultComboBoxModel(accounts) {
+            @Override
+            public void setSelectedItem(Object o) {
+                if (createSA.equals(o)) {
+                    showNewStorageForm(selectedCS);
+                } else {
+                    super.setSelectedItem(o);
+                    model.setStorageAccount((StorageAccount) o);
                 }
-            });
+            }
+        };
+
+        refreshedSAModel.insertElementAt(createSA, 0);
+
+        if (accounts.contains(selectedSA)) {
+            refreshedSAModel.setSelectedItem(selectedSA);
         } else {
-            refreshVirtualNetworks(selectedVN, selectedSN);
+            refreshedSAModel.setSelectedItem(null);
+            model.setStorageAccount(null);
         }
+
+        return refreshedSAModel;
     }
 
-    private void refreshVirtualNetworks(final VirtualNetwork selectedVN, final String selectedSN) {
-        ApplicationManager.getApplication().invokeLater(new Runnable() {
+    private Vector<StorageAccount> filterSA(CloudService selectedCS) {
+        Vector<StorageAccount> accounts = new Vector<StorageAccount>();
+
+        if (selectedCS != null) {
+            for (StorageAccount storageAccount : storageAccounts.values()) {
+                if (storageAccount.getLocation().equals(selectedCS.getLocation())) {
+                    accounts.add(storageAccount);
+                }
+            }
+        }
+
+        return accounts;
+    }
+
+    private void fillAvailabilitySets(final CloudService selectedCS) {
+        ApplicationManager.getApplication().invokeAndWait(new Runnable() {
             @Override
             public void run() {
-                DefaultComboBoxModel refreshedVNModel = new DefaultComboBoxModel(virtualNetworks.values().toArray()) {
-                    @Override
-                    public void setSelectedItem(Object o) {
-                        super.setSelectedItem(o);
-                        subnetComboBox.removeAllItems();
-
-                        if (o instanceof VirtualNetwork) {
-                            for (String subnet : ((VirtualNetwork) o).getSubnets()) {
-                                subnetComboBox.addItem(subnet);
-                            }
-
-                            subnetComboBox.setSelectedItem(selectedSN);
-                            subnetComboBox.setEnabled(true);
-                        } else {
-                            subnetComboBox.setEnabled(false);
-                        }
-                    }
-                };
-
-                refreshedVNModel.setSelectedItem(selectedVN);
-
-                networkComboBox.setModel(refreshedVNModel);
+                if (selectedCS != null) {
+                    availabilityComboBox.setModel(new DefaultComboBoxModel(selectedCS.getProductionDeployment().getAvailabilitySets().toArray()));
+                } else {
+                    availabilityComboBox.setModel(new DefaultComboBoxModel(new String[]{}));
+                }
             }
-        });
+        }, ModalityState.any());
     }
 
-    private void fillAvailabilitySets(CloudService selectedCS) {
-        if (selectedCS != null) {
-            availabilityComboBox.setModel(new DefaultComboBoxModel(selectedCS.getProductionDeployment().getAvailabilitySets().toArray()));
-        } else {
-            availabilityComboBox.setModel(new DefaultComboBoxModel(new String[]{}));
-        }
-    }
-
-    private void showNewCloudServiceForm() {
+    private void showNewCloudServiceForm(final VirtualNetwork selectedVN, final boolean cascade) {
         final CreateCloudServiceForm form = new CreateCloudServiceForm();
         form.fillFields(model.getSubscription(), project);
         UIHelper.packAndCenterJDialog(form);
@@ -431,7 +736,8 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
                     public void run() {
                         CloudService newCloudService = form.getCloudService();
                         if (newCloudService != null) {
-                            fillCloudServices(newCloudService);
+                            model.setCloudService(newCloudService);
+                            fillCloudServices(selectedVN, cascade);
                         }
                     }
                 });
@@ -454,7 +760,8 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
                     public void run() {
                         StorageAccount newStorageAccount = form.getStorageAccount();
                         if (newStorageAccount != null) {
-                            fillStorage(selectedCS, newStorageAccount);
+                            model.setStorageAccount(newStorageAccount);
+                            fillStorage(selectedCS);
                         }
                     }
                 });
@@ -462,5 +769,30 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
         });
 
         form.setVisible(true);
+    }
+
+    private static boolean isDeploymentEmpty(CloudService cloudService, String deploymentSlot) {
+        if (deploymentSlot.equals(PRODUCTION)) {
+            return cloudService.getProductionDeployment().getName().isEmpty();
+        } else {
+            return cloudService.getStagingDeployment().getName().isEmpty();
+        }
+
+    }
+
+    private static boolean areSameRegion(CloudService cloudService, VirtualNetwork virtualNetwork) {
+        return (!virtualNetwork.getLocation().isEmpty() &&
+                virtualNetwork.getLocation().equals(cloudService.getLocation())) ||
+                (!virtualNetwork.getAffinityGroup().isEmpty() &&
+                        virtualNetwork.getAffinityGroup().equals(cloudService.getAffinityGroup()));
+    }
+
+    private static boolean areSameNetwork(CloudService cloudService, VirtualNetwork virtualNetwork) {
+        return virtualNetwork.getName().equals(cloudService.getProductionDeployment().getVirtualNetwork());
+    }
+
+    private void validateNext() {
+        model.getCurrentNavigationState().NEXT.setEnabled(storageComboBox.getSelectedItem() instanceof StorageAccount &&
+                (!subnetComboBox.isEnabled() || subnetComboBox.getSelectedItem() instanceof String));
     }
 }
