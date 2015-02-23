@@ -20,6 +20,7 @@ import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
+import com.intellij.ui.ListCellRendererWrapper;
 import com.intellij.ui.wizard.WizardNavigationState;
 import com.intellij.ui.wizard.WizardStep;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
@@ -63,26 +64,22 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
 
         model.configStepList(createVmStepsList, 3);
 
-        cloudServiceComboBox.setRenderer(new DefaultListCellRenderer() {
+        cloudServiceComboBox.setRenderer(new ListCellRendererWrapper<Object>() {
             @Override
-            public Component getListCellRendererComponent(JList jList, Object o, int i, boolean b, boolean b1) {
+            public void customize(JList jList, Object o, int i, boolean b, boolean b1) {
                 if (o instanceof CloudService) {
                     CloudService sa = (CloudService) o;
-                    return super.getListCellRendererComponent(jList, String.format("%s (%s)", sa.getName(), sa.getLocation()), i, b, b1);
-                } else {
-                    return super.getListCellRendererComponent(jList, o, i, b, b1);
+                    setText(String.format("%s (%s)", sa.getName(), sa.getLocation()));
                 }
             }
         });
 
-        storageComboBox.setRenderer(new DefaultListCellRenderer() {
+        storageComboBox.setRenderer(new ListCellRendererWrapper<Object>() {
             @Override
-            public Component getListCellRendererComponent(JList jList, Object o, int i, boolean b, boolean b1) {
+            public void customize(JList jList, Object o, int i, boolean b, boolean b1) {
                 if (o instanceof StorageAccount) {
                     StorageAccount sa = (StorageAccount) o;
-                    return super.getListCellRendererComponent(jList, String.format("%s (%s)", sa.getName(), sa.getLocation()), i, b, b1);
-                } else {
-                    return super.getListCellRendererComponent(jList, o, i, b, b1);
+                    setText(String.format("%s (%s)", sa.getName(), sa.getLocation()));
                 }
             }
         });
