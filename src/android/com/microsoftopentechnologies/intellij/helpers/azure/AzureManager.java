@@ -18,7 +18,7 @@ package com.microsoftopentechnologies.intellij.helpers.azure;
 
 import com.microsoftopentechnologies.intellij.helpers.NoSubscriptionException;
 import com.microsoftopentechnologies.intellij.helpers.aadauth.AuthenticationResult;
-import com.microsoftopentechnologies.intellij.model.*;
+import com.microsoftopentechnologies.intellij.model.ms.*;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -69,7 +69,7 @@ public interface AzureManager {
 
     void createService(UUID subscriptionId, String region, String username, String password, String serviceName, String server, String database) throws AzureCmdException;
 
-    List<Service> getServiceList(UUID subscriptionId) throws AzureCmdException;
+    List<MobileService> getServiceList(UUID subscriptionId) throws AzureCmdException;
 
     List<Table> getTableList(UUID subscriptionId, String serviceName) throws AzureCmdException;
 

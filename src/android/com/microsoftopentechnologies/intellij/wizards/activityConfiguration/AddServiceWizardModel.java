@@ -22,7 +22,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.ui.wizard.WizardModel;
 import com.microsoft.directoryservices.Application;
 import com.microsoftopentechnologies.intellij.helpers.graph.ServicePermissionEntry;
-import com.microsoftopentechnologies.intellij.model.Service;
+import com.microsoftopentechnologies.intellij.model.ms.MobileService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +32,7 @@ public class AddServiceWizardModel extends WizardModel {
     private final Module module;
     private final String activityName;
     private final List<ServiceType> serviceTypes;
-    private Service service;
+    private MobileService mobileService;
     private String senderId;
     private String connectionString;
     private String hubName;
@@ -86,12 +86,12 @@ public class AddServiceWizardModel extends WizardModel {
         return this.serviceTypes;
     }
 
-    public Service getService() {
-        return this.service;
+    public MobileService getMobileService() {
+        return this.mobileService;
     }
 
-    public void setService(Service service) {
-        this.service = service;
+    public void setMobileService(MobileService mobileService) {
+        this.mobileService = mobileService;
     }
 
     public String getSenderId() {

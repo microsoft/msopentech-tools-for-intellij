@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package com.microsoftopentechnologies.intellij.model;
+package com.microsoftopentechnologies.intellij.model.ms;
 
 public class Column {
     private String name;

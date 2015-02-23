@@ -13,19 +13,23 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package com.microsoftopentechnologies.intellij.helpers.azure;
+package com.microsoftopentechnologies.intellij.helpers.azure.rest;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.intellij.ide.util.PropertiesComponent;
 import com.microsoftopentechnologies.intellij.components.MSOpenTechToolsApplication;
-import com.microsoftopentechnologies.intellij.helpers.CustomJsonSlurper;
 import com.microsoftopentechnologies.intellij.helpers.NoSubscriptionException;
 import com.microsoftopentechnologies.intellij.helpers.StringHelper;
 import com.microsoftopentechnologies.intellij.helpers.XmlHelper;
 import com.microsoftopentechnologies.intellij.helpers.aadauth.AuthenticationResult;
-import com.microsoftopentechnologies.intellij.model.*;
+import com.microsoftopentechnologies.intellij.helpers.azure.AzureAuthenticationMode;
+import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
+import com.microsoftopentechnologies.intellij.helpers.azure.AzureManager;
+import com.microsoftopentechnologies.intellij.helpers.azure.rest.model.*;
+import com.microsoftopentechnologies.intellij.model.ms.*;
 import org.apache.commons.lang.StringUtils;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -36,6 +40,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import java.io.*;
+import java.lang.reflect.Type;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -416,42 +421,42 @@ public class AzureRestAPIManager implements AzureManager {
     }
 
     @Override
-    public List<Service> getServiceList(UUID subscriptionId) throws AzureCmdException {
+    public List<MobileService> getServiceList(UUID subscriptionId) throws AzureCmdException {
         try {
             String path = String.format("/%s/services/mobileservices/mobileservices", subscriptionId.toString());
 
             String json = AzureRestAPIHelper.getRestApiCommand(path, subscriptionId.toString());
 
-            CustomJsonSlurper slurper = new CustomJsonSlurper();
-            List<Map<String, Object>> tempRes = (List<Map<String, Object>>) slurper.parseText(json);
+            Type type = new TypeToken<ArrayList<MobileServiceData>>() {}.getType();
+            List<MobileServiceData> tempRes = new Gson().fromJson(json, type);
 
-            List<Service> res = new ArrayList<Service>();
+            List<MobileService> res = new ArrayList<MobileService>();
 
-            for (Map<String, Object> item : tempRes) {
-                Service ser = new Service();
+            for (MobileServiceData item : tempRes) {
+                MobileService ser = new MobileService();
 
-                ser.setName((String) item.get("name"));
-                ser.setType((String) item.get("type"));
-                ser.setState((String) item.get("state"));
-                ser.setSelfLink((String) item.get("selflink"));
-                ser.setAppUrl((String) item.get("applicationUrl"));
-                ser.setAppKey((String) item.get("applicationKey"));
-                ser.setMasterKey((String) item.get("masterKey"));
-                ser.setWebspace((String) item.get("webspace"));
-                ser.setRegion((String) item.get("region"));
-                ser.setMgmtPortalLink((String) item.get("managementPortalLink"));
+                ser.setName(item.getName());
+                ser.setType(item.getType());
+                ser.setState(item.getState());
+                ser.setSelfLink(item.getSelflink());
+                ser.setAppUrl(item.getApplicationUrl());
+                ser.setAppKey(item.getApplicationKey());
+                ser.setMasterKey(item.getMasterKey());
+                ser.setWebspace(item.getWebspace());
+                ser.setRegion(item.getRegion());
+                ser.setMgmtPortalLink(item.getManagementPortalLink());
                 ser.setSubcriptionId(subscriptionId);
 
-                if (item.containsKey("platform") && item.get("platform").equals("dotNet")) {
-                    ser.setRuntime(Service.NET_RUNTIME);
+                if (item.getPlatform() != null && item.getPlatform().equals("dotNet")) {
+                    ser.setRuntime(MobileService.NET_RUNTIME);
                 } else {
-                    ser.setRuntime(Service.NODE_RUNTIME);
+                    ser.setRuntime(MobileService.NODE_RUNTIME);
                 }
 
-                for (Map<String, String> table : (List<Map<String, String>>) item.get("tables")) {
+                for (MobileServiceData.Table table : item.getTables()) {
                     Table t = new Table();
-                    t.setName(table.get("name"));
-                    t.setSelfLink(table.get("selflink"));
+                    t.setName(table.getName());
+                    t.setSelfLink(table.getSelflink());
                     ser.getTables().add(t);
                 }
 
@@ -471,13 +476,13 @@ public class AzureRestAPIManager implements AzureManager {
 
             String json = AzureRestAPIHelper.getRestApiCommand(path, subscriptionId.toString());
 
-            CustomJsonSlurper slurper = new CustomJsonSlurper();
-            List<Map<String, String>> tempRes = (List<Map<String, String>>) slurper.parseText(json);
 
+            Type type = new TypeToken<ArrayList<RegionData>>() {}.getType();
+            List<RegionData> tempRes = new Gson().fromJson(json, type);
             List<String> res = new ArrayList<String>();
 
-            for (Map<String, String> item : tempRes) {
-                res.add(item.get("region"));
+            for (RegionData item : tempRes) {
+                res.add(item.getRegion());
             }
 
             return res;
@@ -582,9 +587,7 @@ public class AzureRestAPIManager implements AzureManager {
             String xml = AzureRestAPIHelper.getRestApiCommand(String.format("/%s/applications/%s", subscriptionId.toString(), serviceName + "mobileservice"), subscriptionId.toString());
             NodeList statusNode = ((NodeList) XmlHelper.getXMLValue(xml, "//Application/State", XPathConstants.NODESET));
 
-            if (statusNode.getLength() > 0 && statusNode.item(0).getTextContent().equals("Healthy")) {
-                return;
-            } else {
+            if (!(statusNode.getLength() > 0 && statusNode.item(0).getTextContent().equals("Healthy"))) {
                 deleteService(subscriptionId, serviceName);
 
                 String errors = ((String) XmlHelper.getXMLValue(xml, "//FailureCode[text()]", XPathConstants.STRING));
@@ -605,14 +608,14 @@ public class AzureRestAPIManager implements AzureManager {
 
         try {
             AzureRestAPIHelper.deleteRestApiCommand(mspath, subscriptionId.toString(), String.format("/%s/operations/", subscriptionId.toString()), true);
-        } catch (Throwable t) {
+        } catch (Throwable ignored) {
         }
 
         String appPath = String.format("/%s/applications/%smobileservice", subscriptionId.toString(), serviceName);
 
         try {
             AzureRestAPIHelper.deleteRestApiCommand(appPath, subscriptionId.toString(), String.format("/%s/operations/", subscriptionId.toString()), false);
-        } catch (Throwable t) {
+        } catch (Throwable ignored) {
         }
     }
 
@@ -623,15 +626,15 @@ public class AzureRestAPIManager implements AzureManager {
 
             String json = AzureRestAPIHelper.getRestApiCommand(path, subscriptionId.toString());
 
-            CustomJsonSlurper slurper = new CustomJsonSlurper();
-            List<Map<String, String>> tempRes = (List<Map<String, String>>) slurper.parseText(json);
+            Type type = new TypeToken<ArrayList<TableData>>() {}.getType();
+            List<TableData> tempRes = new Gson().fromJson(json, type);
 
             List<Table> res = new ArrayList<Table>();
 
-            for (Map<String, String> item : tempRes) {
+            for (TableData item : tempRes) {
                 Table t = new Table();
-                t.setName(item.get("name"));
-                t.setSelfLink(item.get("selflink"));
+                t.setName(item.getName());
+                t.setSelfLink(item.getSelflink());
 
                 res.add(t);
             }
@@ -685,43 +688,52 @@ public class AzureRestAPIManager implements AzureManager {
                     subscriptionId.toString(), serviceName, tableName);
 
             String json = AzureRestAPIHelper.getRestApiCommand(path, subscriptionId.toString());
-            CustomJsonSlurper slurper = new CustomJsonSlurper();
+            Gson gson = new Gson();
+            TableData tempRes = gson.fromJson(json, TableData.class);
 
             Table t = new Table();
+            t.setName(tempRes.getName());
+            t.setSelfLink(tempRes.getSelflink());
 
-            Map<String, Object> tableData = (Map<String, Object>) slurper.parseText(json);
-            t.setName(tableData.get("name").toString());
-            t.setSelfLink(tableData.get("selflink").toString());
-
-            Map<String, String> per = (Map<String, String>) slurper.parseText(AzureRestAPIHelper.getRestApiCommand(path + "/permissions", subscriptionId.toString()));
+            TablePermissionsData restTablePermissions = gson.fromJson(AzureRestAPIHelper.getRestApiCommand(path + "/permissions", subscriptionId.toString()), TablePermissionsData.class);
 
             TablePermissions tablePermissions = new TablePermissions();
-            tablePermissions.setInsert(PermissionItem.getPermitionType(per.get("insert")));
-            tablePermissions.setUpdate(PermissionItem.getPermitionType(per.get("update")));
-            tablePermissions.setRead(PermissionItem.getPermitionType(per.get("read")));
-            tablePermissions.setDelete(PermissionItem.getPermitionType(per.get("delete")));
+            tablePermissions.setInsert(PermissionItem.getPermitionType(restTablePermissions.getInsert()));
+            tablePermissions.setUpdate(PermissionItem.getPermitionType(restTablePermissions.getUpdate()));
+            tablePermissions.setRead(PermissionItem.getPermitionType(restTablePermissions.getRead()));
+            tablePermissions.setDelete(PermissionItem.getPermitionType(restTablePermissions.getDelete()));
             t.setTablePermissions(tablePermissions);
 
-            for (Map<String, Object> column : (List<Map<String, Object>>) slurper.parseText(AzureRestAPIHelper.getRestApiCommand(path + "/columns", subscriptionId.toString()))) {
-                Column c = new Column();
-                c.setName(column.get("name").toString());
-                c.setType(column.get("type").toString());
-                c.setSelfLink(column.get("selflink").toString());
-                c.setIndexed((Boolean) column.get("indexed"));
-                c.setZumoIndex((Boolean) column.get("zumoIndex"));
+            Type colType = new TypeToken<ArrayList<TableColumnData>>() {}.getType();
+            List<TableColumnData> colList = gson.fromJson(AzureRestAPIHelper.getRestApiCommand(path + "/columns", subscriptionId.toString()), colType);
+            if(colList != null) {
+                for (TableColumnData column : colList) {
+                    Column c = new Column();
+                    c.setName(column.getName());
+                    c.setType(column.getType());
+                    c.setSelfLink(column.getSelflink());
+                    c.setIndexed(column.isIndexed());
+                    c.setZumoIndex(column.isZumoIndex());
 
-                t.getColumns().add(c);
+                    t.getColumns().add(c);
+                }
             }
 
-            for (Map<String, Object> script : (List<Map<String, Object>>) slurper.parseText(AzureRestAPIHelper.getRestApiCommand(path + "/scripts", subscriptionId.toString()))) {
-                Script s = new Script();
 
-                s.setOperation(script.get("operation").toString());
-                s.setBytes((Integer) script.get("sizeBytes"));
-                s.setSelfLink(script.get("selflink").toString());
-                s.setName(String.format("%s.%s", tableData.get("name"), script.get("operation").toString()));
+            Type scrType = new TypeToken<ArrayList<TableScriptData>>() {}.getType();
+            List<TableScriptData> scrList = gson.fromJson(AzureRestAPIHelper.getRestApiCommand(path + "/scripts", subscriptionId.toString()), scrType);
 
-                t.getScripts().add(s);
+            if(scrList != null) {
+                for (TableScriptData script : scrList) {
+                    Script s = new Script();
+
+                    s.setOperation(script.getOperation());
+                    s.setBytes(script.getSizeBytes());
+                    s.setSelfLink(script.getSelflink());
+                    s.setName(String.format("%s.%s", tempRes.getName(), script.getOperation()));
+
+                    t.getScripts().add(s);
+                }
             }
 
             return t;
@@ -772,20 +784,20 @@ public class AzureRestAPIManager implements AzureManager {
 
             String json = AzureRestAPIHelper.getRestApiCommand(path, subscriptionId.toString());
 
-            CustomJsonSlurper slurper = new CustomJsonSlurper();
-            List<Map<String, String>> tempRes = (List<Map<String, String>>) slurper.parseText(json);
+            Type type = new TypeToken<ArrayList<CustomAPIData>>() {}.getType();
+            List<CustomAPIData> tempRes = new Gson().fromJson(json, type);
 
             List<CustomAPI> res = new ArrayList<CustomAPI>();
 
-            for (Map<String, String> item : tempRes) {
+            for (CustomAPIData item : tempRes) {
                 CustomAPI c = new CustomAPI();
-                c.setName(item.get("name"));
+                c.setName(item.getName());
                 CustomAPIPermissions permissions = new CustomAPIPermissions();
-                permissions.setPutPermission(PermissionItem.getPermitionType(item.get("put")));
-                permissions.setPostPermission(PermissionItem.getPermitionType(item.get("post")));
-                permissions.setGetPermission(PermissionItem.getPermitionType(item.get("get")));
-                permissions.setDeletePermission(PermissionItem.getPermitionType(item.get("delete")));
-                permissions.setPatchPermission(PermissionItem.getPermitionType(item.get("patch")));
+                permissions.setPutPermission(PermissionItem.getPermitionType(item.getPut()));
+                permissions.setPostPermission(PermissionItem.getPermitionType(item.getPost()));
+                permissions.setGetPermission(PermissionItem.getPermitionType(item.getGet()));
+                permissions.setDeletePermission(PermissionItem.getPermitionType(item.getDelete()));
+                permissions.setPatchPermission(PermissionItem.getPermitionType(item.getPatch()));
                 c.setCustomAPIPermissions(permissions);
                 res.add(c);
             }
@@ -871,21 +883,21 @@ public class AzureRestAPIManager implements AzureManager {
 
             String json = AzureRestAPIHelper.getRestApiCommand(path, subscriptionId.toString());
 
-            CustomJsonSlurper slurper = new CustomJsonSlurper();
-            List<Map<String, Object>> tempRes = (List<Map<String, Object>>) slurper.parseText(json);
+            Type type = new TypeToken<ArrayList<JobData>>() {}.getType();
+            List<JobData> tempRes = new Gson().fromJson(json, type);
 
             List<Job> res = new ArrayList<Job>();
 
-            for (Map<String, Object> item : tempRes) {
+            for (JobData item : tempRes) {
                 Job j = new Job();
-                j.setAppName(item.get("appName").toString());
-                j.setName(item.get("name").toString());
-                j.setEnabled(item.get("status").equals("enabled"));
-                j.setId(UUID.fromString(item.get("id").toString()));
+                j.setAppName(item.getAppName());
+                j.setName(item.getName());
+                j.setEnabled(item.getStatus().equals("enabled"));
+                j.setId(UUID.fromString(item.getId()));
 
-                if (item.get("intervalPeriod") != null) {
-                    j.setIntervalPeriod((Integer) item.get("intervalPeriod"));
-                    j.setIntervalUnit(item.get("intervalUnit").toString());
+                if (item.getIntervalPeriod() > 0) {
+                    j.setIntervalPeriod(item.getIntervalPeriod());
+                    j.setIntervalUnit(item.getIntervalUnit());
                 }
 
                 res.add(j);
@@ -979,29 +991,25 @@ public class AzureRestAPIManager implements AzureManager {
 
             String json = AzureRestAPIHelper.getRestApiCommand(path, subscriptionId.toString());
 
-            CustomJsonSlurper slurper = new CustomJsonSlurper();
-
-            Map<String, Object> results = (Map<String, Object>) slurper.parseText(json);
-            List<Map<String, String>> tempRes = (List<Map<String, String>>) results.get("results");
+            LogData tempRes = new Gson().fromJson(json, LogData.class);
 
             List<LogEntry> res = new ArrayList<LogEntry>();
 
-            for (Map<String, String> item : tempRes) {
+            for (LogData.LogEntry item : tempRes.getResults()) {
                 LogEntry logEntry = new LogEntry();
 
-                logEntry.setMessage(item.get("message"));
-                logEntry.setSource(item.get("source"));
-                logEntry.setType(item.get("type"));
+                logEntry.setMessage(item.getMessage());
+                logEntry.setSource(item.getSource());
+                logEntry.setType(item.getType());
 
                 SimpleDateFormat ISO8601DATEFORMAT;
 
-                if (Service.NODE_RUNTIME.equals(runtime)) {
+                if (MobileService.NODE_RUNTIME.equals(runtime)) {
                     ISO8601DATEFORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.ENGLISH);
                 } else {
                     ISO8601DATEFORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.ENGLISH);
                 }
-
-                logEntry.setTimeCreated(ISO8601DATEFORMAT.parse(item.get("timeCreated")));
+                logEntry.setTimeCreated(ISO8601DATEFORMAT.parse(item.getTimeCreated()));
 
                 res.add(logEntry);
             }

@@ -27,9 +27,9 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIManager;
-import com.microsoftopentechnologies.intellij.model.Script;
-import com.microsoftopentechnologies.intellij.model.Service;
+import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManager;
+import com.microsoftopentechnologies.intellij.model.ms.Script;
+import com.microsoftopentechnologies.intellij.model.ms.MobileService;
 import com.microsoftopentechnologies.intellij.serviceexplorer.Node;
 import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionEvent;
 import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionListener;
@@ -62,7 +62,7 @@ public class TableScriptNode extends ScriptNodeBase {
     }
 
     @Override
-    protected void downloadScript(Service mobileService, String scriptName, String localFilePath) throws AzureCmdException {
+    protected void downloadScript(MobileService mobileService, String scriptName, String localFilePath) throws AzureCmdException {
         AzureRestAPIManager.getManager().downloadTableScript(
                 mobileService.getSubcriptionId(),
                 mobileService.getName(),
@@ -75,7 +75,7 @@ public class TableScriptNode extends ScriptNodeBase {
         public void actionPerformed(NodeActionEvent e) {
             // get the parent MobileServiceNode node
             MobileServiceNode mobileServiceNode = (MobileServiceNode)findParentByType(MobileServiceNode.class);
-            final Service mobileService = mobileServiceNode.getMobileService();
+            final MobileService mobileService = mobileServiceNode.getMobileService();
 
             ApplicationManager.getApplication().runWriteAction(new Runnable() {
                 @Override

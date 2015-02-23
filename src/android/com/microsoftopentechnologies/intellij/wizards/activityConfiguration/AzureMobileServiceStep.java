@@ -25,9 +25,9 @@ import com.microsoftopentechnologies.intellij.forms.ManageSubscriptionForm;
 import com.microsoftopentechnologies.intellij.helpers.ReadOnlyCellTableModel;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.intellij.helpers.azure.AzureRestAPIManager;
-import com.microsoftopentechnologies.intellij.model.Service;
-import com.microsoftopentechnologies.intellij.model.Subscription;
+import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManager;
+import com.microsoftopentechnologies.intellij.model.ms.MobileService;
+import com.microsoftopentechnologies.intellij.model.ms.Subscription;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
@@ -48,7 +48,7 @@ public class AzureMobileServiceStep extends WizardStep<AddServiceWizardModel> {
     private JTable mobileServices;
     private JButton buttonAddService;
     private JButton buttonEdit;
-    private List<Service> serviceList;
+    private List<MobileService> mobileServiceList;
     private ModalityState modalityState;
 
     public AzureMobileServiceStep(final String title, final AddServiceWizardModel model) {
@@ -119,9 +119,9 @@ public class AzureMobileServiceStep extends WizardStep<AddServiceWizardModel> {
                 if (sourceObj instanceof ListSelectionModel
                         && !((ListSelectionModel) sourceObj).isSelectionEmpty()
                         && listSelectionEvent.getValueIsAdjusting()
-                        && serviceList.size() > 0) {
-                    Service s = serviceList.get(mobileServices.getSelectionModel().getLeadSelectionIndex());
-                    model.setService(s);
+                        && mobileServiceList.size() > 0) {
+                    MobileService s = mobileServiceList.get(mobileServices.getSelectionModel().getLeadSelectionIndex());
+                    model.setMobileService(s);
                     model.getCurrentNavigationState().NEXT.setEnabled(true);
                 }
             }
@@ -213,9 +213,9 @@ public class AzureMobileServiceStep extends WizardStep<AddServiceWizardModel> {
     }
 
     private void fillList() {
-        model.setService(null);
+        model.setMobileService(null);
         model.getCurrentNavigationState().NEXT.setEnabled(false);
-        serviceList = new ArrayList<Service>();
+        mobileServiceList = new ArrayList<MobileService>();
         mobileServices.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
         final ReadOnlyCellTableModel messageTableModel = new ReadOnlyCellTableModel();
@@ -246,21 +246,21 @@ public class AzureMobileServiceStep extends WizardStep<AddServiceWizardModel> {
                         int rowIndex = 0;
 
                         for (Subscription s : subscriptionList) {
-                            List<Service> currentSubServices = AzureRestAPIManager.getManager().getServiceList(s.getId());
+                            List<MobileService> currentSubServices = AzureRestAPIManager.getManager().getServiceList(s.getId());
 
-                            for (Service service : currentSubServices) {
+                            for (MobileService mobileService : currentSubServices) {
                                 Vector<String> row = new Vector<String>();
-                                row.add(service.getName());
-                                row.add(service.getRegion());
+                                row.add(mobileService.getName());
+                                row.add(mobileService.getRegion());
                                 row.add("Mobile service");
                                 row.add(s.getName());
 
                                 serviceTableModel.addRow(row);
-                                serviceList.add(service);
+                                mobileServiceList.add(mobileService);
 
-                                if (model.getService() != null
-                                        && model.getService().getName().equals(service.getName())
-                                        && model.getService().getSubcriptionId().toString().equals(service.getSubcriptionId().toString())) {
+                                if (model.getMobileService() != null
+                                        && model.getMobileService().getName().equals(mobileService.getName())
+                                        && model.getMobileService().getSubcriptionId().toString().equals(mobileService.getSubcriptionId().toString())) {
                                     selectedIndex = rowIndex;
                                 }
 
@@ -297,7 +297,7 @@ public class AzureMobileServiceStep extends WizardStep<AddServiceWizardModel> {
                     }
                 } catch (Throwable ex) {
                     UIHelper.showException("Error retrieving service list", ex);
-                    serviceList.clear();
+                    mobileServiceList.clear();
 
                     while (messageTableModel.getRowCount() > 0) {
                         messageTableModel.removeRow(0);

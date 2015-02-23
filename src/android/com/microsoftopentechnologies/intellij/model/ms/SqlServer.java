@@ -14,36 +14,40 @@
  *  limitations under the License.
  */
 
-package com.microsoftopentechnologies.intellij.model;
+package com.microsoftopentechnologies.intellij.model.ms;
 
-import com.microsoftopentechnologies.intellij.model.ms.ServiceTreeItem;
 
-public enum AzureType implements ServiceTreeItem {
+public class SqlServer{
+    private String name;
+    private String admin;
+    private String region;
 
-    MobileServices ,
-    VirtualMachines ;
-
-    private boolean loading;
-
-    @Override
-    public void setLoading(boolean loading) {
-        this.loading = loading;
+    public String getName() {
+        return name;
     }
 
-    @Override
-    public boolean isLoading() {
-        return loading;
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getAdmin() {
+        return admin;
+    }
+
+    public void setAdmin(String admin) {
+        this.admin = admin;
+    }
+
+    public String getRegion() {
+        return region;
+    }
+
+    public void setRegion(String region) {
+        this.region = region;
     }
 
     @Override
     public String toString() {
-        switch (this) {
-            case MobileServices:
-                return "Mobile Services";
-            case VirtualMachines:
-                return "Virtual Machines";
-        }
-        return null;
+        return String.format("%s (%s)", name, region) ;
     }
-
 }

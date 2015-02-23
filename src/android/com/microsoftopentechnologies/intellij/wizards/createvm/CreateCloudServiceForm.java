@@ -25,7 +25,7 @@ import com.intellij.ui.ListCellRendererWrapper;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerImpl;
-import com.microsoftopentechnologies.intellij.model.Subscription;
+import com.microsoftopentechnologies.intellij.model.ms.Subscription;
 import com.microsoftopentechnologies.intellij.model.vm.AffinityGroup;
 import com.microsoftopentechnologies.intellij.model.vm.CloudService;
 import com.microsoftopentechnologies.intellij.model.vm.Location;
