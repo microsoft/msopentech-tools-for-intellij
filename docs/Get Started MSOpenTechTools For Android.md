@@ -215,7 +215,7 @@ You can click a virtual machine image name to see information about the image on
 
 On the Create new Virtual Machine Machine Settings dialog, enter a name for the virtual machine that you will use to identify it. This name should be descriptive of how you are using the VM, but short enough to be easy to use.
 
-From the Size dropdown, select a size for your VM. After you create an Azure virtual machine in Visual Studio, you can change its size and other settings in the [Azure Management Portal](https://manage.windowsazure.com/).
+From the Size dropdown, select a size for your VM. If you discover you need to adjust the size and other settings after you create the Azure virtual machine, you can do so in the [Azure Management Portal](https://manage.windowsazure.com/).
 
 Note: If you choose larger sizes for the virtual machine, extra charges may apply. See [Virtual Machines Pricing Details](http://azure.microsoft.com/en-us/pricing/details/virtual-machines/) for more information. 
 
