@@ -76,4 +76,8 @@ public interface AzureSDKManager {
 
     @NotNull
     StorageAccount refreshStorageAccountInformation(@NotNull StorageAccount storageAccount) throws AzureCmdException;
+
+    String createServiceCertificate(@NotNull String subscriptionId, @NotNull String serviceName,
+                                    @NotNull byte[] data, @NotNull String password)
+            throws AzureCmdException;
 }

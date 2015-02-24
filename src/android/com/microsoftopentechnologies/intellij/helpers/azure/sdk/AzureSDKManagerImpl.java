@@ -59,10 +59,12 @@ import com.microsoftopentechnologies.intellij.model.vm.VirtualMachine.Status;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import javax.security.cert.X509Certificate;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
+import java.security.MessageDigest;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 
@@ -97,6 +99,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     private static final String LINUX_OS_TYPE = "Linux";
     private static final String WINDOWS_PROVISIONING_CONFIGURATION = "WindowsProvisioningConfiguration";
     private static final String LINUX_PROVISIONING_CONFIGURATION = "LinuxProvisioningConfiguration";
+    private static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
 
     private static AzureSDKManager apiManager;
     private static AzureSDKManager apiManagerADAuth;
@@ -744,6 +747,40 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         }
     }
 
+    @Override
+    public String createServiceCertificate(@NotNull String subscriptionId, @NotNull String serviceName,
+                                           @NotNull byte[] data, @NotNull String password)
+            throws AzureCmdException {
+        ComputeManagementClient client = null;
+
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA1");
+            X509Certificate cert = X509Certificate.getInstance(data);
+            md.update(cert.getEncoded());
+            String thumbprint = bytesToHex(md.digest());
+
+            client = getComputeManagementClient(subscriptionId);
+
+            ServiceCertificateOperations sco = getServiceCertificateOperations(client);
+            ServiceCertificateCreateParameters sccp = new ServiceCertificateCreateParameters(data, CertificateFormat.Pfx);
+            sccp.setPassword(password);
+
+            OperationStatusResponse osr = sco.create(serviceName, sccp);
+            validateOperationStatus(osr);
+
+            return thumbprint;
+        } catch (Throwable t) {
+            throw new AzureCmdException("Error creating the Service Certificate", t);
+        } finally {
+            if (client != null) {
+                try {
+                    client.close();
+                } catch (IOException ignored) {
+                }
+            }
+        }
+    }
+
     @NotNull
     private static ComputeManagementClient getComputeManagementClient(@NotNull String subscriptionId) throws Exception {
         ComputeManagementClient client = AzureSDKHelper.getComputeManagementClient(subscriptionId);
@@ -906,6 +943,18 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         }
 
         return no;
+    }
+
+    @NotNull
+    private static ServiceCertificateOperations getServiceCertificateOperations(@NotNull ComputeManagementClient client)
+            throws Exception {
+        ServiceCertificateOperations sco = client.getServiceCertificatesOperations();
+
+        if (sco == null) {
+            throw new Exception("Unable to retrieve Service Certificate information");
+        }
+
+        return sco;
     }
 
     @NotNull
@@ -1687,5 +1736,17 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         }
 
         return result;
+    }
+
+    private static String bytesToHex(byte[] bytes) {
+        char[] hexChars = new char[bytes.length * 2];
+
+        for (int j = 0; j < bytes.length; j++) {
+            int v = bytes[j] & 0xFF;
+            hexChars[j * 2] = HEX_ARRAY[v >>> 4];
+            hexChars[j * 2 + 1] = HEX_ARRAY[v & 0x0F];
+        }
+
+        return new String(hexChars);
     }
 }

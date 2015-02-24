@@ -319,11 +319,24 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
 
     @NotNull
     @Override
-    public StorageAccount refreshStorageAccountInformation(@NotNull final StorageAccount storageAccount) throws AzureCmdException {
+    public StorageAccount refreshStorageAccountInformation(@NotNull final StorageAccount storageAccount)
+            throws AzureCmdException {
         return runWithRetry(storageAccount.getSubscriptionId(), new Func0<StorageAccount>() {
             @Override
             public StorageAccount run() throws AzureCmdException {
                 return sdkManager.refreshStorageAccountInformation(storageAccount);
+            }
+        });
+    }
+
+    @Override
+    public String createServiceCertificate(@NotNull final String subscriptionId, @NotNull final String serviceName,
+                                           @NotNull final byte[] data, @NotNull final String password)
+            throws AzureCmdException {
+        return runWithRetry(subscriptionId, new Func0<String>() {
+            @Override
+            public String run() throws AzureCmdException {
+                return sdkManager.createServiceCertificate(subscriptionId, serviceName, data, password);
             }
         });
     }
