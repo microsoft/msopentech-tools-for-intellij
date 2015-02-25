@@ -209,6 +209,8 @@ public class SelectImageStep extends WizardStep<CreateVMWizardModel> {
                     imageDescriptionTextPane.setText(model.getHtmlFromVMImage(virtualMachineImage));
                     imageDescriptionTextPane.setCaretPosition(0);
                     model.getCurrentNavigationState().NEXT.setEnabled(true);
+
+                    model.setSize(null);
                 }
             }
         });

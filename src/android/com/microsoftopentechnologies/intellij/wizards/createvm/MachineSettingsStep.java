@@ -37,6 +37,8 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import java.awt.*;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -101,6 +103,13 @@ public class MachineSettingsStep extends WizardStep<CreateVMWizardModel> {
                 }
             }
         });
+
+        vmSizeComboBox.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent itemEvent) {
+                model.setSize((VirtualMachineSize) vmSizeComboBox.getSelectedItem());
+            }
+        });
     }
 
     private void validateEmptyFields() {
@@ -147,7 +156,6 @@ public class MachineSettingsStep extends WizardStep<CreateVMWizardModel> {
 
 
         model.setName(name);
-        model.setSize((VirtualMachineSize) vmSizeComboBox.getSelectedItem());
         model.setUserName(vmUserTextField.getText());
         model.setPassword(confirmPasswordField.getPassword());
 
@@ -225,20 +233,24 @@ public class MachineSettingsStep extends WizardStep<CreateVMWizardModel> {
             @Override
             public void run() {
 
-                String recommendedVMSize = model.getVirtualMachineImage().getRecommendedVMSize().isEmpty()
-                        ? "Small"
-                        : model.getVirtualMachineImage().getRecommendedVMSize();
+                if(model.getSize() == null) {
+                    String recommendedVMSize = model.getVirtualMachineImage().getRecommendedVMSize().isEmpty()
+                            ? "Small"
+                            : model.getVirtualMachineImage().getRecommendedVMSize();
 
-                for (int i = 0; i < vmSizeComboBox.getItemCount(); i++) {
-                    VirtualMachineSize virtualMachineSize = (VirtualMachineSize) vmSizeComboBox.getItemAt(i);
-                    if (virtualMachineSize.getName().equals(recommendedVMSize)) {
-                        vmSizeComboBox.setSelectedItem(virtualMachineSize);
-                        break;
+                    for (int i = 0; i < vmSizeComboBox.getItemCount(); i++) {
+                        VirtualMachineSize virtualMachineSize = (VirtualMachineSize) vmSizeComboBox.getItemAt(i);
+                        if (virtualMachineSize.getName().equals(recommendedVMSize)) {
+                            vmSizeComboBox.setSelectedItem(virtualMachineSize);
+                            break;
+                        }
                     }
+                } else {
+                    vmSizeComboBox.setSelectedItem(model.getSize());
                 }
-
             }
         }, ModalityState.any());
+
     }
 
 
