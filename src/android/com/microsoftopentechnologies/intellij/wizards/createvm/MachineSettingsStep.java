@@ -17,6 +17,7 @@
 package com.microsoftopentechnologies.intellij.wizards.createvm;
 
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
@@ -196,7 +197,7 @@ public class MachineSettingsStep extends WizardStep<CreateVMWizardModel> {
                         });
 
 
-                        ApplicationManager.getApplication().invokeLater(new Runnable() {
+                        ApplicationManager.getApplication().invokeAndWait(new Runnable() {
                             @Override
                             public void run() {
 
@@ -204,7 +205,7 @@ public class MachineSettingsStep extends WizardStep<CreateVMWizardModel> {
 
                                 selectDefaultSize();
                             }
-                        });
+                        }, ModalityState.any());
 
 
                     } catch (AzureCmdException e) {
@@ -220,11 +221,11 @@ public class MachineSettingsStep extends WizardStep<CreateVMWizardModel> {
     }
 
     private void selectDefaultSize() {
-        ApplicationManager.getApplication().invokeLater(new Runnable() {
+        ApplicationManager.getApplication().invokeAndWait(new Runnable() {
             @Override
             public void run() {
 
-                String recommendedVMSize  = model.getVirtualMachineImage().getRecommendedVMSize() == null
+                String recommendedVMSize = model.getVirtualMachineImage().getRecommendedVMSize().isEmpty()
                         ? "Small"
                         : model.getVirtualMachineImage().getRecommendedVMSize();
 
@@ -232,11 +233,12 @@ public class MachineSettingsStep extends WizardStep<CreateVMWizardModel> {
                     VirtualMachineSize virtualMachineSize = (VirtualMachineSize) vmSizeComboBox.getItemAt(i);
                     if (virtualMachineSize.getName().equals(recommendedVMSize)) {
                         vmSizeComboBox.setSelectedItem(virtualMachineSize);
+                        break;
                     }
                 }
 
             }
-        });
+        }, ModalityState.any());
     }
 
 

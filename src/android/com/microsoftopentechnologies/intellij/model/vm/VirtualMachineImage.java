@@ -128,6 +128,7 @@ public class VirtualMachineImage implements ServiceTreeItem {
         return pricingUri;
     }
 
+    @NotNull
     public String getRecommendedVMSize() {
         return recommendedVMSize;
     }
