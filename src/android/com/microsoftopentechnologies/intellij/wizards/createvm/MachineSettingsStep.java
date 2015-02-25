@@ -17,11 +17,11 @@
 package com.microsoftopentechnologies.intellij.wizards.createvm;
 
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
-import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.wizard.WizardNavigationState;
 import com.intellij.ui.wizard.WizardStep;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
@@ -29,6 +29,7 @@ import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerImpl;
 import com.microsoftopentechnologies.intellij.model.vm.VirtualMachineImage;
 import com.microsoftopentechnologies.intellij.model.vm.VirtualMachineSize;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -36,7 +37,6 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import java.awt.*;
-import java.text.DateFormat;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -168,7 +168,7 @@ public class MachineSettingsStep extends WizardStep<CreateVMWizardModel> {
 
             ProgressManager.getInstance().run(new Task.Backgroundable(project, "Loading VM sizes...", false) {
                 @Override
-                public void run(ProgressIndicator progressIndicator) {
+                public void run(@NotNull ProgressIndicator progressIndicator) {
                     progressIndicator.setIndeterminate(true);
 
                     try {
@@ -186,10 +186,10 @@ public class MachineSettingsStep extends WizardStep<CreateVMWizardModel> {
                                     return 1;
                                 }
 
-                                int coreCompare = Integer.valueOf(t0.getCores()).compareTo(Integer.valueOf(t1.getCores()));
+                                int coreCompare = Integer.valueOf(t0.getCores()).compareTo(t1.getCores());
 
                                 if (coreCompare == 0) {
-                                    return Integer.valueOf(t0.getMemoryInMB()).compareTo(Integer.valueOf(t1.getMemoryInMB()));
+                                    return Integer.valueOf(t0.getMemoryInMB()).compareTo(t1.getMemoryInMB());
                                 } else {
                                     return coreCompare;
                                 }
@@ -197,12 +197,15 @@ public class MachineSettingsStep extends WizardStep<CreateVMWizardModel> {
                         });
 
 
-                        ApplicationManager.getApplication().invokeLater(new Runnable() {
+                        ApplicationManager.getApplication().invokeAndWait(new Runnable() {
                             @Override
                             public void run() {
+
                                 vmSizeComboBox.setModel(new DefaultComboBoxModel(virtualMachineSizes.toArray()));
+
+                                selectDefaultSize();
                             }
-                        });
+                        }, ModalityState.any());
 
 
                     } catch (AzureCmdException e) {
@@ -210,9 +213,32 @@ public class MachineSettingsStep extends WizardStep<CreateVMWizardModel> {
                     }
                 }
             });
+        } else {
+            selectDefaultSize();
         }
 
         return rootPanel;
+    }
+
+    private void selectDefaultSize() {
+        ApplicationManager.getApplication().invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+
+                String recommendedVMSize = model.getVirtualMachineImage().getRecommendedVMSize().isEmpty()
+                        ? "Small"
+                        : model.getVirtualMachineImage().getRecommendedVMSize();
+
+                for (int i = 0; i < vmSizeComboBox.getItemCount(); i++) {
+                    VirtualMachineSize virtualMachineSize = (VirtualMachineSize) vmSizeComboBox.getItemAt(i);
+                    if (virtualMachineSize.getName().equals(recommendedVMSize)) {
+                        vmSizeComboBox.setSelectedItem(virtualMachineSize);
+                        break;
+                    }
+                }
+
+            }
+        }, ModalityState.any());
     }
 
 

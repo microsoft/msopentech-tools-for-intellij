@@ -55,6 +55,10 @@ public class CreateCloudServiceForm extends JDialog {
     public CreateCloudServiceForm() {
         setContentPane(contentPane);
         setModal(true);
+
+        setResizable(false);
+        setPreferredSize(new Dimension(411, 300));
+
         getRootPane().setDefaultButton(buttonOK);
 
         setTitle("Create Cloud Service");
