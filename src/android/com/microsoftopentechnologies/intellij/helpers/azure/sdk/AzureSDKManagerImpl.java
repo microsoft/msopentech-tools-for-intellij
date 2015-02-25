@@ -666,12 +666,12 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     @Override
     public void createVirtualMachine(@NotNull VirtualMachine virtualMachine, @NotNull VirtualMachineImage vmImage,
                                      @NotNull StorageAccount storageAccount, @NotNull String virtualNetwork,
-                                     @NotNull String username, @NotNull String password)
+                                     @NotNull String username, @NotNull String password, @NotNull byte[] certificate)
             throws AzureCmdException {
         try {
             String mediaLocation = getMediaLocation(virtualMachine, storageAccount);
 
-            createVirtualMachine(virtualMachine, vmImage, mediaLocation, virtualNetwork, username, password);
+            createVirtualMachine(virtualMachine, vmImage, mediaLocation, virtualNetwork, username, password, certificate);
         } catch (AzureCmdException e) {
             throw e;
         } catch (Throwable t) {
@@ -682,7 +682,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     @Override
     public void createVirtualMachine(@NotNull VirtualMachine virtualMachine, @NotNull VirtualMachineImage vmImage,
                                      @NotNull String mediaLocation, @NotNull String virtualNetwork,
-                                     @NotNull String username, @NotNull String password)
+                                     @NotNull String username, @NotNull String password, @NotNull byte[] certificate)
             throws AzureCmdException {
         ComputeManagementClient client = null;
 
@@ -691,9 +691,9 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
             VirtualMachineOperations vmo = getVirtualMachineOperations(client);
 
             if (virtualMachine.getDeploymentName().isEmpty()) {
-                createVMDeployment(vmo, virtualMachine, vmImage, mediaLocation, virtualNetwork, username, password);
+                createVMDeployment(vmo, virtualMachine, vmImage, mediaLocation, virtualNetwork, username, password, certificate);
             } else {
-                createVM(vmo, virtualMachine, vmImage, mediaLocation, username, password);
+                createVM(vmo, virtualMachine, vmImage, mediaLocation, username, password, certificate);
             }
         } catch (Throwable t) {
             throw new AzureCmdException("Error creating the VM", t);
@@ -1543,7 +1543,8 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
                                  @NotNull VirtualMachineImage vmImage,
                                  @NotNull String mediaLocation,
                                  @NotNull String username,
-                                 @NotNull String password)
+                                 @NotNull String password,
+                                 @NotNull byte[] certificate)
             throws Exception {
         VirtualMachineCreateParameters vmcp = new VirtualMachineCreateParameters(virtualMachine.getName());
 
@@ -1563,7 +1564,8 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
 
         vmcp.setRoleSize(virtualMachine.getSize());
 
-        vmcp.getConfigurationSets().add(getProvisioningConfigurationSet(virtualMachine, vmImage, username, password));
+        vmcp.getConfigurationSets().add(getProvisioningConfigurationSet(virtualMachine, vmImage,
+                username, password, certificate));
 
         if (virtualMachine.getEndpoints().size() > 0 || !virtualMachine.getSubnet().isEmpty()) {
             vmcp.getConfigurationSets().add(getNetworkConfigurationSet(virtualMachine));
@@ -1580,7 +1582,9 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
                                            @NotNull String mediaLocation,
                                            @NotNull String virtualNetwork,
                                            @NotNull String username,
-                                           @NotNull String password) throws Exception {
+                                           @NotNull String password,
+                                           @NotNull byte[] certificate)
+            throws Exception {
         VirtualMachineCreateDeploymentParameters vmcdp = new VirtualMachineCreateDeploymentParameters();
         vmcdp.setName(virtualMachine.getName());
         vmcdp.setLabel(virtualMachine.getName());
@@ -1610,7 +1614,8 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         role.setRoleSize(virtualMachine.getSize());
         role.setRoleType(PERSISTENT_VM_ROLE);
 
-        role.getConfigurationSets().add(getProvisioningConfigurationSet(virtualMachine, vmImage, username, password));
+        role.getConfigurationSets().add(getProvisioningConfigurationSet(virtualMachine, vmImage,
+                username, password, certificate));
 
         if (virtualMachine.getEndpoints().size() > 0 || !virtualMachine.getSubnet().isEmpty()) {
             role.getConfigurationSets().add(getNetworkConfigurationSet(virtualMachine));
@@ -1627,7 +1632,8 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     private static ConfigurationSet getProvisioningConfigurationSet(@NotNull VirtualMachine virtualMachine,
                                                                     @NotNull VirtualMachineImage vmImage,
                                                                     @NotNull String username,
-                                                                    @NotNull String password) {
+                                                                    @NotNull String password,
+                                                                    @NotNull byte[] certificate) throws AzureCmdException {
         ConfigurationSet provConfSet = new ConfigurationSet();
 
         if (vmImage.getOperatingSystemType().equals(WINDOWS_OS_TYPE)) {
@@ -1641,8 +1647,24 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         } else if (vmImage.getOperatingSystemType().equals(LINUX_OS_TYPE)) {
             provConfSet.setConfigurationSetType(LINUX_PROVISIONING_CONFIGURATION);
             provConfSet.setUserName(username);
-            provConfSet.setUserPassword(password);
-            provConfSet.setDisableSshPasswordAuthentication(false);
+
+            if (!password.isEmpty()) {
+                provConfSet.setUserPassword(password);
+                provConfSet.setDisableSshPasswordAuthentication(false);
+            }
+
+            if (certificate.length > 0) {
+                String fingerprint = getManager().createServiceCertificate(virtualMachine.getSubscriptionId(),
+                        virtualMachine.getServiceName(),
+                        certificate,
+                        "");
+
+                SshSettings sshSettings = new SshSettings();
+                String keyLocation = String.format("/home/%s/.ssh/authorized_keys", username);
+                sshSettings.getPublicKeys().add(new SshSettingPublicKey(fingerprint, keyLocation));
+                provConfSet.setSshSettings(sshSettings);
+            }
+
             provConfSet.setHostName(String.format("%s-%s-%02d",
                     virtualMachine.getServiceName().substring(0, 5),
                     virtualMachine.getName().substring(0, 5),

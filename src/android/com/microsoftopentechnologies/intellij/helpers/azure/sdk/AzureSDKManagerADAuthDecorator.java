@@ -289,12 +289,14 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
                                      @NotNull final StorageAccount storageAccount,
                                      @NotNull final String virtualNetwork,
                                      @NotNull final String username,
-                                     @NotNull final String password)
+                                     @NotNull final String password,
+                                     @NotNull final byte[] certificate)
             throws AzureCmdException {
         runWithRetry(virtualMachine.getSubscriptionId(), new Func0<Void>() {
             @Override
             public Void run() throws AzureCmdException {
-                sdkManager.createVirtualMachine(virtualMachine, vmImage, storageAccount, virtualNetwork, username, password);
+                sdkManager.createVirtualMachine(virtualMachine, vmImage, storageAccount, virtualNetwork,
+                        username, password, certificate);
                 return null;
             }
         });
@@ -306,12 +308,14 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
                                      @NotNull final String mediaLocation,
                                      @NotNull final String virtualNetwork,
                                      @NotNull final String username,
-                                     @NotNull final String password)
+                                     @NotNull final String password,
+                                     @NotNull final byte[] certificate)
             throws AzureCmdException {
         runWithRetry(virtualMachine.getSubscriptionId(), new Func0<Void>() {
             @Override
             public Void run() throws AzureCmdException {
-                sdkManager.createVirtualMachine(virtualMachine, vmImage, mediaLocation, virtualNetwork, username, password);
+                sdkManager.createVirtualMachine(virtualMachine, vmImage, mediaLocation, virtualNetwork,
+                        username, password, certificate);
                 return null;
             }
         });

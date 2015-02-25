@@ -45,6 +45,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.Vector;
 
 public class EndpointStep extends WizardStep<CreateVMWizardModel> {
@@ -210,12 +213,39 @@ public class EndpointStep extends WizardStep<CreateVMWizardModel> {
 
                     virtualMachine.getEndpoints().addAll(tableModel.getData());
 
+                    String certificate = model.getCertificate();
+                    byte[] certData = new byte[0];
+
+                    if (!certificate.isEmpty()) {
+                        File certFile = new File(certificate);
+
+                        if (certFile.exists()) {
+                            FileInputStream certStream = null;
+
+                            try {
+                                certStream = new FileInputStream(certFile);
+                                certData = new byte[(int) certFile.length()];
+                                if (certStream.read(certData) != certData.length) {
+                                    throw new Exception("Unable to process certificate: stream longer than informed size.");
+                                }
+                            } finally {
+                                if (certStream != null) {
+                                    try {
+                                        certStream.close();
+                                    } catch (IOException ignored) {
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                     AzureSDKManagerImpl.getManager().createVirtualMachine(virtualMachine,
                             model.getVirtualMachineImage(),
                             model.getStorageAccount(),
                             model.getVirtualNetwork() != null ? model.getVirtualNetwork().getName() : "",
                             model.getUserName(),
-                            new String(model.getPassword()));
+                            model.getPassword(),
+                            certData);
 
                     virtualMachine = AzureSDKManagerImpl.getManager().refreshVirtualMachineInformation(virtualMachine);
 
@@ -235,7 +265,7 @@ public class EndpointStep extends WizardStep<CreateVMWizardModel> {
                             }
                         }
                     });
-                } catch (AzureCmdException e) {
+                } catch (Exception e) {
                     UIHelper.showException("An error occurred while trying to create the specified virtual machine",
                             e,
                             "Error Creating Virtual Machine",
