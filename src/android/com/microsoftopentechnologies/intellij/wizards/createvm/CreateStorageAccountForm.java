@@ -77,6 +77,8 @@ public class CreateStorageAccountForm extends JDialog {
         setModal(true);
         getRootPane().setDefaultButton(buttonOK);
 
+        setResizable(false);
+        setPreferredSize(new Dimension( 411, 330));
         setTitle("Create Storage Account");
 
         buttonOK.addActionListener(new ActionListener() {
