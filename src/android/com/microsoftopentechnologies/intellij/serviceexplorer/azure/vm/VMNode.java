@@ -41,6 +41,7 @@ public class VMNode extends Node {
     public static final String ACTION_SHUTDOWN = "Shutdown";
     public static final String ACTION_START = "Start";
     public static final String ACTION_RESTART = "Restart";
+    public static final int REMOTE_DESKTOP_PORT = 3389;
 
     protected VirtualMachine virtualMachine;
 
@@ -113,7 +114,7 @@ public class VMNode extends Node {
 
     private boolean hasRDPPort(VirtualMachine virtualMachine) {
         for (Endpoint endpoint : virtualMachine.getEndpoints()) {
-            if(endpoint.getPrivatePort() == 3389) {
+            if(endpoint.getPrivatePort() == REMOTE_DESKTOP_PORT) {
                 return true;
             }
         }
