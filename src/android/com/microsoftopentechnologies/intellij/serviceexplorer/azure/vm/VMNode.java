@@ -103,9 +103,22 @@ public class VMNode extends Node {
         getNodeActionByName(ACTION_SHUTDOWN).setEnabled(virtualMachine.getStatus().equals(Status.Ready));
         getNodeActionByName(ACTION_START).setEnabled(!virtualMachine.getStatus().equals(Status.Ready));
         getNodeActionByName(ACTION_RESTART).setEnabled(virtualMachine.getStatus().equals(Status.Ready));
-        getNodeActionByName(ACTION_DOWNLOAD_RDP_FILE).setEnabled(virtualMachine.getStatus().equals(Status.Ready));
+        getNodeActionByName(ACTION_DOWNLOAD_RDP_FILE).setEnabled(
+                virtualMachine.getStatus().equals(Status.Ready)
+                && hasRDPPort(virtualMachine)
+        );
 
         return super.getNodeActions();
+    }
+
+    private boolean hasRDPPort(VirtualMachine virtualMachine) {
+        for (Endpoint endpoint : virtualMachine.getEndpoints()) {
+            if(endpoint.getPrivatePort() == 3389) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public class DeleteVMAction extends NodeActionListenerAsync {
