@@ -13,17 +13,20 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-
 package com.microsoftopentechnologies.intellij.wizards.createvm;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
+import com.intellij.openapi.fileChooser.FileChooser;
+import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.wizard.WizardNavigationState;
 import com.intellij.ui.wizard.WizardStep;
+import com.intellij.util.Consumer;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerImpl;
@@ -37,6 +40,8 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.Collections;
@@ -52,11 +57,15 @@ public class MachineSettingsStep extends WizardStep<CreateVMWizardModel> {
     private JTextField vmUserTextField;
     private JPasswordField vmPasswordField;
     private JPasswordField confirmPasswordField;
+    private JCheckBox passwordCheckBox;
+    private JButton certificateButton;
+    private JTextField certificateField;
+    private JCheckBox certificateCheckBox;
+    private JPanel certificatePanel;
+    private JPanel passwordPanel;
 
     Project project;
     CreateVMWizardModel model;
-
-
 
     public MachineSettingsStep(CreateVMWizardModel mModel, Project project) {
         super("Virtual Machine Basic Settings", null, null);
@@ -85,15 +94,15 @@ public class MachineSettingsStep extends WizardStep<CreateVMWizardModel> {
 
         vmNameTextField.getDocument().addDocumentListener(documentListener);
         vmUserTextField.getDocument().addDocumentListener(documentListener);
+        certificateField.getDocument().addDocumentListener(documentListener);
         vmPasswordField.getDocument().addDocumentListener(documentListener);
         confirmPasswordField.getDocument().addDocumentListener(documentListener);
-
 
         imageDescriptionTextPane.addHyperlinkListener(new HyperlinkListener() {
             @Override
             public void hyperlinkUpdate(HyperlinkEvent hyperlinkEvent) {
-                if(hyperlinkEvent.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-                    if(Desktop.isDesktopSupported()) {
+                if (hyperlinkEvent.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+                    if (Desktop.isDesktopSupported()) {
                         try {
                             Desktop.getDesktop().browse(hyperlinkEvent.getURL().toURI());
                         } catch (Exception e) {
@@ -104,75 +113,91 @@ public class MachineSettingsStep extends WizardStep<CreateVMWizardModel> {
             }
         });
 
-        vmSizeComboBox.addItemListener(new ItemListener() {
+        certificateCheckBox.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent itemEvent) {
-                model.setSize((VirtualMachineSize) vmSizeComboBox.getSelectedItem());
+                for (Component component : certificatePanel.getComponents()) {
+                    component.setEnabled(certificateCheckBox.isSelected());
+                }
+
+                certificatePanel.setEnabled(certificateCheckBox.isSelected());
+
+                validateEmptyFields();
             }
         });
-    }
 
-    private void validateEmptyFields() {
+        passwordCheckBox.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent itemEvent) {
+                for (Component component : passwordPanel.getComponents()) {
+                    component.setEnabled(passwordCheckBox.isSelected());
+                }
 
-        boolean allFieldsCompleted = !(
-                vmNameTextField.getText().isEmpty()
-                        || vmUserTextField.getText().isEmpty()
-                        || vmPasswordField.getPassword().length == 0
-                        || confirmPasswordField.getPassword().length == 0);
+                passwordPanel.setEnabled(passwordCheckBox.isSelected());
 
-        model.getCurrentNavigationState().NEXT.setEnabled(allFieldsCompleted);
-    }
+                validateEmptyFields();
+            }
+        });
 
-    @Override
-    public WizardStep onNext(CreateVMWizardModel model) {
-        WizardStep wizardStep = super.onNext(model);
+        certificateButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
 
-        String name = vmNameTextField.getText();
-        String pass = new String(vmPasswordField.getPassword());
-        String conf = new String(confirmPasswordField.getPassword());
+                FileChooserDescriptor fileChooserDescriptor = new FileChooserDescriptor(true, false, false, false, false, false) {
+                    @Override
+                    public boolean isFileVisible(VirtualFile file, boolean showHiddenFiles) {
+                        try {
+                            return file.isDirectory() || (file.getExtension() != null && file.getExtension().equals("cer"));
+                        } catch (Throwable t) {
+                            return super.isFileVisible(file, showHiddenFiles);
+                        }
+                    }
 
-        if (name.length() > 15 || name.length() < 3) {
-            JOptionPane.showMessageDialog(null, "Invalid virtual machine name. The name must be between 3 and 15 character long.", "Error creating the virtual machine", JOptionPane.ERROR_MESSAGE);
-            return this;
-        }
+                    @Override
+                    public boolean isFileSelectable(VirtualFile file) {
+                        return (file.getExtension() != null && file.getExtension().equals("cer"));
+                    }
+                };
 
-        if (!name.matches("^[A-Za-z][A-Za-z0-9-]+[A-Za-z0-9]$")) {
-            JOptionPane.showMessageDialog(null, "Invalid virtual machine name. The name must start with a letter, \n" +
-                    "contain only letters, numbers, and hyphens, " +
-                    "and end with a letter or number.", "Error creating the virtual machine", JOptionPane.ERROR_MESSAGE);
-            return this;
-        }
+                fileChooserDescriptor.setTitle("Choose Certificate File");
 
-        if (!pass.equals(conf)) {
-            JOptionPane.showMessageDialog(null, "Password confirmation should match password", "Error creating the service", JOptionPane.ERROR_MESSAGE);
-            return this;
-        }
-
-        if (!pass.matches("(?=^.{8,255}$)((?=.*\\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*")) {
-            JOptionPane.showMessageDialog(null, "The password does not conform to complexity requirements.\n" +
-                    "It should be at least eight characters long and contain a mixture of upper case, lower case, digits and symbols.", "Error creating the virtual machine", JOptionPane.ERROR_MESSAGE);
-            return this;
-        }
-
-
-        model.setName(name);
-        model.setUserName(vmUserTextField.getText());
-        model.setPassword(confirmPasswordField.getPassword());
-
-        return wizardStep;
+                FileChooser.chooseFile(fileChooserDescriptor, null, null, new Consumer<VirtualFile>() {
+                    @Override
+                    public void consume(VirtualFile virtualFile) {
+                        if (virtualFile != null) {
+                            certificateField.setText(virtualFile.getPath());
+                        }
+                    }
+                });
+            }
+        });
     }
 
     @Override
     public JComponent prepare(WizardNavigationState wizardNavigationState) {
         rootPanel.revalidate();
 
+        final VirtualMachineImage virtualMachineImage = model.getVirtualMachineImage();
+
+        if (virtualMachineImage.getOperatingSystemType().equals("Linux")) {
+            certificateCheckBox.setEnabled(true);
+            passwordCheckBox.setEnabled(true);
+            certificateCheckBox.setSelected(true);
+            passwordCheckBox.setSelected(false);
+        } else {
+            certificateCheckBox.setSelected(false);
+            passwordCheckBox.setSelected(true);
+            certificateCheckBox.setEnabled(false);
+            passwordCheckBox.setEnabled(false);
+        }
+
         validateEmptyFields();
 
-        final VirtualMachineImage virtualMachineImage = model.getVirtualMachineImage();
         imageDescriptionTextPane.setText(model.getHtmlFromVMImage(virtualMachineImage));
         imageDescriptionTextPane.setCaretPosition(0);
 
-        if(vmSizeComboBox.getItemCount() == 0) {
+        if (vmSizeComboBox.getItemCount() == 0) {
+            vmSizeComboBox.setModel(new DefaultComboBoxModel(new String[]{"<Loading...>"}));
 
             ProgressManager.getInstance().run(new Task.Backgroundable(project, "Loading VM sizes...", false) {
                 @Override
@@ -204,18 +229,14 @@ public class MachineSettingsStep extends WizardStep<CreateVMWizardModel> {
                             }
                         });
 
-
                         ApplicationManager.getApplication().invokeAndWait(new Runnable() {
                             @Override
                             public void run() {
-
                                 vmSizeComboBox.setModel(new DefaultComboBoxModel(virtualMachineSizes.toArray()));
 
                                 selectDefaultSize();
                             }
                         }, ModalityState.any());
-
-
                     } catch (AzureCmdException e) {
                         UIHelper.showException("Error trying to get VM sizes", e);
                     }
@@ -228,30 +249,85 @@ public class MachineSettingsStep extends WizardStep<CreateVMWizardModel> {
         return rootPanel;
     }
 
+    @Override
+    public WizardStep onNext(CreateVMWizardModel model) {
+        WizardStep wizardStep = super.onNext(model);
+
+        String name = vmNameTextField.getText();
+
+        if (name.length() > 15 || name.length() < 3) {
+            JOptionPane.showMessageDialog(null, "Invalid virtual machine name. The name must be between 3 and 15 character long.", "Error creating the virtual machine", JOptionPane.ERROR_MESSAGE);
+            return this;
+        }
+
+        if (!name.matches("^[A-Za-z][A-Za-z0-9-]+[A-Za-z0-9]$")) {
+            JOptionPane.showMessageDialog(null, "Invalid virtual machine name. The name must start with a letter, \n" +
+                    "contain only letters, numbers, and hyphens, " +
+                    "and end with a letter or number.", "Error creating the virtual machine", JOptionPane.ERROR_MESSAGE);
+            return this;
+        }
+
+        String password = passwordCheckBox.isSelected() ? new String(vmPasswordField.getPassword()) : "";
+
+        if (passwordCheckBox.isSelected()) {
+            String conf = new String(confirmPasswordField.getPassword());
+
+            if (!password.equals(conf)) {
+                JOptionPane.showMessageDialog(null, "Password confirmation should match password", "Error creating the service", JOptionPane.ERROR_MESSAGE);
+                return this;
+            }
+
+            if (!password.matches("(?=^.{8,255}$)((?=.*\\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*")) {
+                JOptionPane.showMessageDialog(null, "The password does not conform to complexity requirements.\n" +
+                        "It should be at least eight characters long and contain a mixture of upper case, lower case, digits and symbols.", "Error creating the virtual machine", JOptionPane.ERROR_MESSAGE);
+                return this;
+            }
+        }
+
+        String certificate = certificateCheckBox.isSelected() ? certificateField.getText() : "";
+
+        model.setName(name);
+        model.setSize((VirtualMachineSize) vmSizeComboBox.getSelectedItem());
+        model.setUserName(vmUserTextField.getText());
+        model.setPassword(password);
+        model.setCertificate(certificate);
+
+        return wizardStep;
+    }
+
     private void selectDefaultSize() {
         ApplicationManager.getApplication().invokeAndWait(new Runnable() {
             @Override
             public void run() {
 
-                if(model.getSize() == null) {
-                    String recommendedVMSize = model.getVirtualMachineImage().getRecommendedVMSize().isEmpty()
-                            ? "Small"
-                            : model.getVirtualMachineImage().getRecommendedVMSize();
+                String recommendedVMSize = model.getVirtualMachineImage().getRecommendedVMSize().isEmpty()
+                        ? "Small"
+                        : model.getVirtualMachineImage().getRecommendedVMSize();
 
-                    for (int i = 0; i < vmSizeComboBox.getItemCount(); i++) {
-                        VirtualMachineSize virtualMachineSize = (VirtualMachineSize) vmSizeComboBox.getItemAt(i);
-                        if (virtualMachineSize.getName().equals(recommendedVMSize)) {
-                            vmSizeComboBox.setSelectedItem(virtualMachineSize);
-                            break;
-                        }
+                for (int i = 0; i < vmSizeComboBox.getItemCount(); i++) {
+                    VirtualMachineSize virtualMachineSize = (VirtualMachineSize) vmSizeComboBox.getItemAt(i);
+                    if (virtualMachineSize.getName().equals(recommendedVMSize)) {
+                        vmSizeComboBox.setSelectedItem(virtualMachineSize);
+                        break;
                     }
-                } else {
-                    vmSizeComboBox.setSelectedItem(model.getSize());
                 }
+
             }
         }, ModalityState.any());
-
     }
 
 
+    private void validateEmptyFields() {
+
+        boolean allFieldsCompleted = !(
+                vmNameTextField.getText().isEmpty()
+                        || vmUserTextField.getText().isEmpty()
+                        || !(passwordCheckBox.isSelected() || certificateCheckBox.isSelected())
+                        || (passwordCheckBox.isSelected() &&
+                        (vmPasswordField.getPassword().length == 0
+                                || confirmPasswordField.getPassword().length == 0))
+                        || (certificateCheckBox.isSelected() && certificateField.getText().isEmpty()));
+
+        model.getCurrentNavigationState().NEXT.setEnabled(allFieldsCompleted);
+    }
 }

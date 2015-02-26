@@ -66,7 +66,8 @@ public class CreateVMWizardModel extends WizardModel {
     private String name;
     private VirtualMachineSize size;
     private String userName;
-    private char[] password;
+    private String password;
+    private String certificate;
     private CloudService cloudService;
     private boolean filterByCloudService;
     private StorageAccount storageAccount;
@@ -182,12 +183,20 @@ public class CreateVMWizardModel extends WizardModel {
         this.userName = userName;
     }
 
-    public char[] getPassword() {
+    public String getPassword() {
         return password;
     }
 
-    public void setPassword(char[] password) {
+    public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getCertificate() {
+        return certificate;
+    }
+
+    public void setCertificate(String certificate) {
+        this.certificate = certificate;
     }
 
     public CloudService getCloudService() {

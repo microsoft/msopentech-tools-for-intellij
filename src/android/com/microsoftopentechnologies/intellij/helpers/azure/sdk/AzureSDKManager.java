@@ -66,14 +66,18 @@ public interface AzureSDKManager {
 
     void createVirtualMachine(@NotNull VirtualMachine virtualMachine, @NotNull VirtualMachineImage vmImage,
                               @NotNull StorageAccount storageAccount, @NotNull String virtualNetwork,
-                              @NotNull String username, @NotNull String password)
+                              @NotNull String username, @NotNull String password, @NotNull byte[] certificate)
             throws AzureCmdException;
 
     void createVirtualMachine(@NotNull VirtualMachine virtualMachine, @NotNull VirtualMachineImage vmImage,
                               @NotNull String mediaLocation, @NotNull String virtualNetwork,
-                              @NotNull String username, @NotNull String password)
+                              @NotNull String username, @NotNull String password, @NotNull byte[] certificate)
             throws AzureCmdException;
 
     @NotNull
     StorageAccount refreshStorageAccountInformation(@NotNull StorageAccount storageAccount) throws AzureCmdException;
+
+    String createServiceCertificate(@NotNull String subscriptionId, @NotNull String serviceName,
+                                    @NotNull byte[] data, @NotNull String password)
+            throws AzureCmdException;
 }
