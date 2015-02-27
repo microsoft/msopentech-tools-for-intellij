@@ -41,6 +41,7 @@ public class VMNode extends Node {
     public static final String ACTION_SHUTDOWN = "Shutdown";
     public static final String ACTION_START = "Start";
     public static final String ACTION_RESTART = "Restart";
+    public static final int REMOTE_DESKTOP_PORT = 3389;
 
     protected VirtualMachine virtualMachine;
 
@@ -103,9 +104,22 @@ public class VMNode extends Node {
         getNodeActionByName(ACTION_SHUTDOWN).setEnabled(virtualMachine.getStatus().equals(Status.Ready));
         getNodeActionByName(ACTION_START).setEnabled(!virtualMachine.getStatus().equals(Status.Ready));
         getNodeActionByName(ACTION_RESTART).setEnabled(virtualMachine.getStatus().equals(Status.Ready));
-        getNodeActionByName(ACTION_DOWNLOAD_RDP_FILE).setEnabled(virtualMachine.getStatus().equals(Status.Ready));
+        getNodeActionByName(ACTION_DOWNLOAD_RDP_FILE).setEnabled(
+                virtualMachine.getStatus().equals(Status.Ready)
+                && hasRDPPort(virtualMachine)
+        );
 
         return super.getNodeActions();
+    }
+
+    private boolean hasRDPPort(VirtualMachine virtualMachine) {
+        for (Endpoint endpoint : virtualMachine.getEndpoints()) {
+            if(endpoint.getPrivatePort() == REMOTE_DESKTOP_PORT) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public class DeleteVMAction extends NodeActionListenerAsync {

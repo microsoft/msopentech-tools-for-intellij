@@ -68,16 +68,20 @@ public class AzureServiceModule extends Node {
         // already been added first because this method can be called
         // multiple times when the user clicks the "Refresh" context
         // menu item
-        if(!isDirectChild(mobileServiceModule)) {
-            addChildNode(mobileServiceModule);
-        }
-        mobileServiceModule.load();
 
-        // add the VM service module
-        if(!isDirectChild(vmServiceModule)) {
-            addChildNode(vmServiceModule);
+        if(!mobileServiceModule.isLoading()) {
+            if (!isDirectChild(mobileServiceModule)) {
+                addChildNode(mobileServiceModule);
+            }
+            mobileServiceModule.load();
         }
-        vmServiceModule.load();
+
+        if(!vmServiceModule.isLoading()) {
+            if (!isDirectChild(vmServiceModule)) {
+                addChildNode(vmServiceModule);
+            }
+            vmServiceModule.load();
+        }
     }
 
     @Override
