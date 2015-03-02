@@ -345,4 +345,15 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
             }
         });
     }
+
+    @Override
+    public void deleteStorageAccount(@NotNull final StorageAccount storageAccount) throws AzureCmdException {
+        runWithRetry(storageAccount.getSubscriptionId(), new Func0<Void>() {
+            @Override
+            public Void run() throws AzureCmdException {
+                sdkManager.deleteStorageAccount(storageAccount);
+                return null;
+            }
+        });
+    }
 }

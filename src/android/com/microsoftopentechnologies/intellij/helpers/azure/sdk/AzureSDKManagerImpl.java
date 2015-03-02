@@ -782,6 +782,29 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         }
     }
 
+    @Override
+    public void deleteStorageAccount(@NotNull StorageAccount storageAccount) throws AzureCmdException {
+        StorageManagementClient client = null;
+
+        try {
+            client = getStorageManagementClient(storageAccount.getSubscriptionId());
+            StorageAccountOperations sao = getStorageAccountOperations(client);
+
+            OperationResponse or = sao.delete(storageAccount.getName());
+            OperationStatusResponse osr = getOperationStatusResponse(client, or);
+            validateOperationStatus(osr);
+        } catch (Throwable t) {
+            throw new AzureCmdException("Error deleting the Storage Account", t);
+        } finally {
+            if (client != null) {
+                try {
+                    client.close();
+                } catch (IOException ignored) {
+                }
+            }
+        }
+    }
+
     @NotNull
     private static ComputeManagementClient getComputeManagementClient(@NotNull String subscriptionId) throws Exception {
         ComputeManagementClient client = AzureSDKHelper.getComputeManagementClient(subscriptionId);

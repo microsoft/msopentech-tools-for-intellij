@@ -81,4 +81,6 @@ public interface AzureSDKManager {
     String createServiceCertificate(@NotNull String subscriptionId, @NotNull String serviceName,
                                     @NotNull byte[] data, @NotNull String password)
             throws AzureCmdException;
+
+    void deleteStorageAccount(@NotNull StorageAccount storageAccount) throws AzureCmdException;
 }
