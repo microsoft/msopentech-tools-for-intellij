@@ -25,7 +25,7 @@ import com.microsoftopentechnologies.intellij.forms.ManageSubscriptionForm;
 import com.microsoftopentechnologies.intellij.helpers.ReadOnlyCellTableModel;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManager;
+import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManagerImpl;
 import com.microsoftopentechnologies.intellij.model.ms.MobileService;
 import com.microsoftopentechnologies.intellij.model.ms.Subscription;
 
@@ -135,7 +135,7 @@ public class AzureMobileServiceStep extends WizardStep<AddServiceWizardModel> {
                 form.setVisible(true);
 
                 try {
-                    List<Subscription> subscriptionList = AzureRestAPIManager.getManager().getSubscriptionList();
+                    List<Subscription> subscriptionList = AzureRestAPIManagerImpl.getManager().getSubscriptionList();
 
                     if (subscriptionList == null || subscriptionList.size() == 0) {
                         buttonAddService.setEnabled(false);
@@ -232,7 +232,7 @@ public class AzureMobileServiceStep extends WizardStep<AddServiceWizardModel> {
                 int selectedIndex = -1;
 
                 try {
-                    List<Subscription> subscriptionList = AzureRestAPIManager.getManager().getSubscriptionList();
+                    List<Subscription> subscriptionList = AzureRestAPIManagerImpl.getManager().getSubscriptionList();
 
                     if (subscriptionList != null && subscriptionList.size() > 0) {
                         buttonAddService.setEnabled(true);
@@ -246,7 +246,7 @@ public class AzureMobileServiceStep extends WizardStep<AddServiceWizardModel> {
                         int rowIndex = 0;
 
                         for (Subscription s : subscriptionList) {
-                            List<MobileService> currentSubServices = AzureRestAPIManager.getManager().getServiceList(s.getId());
+                            List<MobileService> currentSubServices = AzureRestAPIManagerImpl.getManager().getServiceList(s.getId());
 
                             for (MobileService mobileService : currentSubServices) {
                                 Vector<String> row = new Vector<String>();

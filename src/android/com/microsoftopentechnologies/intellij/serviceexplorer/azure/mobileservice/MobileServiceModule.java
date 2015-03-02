@@ -21,8 +21,8 @@ import com.microsoftopentechnologies.intellij.forms.CreateNewServiceForm;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureAuthenticationMode;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.intellij.helpers.azure.AzureManager;
 import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManager;
+import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManagerImpl;
 import com.microsoftopentechnologies.intellij.model.ms.MobileService;
 import com.microsoftopentechnologies.intellij.model.ms.Subscription;
 import com.microsoftopentechnologies.intellij.serviceexplorer.Node;
@@ -48,10 +48,10 @@ public class MobileServiceModule extends Node {
         removeAllChildNodes();
 
         // load all mobile services
-        ArrayList<Subscription> subscriptionList = AzureRestAPIManager.getManager().getSubscriptionList();
+        ArrayList<Subscription> subscriptionList = AzureRestAPIManagerImpl.getManager().getSubscriptionList();
         if(subscriptionList != null) {
             for (Subscription subscription : subscriptionList) {
-                List<MobileService> mobileServices = AzureRestAPIManager.getManager().getServiceList(subscription.getId());
+                List<MobileService> mobileServices = AzureRestAPIManagerImpl.getManager().getServiceList(subscription.getId());
                 for(MobileService mobileService : mobileServices) {
                     addChildNode(new MobileServiceNode(this, mobileService));
                 }
@@ -70,7 +70,7 @@ public class MobileServiceModule extends Node {
         @Override
         public void actionPerformed(NodeActionEvent e) {
             // check if we have a valid subscription handy
-            AzureManager apiManager = AzureRestAPIManager.getManager();
+            AzureRestAPIManager apiManager = AzureRestAPIManagerImpl.getManager();
             if(apiManager.getAuthenticationMode() == AzureAuthenticationMode.Unknown) {
                 UIHelper.showException("Please configure an Azure subscription by right-clicking on the \"Azure\" " +
                         "node and selecting \"Manage subscriptions\".", null, "No Azure subscription found");

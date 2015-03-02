@@ -21,7 +21,7 @@ import com.microsoftopentechnologies.intellij.helpers.LinkListener;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIHelper;
-import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManager;
+import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManagerImpl;
 import com.microsoftopentechnologies.intellij.model.ms.SqlDb;
 import com.microsoftopentechnologies.intellij.model.ms.SqlServer;
 import com.microsoftopentechnologies.intellij.model.ms.Subscription;
@@ -119,7 +119,7 @@ public class CreateNewServiceForm extends JDialog {
             @Override
             public void run() {
                 try {
-                    List<Subscription> subsList = AzureRestAPIManager.getManager().getSubscriptionList();
+                    List<Subscription> subsList = AzureRestAPIManagerImpl.getManager().getSubscriptionList();
                     DefaultComboBoxModel subscriptionDefaultComboBoxModel = new DefaultComboBoxModel(subsList.toArray(new Subscription[subsList.size()]));
                     subscriptionComboBox.setModel(subscriptionDefaultComboBoxModel);
 
@@ -216,7 +216,7 @@ public class CreateNewServiceForm extends JDialog {
                                 return;
                             }
 
-                            AzureRestAPIManager.getManager().createService(id, region, admin, pass, name, server, db);
+                            AzureRestAPIManagerImpl.getManager().createService(id, region, admin, pass, name, server, db);
 
                             serviceCreated.run();
 
@@ -256,7 +256,7 @@ public class CreateNewServiceForm extends JDialog {
             @Override
             public void run() {
                 try {
-                    final List<String> locations = AzureRestAPIManager.getManager().getLocations(subscription.getId());
+                    final List<String> locations = AzureRestAPIManagerImpl.getManager().getLocations(subscription.getId());
 
                     ApplicationManager.getApplication().invokeLater(new Runnable() {
                         @Override
@@ -277,7 +277,7 @@ public class CreateNewServiceForm extends JDialog {
             public void run() {
                 try {
                     final List<SqlDb> databaseList = new ArrayList<SqlDb>();
-                    List<SqlServer> sqlServerList = AzureRestAPIManager.getManager().getSqlServers(subscription.getId());
+                    List<SqlServer> sqlServerList = AzureRestAPIManagerImpl.getManager().getSqlServers(subscription.getId());
 
                     ArrayList<Future<List<SqlDb>>> futures = new ArrayList<Future<List<SqlDb>>>();
 
@@ -285,7 +285,7 @@ public class CreateNewServiceForm extends JDialog {
                         futures.add(ApplicationManager.getApplication().executeOnPooledThread(new Callable<List<SqlDb>>() {
                             @Override
                             public List<SqlDb> call() throws Exception {
-                                return AzureRestAPIManager.getManager().getSqlDb(subscription.getId(), server);
+                                return AzureRestAPIManagerImpl.getManager().getSqlDb(subscription.getId(), server);
                             }
                         }));
                     }

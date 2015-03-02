@@ -33,7 +33,7 @@ import com.microsoftopentechnologies.intellij.components.MSOpenTechToolsApplicat
 import com.microsoftopentechnologies.intellij.helpers.OpenSSLHelper;
 import com.microsoftopentechnologies.intellij.helpers.XmlHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureAuthenticationMode;
-import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManager;
+import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManagerImpl;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.w3c.dom.Node;
@@ -69,7 +69,7 @@ public class AzureSDKHelper {
 
         // add a request filter for tacking on the A/D auth token if the current authentication
         // mode is active directory
-        if (AzureRestAPIManager.getManager().getAuthenticationMode() == AzureAuthenticationMode.ActiveDirectory) {
+        if (AzureRestAPIManagerImpl.getManager().getAuthenticationMode() == AzureAuthenticationMode.ActiveDirectory) {
             return client.withRequestFilterFirst(new AuthTokenRequestFilter(subscriptionId));
         }
 
@@ -89,7 +89,7 @@ public class AzureSDKHelper {
 
         // add a request filter for tacking on the A/D auth token if the current authentication
         // mode is active directory
-        if (AzureRestAPIManager.getManager().getAuthenticationMode() == AzureAuthenticationMode.ActiveDirectory) {
+        if (AzureRestAPIManagerImpl.getManager().getAuthenticationMode() == AzureAuthenticationMode.ActiveDirectory) {
             return client.withRequestFilterFirst(new AuthTokenRequestFilter(subscriptionId));
         }
 
@@ -109,7 +109,7 @@ public class AzureSDKHelper {
 
         // add a request filter for tacking on the A/D auth token if the current authentication
         // mode is active directory
-        if (AzureRestAPIManager.getManager().getAuthenticationMode() == AzureAuthenticationMode.ActiveDirectory) {
+        if (AzureRestAPIManagerImpl.getManager().getAuthenticationMode() == AzureAuthenticationMode.ActiveDirectory) {
             return client.withRequestFilterFirst(new AuthTokenRequestFilter(subscriptionId));
         }
 
@@ -129,7 +129,7 @@ public class AzureSDKHelper {
 
         // add a request filter for tacking on the A/D auth token if the current authentication
         // mode is active directory
-        if (AzureRestAPIManager.getManager().getAuthenticationMode() == AzureAuthenticationMode.ActiveDirectory) {
+        if (AzureRestAPIManagerImpl.getManager().getAuthenticationMode() == AzureAuthenticationMode.ActiveDirectory) {
             return client.withRequestFilterFirst(new AuthTokenRequestFilter(subscriptionId));
         }
 
@@ -138,7 +138,7 @@ public class AzureSDKHelper {
 
     @Nullable
     private static Configuration getConfiguration(@NotNull String subscriptionId) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, XPathExpressionException, SAXException, ParserConfigurationException, IOException {
-        switch (AzureRestAPIManager.getManager().getAuthenticationMode()) {
+        switch (AzureRestAPIManagerImpl.getManager().getAuthenticationMode()) {
             case SubscriptionSettings:
                 return getConfigurationFromPublishSettings(subscriptionId);
             case ActiveDirectory:

@@ -22,7 +22,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.Consumer;
 import com.microsoftopentechnologies.intellij.helpers.LinkListener;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
-import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManager;
+import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManagerImpl;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -110,7 +110,7 @@ public class ImportSubscriptionForm extends JDialog {
                     try {
                         form.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
-                        AzureRestAPIManager.getManager().loadSubscriptionFile(txtFile.getText());
+                        AzureRestAPIManagerImpl.getManager().loadSubscriptionFile(txtFile.getText());
                         if (form.onSubscriptionLoaded != null)
                             form.onSubscriptionLoaded.run();
 
