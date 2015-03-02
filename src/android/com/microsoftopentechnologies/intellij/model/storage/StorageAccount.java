@@ -13,7 +13,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package com.microsoftopentechnologies.intellij.model.vm;
+package com.microsoftopentechnologies.intellij.model.storage;
 
 import com.microsoftopentechnologies.intellij.model.ServiceTreeItem;
 import org.jetbrains.annotations.NotNull;
