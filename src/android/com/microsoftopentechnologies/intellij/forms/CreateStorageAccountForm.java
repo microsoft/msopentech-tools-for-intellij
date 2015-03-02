@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package com.microsoftopentechnologies.intellij.wizards.createvm;
+package com.microsoftopentechnologies.intellij.forms;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.progress.ProgressIndicator;
@@ -24,6 +24,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.ui.ListCellRendererWrapper;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
+import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManager;
 import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerImpl;
 import com.microsoftopentechnologies.intellij.model.ms.Subscription;
 import com.microsoftopentechnologies.intellij.model.vm.AffinityGroup;
@@ -36,6 +37,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ArrayList;
 import java.util.Vector;
 
 
@@ -52,6 +54,7 @@ public class CreateStorageAccountForm extends JDialog {
     private Runnable onCreate;
     private Subscription subscription;
     private StorageAccount storageAccount;
+    private Project project;
 
     private enum ReplicationTypes {
         Standard_LRS,
@@ -109,7 +112,7 @@ public class CreateStorageAccountForm extends JDialog {
 
             @Override
             public void customize(JList jList, Object o, int i, boolean b, boolean b1) {
-                if(!(o instanceof String)) {
+                if(!(o instanceof String) && o != null) {
                     setText("  " + o.toString());
                 }
             }
@@ -196,10 +199,48 @@ public class CreateStorageAccountForm extends JDialog {
     }
 
     public void fillFields(final Subscription subscription, Project project) {
-        this.subscription = subscription;
+        final CreateStorageAccountForm createStorageAccountForm = this;
+        this.project = project;
+        if(subscription == null) {
+            try {
+                subscriptionComboBox.setEnabled(true);
 
-        subscriptionComboBox.addItem(subscription.getName());
+                ArrayList<Subscription> fullSubscriptionList = AzureRestAPIManager.getManager().getFullSubscriptionList();
+                subscriptionComboBox.setModel(new DefaultComboBoxModel(new Vector<Subscription>(fullSubscriptionList)));
+                subscriptionComboBox.addItemListener(new ItemListener() {
+                    @Override
+                    public void itemStateChanged(ItemEvent itemEvent) {
+                        createStorageAccountForm.subscription = (Subscription) itemEvent.getItem();
+                        loadRegions();
+                    }
+                });
 
+                if(fullSubscriptionList.size() > 0) {
+                    createStorageAccountForm.subscription = fullSubscriptionList.get(0);
+                    loadRegions();
+                }
+
+            } catch (AzureCmdException e) {
+                UIHelper.showException("Error getting subscriptions", e);
+            }
+
+        } else {
+            this.subscription = subscription;
+            subscriptionComboBox.addItem(subscription.getName());
+
+            loadRegions();
+        }
+    }
+
+    public void setOnCreate(Runnable onCreate) {
+        this.onCreate = onCreate;
+    }
+
+    public StorageAccount getStorageAccount() {
+        return storageAccount;
+    }
+
+    public void loadRegions() {
         regionOrAffinityGroupComboBox.addItem("<Loading...>");
 
         ProgressManager.getInstance().run(new Task.Backgroundable(project, "Loading regions...", false) {
@@ -241,14 +282,5 @@ public class CreateStorageAccountForm extends JDialog {
                 }
             }
         });
-
-    }
-
-    public void setOnCreate(Runnable onCreate) {
-        this.onCreate = onCreate;
-    }
-
-    public StorageAccount getStorageAccount() {
-        return storageAccount;
     }
 }

@@ -23,6 +23,7 @@ import com.microsoftopentechnologies.intellij.serviceexplorer.Node;
 import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionEvent;
 import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionListener;
 import com.microsoftopentechnologies.intellij.serviceexplorer.azure.mobileservice.MobileServiceModule;
+import com.microsoftopentechnologies.intellij.serviceexplorer.azure.storage.StorageModule;
 import com.microsoftopentechnologies.intellij.serviceexplorer.azure.vm.VMServiceModule;
 
 import java.util.Map;
@@ -35,6 +36,7 @@ public class AzureServiceModule extends Node {
     private Project project;
     private MobileServiceModule mobileServiceModule = new MobileServiceModule(this);
     private VMServiceModule vmServiceModule = new VMServiceModule(this);
+    private StorageModule storageServiceModule = new StorageModule(this);
 
     public AzureServiceModule(Project project) {
         this(null, ICON_PATH, null);
@@ -81,6 +83,14 @@ public class AzureServiceModule extends Node {
                 addChildNode(vmServiceModule);
             }
             vmServiceModule.load();
+        }
+
+
+        if(!storageServiceModule.isLoading()) {
+            if (!isDirectChild(storageServiceModule)) {
+                addChildNode(storageServiceModule);
+            }
+            storageServiceModule.load();
         }
     }
 
