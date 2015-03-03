@@ -25,6 +25,7 @@ import com.intellij.ui.ListCellRendererWrapper;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManager;
+import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManagerImpl;
 import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerImpl;
 import com.microsoftopentechnologies.intellij.model.ms.Subscription;
 import com.microsoftopentechnologies.intellij.model.vm.AffinityGroup;
@@ -81,7 +82,7 @@ public class CreateStorageAccountForm extends JDialog {
         getRootPane().setDefaultButton(buttonOK);
 
         setResizable(false);
-        setPreferredSize(new Dimension( 411, 330));
+        setPreferredSize(new Dimension(411, 330));
         setTitle("Create Storage Account");
 
         buttonOK.addActionListener(new ActionListener() {
@@ -205,7 +206,7 @@ public class CreateStorageAccountForm extends JDialog {
             try {
                 subscriptionComboBox.setEnabled(true);
 
-                ArrayList<Subscription> fullSubscriptionList = AzureRestAPIManager.getManager().getFullSubscriptionList();
+                ArrayList<Subscription> fullSubscriptionList = AzureRestAPIManagerImpl.getManager().getFullSubscriptionList();
                 subscriptionComboBox.setModel(new DefaultComboBoxModel(new Vector<Subscription>(fullSubscriptionList)));
                 subscriptionComboBox.addItemListener(new ItemListener() {
                     @Override
@@ -276,9 +277,9 @@ public class CreateStorageAccountForm extends JDialog {
                             regionOrAffinityGroupComboBox.setSelectedIndex(1);
                         }
                     });
-
                 } catch (AzureCmdException e) {
-                    UIHelper.showException("Error getting regions", e);
+                    UIHelper.showException("An error occurred while trying to load the regions list",
+                            e, "Error Loading Regions", false, true);
                 }
             }
         });

@@ -106,7 +106,8 @@ public class MachineSettingsStep extends WizardStep<CreateVMWizardModel> {
                         try {
                             Desktop.getDesktop().browse(hyperlinkEvent.getURL().toURI());
                         } catch (Exception e) {
-                            UIHelper.showException("Error opening link", e);
+                            UIHelper.showException("An error occurred while trying to open the specified Link",
+                                    e, "Error Opening Link", false, true);
                         }
                     }
                 }
@@ -238,7 +239,8 @@ public class MachineSettingsStep extends WizardStep<CreateVMWizardModel> {
                             }
                         }, ModalityState.any());
                     } catch (AzureCmdException e) {
-                        UIHelper.showException("Error trying to get VM sizes", e);
+                        UIHelper.showException("An error occurred while trying to load the VM sizes list",
+                                e, "Error Loading VM Sizes", false, true);
                     }
                 }
             });

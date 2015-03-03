@@ -91,8 +91,13 @@ public class CreateCloudServiceForm extends JDialog {
         regionOrAffinityGroupComboBox.setRenderer(new ListCellRendererWrapper<Object>() {
             @Override
             public void customize(JList jList, Object o, int i, boolean b, boolean b1) {
-                if(!(o instanceof String)) {
-                    setText("  " + o.toString());
+                if (!(o instanceof String)) {
+                    if (o instanceof AffinityGroup) {
+                        AffinityGroup ag = (AffinityGroup) o;
+                        setText(String.format("  %s (%s)", ag.getName(), ag.getLocation()));
+                    } else {
+                        setText("  " + o.toString());
+                    }
                 }
             }
         });
@@ -169,13 +174,12 @@ public class CreateCloudServiceForm extends JDialog {
                             regionOrAffinityGroupComboBox.setSelectedIndex(1);
                         }
                     });
-
                 } catch (AzureCmdException e) {
-                    UIHelper.showException("Error getting regions", e);
+                    UIHelper.showException("An error occurred while trying to load the regions list",
+                            e, "Error Loading Regions", false, true);
                 }
             }
         });
-
     }
 
     private void onOK() {
@@ -192,10 +196,14 @@ public class CreateCloudServiceForm extends JDialog {
         try {
             String name = nameTextField.getText();
             Object regionOrAffinity = regionOrAffinityGroupComboBox.getSelectedItem();
-            String region = (regionOrAffinity instanceof Location) ? regionOrAffinity.toString() : "";
-            String affinityGroup = (regionOrAffinity instanceof AffinityGroup) ? regionOrAffinity.toString() : "";
+            String location = (regionOrAffinity instanceof Location) ?
+                    ((Location) regionOrAffinity).getName() :
+                    "";
+            String affinityGroup = (regionOrAffinity instanceof AffinityGroup) ?
+                    ((AffinityGroup) regionOrAffinity).getName() :
+                    "";
 
-            cloudService = new CloudService(name, region, affinityGroup, subscription.getId().toString());
+            cloudService = new CloudService(name, location, affinityGroup, subscription.getId().toString());
             AzureSDKManagerImpl.getManager().createCloudService(cloudService);
         } catch (Exception e) {
             cloudService = null;
