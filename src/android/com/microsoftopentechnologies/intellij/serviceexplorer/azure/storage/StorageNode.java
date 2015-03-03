@@ -16,7 +16,7 @@
 
 package com.microsoftopentechnologies.intellij.serviceexplorer.azure.storage;
 
-import com.microsoftopentechnologies.intellij.model.vm.StorageAccount;
+import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
 import com.microsoftopentechnologies.intellij.serviceexplorer.Node;
 
 public class StorageNode extends Node {
