@@ -15,12 +15,13 @@
  */
 package com.microsoftopentechnologies.intellij.helpers.azure.sdk;
 
+import com.google.common.base.Strings;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import com.intellij.openapi.application.ApplicationManager;
 import com.microsoft.azure.storage.CloudStorageAccount;
-import com.microsoft.azure.storage.StorageException;
+import com.microsoft.azure.storage.blob.CloudBlobClient;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import com.microsoft.windowsazure.core.OperationResponse;
 import com.microsoft.windowsazure.core.OperationStatus;
@@ -46,10 +47,7 @@ import com.microsoft.windowsazure.management.network.models.NetworkListResponse.
 import com.microsoft.windowsazure.management.network.models.NetworkListResponse.VirtualNetworkSite;
 import com.microsoft.windowsazure.management.storage.StorageAccountOperations;
 import com.microsoft.windowsazure.management.storage.StorageManagementClient;
-import com.microsoft.windowsazure.management.storage.models.StorageAccountCreateParameters;
-import com.microsoft.windowsazure.management.storage.models.StorageAccountGetKeysResponse;
-import com.microsoft.windowsazure.management.storage.models.StorageAccountGetResponse;
-import com.microsoft.windowsazure.management.storage.models.StorageAccountListResponse;
+import com.microsoft.windowsazure.management.storage.models.*;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureAuthenticationMode;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManagerImpl;
@@ -63,8 +61,6 @@ import org.jetbrains.annotations.Nullable;
 import javax.security.cert.X509Certificate;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -731,9 +727,22 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
 
             StorageAccount sa = getStorageAccount(storageAccount.getSubscriptionId(), client, sagr.getStorageAccount());
             storageAccount.setType(sa.getType());
+            storageAccount.setDescription(sa.getDescription());
+            storageAccount.setLabel(sa.getLabel());
+            storageAccount.setStatus(sa.getStatus());
             storageAccount.setLocation(sa.getLocation());
             storageAccount.setAffinityGroup(sa.getAffinityGroup());
-            storageAccount.setKey(sa.getKey());
+            storageAccount.setPrimaryKey(sa.getPrimaryKey());
+            storageAccount.setSecondaryKey(sa.getSecondaryKey());
+            storageAccount.setManagementUri(sa.getManagementUri());
+            storageAccount.setBlobsUri(sa.getBlobsUri());
+            storageAccount.setQueuesUri(sa.getQueuesUri());
+            storageAccount.setTablesUri(sa.getTablesUri());
+            storageAccount.setPrimaryRegion(sa.getPrimaryRegion());
+            storageAccount.setPrimaryRegionStatus(sa.getPrimaryRegionStatus());
+            storageAccount.setSecondaryRegion(sa.getSecondaryRegion());
+            storageAccount.setSecondaryRegionStatus(sa.getSecondaryRegionStatus());
+            storageAccount.setLastFailover(sa.getLastFailover());
 
             return storageAccount;
         } catch (Throwable t) {
@@ -847,6 +856,14 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         }
 
         return client;
+    }
+
+    @NotNull
+    private static CloudBlobClient getCloudBlobClient(@NotNull StorageAccount storageAccount)
+            throws Exception {
+        CloudStorageAccount csa = AzureSDKHelper.getCloudStorageAccount(storageAccount);
+
+        return csa.createCloudBlobClient();
     }
 
     @NotNull
@@ -1079,28 +1096,56 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     private static StorageAccount getStorageAccount(@NotNull String subscriptionId,
                                                     @NotNull StorageManagementClient client,
                                                     @NotNull com.microsoft.windowsazure.management.storage.models.StorageAccount storageAccount) throws Exception {
-        String key = "";
+        String primaryKey = "";
+        String secondaryKey = "";
 
         if (storageAccount.getName() != null) {
-            String primaryKey = getStorageAccountKeys(client, storageAccount.getName()).getPrimaryKey();
+            StorageAccountGetKeysResponse sak = getStorageAccountKeys(client, storageAccount.getName());
 
-            if (primaryKey != null) {
-                key = primaryKey;
+            primaryKey = sak.getPrimaryKey();
+            secondaryKey = sak.getSecondaryKey();
+        }
+
+        StorageAccountProperties sap = storageAccount.getProperties() != null ?
+                storageAccount.getProperties() :
+                new StorageAccountProperties();
+        String blobsUri = "";
+        String queuesUri = "";
+        String tablesUri = "";
+
+        ArrayList<URI> endpoints = sap.getEndpoints();
+
+        if (endpoints != null && endpoints.size() > 0) {
+            blobsUri = endpoints.get(0).toString();
+
+            if (endpoints.size() > 1) {
+                queuesUri = endpoints.get(1).toString();
+
+                if (endpoints.size() > 2) {
+                    tablesUri = endpoints.get(2).toString();
+                }
             }
         }
 
         return new StorageAccount(
-                storageAccount.getName() != null ? storageAccount.getName() : "",
-                storageAccount.getProperties() != null && storageAccount.getProperties().getAccountType() != null ?
-                        storageAccount.getProperties().getAccountType() :
-                        "",
-                storageAccount.getProperties() != null && storageAccount.getProperties().getLocation() != null ?
-                        storageAccount.getProperties().getLocation() :
-                        "",
-                storageAccount.getProperties() != null && storageAccount.getProperties().getAffinityGroup() != null ?
-                        storageAccount.getProperties().getAffinityGroup() :
-                        "",
-                key,
+                Strings.nullToEmpty(storageAccount.getName()),
+                Strings.nullToEmpty(sap.getAccountType()),
+                Strings.nullToEmpty(sap.getDescription()),
+                Strings.nullToEmpty(sap.getLabel()),
+                sap.getStatus() != null ? sap.getStatus().toString() : "",
+                Strings.nullToEmpty(sap.getLocation()),
+                Strings.nullToEmpty(sap.getAffinityGroup()),
+                Strings.nullToEmpty(primaryKey),
+                Strings.nullToEmpty(secondaryKey),
+                storageAccount.getUri() != null ? storageAccount.getUri().toString() : "",
+                blobsUri,
+                queuesUri,
+                tablesUri,
+                Strings.nullToEmpty(sap.getGeoPrimaryRegion()),
+                sap.getStatusOfGeoPrimaryRegion() != null ? sap.getStatusOfGeoPrimaryRegion().toString() : "",
+                Strings.nullToEmpty(sap.getGeoSecondaryRegion()),
+                sap.getStatusOfGeoSecondaryRegion() != null ? sap.getStatusOfGeoSecondaryRegion().toString() : "",
+                sap.getLastGeoFailoverTime() != null ? sap.getLastGeoFailoverTime() : new GregorianCalendar(),
                 subscriptionId);
     }
 
@@ -1358,7 +1403,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     @NotNull
     private static String getMediaLocation(@NotNull VirtualMachine virtualMachine,
                                            @NotNull StorageAccount storageAccount)
-            throws URISyntaxException, InvalidKeyException, StorageException {
+            throws Exception {
         Calendar calendar = GregorianCalendar.getInstance();
         String blobName = String.format("%s-%s-0-%04d%02d%02d%02d%02d%02d%04d.vhd",
                 virtualMachine.getServiceName(),
@@ -1371,11 +1416,9 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
                 calendar.get(Calendar.SECOND),
                 calendar.get(Calendar.MILLISECOND));
 
-        CloudStorageAccount csa = CloudStorageAccount.parse("DefaultEndpointsProtocol=http;" +
-                "AccountName=" + storageAccount.getName() + ";" +
-                "AccountKey=" + storageAccount.getKey());
+        CloudBlobClient cloudBlobClient = getCloudBlobClient(storageAccount);
 
-        CloudBlobContainer container = csa.createCloudBlobClient().getContainerReference("vhds");
+        CloudBlobContainer container = cloudBlobClient.getContainerReference("vhds");
         container.createIfNotExists();
 
         return container.getUri().toString() + "/" + blobName;
