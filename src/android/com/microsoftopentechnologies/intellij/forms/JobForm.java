@@ -17,7 +17,7 @@
 package com.microsoftopentechnologies.intellij.forms;
 
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
-import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManager;
+import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManagerImpl;
 import com.microsoftopentechnologies.intellij.model.ms.Job;
 
 import javax.swing.*;
@@ -137,7 +137,7 @@ public class JobForm extends JDialog {
                     if(id == null) {
                         existingJobNames = new ArrayList<String>();
 
-                        for (Job job : AzureRestAPIManager.getManager().listJobs(subscriptionId, serviceName)) {
+                        for (Job job : AzureRestAPIManagerImpl.getManager().listJobs(subscriptionId, serviceName)) {
                             existingJobNames.add(job.getName().toLowerCase());
                         }
 
@@ -152,9 +152,9 @@ public class JobForm extends JDialog {
 
 
                     if(id == null)
-                        AzureRestAPIManager.getManager().createJob(subscriptionId, serviceName, jobName, interval, unit, now);
+                        AzureRestAPIManagerImpl.getManager().createJob(subscriptionId, serviceName, jobName, interval, unit, now);
                     else {
-                        AzureRestAPIManager.getManager().updateJob(subscriptionId, serviceName, jobName, interval, unit, now, enabledCheckBox.isSelected());
+                        AzureRestAPIManagerImpl.getManager().updateJob(subscriptionId, serviceName, jobName, interval, unit, now, enabledCheckBox.isSelected());
                     }
 
                     if(afterSave != null)

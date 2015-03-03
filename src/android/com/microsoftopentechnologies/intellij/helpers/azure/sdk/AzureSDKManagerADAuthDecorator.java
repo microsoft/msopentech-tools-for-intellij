@@ -22,9 +22,10 @@ import com.microsoftopentechnologies.intellij.helpers.StringHelper;
 import com.microsoftopentechnologies.intellij.helpers.aadauth.AuthenticationContext;
 import com.microsoftopentechnologies.intellij.helpers.aadauth.AuthenticationResult;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.intellij.helpers.azure.AzureManager;
-import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManager;
+import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIHelper;
+import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManagerImpl;
+import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
 import com.microsoftopentechnologies.intellij.model.vm.*;
 import org.jetbrains.annotations.NotNull;
 
@@ -67,7 +68,7 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
 
     private boolean refreshAccessToken(String subscriptionId) {
         PluginSettings settings = MSOpenTechToolsApplication.getCurrent().getSettings();
-        AzureManager apiManager = AzureRestAPIManager.getManager();
+        AzureRestAPIManager apiManager = AzureRestAPIManagerImpl.getManager();
         AuthenticationResult token = apiManager.getAuthenticationTokenForSubscription(subscriptionId);
 
         // check if we have a refresh token to redeem
@@ -341,6 +342,17 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
             @Override
             public String run() throws AzureCmdException {
                 return sdkManager.createServiceCertificate(subscriptionId, serviceName, data, password);
+            }
+        });
+    }
+
+    @Override
+    public void deleteStorageAccount(@NotNull final StorageAccount storageAccount) throws AzureCmdException {
+        runWithRetry(storageAccount.getSubscriptionId(), new Func0<Void>() {
+            @Override
+            public Void run() throws AzureCmdException {
+                sdkManager.deleteStorageAccount(storageAccount);
+                return null;
             }
         });
     }

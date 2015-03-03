@@ -27,7 +27,7 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManager;
+import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManagerImpl;
 import com.microsoftopentechnologies.intellij.model.ms.Script;
 import com.microsoftopentechnologies.intellij.model.ms.MobileService;
 import com.microsoftopentechnologies.intellij.serviceexplorer.Node;
@@ -63,7 +63,7 @@ public class TableScriptNode extends ScriptNodeBase {
 
     @Override
     protected void downloadScript(MobileService mobileService, String scriptName, String localFilePath) throws AzureCmdException {
-        AzureRestAPIManager.getManager().downloadTableScript(
+        AzureRestAPIManagerImpl.getManager().downloadTableScript(
                 mobileService.getSubcriptionId(),
                 mobileService.getName(),
                 scriptName,
@@ -121,7 +121,7 @@ public class TableScriptNode extends ScriptNodeBase {
                     public void run(@NotNull ProgressIndicator progressIndicator) {
                         try {
                             progressIndicator.setIndeterminate(true);
-                            AzureRestAPIManager.getManager().uploadTableScript(
+                            AzureRestAPIManagerImpl.getManager().uploadTableScript(
                                     subscriptionId,
                                     serviceName,
                                     script.getName(),

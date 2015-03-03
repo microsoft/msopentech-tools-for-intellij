@@ -19,9 +19,9 @@ package com.microsoftopentechnologies.intellij.helpers.azure.sdk;
 import com.microsoft.windowsazure.core.pipeline.filter.ServiceRequestContext;
 import com.microsoft.windowsazure.core.pipeline.filter.ServiceRequestFilter;
 import com.microsoftopentechnologies.intellij.helpers.aadauth.AuthenticationResult;
-import com.microsoftopentechnologies.intellij.helpers.azure.AzureManager;
-import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManager;
+import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIHelper;
+import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManagerImpl;
 
 public class AuthTokenRequestFilter implements ServiceRequestFilter {
     private String subscriptionId;
@@ -32,7 +32,7 @@ public class AuthTokenRequestFilter implements ServiceRequestFilter {
 
     @Override
     public void filter(ServiceRequestContext request) {
-        AzureManager apiManager = AzureRestAPIManager.getManager();
+        AzureRestAPIManager apiManager = AzureRestAPIManagerImpl.getManager();
 
         // if there's no auth token to work with there's nothing much we can do
         if (apiManager.getAuthenticationToken() == null) {

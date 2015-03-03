@@ -21,7 +21,7 @@ import com.google.common.util.concurrent.Futures;
 import com.microsoftopentechnologies.intellij.forms.TableForm;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManager;
+import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManagerImpl;
 import com.microsoftopentechnologies.intellij.model.ms.Column;
 import com.microsoftopentechnologies.intellij.model.ms.Script;
 import com.microsoftopentechnologies.intellij.model.ms.MobileService;
@@ -55,7 +55,7 @@ public class TableNode extends Node {
         MobileService mobileService = mobileServiceNode.getMobileService();
 
         // fetch table details
-        Table tableInfo = AzureRestAPIManager.getManager().showTableDetails(
+        Table tableInfo = AzureRestAPIManagerImpl.getManager().showTableDetails(
                 mobileService.getSubcriptionId(),
                 mobileService.getName(),
                 table.getName());
@@ -157,7 +157,7 @@ public class TableNode extends Node {
                 public void run() {
                     Table selectedTable = null;
                     try {
-                        selectedTable = AzureRestAPIManager.getManager().showTableDetails(
+                        selectedTable = AzureRestAPIManagerImpl.getManager().showTableDetails(
                                 mobileService.getSubcriptionId(),
                                 mobileService.getName(),
                                 table.getName());

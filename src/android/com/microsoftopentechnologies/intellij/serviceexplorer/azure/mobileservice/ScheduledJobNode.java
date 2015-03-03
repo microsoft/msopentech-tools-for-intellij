@@ -28,7 +28,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoftopentechnologies.intellij.forms.JobForm;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManager;
+import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManagerImpl;
 import com.microsoftopentechnologies.intellij.model.ms.Job;
 import com.microsoftopentechnologies.intellij.model.ms.MobileService;
 import com.microsoftopentechnologies.intellij.serviceexplorer.Node;
@@ -64,7 +64,7 @@ public class ScheduledJobNode extends ScriptNodeBase {
 
     @Override
     protected void downloadScript(MobileService mobileService, String scriptName, String localFilePath) throws AzureCmdException {
-        AzureRestAPIManager.getManager().downloadJobScript(
+        AzureRestAPIManagerImpl.getManager().downloadJobScript(
                 mobileService.getSubcriptionId(),
                 mobileService.getName(),
                 scriptName,
@@ -122,7 +122,7 @@ public class ScheduledJobNode extends ScriptNodeBase {
                     public void run(@NotNull ProgressIndicator progressIndicator) {
                         try {
                             progressIndicator.setIndeterminate(true);
-                            AzureRestAPIManager.getManager().uploadJobScript(
+                            AzureRestAPIManagerImpl.getManager().uploadJobScript(
                                     mobileService.getSubcriptionId(), mobileService.getName(),
                                     job.getName(), job.getLocalFilePath(mobileService.getName()));
                         } catch (AzureCmdException e) {

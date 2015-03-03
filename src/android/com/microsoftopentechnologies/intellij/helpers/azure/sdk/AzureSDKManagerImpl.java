@@ -52,7 +52,8 @@ import com.microsoft.windowsazure.management.storage.models.StorageAccountGetRes
 import com.microsoft.windowsazure.management.storage.models.StorageAccountListResponse;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureAuthenticationMode;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManager;
+import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManagerImpl;
+import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
 import com.microsoftopentechnologies.intellij.model.vm.*;
 import com.microsoftopentechnologies.intellij.model.vm.CloudService.Deployment;
 import com.microsoftopentechnologies.intellij.model.vm.VirtualMachine.Status;
@@ -114,7 +115,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
             apiManagerADAuth = new AzureSDKManagerADAuthDecorator(apiManager);
         }
 
-        if (AzureRestAPIManager.getManager().getAuthenticationMode() == AzureAuthenticationMode.ActiveDirectory) {
+        if (AzureRestAPIManagerImpl.getManager().getAuthenticationMode() == AzureAuthenticationMode.ActiveDirectory) {
             return apiManagerADAuth;
         } else {
             return apiManager;
@@ -771,6 +772,29 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
             return thumbprint;
         } catch (Throwable t) {
             throw new AzureCmdException("Error creating the Service Certificate", t);
+        } finally {
+            if (client != null) {
+                try {
+                    client.close();
+                } catch (IOException ignored) {
+                }
+            }
+        }
+    }
+
+    @Override
+    public void deleteStorageAccount(@NotNull StorageAccount storageAccount) throws AzureCmdException {
+        StorageManagementClient client = null;
+
+        try {
+            client = getStorageManagementClient(storageAccount.getSubscriptionId());
+            StorageAccountOperations sao = getStorageAccountOperations(client);
+
+            OperationResponse or = sao.delete(storageAccount.getName());
+            OperationStatusResponse osr = getOperationStatusResponse(client, or);
+            validateOperationStatus(osr);
+        } catch (Throwable t) {
+            throw new AzureCmdException("Error deleting the Storage Account", t);
         } finally {
             if (client != null) {
                 try {

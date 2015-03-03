@@ -17,7 +17,7 @@
 package com.microsoftopentechnologies.intellij.serviceexplorer.azure.vm;
 
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManager;
+import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManagerImpl;
 import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerImpl;
 import com.microsoftopentechnologies.intellij.model.ms.Subscription;
 import com.microsoftopentechnologies.intellij.model.vm.VirtualMachine;
@@ -45,7 +45,7 @@ public class VMServiceModule extends Node {
         removeAllChildNodes();
 
         // load all VMs
-        ArrayList<Subscription> subscriptionList = AzureRestAPIManager.getManager().getSubscriptionList();
+        ArrayList<Subscription> subscriptionList = AzureRestAPIManagerImpl.getManager().getSubscriptionList();
         if(subscriptionList != null) {
             for (Subscription subscription : subscriptionList) {
                 List<VirtualMachine> virtualMachines = AzureSDKManagerImpl.getManager().getVirtualMachines(subscription.getId().toString());

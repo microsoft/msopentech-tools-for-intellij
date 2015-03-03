@@ -30,7 +30,7 @@ import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerImpl;
 import com.microsoftopentechnologies.intellij.model.vm.CloudService;
-import com.microsoftopentechnologies.intellij.model.vm.StorageAccount;
+import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
 import com.microsoftopentechnologies.intellij.model.vm.VirtualMachineImage;
 import com.microsoftopentechnologies.intellij.model.vm.VirtualNetwork;
 import org.jetbrains.annotations.NotNull;

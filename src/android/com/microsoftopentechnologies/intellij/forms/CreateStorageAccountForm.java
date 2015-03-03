@@ -29,7 +29,7 @@ import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerI
 import com.microsoftopentechnologies.intellij.model.ms.Subscription;
 import com.microsoftopentechnologies.intellij.model.vm.AffinityGroup;
 import com.microsoftopentechnologies.intellij.model.vm.Location;
-import com.microsoftopentechnologies.intellij.model.vm.StorageAccount;
+import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
