@@ -13,7 +13,6 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-
 package com.microsoftopentechnologies.intellij.wizards.createvm;
 
 import com.intellij.openapi.application.ApplicationManager;
@@ -78,7 +77,7 @@ public class CreateStorageAccountForm extends JDialog {
         getRootPane().setDefaultButton(buttonOK);
 
         setResizable(false);
-        setPreferredSize(new Dimension( 411, 330));
+        setPreferredSize(new Dimension(411, 330));
         setTitle("Create Storage Account");
 
         buttonOK.addActionListener(new ActionListener() {
@@ -109,7 +108,7 @@ public class CreateStorageAccountForm extends JDialog {
 
             @Override
             public void customize(JList jList, Object o, int i, boolean b, boolean b1) {
-                if(!(o instanceof String)) {
+                if (!(o instanceof String)) {
                     setText("  " + o.toString());
                 }
             }
@@ -235,9 +234,9 @@ public class CreateStorageAccountForm extends JDialog {
                             regionOrAffinityGroupComboBox.setSelectedIndex(1);
                         }
                     });
-
                 } catch (AzureCmdException e) {
-                    UIHelper.showException("Error getting regions", e);
+                    UIHelper.showException("An error occurred while trying to load the regions list",
+                            e, "Error Loading Regions", false, true);
                 }
             }
         });
