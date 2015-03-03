@@ -13,8 +13,6 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-
-
 package com.microsoftopentechnologies.intellij.wizards.createvm;
 
 import com.intellij.ui.wizard.WizardNavigationState;
@@ -34,7 +32,6 @@ import java.util.ArrayList;
 import java.util.Vector;
 
 public class SubscriptionStep extends WizardStep<CreateVMWizardModel> {
-
     CreateVMWizardModel model;
     private JPanel rootPanel;
     private JList createVmStepsList;
@@ -90,7 +87,7 @@ public class SubscriptionStep extends WizardStep<CreateVMWizardModel> {
             final Vector<Subscription> subscriptions = new Vector<Subscription>((subscriptionList == null) ? new Vector<Subscription>() : subscriptionList);
             subscriptionComboBox.setModel(new DefaultComboBoxModel(subscriptions));
 
-            if(!subscriptions.isEmpty()) {
+            if (!subscriptions.isEmpty()) {
                 model.setSubscription(subscriptions.get(0));
             }
 
@@ -98,7 +95,8 @@ public class SubscriptionStep extends WizardStep<CreateVMWizardModel> {
             model.getCurrentNavigationState().NEXT.setEnabled(!subscriptions.isEmpty());
 
         } catch (AzureCmdException e) {
-            UIHelper.showException("Error retrieving subscription list", e);
+            UIHelper.showException("An error occurred while trying to load the subscriptions list",
+                    e, "Error Loading Subscriptions", false, true);
         }
     }
 }

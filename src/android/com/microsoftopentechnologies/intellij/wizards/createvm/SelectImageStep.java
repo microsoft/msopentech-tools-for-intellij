@@ -13,7 +13,6 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-
 package com.microsoftopentechnologies.intellij.wizards.createvm;
 
 import com.intellij.openapi.application.ApplicationManager;
@@ -167,9 +166,9 @@ public class SelectImageStep extends WizardStep<CreateVMWizardModel> {
                     setText("  " + o.toString());
                 } else {
                     //Gets the default label font
-                    Font f =  UIManager.getFont("Label.font");
+                    Font f = UIManager.getFont("Label.font");
                     setFont(f.deriveFont(f.getStyle()
-                        | Font.BOLD | Font.ITALIC));
+                            | Font.BOLD | Font.ITALIC));
                 }
             }
         });
@@ -223,7 +222,8 @@ public class SelectImageStep extends WizardStep<CreateVMWizardModel> {
                         try {
                             Desktop.getDesktop().browse(hyperlinkEvent.getURL().toURI());
                         } catch (Exception e) {
-                            UIHelper.showException("Error opening link", e);
+                            UIHelper.showException("An error occurred while trying to open the specified Link",
+                                    e, "Error Opening Link", false, true);
                         }
                     }
                 }
@@ -301,9 +301,9 @@ public class SelectImageStep extends WizardStep<CreateVMWizardModel> {
                                 imageTypeComboBox.setSelectedIndex(1);
                             }
                         });
-
                     } catch (AzureCmdException e) {
-                        UIHelper.showException("Error getting Virtual Machine Images", e);
+                        UIHelper.showException("An error occurred while trying to load the virtual machine images list",
+                                e, "Error Loading Virtual Machine Images", false, true);
                     }
                 }
             });

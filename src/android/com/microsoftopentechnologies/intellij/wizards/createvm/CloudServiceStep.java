@@ -84,8 +84,16 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
             @Override
             public void customize(JList jList, Object o, int i, boolean b, boolean b1) {
                 if (o instanceof CloudService) {
-                    CloudService sa = (CloudService) o;
-                    setText(String.format("%s (%s)", sa.getName(), sa.getLocation()));
+                    CloudService cs = (CloudService) o;
+
+                    if (cs.getProductionDeployment().getVirtualNetwork().isEmpty()) {
+                        setText(String.format("%s (%s)", cs.getName(),
+                                !cs.getLocation().isEmpty() ? cs.getLocation() : cs.getAffinityGroup()));
+                    } else {
+                        setText(String.format("%s (%s - %s)", cs.getName(),
+                                cs.getProductionDeployment().getVirtualNetwork(),
+                                !cs.getLocation().isEmpty() ? cs.getLocation() : cs.getAffinityGroup()));
+                    }
                 }
             }
         });
@@ -95,7 +103,8 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
             public void customize(JList jList, Object o, int i, boolean b, boolean b1) {
                 if (o instanceof StorageAccount) {
                     StorageAccount sa = (StorageAccount) o;
-                    setText(String.format("%s (%s)", sa.getName(), sa.getLocation()));
+                    setText(String.format("%s (%s)", sa.getName(),
+                            !sa.getLocation().isEmpty() ? sa.getLocation() : sa.getAffinityGroup()));
                 }
             }
         });
@@ -104,6 +113,16 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
             @Override
             public void itemStateChanged(ItemEvent itemEvent) {
                 validateNext();
+            }
+        });
+
+        networkComboBox.setRenderer(new ListCellRendererWrapper<Object>() {
+            @Override
+            public void customize(JList jList, Object o, int i, boolean b, boolean b1) {
+                if (o instanceof VirtualNetwork) {
+                    VirtualNetwork vn = (VirtualNetwork) o;
+                    setText(String.format("%s (%s)", vn.getName(), vn.getLocation()));
+                }
             }
         });
 
@@ -130,7 +149,8 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
                         try {
                             Desktop.getDesktop().browse(hyperlinkEvent.getURL().toURI());
                         } catch (Exception e) {
-                            UIHelper.showException("Error opening link", e);
+                            UIHelper.showException("An error occurred while trying to open the specified Link",
+                                    e, "Error Opening Link", false, true);
                         }
                     }
                 }
@@ -207,7 +227,8 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
                             csInitialized.signalAll();
                         } catch (AzureCmdException e) {
                             cloudServices = null;
-                            UIHelper.showException("Error trying to get cloud services list", e);
+                            UIHelper.showException("An error occurred while trying to retrieve the cloud services list",
+                                    e, "Error Retrieving Cloud Services", false, true);
                         }
                     }
                 } finally {
@@ -260,7 +281,7 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
                         cloudServices.put(selectedCS.getName(), selectedCS);
                     }
                 } catch (InterruptedException e) {
-                    UIHelper.showException("An error occurred while trying load the cloud services list", e,
+                    UIHelper.showException("An error occurred while trying to load the cloud services list", e,
                             "Error Loading Cloud Services", false, true);
                 } finally {
                     csLock.unlock();
@@ -383,7 +404,8 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
                             vnInitialized.signalAll();
                         } catch (AzureCmdException e) {
                             virtualNetworks = null;
-                            UIHelper.showException("Error trying to get virtual networks list", e);
+                            UIHelper.showException("An error occurred while trying to retrieve the virtual networks list",
+                                    e, "Error Retrieving Virtual Networks", false, true);
                         }
                     }
                 } finally {
@@ -587,7 +609,8 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
                             saInitialized.signalAll();
                         } catch (AzureCmdException e) {
                             storageAccounts = null;
-                            UIHelper.showException("Error trying to get storage accounts list", e);
+                            UIHelper.showException("An error occurred while trying to retrieve the storage accounts list",
+                                    e, "Error Retrieving Storage Accounts", false, true);
                         }
                     }
                 } finally {
@@ -698,7 +721,10 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
 
         if (selectedCS != null) {
             for (StorageAccount storageAccount : storageAccounts.values()) {
-                if (storageAccount.getLocation().equals(selectedCS.getLocation())) {
+                if ((!storageAccount.getLocation().isEmpty() &&
+                        storageAccount.getLocation().equals(selectedCS.getLocation())) ||
+                        (!storageAccount.getAffinityGroup().isEmpty() &&
+                                storageAccount.getAffinityGroup().equals(selectedCS.getAffinityGroup()))) {
                     accounts.add(storageAccount);
                 }
             }
