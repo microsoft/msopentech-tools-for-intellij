@@ -21,10 +21,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import com.intellij.openapi.application.ApplicationManager;
 import com.microsoft.azure.storage.CloudStorageAccount;
-import com.microsoft.azure.storage.blob.BlobContainerPermissions;
-import com.microsoft.azure.storage.blob.CloudBlobClient;
-import com.microsoft.azure.storage.blob.CloudBlobContainer;
-import com.microsoft.azure.storage.blob.ContainerListingDetails;
+import com.microsoft.azure.storage.blob.*;
 import com.microsoft.windowsazure.core.OperationResponse;
 import com.microsoft.windowsazure.core.OperationStatus;
 import com.microsoft.windowsazure.core.OperationStatusResponse;
@@ -823,28 +820,42 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     public List<BlobContainer> getBlobContainers(@NotNull StorageAccount storageAccount)
             throws AzureCmdException {
         List<BlobContainer> bcList = new ArrayList<BlobContainer>();
+
         try {
             CloudBlobClient client = getCloudBlobClient(storageAccount);
 
-            for (CloudBlobContainer cloudBlobContainer : client.listContainers(null, ContainerListingDetails.ALL, null, null)) {
-                BlobContainerPermissions blobContainerPermissions = cloudBlobContainer.downloadPermissions();
+            for (CloudBlobContainer container : client.listContainers(null, ContainerListingDetails.ALL, null, null)) {
+                String uri = container.getUri() != null ? container.getUri().toString() : "";
+                String eTag = "";
+                Calendar lastModified = new GregorianCalendar();
+                BlobContainerProperties properties = container.getProperties();
 
-                Calendar lastModified = GregorianCalendar.getInstance();
-                lastModified.setTime(cloudBlobContainer.getProperties().getLastModified());
+                if (properties != null) {
+                    eTag = Strings.nullToEmpty(properties.getEtag());
 
-                bcList.add(new BlobContainer(cloudBlobContainer.getName(),
-                        cloudBlobContainer.getUri().toString(),
-                        cloudBlobContainer.getProperties().getEtag(),
+                    if (properties.getLastModified() != null) {
+                        lastModified.setTime(properties.getLastModified());
+                    }
+                }
+
+                String publicReadAccessType = "";
+                BlobContainerPermissions blobContainerPermissions = container.downloadPermissions();
+
+                if (blobContainerPermissions != null && blobContainerPermissions.getPublicAccess() != null) {
+                    publicReadAccessType = blobContainerPermissions.getPublicAccess().toString();
+                }
+
+                bcList.add(new BlobContainer(Strings.nullToEmpty(container.getName()),
+                        uri,
+                        eTag,
                         lastModified,
-                        blobContainerPermissions.getPublicAccess().toString(),
+                        publicReadAccessType,
                         storageAccount.getSubscriptionId()));
             }
 
             return bcList;
-        } catch (ExecutionException e) {
-            throw new AzureCmdException("Error retrieving the VM list", e.getCause());
         } catch (Throwable t) {
-            throw new AzureCmdException("Error retrieving the VM list", t);
+            throw new AzureCmdException("Error retrieving the Blob Container list", t);
         }
     }
 
@@ -853,27 +864,146 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     public BlobContainer createBlobContainer(@NotNull StorageAccount storageAccount,
                                              @NotNull BlobContainer blobContainer)
             throws AzureCmdException {
-        throw new AzureCmdException("Not implemented, yet", "");
+        try {
+            CloudBlobClient client = getCloudBlobClient(storageAccount);
+
+            CloudBlobContainer container = client.getContainerReference(blobContainer.getName());
+            container.createIfNotExists();
+            container.downloadAttributes();
+
+            String uri = container.getUri() != null ? container.getUri().toString() : "";
+            String eTag = "";
+            Calendar lastModified = new GregorianCalendar();
+            BlobContainerProperties properties = container.getProperties();
+
+            if (properties != null) {
+                eTag = Strings.nullToEmpty(properties.getEtag());
+
+                if (properties.getLastModified() != null) {
+                    lastModified.setTime(properties.getLastModified());
+                }
+            }
+
+            String publicReadAccessType = "";
+            BlobContainerPermissions blobContainerPermissions = container.downloadPermissions();
+
+            if (blobContainerPermissions != null && blobContainerPermissions.getPublicAccess() != null) {
+                publicReadAccessType = blobContainerPermissions.getPublicAccess().toString();
+            }
+
+            blobContainer.setUri(uri);
+            blobContainer.setETag(eTag);
+            blobContainer.setLastModified(lastModified);
+            blobContainer.setPublicReadAccessType(publicReadAccessType);
+
+            return blobContainer;
+        } catch (Throwable t) {
+            throw new AzureCmdException("Error creating the Blob Container", t);
+        }
     }
 
     @Override
     public void deleteBlobContainer(@NotNull StorageAccount storageAccount, @NotNull BlobContainer blobContainer)
             throws AzureCmdException {
-        throw new AzureCmdException("Not implemented, yet", "");
+        try {
+            CloudBlobClient client = getCloudBlobClient(storageAccount);
+
+            CloudBlobContainer container = client.getContainerReference(blobContainer.getName());
+            container.deleteIfExists();
+        } catch (Throwable t) {
+            throw new AzureCmdException("Error deleting the Blob Container", t);
+        }
     }
 
     @NotNull
     @Override
     public BlobDirectory getRootDirectory(@NotNull StorageAccount storageAccount, @NotNull BlobContainer blobContainer)
             throws AzureCmdException {
-        throw new AzureCmdException("Not implemented, yet", "");
+        try {
+            CloudBlobClient client = getCloudBlobClient(storageAccount);
+
+            CloudBlobContainer container = client.getContainerReference(blobContainer.getName());
+            CloudBlobDirectory directory = container.getDirectoryReference("");
+
+            String uri = directory.getUri() != null ? directory.getUri().toString() : "";
+
+            return new BlobDirectory("", uri, blobContainer.getName(), "", storageAccount.getSubscriptionId());
+        } catch (Throwable t) {
+            throw new AzureCmdException("Error retrieving the root Blob Directory", t);
+        }
     }
 
     @NotNull
     @Override
     public List<BlobItem> getBlobItems(@NotNull StorageAccount storageAccount, @NotNull BlobDirectory blobDirectory)
             throws AzureCmdException {
-        throw new AzureCmdException("Not implemented, yet", "");
+        List<BlobItem> biList = new ArrayList<BlobItem>();
+
+        try {
+            CloudBlobClient client = getCloudBlobClient(storageAccount);
+            String containerName = blobDirectory.getContainerName();
+            String subscriptionId = storageAccount.getSubscriptionId();
+            String delimiter = client.getDirectoryDelimiter();
+
+            CloudBlobContainer container = client.getContainerReference(containerName);
+
+            CloudBlobDirectory directory = container.getDirectoryReference(blobDirectory.getPath());
+
+            for (ListBlobItem item : directory.listBlobs()) {
+                String uri = item.getUri() != null ? item.getUri().toString() : "";
+
+                if (item instanceof CloudBlobDirectory) {
+                    CloudBlobDirectory subDirectory = (CloudBlobDirectory) item;
+
+                    String name = extractBlobItemName(subDirectory.getPrefix(), delimiter);
+                    String path = Strings.nullToEmpty(subDirectory.getPrefix());
+
+                    biList.add(new BlobDirectory(name, uri, containerName, path, subscriptionId));
+                } else if (item instanceof CloudBlob) {
+                    CloudBlob blob = (CloudBlob) item;
+
+                    String name = extractBlobItemName(blob.getName(), delimiter);
+                    String path = Strings.nullToEmpty(blob.getName());
+                    String type = "";
+                    String cacheControlHeader = "";
+                    String contentEncoding = "";
+                    String contentLanguage = "";
+                    String contentType = "";
+                    String contentMD5Header = "";
+                    String eTag = "";
+                    Calendar lastModified = new GregorianCalendar();
+                    long size = 0;
+
+                    BlobProperties properties = blob.getProperties();
+
+                    if (properties != null) {
+                        if (properties.getBlobType() != null) {
+                            type = properties.getBlobType().toString();
+                        }
+
+                        cacheControlHeader = Strings.nullToEmpty(properties.getCacheControl());
+                        contentEncoding = Strings.nullToEmpty(properties.getContentEncoding());
+                        contentLanguage = Strings.nullToEmpty(properties.getContentLanguage());
+                        contentType = Strings.nullToEmpty(properties.getContentType());
+                        contentMD5Header = Strings.nullToEmpty(properties.getContentMD5());
+                        eTag = Strings.nullToEmpty(properties.getEtag());
+
+                        if (properties.getLastModified() != null) {
+                            lastModified.setTime(properties.getLastModified());
+                        }
+
+                        size = properties.getLength();
+                    }
+
+                    biList.add(new BlobFile(name, uri, containerName, path, type, cacheControlHeader, contentEncoding,
+                            contentLanguage, contentType, contentMD5Header, eTag, lastModified, size, subscriptionId));
+                }
+            }
+
+            return biList;
+        } catch (Throwable t) {
+            throw new AzureCmdException("Error retrieving the Blob Item list", t);
+        }
     }
 
     @NotNull
@@ -1929,7 +2059,25 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         return result;
     }
 
-    private static String bytesToHex(byte[] bytes) {
+    @NotNull
+    private static String extractBlobItemName(@Nullable String path, @Nullable String delimiter) {
+        if (path == null) {
+            return "";
+        } else if (delimiter == null || delimiter.isEmpty()) {
+            return path;
+        } else {
+            String[] parts = path.split(delimiter);
+
+            if (parts.length == 0) {
+                return "";
+            } else {
+                return parts[parts.length - 1];
+            }
+        }
+    }
+
+    @NotNull
+    private static String bytesToHex(@NotNull byte[] bytes) {
         char[] hexChars = new char[bytes.length * 2];
 
         for (int j = 0; j < bytes.length; j++) {

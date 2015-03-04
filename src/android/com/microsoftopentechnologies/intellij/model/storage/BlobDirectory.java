@@ -22,13 +22,19 @@ public class BlobDirectory implements ServiceTreeItem, BlobItem {
     private boolean loading;
     private String name;
     private String uri;
+    private String containerName;
+    private String path;
     private String subscriptionId;
 
     public BlobDirectory(@NotNull String name,
                          @NotNull String uri,
+                         @NotNull String containerName,
+                         @NotNull String path,
                          @NotNull String subscriptionId) {
         this.name = name;
         this.uri = uri;
+        this.containerName = containerName;
+        this.path = path;
         this.subscriptionId = subscriptionId;
     }
 
@@ -54,6 +60,26 @@ public class BlobDirectory implements ServiceTreeItem, BlobItem {
 
     public void setUri(@NotNull String uri) {
         this.uri = uri;
+    }
+
+    @NotNull
+    @Override
+    public String getContainerName() {
+        return containerName;
+    }
+
+    public void setContainerName(@NotNull String containerName) {
+        this.containerName = containerName;
+    }
+
+    @NotNull
+    @Override
+    public String getPath() {
+        return path;
+    }
+
+    public void setPath(@NotNull String path) {
+        this.path = path;
     }
 
     @NotNull
