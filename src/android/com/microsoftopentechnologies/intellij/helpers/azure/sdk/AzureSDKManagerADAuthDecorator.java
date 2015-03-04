@@ -22,9 +22,10 @@ import com.microsoftopentechnologies.intellij.helpers.StringHelper;
 import com.microsoftopentechnologies.intellij.helpers.aadauth.AuthenticationContext;
 import com.microsoftopentechnologies.intellij.helpers.aadauth.AuthenticationResult;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManager;
 import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIHelper;
+import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManager;
 import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManagerImpl;
+import com.microsoftopentechnologies.intellij.model.storage.BlobContainer;
 import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
 import com.microsoftopentechnologies.intellij.model.vm.*;
 import org.jetbrains.annotations.NotNull;
@@ -352,6 +353,57 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
             @Override
             public Void run() throws AzureCmdException {
                 sdkManager.deleteStorageAccount(storageAccount);
+                return null;
+            }
+        });
+    }
+
+    @NotNull
+    @Override
+    public List<BlobContainer> getBlobContainers(@NotNull final StorageAccount storageAccount)
+            throws AzureCmdException {
+        return runWithRetry(storageAccount.getSubscriptionId(), new Func0<List<BlobContainer>>() {
+            @Override
+            public List<BlobContainer> run() throws AzureCmdException {
+                return sdkManager.getBlobContainers(storageAccount);
+            }
+        });
+    }
+
+    @Override
+    public void createBlobContainer(@NotNull final StorageAccount storageAccount,
+                                    @NotNull final BlobContainer blobContainer)
+            throws AzureCmdException {
+        runWithRetry(storageAccount.getSubscriptionId(), new Func0<Void>() {
+            @Override
+            public Void run() throws AzureCmdException {
+                sdkManager.createBlobContainer(storageAccount, blobContainer);
+                return null;
+            }
+        });
+    }
+
+    @NotNull
+    @Override
+    public BlobContainer refreshBlobContainerInformation(@NotNull final StorageAccount storageAccount,
+                                                         @NotNull final BlobContainer blobContainer)
+            throws AzureCmdException {
+        return runWithRetry(storageAccount.getSubscriptionId(), new Func0<BlobContainer>() {
+            @Override
+            public BlobContainer run() throws AzureCmdException {
+                return sdkManager.refreshBlobContainerInformation(storageAccount, blobContainer);
+            }
+        });
+    }
+
+    @Override
+    public void deleteBlobContainer(@NotNull final StorageAccount storageAccount,
+                                    @NotNull final BlobContainer blobContainer)
+            throws AzureCmdException {
+        runWithRetry(storageAccount.getSubscriptionId(), new Func0<Void>() {
+            @Override
+            public Void run() throws AzureCmdException {
+                sdkManager.deleteBlobContainer(storageAccount, blobContainer);
                 return null;
             }
         });
