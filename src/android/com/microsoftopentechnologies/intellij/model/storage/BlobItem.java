@@ -30,5 +30,11 @@ public interface BlobItem {
     String getUri();
 
     @NotNull
+    String getContainerName();
+
+    @NotNull
+    String getPath();
+
+    @NotNull
     BlobItemType getItemType();
 }

@@ -24,6 +24,8 @@ public class BlobFile implements ServiceTreeItem, BlobItem {
     private boolean loading;
     private String name;
     private String uri;
+    private String containerName;
+    private String path;
     private String type;
     private String cacheControlHeader;
     private String contentEncoding;
@@ -37,6 +39,8 @@ public class BlobFile implements ServiceTreeItem, BlobItem {
 
     public BlobFile(@NotNull String name,
                     @NotNull String uri,
+                    @NotNull String containerName,
+                    @NotNull String path,
                     @NotNull String type,
                     @NotNull String cacheControlHeader,
                     @NotNull String contentEncoding,
@@ -49,6 +53,8 @@ public class BlobFile implements ServiceTreeItem, BlobItem {
                     @NotNull String subscriptionId) {
         this.name = name;
         this.uri = uri;
+        this.containerName = containerName;
+        this.path = path;
         this.type = type;
         this.cacheControlHeader = cacheControlHeader;
         this.contentEncoding = contentEncoding;
@@ -83,6 +89,26 @@ public class BlobFile implements ServiceTreeItem, BlobItem {
 
     public void setUri(@NotNull String uri) {
         this.uri = uri;
+    }
+
+    @NotNull
+    @Override
+    public String getContainerName() {
+        return containerName;
+    }
+
+    public void setContainerName(@NotNull String containerName) {
+        this.containerName = containerName;
+    }
+
+    @NotNull
+    @Override
+    public String getPath() {
+        return path;
+    }
+
+    public void setPath(@NotNull String path) {
+        this.path = path;
     }
 
     @NotNull
