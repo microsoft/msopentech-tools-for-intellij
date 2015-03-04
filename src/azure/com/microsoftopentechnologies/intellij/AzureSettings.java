@@ -77,6 +77,8 @@ public class AzureSettings implements PersistentStateComponent<AzureSettings.Sta
                     input.close();
                 }
             }
+        } catch (ClassNotFoundException ex) {
+            // ignore - this happens because class package changed and settings were not updated
         } catch (Exception e) {
             log(message("err"), e);
         }
@@ -105,7 +107,7 @@ public class AzureSettings implements PersistentStateComponent<AzureSettings.Sta
         } catch (IOException e) {
             log(message("error"),e);
         } catch (ClassNotFoundException e) {
-            log(message("error"),e);
+            // ignore - this happens because class package changed and settings were not updated
         }
     }
 
