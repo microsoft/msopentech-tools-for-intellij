@@ -16,6 +16,7 @@
 package com.microsoftopentechnologies.intellij.helpers.azure.sdk;
 
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
+import com.microsoftopentechnologies.intellij.model.storage.BlobContainer;
 import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
 import com.microsoftopentechnologies.intellij.model.vm.*;
 import org.jetbrains.annotations.NotNull;
@@ -83,4 +84,18 @@ public interface AzureSDKManager {
             throws AzureCmdException;
 
     void deleteStorageAccount(@NotNull StorageAccount storageAccount) throws AzureCmdException;
+
+    @NotNull
+    List<BlobContainer> getBlobContainers(@NotNull StorageAccount storageAccount) throws AzureCmdException;
+
+    void createBlobContainer(@NotNull StorageAccount storageAccount, @NotNull BlobContainer blobContainer)
+            throws AzureCmdException;
+
+    @NotNull
+    BlobContainer refreshBlobContainerInformation(@NotNull StorageAccount storageAccount,
+                                                  @NotNull BlobContainer blobContainer)
+            throws AzureCmdException;
+
+    void deleteBlobContainer(@NotNull StorageAccount storageAccount, @NotNull BlobContainer blobContainer)
+            throws AzureCmdException;
 }

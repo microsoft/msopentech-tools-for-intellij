@@ -51,6 +51,7 @@ import com.microsoft.windowsazure.management.storage.models.*;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureAuthenticationMode;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManagerImpl;
+import com.microsoftopentechnologies.intellij.model.storage.BlobContainer;
 import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
 import com.microsoftopentechnologies.intellij.model.vm.*;
 import com.microsoftopentechnologies.intellij.model.vm.CloudService.Deployment;
@@ -706,7 +707,8 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
 
     @Override
     @NotNull
-    public StorageAccount refreshStorageAccountInformation(@NotNull StorageAccount storageAccount) throws AzureCmdException {
+    public StorageAccount refreshStorageAccountInformation(@NotNull StorageAccount storageAccount)
+            throws AzureCmdException {
         StorageManagementClient client = null;
 
         try {
@@ -812,6 +814,33 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
                 }
             }
         }
+    }
+
+    @NotNull
+    @Override
+    public List<BlobContainer> getBlobContainers(@NotNull StorageAccount storageAccount)
+            throws AzureCmdException {
+        throw new AzureCmdException("Not implemented, yet", "");
+    }
+
+    @Override
+    public void createBlobContainer(@NotNull StorageAccount storageAccount, @NotNull BlobContainer blobContainer)
+            throws AzureCmdException {
+
+    }
+
+    @NotNull
+    @Override
+    public BlobContainer refreshBlobContainerInformation(@NotNull StorageAccount storageAccount,
+                                                         @NotNull BlobContainer blobContainer)
+            throws AzureCmdException {
+        throw new AzureCmdException("Not implemented, yet", "");
+    }
+
+    @Override
+    public void deleteBlobContainer(@NotNull StorageAccount storageAccount, @NotNull BlobContainer blobContainer)
+            throws AzureCmdException {
+
     }
 
     @NotNull
