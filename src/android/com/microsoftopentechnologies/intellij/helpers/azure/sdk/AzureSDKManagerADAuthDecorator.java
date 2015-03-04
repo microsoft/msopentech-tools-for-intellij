@@ -29,6 +29,8 @@ import com.microsoftopentechnologies.intellij.model.storage.*;
 import com.microsoftopentechnologies.intellij.model.vm.*;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.util.List;
 
@@ -466,24 +468,27 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
     @Override
     public BlobFile uploadBlobFileContent(@NotNull final StorageAccount storageAccount,
                                           @NotNull final BlobFile blobFile,
-                                          @NotNull final byte[] content)
+                                          @NotNull final InputStream content,
+                                          final long length)
             throws AzureCmdException {
         return runWithRetry(storageAccount.getSubscriptionId(), new Func0<BlobFile>() {
             @Override
             public BlobFile run() throws AzureCmdException {
-                return sdkManager.uploadBlobFileContent(storageAccount, blobFile, content);
+                return sdkManager.uploadBlobFileContent(storageAccount, blobFile, content, length);
             }
         });
     }
 
-    @NotNull
     @Override
-    public byte[] downloadBlobFileContent(@NotNull final StorageAccount storageAccount, @NotNull final BlobFile blobFile)
+    public void downloadBlobFileContent(@NotNull final StorageAccount storageAccount,
+                                        @NotNull final BlobFile blobFile,
+                                        @NotNull final OutputStream content)
             throws AzureCmdException {
-        return runWithRetry(storageAccount.getSubscriptionId(), new Func0<byte[]>() {
+        runWithRetry(storageAccount.getSubscriptionId(), new Func0<Void>() {
             @Override
-            public byte[] run() throws AzureCmdException {
-                return sdkManager.downloadBlobFileContent(storageAccount, blobFile);
+            public Void run() throws AzureCmdException {
+                sdkManager.downloadBlobFileContent(storageAccount, blobFile, content);
+                return null;
             }
         });
     }

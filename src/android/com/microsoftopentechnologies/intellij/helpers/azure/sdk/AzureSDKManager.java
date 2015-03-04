@@ -20,6 +20,8 @@ import com.microsoftopentechnologies.intellij.model.storage.*;
 import com.microsoftopentechnologies.intellij.model.vm.*;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.List;
 
 public interface AzureSDKManager {
@@ -121,10 +123,12 @@ public interface AzureSDKManager {
     @NotNull
     BlobFile uploadBlobFileContent(@NotNull StorageAccount storageAccount,
                                    @NotNull BlobFile blobFile,
-                                   @NotNull byte[] content)
+                                   @NotNull InputStream content,
+                                   long length)
             throws AzureCmdException;
 
-    @NotNull
-    byte[] downloadBlobFileContent(@NotNull StorageAccount storageAccount, @NotNull BlobFile blobFile)
+    void downloadBlobFileContent(@NotNull StorageAccount storageAccount,
+                                 @NotNull BlobFile blobFile,
+                                 @NotNull OutputStream content)
             throws AzureCmdException;
 }
