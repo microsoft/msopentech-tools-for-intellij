@@ -21,8 +21,10 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import com.intellij.openapi.application.ApplicationManager;
 import com.microsoft.azure.storage.CloudStorageAccount;
+import com.microsoft.azure.storage.blob.BlobContainerPermissions;
 import com.microsoft.azure.storage.blob.CloudBlobClient;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
+import com.microsoft.azure.storage.blob.ContainerListingDetails;
 import com.microsoft.windowsazure.core.OperationResponse;
 import com.microsoft.windowsazure.core.OperationStatus;
 import com.microsoft.windowsazure.core.OperationStatusResponse;
@@ -820,7 +822,30 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     @Override
     public List<BlobContainer> getBlobContainers(@NotNull StorageAccount storageAccount)
             throws AzureCmdException {
-        throw new AzureCmdException("Not implemented, yet", "");
+        List<BlobContainer> bcList = new ArrayList<BlobContainer>();
+        try {
+            CloudBlobClient client = getCloudBlobClient(storageAccount);
+
+            for (CloudBlobContainer cloudBlobContainer : client.listContainers(null, ContainerListingDetails.ALL, null, null)) {
+                BlobContainerPermissions blobContainerPermissions = cloudBlobContainer.downloadPermissions();
+
+                Calendar lastModified = GregorianCalendar.getInstance();
+                lastModified.setTime(cloudBlobContainer.getProperties().getLastModified());
+
+                bcList.add(new BlobContainer(cloudBlobContainer.getName(),
+                        cloudBlobContainer.getUri().toString(),
+                        cloudBlobContainer.getProperties().getEtag(),
+                        lastModified,
+                        blobContainerPermissions.getPublicAccess().toString(),
+                        storageAccount.getSubscriptionId()));
+            }
+
+            return bcList;
+        } catch (ExecutionException e) {
+            throw new AzureCmdException("Error retrieving the VM list", e.getCause());
+        } catch (Throwable t) {
+            throw new AzureCmdException("Error retrieving the VM list", t);
+        }
     }
 
     @NotNull
