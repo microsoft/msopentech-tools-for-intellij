@@ -864,20 +864,73 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     public BlobContainer createBlobContainer(@NotNull StorageAccount storageAccount,
                                              @NotNull BlobContainer blobContainer)
             throws AzureCmdException {
-        throw new AzureCmdException("Not implemented, yet", "");
+        try {
+            CloudBlobClient client = getCloudBlobClient(storageAccount);
+
+            CloudBlobContainer container = client.getContainerReference(blobContainer.getName());
+            container.createIfNotExists();
+            container.downloadAttributes();
+
+            String uri = container.getUri() != null ? container.getUri().toString() : "";
+            String eTag = "";
+            Calendar lastModified = new GregorianCalendar();
+            BlobContainerProperties properties = container.getProperties();
+
+            if (properties != null) {
+                eTag = Strings.nullToEmpty(properties.getEtag());
+
+                if (properties.getLastModified() != null) {
+                    lastModified.setTime(properties.getLastModified());
+                }
+            }
+
+            String publicReadAccessType = "";
+            BlobContainerPermissions blobContainerPermissions = container.downloadPermissions();
+
+            if (blobContainerPermissions != null && blobContainerPermissions.getPublicAccess() != null) {
+                publicReadAccessType = blobContainerPermissions.getPublicAccess().toString();
+            }
+
+            blobContainer.setUri(uri);
+            blobContainer.setETag(eTag);
+            blobContainer.setLastModified(lastModified);
+            blobContainer.setPublicReadAccessType(publicReadAccessType);
+
+            return blobContainer;
+        } catch (Throwable t) {
+            throw new AzureCmdException("Error creating the Blob Container", t);
+        }
     }
 
     @Override
     public void deleteBlobContainer(@NotNull StorageAccount storageAccount, @NotNull BlobContainer blobContainer)
             throws AzureCmdException {
-        throw new AzureCmdException("Not implemented, yet", "");
+        try {
+            CloudBlobClient client = getCloudBlobClient(storageAccount);
+
+            CloudBlobContainer container = client.getContainerReference(blobContainer.getName());
+            container.deleteIfExists();
+        } catch (Throwable t) {
+            throw new AzureCmdException("Error deleting the Blob Container", t);
+        }
     }
 
     @NotNull
     @Override
     public BlobDirectory getRootDirectory(@NotNull StorageAccount storageAccount, @NotNull BlobContainer blobContainer)
             throws AzureCmdException {
-        throw new AzureCmdException("Not implemented, yet", "");
+        try {
+            CloudBlobClient client = getCloudBlobClient(storageAccount);
+
+            CloudBlobContainer container = client.getContainerReference(blobContainer.getName());
+            CloudBlobDirectory directory = container.getDirectoryReference("");
+
+            String uri = directory.getUri() != null ? container.getUri().toString() : "";
+
+            return new BlobDirectory("", uri, storageAccount.getSubscriptionId());
+        } catch (Throwable t) {
+            throw new AzureCmdException("Error retrieving the root Blob Directory", t);
+        }
     }
 
     @NotNull
