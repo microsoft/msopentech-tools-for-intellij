@@ -18,9 +18,28 @@
 package com.microsoftopentechnologies.intellij.serviceexplorer.azure.storage;
 
 
-import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
+import com.intellij.codeHighlighting.BackgroundEditorHighlighter;
+import com.intellij.ide.structureView.StructureViewBuilder;
+import com.intellij.openapi.editor.Caret;
+import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.fileEditor.*;
+import com.intellij.openapi.project.DumbAware;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Disposer;
+import com.intellij.openapi.util.Key;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.testFramework.LightVirtualFile;
 import com.microsoftopentechnologies.intellij.model.storage.BlobContainer;
 import com.microsoftopentechnologies.intellij.serviceexplorer.Node;
+import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionEvent;
+import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionListener;
+import org.jdom.Element;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import javax.swing.*;
+import java.awt.*;
+import java.beans.PropertyChangeListener;
 
 public class ContainerNode extends Node {
 
@@ -33,6 +52,17 @@ public class ContainerNode extends Node {
         super(CONTAINER_MODULE_ID, bc.getName(), parent, ICON_PATH, true);
 
         blobContainer = bc;
+
+        addClickActionListener(new NodeActionListener() {
+            @Override
+            public void actionPerformed(NodeActionEvent e) {
+
+                LightVirtualFile test = new LightVirtualFile("Test");
+
+                FileEditorManager.getInstance(getProject()).openEditor(new OpenFileDescriptor(getProject(), test), true);
+
+            }
+        });
     }
 
 }

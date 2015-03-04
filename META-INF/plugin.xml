@@ -58,6 +58,7 @@ limitations under the License.
     <depends>org.jetbrains.plugins.gradle</depends>
 
     <extensions defaultExtensionNs="com.intellij">
+        <fileEditorProvider implementation="com.microsoftopentechnologies.intellij.helpers.storage.BlobExplorerFileEditorProvider"/>
         <toolWindow
                 anchor="left"
                 factoryClass="com.microsoftopentechnologies.intellij.components.ServerExplorerToolWindowFactory"
