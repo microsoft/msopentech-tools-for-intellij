@@ -14,31 +14,25 @@
  *  limitations under the License.
  */
 
+
 package com.microsoftopentechnologies.intellij.serviceexplorer.azure.storage;
 
+
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerImpl;
 import com.microsoftopentechnologies.intellij.model.storage.BlobContainer;
-import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
 import com.microsoftopentechnologies.intellij.serviceexplorer.Node;
 
-public class StorageNode extends Node {
-    private static final String WAIT_ICON_PATH = "storageaccount.png";
-    private final StorageAccount storageAccount;
+public class ContainerNode extends Node {
 
-    public StorageNode(Node parent, StorageAccount sm) {
-        super(sm.getName(), sm.getName(), parent, WAIT_ICON_PATH, true);
-        this.storageAccount = sm;
+    private static final String CONTAINER_MODULE_ID = ContainerNode.class.getName();
+    private static final String ICON_PATH = "container.png";
+
+    private final BlobContainer blobContainer;
+
+    public ContainerNode(Node parent, BlobContainer bc) {
+        super(CONTAINER_MODULE_ID, bc.getName(), parent, ICON_PATH, true);
+
+        blobContainer = bc;
     }
 
-    @Override
-    protected void refreshItems() throws AzureCmdException {
-
-        removeAllChildNodes();
-
-        for (BlobContainer blobContainer : AzureSDKManagerImpl.getManager().getBlobContainers(storageAccount)) {
-            addChildNode(new ContainerNode(this, blobContainer));
-        };
-
-    }
 }
