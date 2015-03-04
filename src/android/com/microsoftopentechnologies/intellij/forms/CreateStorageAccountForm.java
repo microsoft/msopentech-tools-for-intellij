@@ -28,9 +28,9 @@ import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIMan
 import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManagerImpl;
 import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerImpl;
 import com.microsoftopentechnologies.intellij.model.ms.Subscription;
+import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
 import com.microsoftopentechnologies.intellij.model.vm.AffinityGroup;
 import com.microsoftopentechnologies.intellij.model.vm.Location;
-import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -38,6 +38,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.GregorianCalendar;
 import java.util.ArrayList;
 import java.util.Vector;
 
@@ -179,7 +180,8 @@ public class CreateStorageAccountForm extends JDialog {
             String affinityGroup = (regionOrAffinityGroupComboBox.getSelectedItem() instanceof AffinityGroup) ? regionOrAffinityGroupComboBox.getSelectedItem().toString() : "";
             String replication = replicationComboBox.getSelectedItem().toString();
 
-            storageAccount = new StorageAccount(name, replication, region, affinityGroup, "", subscription.getId().toString());
+            storageAccount = new StorageAccount(name, replication, "", "", "", region, affinityGroup, "", "",
+                    "", "", "", "", "", "", "", "", new GregorianCalendar(), subscription.getId().toString());
             AzureSDKManagerImpl.getManager().createStorageAccount(storageAccount);
             AzureSDKManagerImpl.getManager().refreshStorageAccountInformation(storageAccount);
 
