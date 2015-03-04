@@ -21,10 +21,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import com.intellij.openapi.application.ApplicationManager;
 import com.microsoft.azure.storage.CloudStorageAccount;
-import com.microsoft.azure.storage.blob.BlobContainerPermissions;
-import com.microsoft.azure.storage.blob.CloudBlobClient;
-import com.microsoft.azure.storage.blob.CloudBlobContainer;
-import com.microsoft.azure.storage.blob.ContainerListingDetails;
+import com.microsoft.azure.storage.blob.*;
 import com.microsoft.windowsazure.core.OperationResponse;
 import com.microsoft.windowsazure.core.OperationStatus;
 import com.microsoft.windowsazure.core.OperationStatusResponse;
@@ -823,28 +820,42 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     public List<BlobContainer> getBlobContainers(@NotNull StorageAccount storageAccount)
             throws AzureCmdException {
         List<BlobContainer> bcList = new ArrayList<BlobContainer>();
+
         try {
             CloudBlobClient client = getCloudBlobClient(storageAccount);
 
-            for (CloudBlobContainer cloudBlobContainer : client.listContainers(null, ContainerListingDetails.ALL, null, null)) {
-                BlobContainerPermissions blobContainerPermissions = cloudBlobContainer.downloadPermissions();
+            for (CloudBlobContainer container : client.listContainers(null, ContainerListingDetails.ALL, null, null)) {
+                String uri = container.getUri() != null ? container.getUri().toString() : "";
+                String eTag = "";
+                Calendar lastModified = new GregorianCalendar();
+                BlobContainerProperties properties = container.getProperties();
 
-                Calendar lastModified = GregorianCalendar.getInstance();
-                lastModified.setTime(cloudBlobContainer.getProperties().getLastModified());
+                if (properties != null) {
+                    eTag = Strings.nullToEmpty(properties.getEtag());
 
-                bcList.add(new BlobContainer(cloudBlobContainer.getName(),
-                        cloudBlobContainer.getUri().toString(),
-                        cloudBlobContainer.getProperties().getEtag(),
+                    if (properties.getLastModified() != null) {
+                        lastModified.setTime(properties.getLastModified());
+                    }
+                }
+
+                String publicReadAccessType = "";
+                BlobContainerPermissions blobContainerPermissions = container.downloadPermissions();
+
+                if (blobContainerPermissions != null && blobContainerPermissions.getPublicAccess() != null) {
+                    publicReadAccessType = blobContainerPermissions.getPublicAccess().toString();
+                }
+
+                bcList.add(new BlobContainer(Strings.nullToEmpty(container.getName()),
+                        uri,
+                        eTag,
                         lastModified,
-                        blobContainerPermissions.getPublicAccess().toString(),
+                        publicReadAccessType,
                         storageAccount.getSubscriptionId()));
             }
 
             return bcList;
-        } catch (ExecutionException e) {
-            throw new AzureCmdException("Error retrieving the VM list", e.getCause());
         } catch (Throwable t) {
-            throw new AzureCmdException("Error retrieving the VM list", t);
+            throw new AzureCmdException("Error retrieving the Blob Container list", t);
         }
     }
 
