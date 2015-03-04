@@ -25,8 +25,7 @@ import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManager;
 import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManagerImpl;
-import com.microsoftopentechnologies.intellij.model.storage.BlobContainer;
-import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
+import com.microsoftopentechnologies.intellij.model.storage.*;
 import com.microsoftopentechnologies.intellij.model.vm.*;
 import org.jetbrains.annotations.NotNull;
 
@@ -370,28 +369,15 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
         });
     }
 
-    @Override
-    public void createBlobContainer(@NotNull final StorageAccount storageAccount,
-                                    @NotNull final BlobContainer blobContainer)
-            throws AzureCmdException {
-        runWithRetry(storageAccount.getSubscriptionId(), new Func0<Void>() {
-            @Override
-            public Void run() throws AzureCmdException {
-                sdkManager.createBlobContainer(storageAccount, blobContainer);
-                return null;
-            }
-        });
-    }
-
     @NotNull
     @Override
-    public BlobContainer refreshBlobContainerInformation(@NotNull final StorageAccount storageAccount,
-                                                         @NotNull final BlobContainer blobContainer)
+    public BlobContainer createBlobContainer(@NotNull final StorageAccount storageAccount,
+                                             @NotNull final BlobContainer blobContainer)
             throws AzureCmdException {
         return runWithRetry(storageAccount.getSubscriptionId(), new Func0<BlobContainer>() {
             @Override
             public BlobContainer run() throws AzureCmdException {
-                return sdkManager.refreshBlobContainerInformation(storageAccount, blobContainer);
+                return sdkManager.createBlobContainer(storageAccount, blobContainer);
             }
         });
     }
@@ -405,6 +391,99 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
             public Void run() throws AzureCmdException {
                 sdkManager.deleteBlobContainer(storageAccount, blobContainer);
                 return null;
+            }
+        });
+    }
+
+    @NotNull
+    @Override
+    public BlobDirectory getRootDirectory(@NotNull final StorageAccount storageAccount,
+                                          @NotNull final BlobContainer blobContainer)
+            throws AzureCmdException {
+        return runWithRetry(storageAccount.getSubscriptionId(), new Func0<BlobDirectory>() {
+            @Override
+            public BlobDirectory run() throws AzureCmdException {
+                return sdkManager.getRootDirectory(storageAccount, blobContainer);
+            }
+        });
+    }
+
+    @NotNull
+    @Override
+    public List<BlobItem> getBlobItems(@NotNull final StorageAccount storageAccount,
+                                       @NotNull final BlobDirectory blobDirectory)
+            throws AzureCmdException {
+        return runWithRetry(storageAccount.getSubscriptionId(), new Func0<List<BlobItem>>() {
+            @Override
+            public List<BlobItem> run() throws AzureCmdException {
+                return sdkManager.getBlobItems(storageAccount, blobDirectory);
+            }
+        });
+    }
+
+    @NotNull
+    @Override
+    public BlobDirectory createBlobDirectory(@NotNull final StorageAccount storageAccount,
+                                             @NotNull final BlobDirectory parentBlobDirectory,
+                                             @NotNull final BlobDirectory blobDirectory)
+            throws AzureCmdException {
+        return runWithRetry(storageAccount.getSubscriptionId(), new Func0<BlobDirectory>() {
+            @Override
+            public BlobDirectory run() throws AzureCmdException {
+                return sdkManager.createBlobDirectory(storageAccount, parentBlobDirectory, blobDirectory);
+            }
+        });
+    }
+
+    @NotNull
+    @Override
+    public BlobFile createBlobFile(@NotNull final StorageAccount storageAccount,
+                                   @NotNull final BlobDirectory parentBlobDirectory,
+                                   @NotNull final BlobFile blobFile)
+            throws AzureCmdException {
+        return runWithRetry(storageAccount.getSubscriptionId(), new Func0<BlobFile>() {
+            @Override
+            public BlobFile run() throws AzureCmdException {
+                return sdkManager.createBlobFile(storageAccount, parentBlobDirectory, blobFile);
+            }
+        });
+    }
+
+    @Override
+    public void deleteBlobFile(@NotNull final StorageAccount storageAccount,
+                               @NotNull final BlobFile blobFile)
+            throws AzureCmdException {
+        runWithRetry(storageAccount.getSubscriptionId(), new Func0<Void>() {
+            @Override
+            public Void run() throws AzureCmdException {
+                sdkManager.deleteBlobFile(storageAccount, blobFile);
+                return null;
+            }
+        });
+    }
+
+    @NotNull
+    @Override
+    public BlobFile uploadBlobFileContent(@NotNull final StorageAccount storageAccount,
+                                          @NotNull final BlobFile blobFile,
+                                          @NotNull final byte[] content)
+            throws AzureCmdException {
+        return runWithRetry(storageAccount.getSubscriptionId(), new Func0<BlobFile>() {
+            @Override
+            public BlobFile run() throws AzureCmdException {
+                return sdkManager.uploadBlobFileContent(storageAccount, blobFile, content);
+            }
+        });
+    }
+
+    @NotNull
+    @Override
+    public byte[] downloadBlobFileContent(@NotNull final StorageAccount storageAccount, @NotNull final BlobFile blobFile)
+            throws AzureCmdException {
+        return runWithRetry(storageAccount.getSubscriptionId(), new Func0<byte[]>() {
+            @Override
+            public byte[] run() throws AzureCmdException {
+                return sdkManager.downloadBlobFileContent(storageAccount, blobFile);
             }
         });
     }
