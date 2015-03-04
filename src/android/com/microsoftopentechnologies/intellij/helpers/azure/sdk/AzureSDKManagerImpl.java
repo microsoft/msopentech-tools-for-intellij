@@ -51,7 +51,7 @@ import com.microsoft.windowsazure.management.storage.models.*;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureAuthenticationMode;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManagerImpl;
-import com.microsoftopentechnologies.intellij.model.storage.BlobContainer;
+import com.microsoftopentechnologies.intellij.model.storage.*;
 import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
 import com.microsoftopentechnologies.intellij.model.vm.*;
 import com.microsoftopentechnologies.intellij.model.vm.CloudService.Deployment;
@@ -823,16 +823,10 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         throw new AzureCmdException("Not implemented, yet", "");
     }
 
-    @Override
-    public void createBlobContainer(@NotNull StorageAccount storageAccount, @NotNull BlobContainer blobContainer)
-            throws AzureCmdException {
-
-    }
-
     @NotNull
     @Override
-    public BlobContainer refreshBlobContainerInformation(@NotNull StorageAccount storageAccount,
-                                                         @NotNull BlobContainer blobContainer)
+    public BlobContainer createBlobContainer(@NotNull StorageAccount storageAccount,
+                                             @NotNull BlobContainer blobContainer)
             throws AzureCmdException {
         throw new AzureCmdException("Not implemented, yet", "");
     }
@@ -840,7 +834,61 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     @Override
     public void deleteBlobContainer(@NotNull StorageAccount storageAccount, @NotNull BlobContainer blobContainer)
             throws AzureCmdException {
+        throw new AzureCmdException("Not implemented, yet", "");
+    }
 
+    @NotNull
+    @Override
+    public BlobDirectory getRootDirectory(@NotNull StorageAccount storageAccount, @NotNull BlobContainer blobContainer)
+            throws AzureCmdException {
+        throw new AzureCmdException("Not implemented, yet", "");
+    }
+
+    @NotNull
+    @Override
+    public List<BlobItem> getBlobItems(@NotNull StorageAccount storageAccount, @NotNull BlobDirectory blobDirectory)
+            throws AzureCmdException {
+        throw new AzureCmdException("Not implemented, yet", "");
+    }
+
+    @NotNull
+    @Override
+    public BlobDirectory createBlobDirectory(@NotNull StorageAccount storageAccount,
+                                             @NotNull BlobDirectory parentBlobDirectory,
+                                             @NotNull BlobDirectory blobDirectory)
+            throws AzureCmdException {
+        throw new AzureCmdException("Not implemented, yet", "");
+    }
+
+    @NotNull
+    @Override
+    public BlobFile createBlobFile(@NotNull StorageAccount storageAccount,
+                                   @NotNull BlobDirectory parentBlobDirectory,
+                                   @NotNull BlobFile blobFile)
+            throws AzureCmdException {
+        throw new AzureCmdException("Not implemented, yet", "");
+    }
+
+    @Override
+    public void deleteBlobFile(@NotNull StorageAccount storageAccount, @NotNull BlobFile blobFile)
+            throws AzureCmdException {
+        throw new AzureCmdException("Not implemented, yet", "");
+    }
+
+    @NotNull
+    @Override
+    public BlobFile uploadBlobFileContent(@NotNull StorageAccount storageAccount,
+                                          @NotNull BlobFile blobFile,
+                                          @NotNull byte[] content)
+            throws AzureCmdException {
+        throw new AzureCmdException("Not implemented, yet", "");
+    }
+
+    @NotNull
+    @Override
+    public byte[] downloadBlobFileContent(@NotNull StorageAccount storageAccount, @NotNull BlobFile blobFile)
+            throws AzureCmdException {
+        throw new AzureCmdException("Not implemented, yet", "");
     }
 
     @NotNull

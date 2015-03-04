@@ -16,8 +16,7 @@
 package com.microsoftopentechnologies.intellij.helpers.azure.sdk;
 
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.intellij.model.storage.BlobContainer;
-import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
+import com.microsoftopentechnologies.intellij.model.storage.*;
 import com.microsoftopentechnologies.intellij.model.vm.*;
 import org.jetbrains.annotations.NotNull;
 
@@ -88,14 +87,44 @@ public interface AzureSDKManager {
     @NotNull
     List<BlobContainer> getBlobContainers(@NotNull StorageAccount storageAccount) throws AzureCmdException;
 
-    void createBlobContainer(@NotNull StorageAccount storageAccount, @NotNull BlobContainer blobContainer)
-            throws AzureCmdException;
-
     @NotNull
-    BlobContainer refreshBlobContainerInformation(@NotNull StorageAccount storageAccount,
-                                                  @NotNull BlobContainer blobContainer)
+    BlobContainer createBlobContainer(@NotNull StorageAccount storageAccount, @NotNull BlobContainer blobContainer)
             throws AzureCmdException;
 
     void deleteBlobContainer(@NotNull StorageAccount storageAccount, @NotNull BlobContainer blobContainer)
+            throws AzureCmdException;
+
+    @NotNull
+    BlobDirectory getRootDirectory(@NotNull StorageAccount storageAccount, @NotNull BlobContainer blobContainer)
+            throws AzureCmdException;
+
+    @NotNull
+    List<BlobItem> getBlobItems(@NotNull StorageAccount storageAccount, @NotNull BlobDirectory blobDirectory)
+            throws AzureCmdException;
+
+    @NotNull
+    BlobDirectory createBlobDirectory(@NotNull StorageAccount storageAccount,
+                                      @NotNull BlobDirectory parentBlobDirectory,
+                                      @NotNull BlobDirectory blobDirectory)
+            throws AzureCmdException;
+
+    @NotNull
+    BlobFile createBlobFile(@NotNull StorageAccount storageAccount,
+                            @NotNull BlobDirectory parentBlobDirectory,
+                            @NotNull BlobFile blobFile)
+            throws AzureCmdException;
+
+    void deleteBlobFile(@NotNull StorageAccount storageAccount,
+                        @NotNull BlobFile blobFile)
+            throws AzureCmdException;
+
+    @NotNull
+    BlobFile uploadBlobFileContent(@NotNull StorageAccount storageAccount,
+                                   @NotNull BlobFile blobFile,
+                                   @NotNull byte[] content)
+            throws AzureCmdException;
+
+    @NotNull
+    byte[] downloadBlobFileContent(@NotNull StorageAccount storageAccount, @NotNull BlobFile blobFile)
             throws AzureCmdException;
 }
