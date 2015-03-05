@@ -85,7 +85,7 @@ public class BlobDirectory implements ServiceTreeItem, BlobItem {
     @NotNull
     @Override
     public BlobItemType getItemType() {
-        return BlobItemType.BlobFile;
+        return BlobItemType.BlobDirectory;
     }
 
     @NotNull
