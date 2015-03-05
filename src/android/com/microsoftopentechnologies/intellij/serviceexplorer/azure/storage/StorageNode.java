@@ -37,7 +37,7 @@ public class StorageNode extends Node {
         removeAllChildNodes();
 
         for (BlobContainer blobContainer : AzureSDKManagerImpl.getManager().getBlobContainers(storageAccount)) {
-            addChildNode(new ContainerNode(this, blobContainer));
+            addChildNode(new ContainerNode(this, storageAccount,  blobContainer));
         };
 
     }

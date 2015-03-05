@@ -1,6 +1,5 @@
 package com.microsoftopentechnologies.intellij.helpers.storage;
 
-
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter;
 import com.intellij.ide.structureView.StructureViewBuilder;
 import com.intellij.openapi.fileEditor.FileEditor;
@@ -8,6 +7,8 @@ import com.intellij.openapi.fileEditor.FileEditorLocation;
 import com.intellij.openapi.fileEditor.FileEditorState;
 import com.intellij.openapi.fileEditor.FileEditorStateLevel;
 import com.intellij.openapi.util.Key;
+import com.microsoftopentechnologies.intellij.model.storage.BlobContainer;
+import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -15,33 +16,37 @@ import javax.swing.*;
 import java.beans.PropertyChangeListener;
 
 public class BlobExplorerFileEditor implements FileEditor {
+    private JPanel mainPanel;
+    private JTextField queryTextField;
+    private JButton backButton;
+    private JTable blobListTable;
+    private JButton queryButton;
 
-    public BlobExplorerFileEditor() {
-        "".length();
-    }
+    private StorageAccount storageAccount;
+    private BlobContainer blobContainer;
 
     @NotNull
     @Override
     public JComponent getComponent() {
-        return null;
+        return mainPanel;
     }
 
     @Nullable
     @Override
     public JComponent getPreferredFocusedComponent() {
-        return null;
+        return blobListTable;
     }
 
     @NotNull
     @Override
     public String getName() {
-        return null;
+        return blobContainer.getName();
     }
 
     @NotNull
     @Override
     public FileEditorState getState(@NotNull FileEditorStateLevel fileEditorStateLevel) {
-        return null;
+        return FileEditorState.INSTANCE;
     }
 
     @Override
@@ -56,28 +61,20 @@ public class BlobExplorerFileEditor implements FileEditor {
 
     @Override
     public boolean isValid() {
-        return false;
+        return true;
     }
 
     @Override
-    public void selectNotify() {
-
-    }
+    public void selectNotify() {}
 
     @Override
-    public void deselectNotify() {
-
-    }
+    public void deselectNotify() {}
 
     @Override
-    public void addPropertyChangeListener(@NotNull PropertyChangeListener propertyChangeListener) {
-
-    }
+    public void addPropertyChangeListener(@NotNull PropertyChangeListener propertyChangeListener) {}
 
     @Override
-    public void removePropertyChangeListener(@NotNull PropertyChangeListener propertyChangeListener) {
-
-    }
+    public void removePropertyChangeListener(@NotNull PropertyChangeListener propertyChangeListener) {}
 
     @Nullable
     @Override
@@ -99,7 +96,6 @@ public class BlobExplorerFileEditor implements FileEditor {
 
     @Override
     public void dispose() {
-
     }
 
     @Nullable
@@ -111,5 +107,13 @@ public class BlobExplorerFileEditor implements FileEditor {
     @Override
     public <T> void putUserData(@NotNull Key<T> key, @Nullable T t) {
 
+    }
+
+    public void setStorageAccount(StorageAccount storageAccount) {
+        this.storageAccount = storageAccount;
+    }
+
+    public void setBlobContainer(BlobContainer blobContainer) {
+        this.blobContainer = blobContainer;
     }
 }
