@@ -16,11 +16,14 @@
 
 package com.microsoftopentechnologies.intellij.serviceexplorer.azure.storage;
 
+import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerImpl;
 import com.microsoftopentechnologies.intellij.model.storage.BlobContainer;
 import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
 import com.microsoftopentechnologies.intellij.serviceexplorer.Node;
+import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionEvent;
+import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionListener;
 
 public class StorageNode extends Node {
     private static final String WAIT_ICON_PATH = "storageaccount.png";
@@ -29,6 +32,19 @@ public class StorageNode extends Node {
     public StorageNode(Node parent, StorageAccount sm) {
         super(sm.getName(), sm.getName(), parent, WAIT_ICON_PATH, true);
         this.storageAccount = sm;
+    }
+
+    @Override
+    protected void onNodeClick(NodeActionEvent e) {
+        try {
+            setLoading(true);
+            refreshItems();
+            setLoading(false);
+
+        } catch (AzureCmdException e1) {
+            UIHelper.showException("Error listing containers", e1, "Error listing containers", false, true);
+        }
+
     }
 
     @Override

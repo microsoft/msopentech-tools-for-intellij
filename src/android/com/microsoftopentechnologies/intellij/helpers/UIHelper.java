@@ -24,6 +24,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.text.DecimalFormat;
 
 public class UIHelper {
     public static void packAndCenterJDialog(JDialog form) {
@@ -122,5 +123,12 @@ public class UIHelper {
     public static ImageIcon loadIcon(String name) {
         java.net.URL url = UIHelper.class.getResource("/com/microsoftopentechnologies/intellij/icons/" + name);
         return new ImageIcon(url);
+    }
+
+    public static String readableFileSize(long size) {
+        if(size <= 0) return "0";
+        final String[] units = new String[] { "B", "kB", "MB", "GB", "TB" };
+        int digitGroups = (int) (Math.log10(size)/Math.log10(1024));
+        return new DecimalFormat("#,##0.#").format(size/Math.pow(1024, digitGroups)) + " " + units[digitGroups];
     }
 }

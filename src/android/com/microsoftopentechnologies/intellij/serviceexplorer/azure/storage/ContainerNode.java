@@ -18,35 +18,16 @@
 package com.microsoftopentechnologies.intellij.serviceexplorer.azure.storage;
 
 
-import com.intellij.codeHighlighting.BackgroundEditorHighlighter;
-import com.intellij.ide.structureView.StructureViewBuilder;
-import com.intellij.openapi.editor.Caret;
-import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.*;
-import com.intellij.openapi.project.DumbAware;
-import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.Disposer;
-import com.intellij.openapi.util.Key;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.LightVirtualFile;
-import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerImpl;
 import com.microsoftopentechnologies.intellij.helpers.storage.BlobExplorerFileEditorProvider;
 import com.microsoftopentechnologies.intellij.model.storage.BlobContainer;
-import com.microsoftopentechnologies.intellij.model.storage.BlobDirectory;
-import com.microsoftopentechnologies.intellij.model.storage.BlobItem;
 import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
 import com.microsoftopentechnologies.intellij.serviceexplorer.Node;
 import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionEvent;
 import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionListener;
-import org.jdom.Element;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import javax.swing.*;
-import java.awt.*;
-import java.beans.PropertyChangeListener;
-import java.util.*;
+import java.util.List;
 
 public class ContainerNode extends Node {
 
@@ -65,35 +46,13 @@ public class ContainerNode extends Node {
         addClickActionListener(new NodeActionListener() {
             @Override
             public void actionPerformed(NodeActionEvent e) {
-                /*
-                try {
-                    BlobDirectory rootDirectory = AzureSDKManagerImpl.getManager().getRootDirectory(storageAccount, blobContainer);
-
-                    for(BlobItem bi :  AzureSDKManagerImpl.getManager().getBlobItems(storageAccount, rootDirectory)){
-                        if(bi instanceof BlobDirectory) {
-
-
-                            for(BlobItem bidir :  AzureSDKManagerImpl.getManager().getBlobItems(storageAccount, (BlobDirectory) bi)){
-                                bidir.getName();
-                            }
-
-                        } else {
-                            bi.getName();
-                        }
-
-
-                    }
-
-                } catch (AzureCmdException e1) {
-                    e1.printStackTrace();
-                }
-                */
 
                 LightVirtualFile containerVirtualFile = new LightVirtualFile(blobContainer.getName());
                 containerVirtualFile.putUserData(BlobExplorerFileEditorProvider.CONTAINER_KEY, blobContainer);
                 containerVirtualFile.putUserData(BlobExplorerFileEditorProvider.STORAGE_KEY, storageAccount);
 
-                FileEditorManager.getInstance(getProject()).openEditor(new OpenFileDescriptor(getProject(), containerVirtualFile), true);
+                OpenFileDescriptor openFileDescriptor = new OpenFileDescriptor(getProject(), containerVirtualFile);
+                FileEditorManager.getInstance(getProject()).openEditor(openFileDescriptor, true);
             }
         });
     }

@@ -8,7 +8,7 @@
     <properties/>
     <border type="none"/>
     <children>
-      <grid id="3cc08" layout-manager="GridLayoutManager" row-count="2" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+      <grid id="3cc08" layout-manager="GridLayoutManager" row-count="2" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
         <margin top="0" left="0" bottom="0" right="0"/>
         <constraints>
           <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
@@ -18,23 +18,15 @@
         <children>
           <component id="e2662" class="javax.swing.JTextField" binding="queryTextField">
             <constraints>
-              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
-                <preferred-size width="150" height="-1"/>
+              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="1" fill="1" indent="0" use-parent-layout="false">
+                <preferred-size width="-1" height="24"/>
               </grid>
             </constraints>
             <properties/>
           </component>
-          <component id="d80a2" class="javax.swing.JButton" binding="backButton">
+          <grid id="d6bd6" layout-manager="FlowLayout" hgap="0" vgap="0" flow-align="0">
             <constraints>
-              <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties>
-              <text value="Button"/>
-            </properties>
-          </component>
-          <grid id="d6bd6" layout-manager="FlowLayout" hgap="5" vgap="0" flow-align="1">
-            <constraints>
-              <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+              <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="2" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties/>
             <border type="none"/>
@@ -42,21 +34,244 @@
               <component id="b0462" class="javax.swing.JButton" binding="queryButton">
                 <constraints/>
                 <properties>
+                  <alignmentY value="0.0"/>
+                  <borderPainted value="false"/>
+                  <contentAreaFilled value="false"/>
+                  <defaultCapable value="true"/>
+                  <focusPainted value="true"/>
+                  <hideActionText value="false"/>
+                  <icon value="com/microsoftopentechnologies/intellij/icons/storagequery.png"/>
+                  <iconTextGap value="0"/>
+                  <inheritsPopupMenu value="true"/>
+                  <margin top="2" left="2" bottom="2" right="2"/>
+                  <maximumSize width="32" height="32"/>
+                  <minimumSize width="32" height="32"/>
+                  <opaque value="false"/>
+                  <preferredSize width="32" height="32"/>
+                  <selected value="false"/>
                   <text value=""/>
+                  <verticalAlignment value="1"/>
+                  <verticalTextPosition value="1"/>
+                  <visible value="true"/>
+                </properties>
+                <clientProperties>
+                  <hideActionText class="java.lang.Boolean" value="false"/>
+                </clientProperties>
+              </component>
+              <component id="a59f7" class="javax.swing.JSeparator">
+                <constraints/>
+                <properties>
+                  <foreground color="-16777216"/>
+                  <inheritsPopupMenu value="false"/>
+                  <opaque value="false"/>
+                  <orientation value="1"/>
+                  <preferredSize width="5" height="20"/>
+                </properties>
+              </component>
+              <hspacer id="53549">
+                <constraints/>
+              </hspacer>
+              <component id="46280" class="javax.swing.JButton" binding="refreshButton">
+                <constraints/>
+                <properties>
+                  <alignmentY value="0.0"/>
+                  <borderPainted value="false"/>
+                  <contentAreaFilled value="false"/>
+                  <defaultCapable value="true"/>
+                  <hideActionText value="false"/>
+                  <icon value="com/microsoftopentechnologies/intellij/icons/storagerefresh.png"/>
+                  <iconTextGap value="0"/>
+                  <inheritsPopupMenu value="true"/>
+                  <margin top="2" left="2" bottom="2" right="2"/>
+                  <maximumSize width="32" height="32"/>
+                  <minimumSize width="32" height="32"/>
+                  <opaque value="false"/>
+                  <preferredSize width="32" height="32"/>
+                  <text value=""/>
+                  <verticalAlignment value="1"/>
+                  <verticalTextPosition value="1"/>
+                </properties>
+                <clientProperties>
+                  <hideActionText class="java.lang.Boolean" value="false"/>
+                </clientProperties>
+              </component>
+              <component id="17b9b" class="javax.swing.JButton" binding="uploadButton">
+                <constraints/>
+                <properties>
+                  <alignmentY value="0.0"/>
+                  <borderPainted value="false"/>
+                  <contentAreaFilled value="false"/>
+                  <defaultCapable value="true"/>
+                  <hideActionText value="false"/>
+                  <icon value="com/microsoftopentechnologies/intellij/icons/storageupload.png"/>
+                  <iconTextGap value="0"/>
+                  <inheritsPopupMenu value="true"/>
+                  <margin top="2" left="2" bottom="2" right="2"/>
+                  <maximumSize width="32" height="32"/>
+                  <minimumSize width="32" height="32"/>
+                  <opaque value="false"/>
+                  <preferredSize width="32" height="32"/>
+                  <text value=""/>
+                  <verticalAlignment value="1"/>
+                  <verticalTextPosition value="1"/>
+                </properties>
+                <clientProperties>
+                  <hideActionText class="java.lang.Boolean" value="false"/>
+                </clientProperties>
+              </component>
+              <component id="81e60" class="javax.swing.JButton" binding="deleteButton">
+                <constraints/>
+                <properties>
+                  <alignmentY value="0.0"/>
+                  <borderPainted value="false"/>
+                  <contentAreaFilled value="false"/>
+                  <defaultCapable value="true"/>
+                  <enabled value="false"/>
+                  <hideActionText value="false"/>
+                  <icon value="com/microsoftopentechnologies/intellij/icons/storagedelete.png"/>
+                  <iconTextGap value="0"/>
+                  <inheritsPopupMenu value="true"/>
+                  <margin top="2" left="2" bottom="2" right="2"/>
+                  <maximumSize width="32" height="32"/>
+                  <minimumSize width="32" height="32"/>
+                  <opaque value="false"/>
+                  <preferredSize width="32" height="32"/>
+                  <text value=""/>
+                  <verticalAlignment value="1"/>
+                  <verticalTextPosition value="1"/>
+                </properties>
+                <clientProperties>
+                  <hideActionText class="java.lang.Boolean" value="false"/>
+                </clientProperties>
+              </component>
+              <component id="4d71f" class="javax.swing.JButton" binding="openButton">
+                <constraints/>
+                <properties>
+                  <alignmentY value="0.0"/>
+                  <borderPainted value="false"/>
+                  <contentAreaFilled value="false"/>
+                  <defaultCapable value="true"/>
+                  <enabled value="false"/>
+                  <hideActionText value="false"/>
+                  <icon value="com/microsoftopentechnologies/intellij/icons/storageopen.png"/>
+                  <iconTextGap value="0"/>
+                  <inheritsPopupMenu value="true"/>
+                  <margin top="2" left="2" bottom="2" right="2"/>
+                  <maximumSize width="32" height="32"/>
+                  <minimumSize width="32" height="32"/>
+                  <opaque value="false"/>
+                  <preferredSize width="32" height="32"/>
+                  <text value=""/>
+                  <verticalAlignment value="1"/>
+                  <verticalTextPosition value="1"/>
+                </properties>
+                <clientProperties>
+                  <hideActionText class="java.lang.Boolean" value="false"/>
+                </clientProperties>
+              </component>
+              <component id="6cc4b" class="javax.swing.JButton" binding="saveAsButton">
+                <constraints/>
+                <properties>
+                  <alignmentY value="0.0"/>
+                  <borderPainted value="false"/>
+                  <contentAreaFilled value="false"/>
+                  <defaultCapable value="true"/>
+                  <enabled value="false"/>
+                  <hideActionText value="false"/>
+                  <icon value="com/microsoftopentechnologies/intellij/icons/storagesaveas.png"/>
+                  <iconTextGap value="0"/>
+                  <inheritsPopupMenu value="true"/>
+                  <margin top="2" left="2" bottom="2" right="2"/>
+                  <maximumSize width="32" height="32"/>
+                  <minimumSize width="32" height="32"/>
+                  <opaque value="false"/>
+                  <preferredSize width="32" height="32"/>
+                  <text value=""/>
+                  <verticalAlignment value="1"/>
+                  <verticalTextPosition value="1"/>
+                </properties>
+                <clientProperties>
+                  <hideActionText class="java.lang.Boolean" value="false"/>
+                </clientProperties>
+              </component>
+            </children>
+          </grid>
+          <hspacer id="1496f">
+            <constraints>
+              <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="1" hsize-policy="2" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+            </constraints>
+          </hspacer>
+          <grid id="7db9e" layout-manager="FlowLayout" hgap="10" vgap="0" flow-align="0">
+            <constraints>
+              <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <alignmentX value="0.0"/>
+              <alignmentY value="0.0"/>
+            </properties>
+            <border type="none"/>
+            <children>
+              <component id="a4ecc" class="javax.swing.JButton" binding="backButton">
+                <constraints/>
+                <properties>
+                  <alignmentY value="0.0"/>
+                  <borderPainted value="false"/>
+                  <contentAreaFilled value="false"/>
+                  <defaultCapable value="true"/>
+                  <enabled value="false"/>
+                  <focusPainted value="true"/>
+                  <hideActionText value="false"/>
+                  <icon value="com/microsoftopentechnologies/intellij/icons/storageback.png"/>
+                  <iconTextGap value="0"/>
+                  <inheritsPopupMenu value="true"/>
+                  <margin top="0" left="0" bottom="0" right="0"/>
+                  <maximumSize width="32" height="32"/>
+                  <minimumSize width="32" height="32"/>
+                  <opaque value="false"/>
+                  <preferredSize width="32" height="32"/>
+                  <selected value="false"/>
+                  <text value=""/>
+                  <verticalAlignment value="1"/>
+                  <verticalTextPosition value="1"/>
+                  <visible value="true"/>
+                </properties>
+                <clientProperties>
+                  <hideActionText class="java.lang.Boolean" value="false"/>
+                </clientProperties>
+              </component>
+              <component id="5ddd1" class="javax.swing.JLabel" binding="pathLabel">
+                <constraints/>
+                <properties>
+                  <text value="  "/>
                 </properties>
               </component>
             </children>
           </grid>
         </children>
       </grid>
-      <component id="92271" class="javax.swing.JTable" binding="blobListTable">
+      <scrollpane id="a6972">
         <constraints>
-          <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="6" anchor="0" fill="3" indent="0" use-parent-layout="false">
-            <preferred-size width="150" height="50"/>
-          </grid>
+          <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
         </constraints>
-        <properties/>
-      </component>
+        <properties>
+          <horizontalScrollBarPolicy value="31"/>
+        </properties>
+        <border type="none"/>
+        <children>
+          <component id="92271" class="javax.swing.JTable" binding="blobListTable">
+            <constraints/>
+            <properties>
+              <autoCreateColumnsFromModel value="true"/>
+              <autoCreateRowSorter value="true"/>
+              <autoResizeMode value="3"/>
+              <autoscrolls value="true"/>
+              <showHorizontalLines value="false"/>
+              <showVerticalLines value="false"/>
+              <updateSelectionOnSort value="false"/>
+            </properties>
+          </component>
+        </children>
+      </scrollpane>
     </children>
   </grid>
 </form>
