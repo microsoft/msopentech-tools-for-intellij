@@ -16,17 +16,16 @@
 
 package com.microsoftopentechnologies.intellij.serviceexplorer.azure.storage;
 
-import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerImpl;
 import com.microsoftopentechnologies.intellij.model.storage.BlobContainer;
 import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
 import com.microsoftopentechnologies.intellij.serviceexplorer.Node;
 import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionEvent;
-import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionListener;
 
 public class StorageNode extends Node {
     private static final String WAIT_ICON_PATH = "storageaccount.png";
+    private static final String BLOBS = "Blobs";
     private final StorageAccount storageAccount;
 
     public StorageNode(Node parent, StorageAccount sm) {
@@ -36,15 +35,7 @@ public class StorageNode extends Node {
 
     @Override
     protected void onNodeClick(NodeActionEvent e) {
-        try {
-            setLoading(true);
-            refreshItems();
-            setLoading(false);
-
-        } catch (AzureCmdException e1) {
-            UIHelper.showException("Error listing containers", e1, "Error listing containers", false, true);
-        }
-
+        this.load();
     }
 
     @Override
@@ -52,9 +43,12 @@ public class StorageNode extends Node {
 
         removeAllChildNodes();
 
-        for (BlobContainer blobContainer : AzureSDKManagerImpl.getManager().getBlobContainers(storageAccount)) {
-            addChildNode(new ContainerNode(this, storageAccount,  blobContainer));
-        };
+        Node blobsNode = new Node(BLOBS + storageAccount.getName(), BLOBS);
 
+        for (BlobContainer blobContainer : AzureSDKManagerImpl.getManager().getBlobContainers(storageAccount)) {
+            blobsNode.addChildNode(new ContainerNode(this, storageAccount, blobContainer));
+        }
+
+        addChildNode(blobsNode);
     }
 }

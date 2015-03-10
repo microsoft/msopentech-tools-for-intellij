@@ -50,6 +50,7 @@
                   <preferredSize width="32" height="32"/>
                   <selected value="false"/>
                   <text value=""/>
+                  <toolTipText value="Execute"/>
                   <verticalAlignment value="1"/>
                   <verticalTextPosition value="1"/>
                   <visible value="true"/>
@@ -88,6 +89,7 @@
                   <opaque value="false"/>
                   <preferredSize width="32" height="32"/>
                   <text value=""/>
+                  <toolTipText value="Refresh"/>
                   <verticalAlignment value="1"/>
                   <verticalTextPosition value="1"/>
                 </properties>
@@ -112,6 +114,7 @@
                   <opaque value="false"/>
                   <preferredSize width="32" height="32"/>
                   <text value=""/>
+                  <toolTipText value="Upload Blob"/>
                   <verticalAlignment value="1"/>
                   <verticalTextPosition value="1"/>
                 </properties>
@@ -137,6 +140,7 @@
                   <opaque value="false"/>
                   <preferredSize width="32" height="32"/>
                   <text value=""/>
+                  <toolTipText value="Delete Selected Blob"/>
                   <verticalAlignment value="1"/>
                   <verticalTextPosition value="1"/>
                 </properties>
@@ -162,6 +166,7 @@
                   <opaque value="false"/>
                   <preferredSize width="32" height="32"/>
                   <text value=""/>
+                  <toolTipText value="Open Blob"/>
                   <verticalAlignment value="1"/>
                   <verticalTextPosition value="1"/>
                 </properties>
@@ -187,6 +192,7 @@
                   <opaque value="false"/>
                   <preferredSize width="32" height="32"/>
                   <text value=""/>
+                  <toolTipText value="Save As"/>
                   <verticalAlignment value="1"/>
                   <verticalTextPosition value="1"/>
                 </properties>
@@ -231,6 +237,7 @@
                   <preferredSize width="32" height="32"/>
                   <selected value="false"/>
                   <text value=""/>
+                  <toolTipText value="Open Parent Directory"/>
                   <verticalAlignment value="1"/>
                   <verticalTextPosition value="1"/>
                   <visible value="true"/>

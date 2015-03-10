@@ -19,14 +19,20 @@ package com.microsoftopentechnologies.intellij.serviceexplorer.azure.storage;
 
 
 import com.intellij.openapi.fileEditor.*;
+import com.intellij.openapi.fileTypes.FileType;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.LightVirtualFile;
+import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.helpers.storage.BlobExplorerFileEditorProvider;
 import com.microsoftopentechnologies.intellij.model.storage.BlobContainer;
 import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
 import com.microsoftopentechnologies.intellij.serviceexplorer.Node;
 import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionEvent;
 import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionListener;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import javax.swing.*;
 import java.util.List;
 
 public class ContainerNode extends Node {
@@ -47,12 +53,67 @@ public class ContainerNode extends Node {
             @Override
             public void actionPerformed(NodeActionEvent e) {
 
-                LightVirtualFile containerVirtualFile = new LightVirtualFile(blobContainer.getName());
+
+                FileEditorManager fileEditorManager = FileEditorManager.getInstance(getProject());
+
+                for (VirtualFile editedFile : fileEditorManager.getOpenFiles()) {
+                    BlobContainer editedBlobContainer = editedFile.getUserData(BlobExplorerFileEditorProvider.CONTAINER_KEY);
+                    StorageAccount editedStorageAccount = editedFile.getUserData(BlobExplorerFileEditorProvider.STORAGE_KEY);
+
+                    if(editedStorageAccount.getName().equals(storageAccount.getName())
+                            && editedBlobContainer.getName().equals(blobContainer.getName())) {
+                        return;
+                    }
+                }
+
+
+                LightVirtualFile containerVirtualFile = new LightVirtualFile(blobContainer.getName() + " [Container]");
                 containerVirtualFile.putUserData(BlobExplorerFileEditorProvider.CONTAINER_KEY, blobContainer);
                 containerVirtualFile.putUserData(BlobExplorerFileEditorProvider.STORAGE_KEY, storageAccount);
 
-                OpenFileDescriptor openFileDescriptor = new OpenFileDescriptor(getProject(), containerVirtualFile);
-                FileEditorManager.getInstance(getProject()).openEditor(openFileDescriptor, true);
+                containerVirtualFile.setFileType(new FileType() {
+                    @NotNull
+                    @Override
+                    public String getName() {
+                        return "BlobContainer";
+                    }
+
+                    @NotNull
+                    @Override
+                    public String getDescription() {
+                        return "BlobContainer";
+                    }
+
+                    @NotNull
+                    @Override
+                    public String getDefaultExtension() {
+                        return "";
+                    }
+
+                    @Nullable
+                    @Override
+                    public Icon getIcon() {
+                        return UIHelper.loadIcon("container.png");
+                    }
+
+                    @Override
+                    public boolean isBinary() {
+                        return true;
+                    }
+
+                    @Override
+                    public boolean isReadOnly() {
+                        return false;
+                    }
+
+                    @Nullable
+                    @Override
+                    public String getCharset(VirtualFile virtualFile, byte[] bytes) {
+                        return "UTF8";
+                    }
+                });
+
+                fileEditorManager.openFile(containerVirtualFile, true, true);
             }
         });
     }
