@@ -22,8 +22,12 @@ import com.microsoftopentechnologies.intellij.model.storage.BlobContainer;
 import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
 import com.microsoftopentechnologies.intellij.serviceexplorer.Node;
 import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionEvent;
+import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionListener;
+
+import java.util.*;
 
 public class StorageNode extends Node {
+    private static final String ACTION_CREATE = "Create blob container";
     private static final String WAIT_ICON_PATH = "storageaccount.png";
     private static final String BLOBS = "Blobs";
     private final StorageAccount storageAccount;
@@ -43,7 +47,16 @@ public class StorageNode extends Node {
 
         removeAllChildNodes();
 
-        Node blobsNode = new Node(BLOBS + storageAccount.getName(), BLOBS);
+        Node blobsNode = new Node(BLOBS + storageAccount.getName(), BLOBS) {
+
+            @Override
+            protected Map<String, Class<? extends NodeActionListener>> initActions() {
+                HashMap<String, Class<? extends NodeActionListener>> hashMap = new HashMap<String, Class<? extends NodeActionListener>>();
+                hashMap.put(ACTION_CREATE, CreateBlobContainer.class);
+                return hashMap;
+            }
+
+        };
 
         for (BlobContainer blobContainer : AzureSDKManagerImpl.getManager().getBlobContainers(storageAccount)) {
             blobsNode.addChildNode(new ContainerNode(this, storageAccount, blobContainer));
@@ -51,4 +64,12 @@ public class StorageNode extends Node {
 
         addChildNode(blobsNode);
     }
+
+    public class CreateBlobContainer extends  NodeActionListener {
+        @Override
+        public void actionPerformed(NodeActionEvent e) {
+
+        }
+    }
+
 }
