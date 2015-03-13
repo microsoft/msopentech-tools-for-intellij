@@ -28,6 +28,7 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
+import com.microsoftopentechnologies.intellij.helpers.CallableSingleArg;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerImpl;
@@ -481,7 +482,9 @@ public class BlobExplorerFileEditor implements FileEditor {
                         progressIndicator.setIndeterminate(false);
 
                         if (!targetFile.exists()) {
-                            targetFile.createNewFile();
+                            if(!targetFile.createNewFile()){
+                                throw new IOException("File not created");
+                            }
                         }
 
                         final BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(targetFile), 65536) {
@@ -540,7 +543,79 @@ public class BlobExplorerFileEditor implements FileEditor {
 
 
     private void uploadFile() {
-        //Todo: Pending
+
+        JFileChooser jFileChooser = new JFileChooser();
+        jFileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        jFileChooser.setDialogTitle("Upload blob");
+        if(jFileChooser.showOpenDialog(this.mainPanel) == JFileChooser.APPROVE_OPTION) {
+
+            final File selectedFile = jFileChooser.getSelectedFile();
+
+            ProgressManager.getInstance().run(new Task.Backgroundable(project, "Uploading blob...", true) {
+
+                @Override
+                public void run(@NotNull final ProgressIndicator progressIndicator) {
+                    try {
+
+                        final BlobDirectory blobDirectory = directoryQueue.peekLast();
+
+                        final BufferedInputStream bufferedInputStream = new BufferedInputStream(new FileInputStream(selectedFile));
+
+                        progressIndicator.setIndeterminate(false);
+                        progressIndicator.setText("Uploading blob...");
+                        progressIndicator.setText2("0% uploaded");
+
+                        try {
+
+                            CallableSingleArg<Boolean, Long> callable = new CallableSingleArg<Boolean, Long>() {
+                                @Override
+                                public Boolean call(Long uploadedBytes) throws Exception {
+                                    double progress = ((double) uploadedBytes) / selectedFile.length();
+
+                                    progressIndicator.setFraction(progress);
+                                    progressIndicator.setText2(String.format("%s%% uploaded", (int) (progress * 100)));
+                                    progressIndicator.checkCanceled();
+
+                                    return progressIndicator.isCanceled();
+                                }
+                            };
+
+                            AzureSDKManagerImpl.getManager().uploadBlobFileContent(
+                                    storageAccount,
+                                    blobContainer,
+                                    selectedFile.getName(),
+                                    bufferedInputStream,
+                                    callable,
+                                    1024 * 1024,
+                                    selectedFile.length());
+
+                        } catch (AzureCmdException e) {
+                            progressIndicator.checkCanceled();
+                            if (!progressIndicator.isCanceled()) {
+                                UIHelper.showException("Error uploading", e);
+                                /*
+                                Throwable connectionFault = e.getCause();
+                                if(connectionFault != null) {
+                                    connectionFault = connectionFault.getCause();
+                                }
+
+                                progressIndicator.setText("Error uploading Blob");
+                                String message = connectionFault != null ? connectionFault.getMessage() : null;
+                                if (message == null) {
+                                    message = "Error type " + connectionFault.getClass().getName();
+                                }
+                                progressIndicator.setText2((connectionFault instanceof SocketTimeoutException) ? "Connection timed out" : message);
+                                */
+                            }
+                        }  finally {
+                            bufferedInputStream.close();
+                        }
+                    } catch (IOException e) {
+                        UIHelper.showException("Error uploading Blob", e, "Error uploading Blob", false, true);
+                    }
+                }
+            });
+        }
     }
 
     @NotNull
@@ -633,5 +708,4 @@ public class BlobExplorerFileEditor implements FileEditor {
     public void setProject(Project project) {
         this.project = project;
     }
-
 }

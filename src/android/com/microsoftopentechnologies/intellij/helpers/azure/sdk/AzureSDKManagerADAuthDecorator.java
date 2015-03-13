@@ -15,9 +15,12 @@
  */
 package com.microsoftopentechnologies.intellij.helpers.azure.sdk;
 
+import com.microsoft.azure.storage.RequestCompletedEvent;
+import com.microsoft.azure.storage.StorageEvent;
 import com.microsoft.windowsazure.exception.ServiceException;
 import com.microsoftopentechnologies.intellij.components.MSOpenTechToolsApplication;
 import com.microsoftopentechnologies.intellij.components.PluginSettings;
+import com.microsoftopentechnologies.intellij.helpers.CallableSingleArg;
 import com.microsoftopentechnologies.intellij.helpers.StringHelper;
 import com.microsoftopentechnologies.intellij.helpers.aadauth.AuthenticationContext;
 import com.microsoftopentechnologies.intellij.helpers.aadauth.AuthenticationResult;
@@ -29,6 +32,7 @@ import com.microsoftopentechnologies.intellij.model.storage.*;
 import com.microsoftopentechnologies.intellij.model.vm.*;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
@@ -464,17 +468,20 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
         });
     }
 
-    @NotNull
+
     @Override
-    public BlobFile uploadBlobFileContent(@NotNull final StorageAccount storageAccount,
-                                          @NotNull final BlobFile blobFile,
-                                          @NotNull final InputStream content,
-                                          final long length)
-            throws AzureCmdException {
-        return runWithRetry(storageAccount.getSubscriptionId(), new Func0<BlobFile>() {
+    public void uploadBlobFileContent(final @NotNull StorageAccount storageAccount,
+                                      final @NotNull BlobContainer blobContainer,
+                                      final @NotNull String filePath,
+                                      final @NotNull InputStream content,
+                                      final CallableSingleArg<Boolean, Long> processBlock,
+                                      final long maxBlockSize,
+                                      final long length) throws AzureCmdException {
+        runWithRetry(storageAccount.getSubscriptionId(), new Func0<Void>() {
             @Override
-            public BlobFile run() throws AzureCmdException {
-                return sdkManager.uploadBlobFileContent(storageAccount, blobFile, content, length);
+            public Void run() throws AzureCmdException {
+                sdkManager.uploadBlobFileContent(storageAccount, blobContainer, filePath, content, processBlock, maxBlockSize, length);
+                return null;
             }
         });
     }

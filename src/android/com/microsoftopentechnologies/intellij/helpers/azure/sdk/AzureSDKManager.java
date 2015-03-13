@@ -15,14 +15,19 @@
  */
 package com.microsoftopentechnologies.intellij.helpers.azure.sdk;
 
+import com.microsoft.azure.storage.RequestCompletedEvent;
+import com.microsoft.azure.storage.StorageEvent;
+import com.microsoftopentechnologies.intellij.helpers.CallableSingleArg;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.model.storage.*;
 import com.microsoftopentechnologies.intellij.model.vm.*;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 public interface AzureSDKManager {
     @NotNull
@@ -120,11 +125,14 @@ public interface AzureSDKManager {
                         @NotNull BlobFile blobFile)
             throws AzureCmdException;
 
-    @NotNull
-    BlobFile uploadBlobFileContent(@NotNull StorageAccount storageAccount,
-                                   @NotNull BlobFile blobFile,
-                                   @NotNull InputStream content,
-                                   long length)
+
+    public void uploadBlobFileContent(@NotNull StorageAccount storageAccount,
+                                      @NotNull BlobContainer blobContainer,
+                                      @NotNull String filePath,
+                                      @NotNull InputStream content,
+                                      CallableSingleArg<Boolean, Long> processBlockEvent,
+                                      long maxBlockSize,
+                                      long length)
             throws AzureCmdException;
 
     void downloadBlobFileContent(@NotNull StorageAccount storageAccount,

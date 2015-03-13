@@ -20,8 +20,7 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import com.intellij.openapi.application.ApplicationManager;
-import com.microsoft.azure.storage.CloudStorageAccount;
-import com.microsoft.azure.storage.StorageException;
+import com.microsoft.azure.storage.*;
 import com.microsoft.azure.storage.blob.*;
 import com.microsoft.windowsazure.core.OperationResponse;
 import com.microsoft.windowsazure.core.OperationStatus;
@@ -48,6 +47,8 @@ import com.microsoft.windowsazure.management.network.models.NetworkListResponse.
 import com.microsoft.windowsazure.management.storage.StorageAccountOperations;
 import com.microsoft.windowsazure.management.storage.StorageManagementClient;
 import com.microsoft.windowsazure.management.storage.models.*;
+import com.microsoftopentechnologies.azuremanagementutil.util.Base64;
+import com.microsoftopentechnologies.intellij.helpers.CallableSingleArg;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureAuthenticationMode;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManagerImpl;
@@ -56,18 +57,18 @@ import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
 import com.microsoftopentechnologies.intellij.model.vm.*;
 import com.microsoftopentechnologies.intellij.model.vm.CloudService.Deployment;
 import com.microsoftopentechnologies.intellij.model.vm.VirtualMachine.Status;
+import io.netty.handler.codec.base64.Base64Encoder;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.security.cert.X509Certificate;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.MessageDigest;
 import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
 public class AzureSDKManagerImpl implements AzureSDKManager {
@@ -1077,24 +1078,49 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         }
     }
 
-    @NotNull
     @Override
-    public BlobFile uploadBlobFileContent(@NotNull StorageAccount storageAccount,
-                                          @NotNull BlobFile blobFile,
-                                          @NotNull InputStream content,
-                                          long length)
+    public void uploadBlobFileContent(@NotNull StorageAccount storageAccount,
+                                      @NotNull BlobContainer blobContainer,
+                                      @NotNull String filePath,
+                                      @NotNull InputStream content,
+                                      CallableSingleArg<Boolean, Long> processBlock,
+                                      long maxBlockSize,
+                                      long length)
             throws AzureCmdException {
         try {
             CloudBlobClient client = getCloudBlobClient(storageAccount);
-            String containerName = blobFile.getContainerName();
+            String containerName = blobContainer.getName();
 
             CloudBlobContainer container = client.getContainerReference(containerName);
+            final CloudBlockBlob blob = container.getBlockBlobReference(filePath);
+            long uploadedBytes = 0;
 
-            CloudBlob blob = getCloudBlob(container, blobFile);
+            ArrayList<BlockEntry> blockEntries = new ArrayList<BlockEntry>();
 
-            blob.upload(content, length);
+            boolean isCancelled = false;
 
-            return reloadBlob(blob, containerName, blobFile);
+            while (uploadedBytes < length && !isCancelled) {
+                String blockId = Base64.encode(UUID.randomUUID().toString().getBytes());
+                BlockEntry entry = new BlockEntry(blockId, BlockSearchMode.UNCOMMITTED);
+
+                long blockSize = maxBlockSize;
+                if (length - uploadedBytes <= maxBlockSize) {
+                    blockSize = length - uploadedBytes;
+                }
+
+                if(processBlock != null) {
+                    isCancelled = processBlock.call(uploadedBytes);
+                }
+
+                entry.setSize(blockSize);
+
+                blockEntries.add(entry);
+                blob.uploadBlock(entry.getId(), content, blockSize);
+                uploadedBytes += blockSize;
+            }
+
+            blob.commitBlockList(blockEntries);
+
         } catch (Throwable t) {
             throw new AzureCmdException("Error uploading the Blob File content", t);
         }
