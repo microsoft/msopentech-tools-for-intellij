@@ -26,9 +26,9 @@ import com.microsoftopentechnologies.intellij.forms.TableForm;
 import com.microsoftopentechnologies.intellij.forms.ViewLogForm;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.intellij.helpers.azure.AzureManager;
-import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManager;
+import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIHelper;
+import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManagerImpl;
 import com.microsoftopentechnologies.intellij.model.ms.CustomAPI;
 import com.microsoftopentechnologies.intellij.model.ms.Job;
 import com.microsoftopentechnologies.intellij.model.ms.MobileService;
@@ -68,7 +68,7 @@ public class MobileServiceNode extends Node {
     protected void refreshItems() throws AzureCmdException {
         if (AzureRestAPIHelper.existsMobileService(mobileService.getName())) {
             try {
-                AzureManager apiManager = AzureRestAPIManager.getManager();
+                AzureRestAPIManager apiManager = AzureRestAPIManagerImpl.getManager();
                 UUID subscriptionId = mobileService.getSubcriptionId();
                 String serviceName = mobileService.getName();
 
@@ -217,7 +217,7 @@ public class MobileServiceNode extends Node {
                     tablesNode.removeAllChildNodes();
                     try {
                         loadServiceNode(
-                                AzureRestAPIManager.getManager().getTableList(
+                                AzureRestAPIManagerImpl.getManager().getTableList(
                                         mobileService.getSubcriptionId(),
                                         mobileService.getName()),
                                 "_tables",
@@ -259,7 +259,7 @@ public class MobileServiceNode extends Node {
                     customAPIsNode.removeAllChildNodes();
                     try {
                         loadServiceNode(
-                                AzureRestAPIManager.getManager().getAPIList(
+                                AzureRestAPIManagerImpl.getManager().getAPIList(
                                         mobileService.getSubcriptionId(),
                                         mobileService.getName()),
                                 "_apis",
@@ -301,7 +301,7 @@ public class MobileServiceNode extends Node {
                     jobsNode.removeAllChildNodes();
                     try {
                         loadServiceNode(
-                                AzureRestAPIManager.getManager().listJobs(
+                                AzureRestAPIManagerImpl.getManager().listJobs(
                                         mobileService.getSubcriptionId(),
                                         mobileService.getName()),
                                 "_jobs",

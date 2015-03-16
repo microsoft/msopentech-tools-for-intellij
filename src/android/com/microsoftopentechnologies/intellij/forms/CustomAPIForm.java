@@ -19,7 +19,7 @@ package com.microsoftopentechnologies.intellij.forms;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
-import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManager;
+import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManagerImpl;
 import com.microsoftopentechnologies.intellij.model.ms.CustomAPI;
 import com.microsoftopentechnologies.intellij.model.ms.CustomAPIPermissions;
 import com.microsoftopentechnologies.intellij.model.ms.PermissionItem;
@@ -130,7 +130,7 @@ public class CustomAPIForm extends JDialog {
                             if(existingApiNames == null) {
                                 existingApiNames = new ArrayList<String>();
 
-                                for (CustomAPI api : AzureRestAPIManager.getManager().getAPIList(subscriptionId, serviceName)) {
+                                for (CustomAPI api : AzureRestAPIManagerImpl.getManager().getAPIList(subscriptionId, serviceName)) {
                                     existingApiNames.add(api.getName().toLowerCase());
                                 }
                             }
@@ -144,10 +144,10 @@ public class CustomAPIForm extends JDialog {
 
 
                             if(editingCustomAPI == null) {
-                                AzureRestAPIManager.getManager().createCustomAPI(subscriptionId, serviceName, apiName, permissions);
+                                AzureRestAPIManagerImpl.getManager().createCustomAPI(subscriptionId, serviceName, apiName, permissions);
                             }
                             else {
-                                AzureRestAPIManager.getManager().updateCustomAPI(subscriptionId, serviceName, apiName, permissions);
+                                AzureRestAPIManagerImpl.getManager().updateCustomAPI(subscriptionId, serviceName, apiName, permissions);
                                 editingCustomAPI.setCustomAPIPermissions(permissions);
                             }
 

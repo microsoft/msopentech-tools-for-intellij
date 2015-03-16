@@ -13,31 +13,28 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package com.microsoftopentechnologies.intellij.model.vm;
+package com.microsoftopentechnologies.intellij.model.storage;
 
 import com.microsoftopentechnologies.intellij.model.ServiceTreeItem;
 import org.jetbrains.annotations.NotNull;
 
-public class StorageAccount implements ServiceTreeItem {
+public class BlobDirectory implements ServiceTreeItem, BlobItem {
     private boolean loading;
     private String name;
-    private String type;
-    private String location;
-    private String affinityGroup;
-    private String key;
+    private String uri;
+    private String containerName;
+    private String path;
     private String subscriptionId;
 
-    public StorageAccount(@NotNull String name,
-                          @NotNull String type,
-                          @NotNull String location,
-                          @NotNull String affinityGroup,
-                          @NotNull String key,
-                          @NotNull String subscriptionId) {
+    public BlobDirectory(@NotNull String name,
+                         @NotNull String uri,
+                         @NotNull String containerName,
+                         @NotNull String path,
+                         @NotNull String subscriptionId) {
         this.name = name;
-        this.type = type;
-        this.location = location;
-        this.affinityGroup = affinityGroup;
-        this.key = key;
+        this.uri = uri;
+        this.containerName = containerName;
+        this.path = path;
         this.subscriptionId = subscriptionId;
     }
 
@@ -57,39 +54,38 @@ public class StorageAccount implements ServiceTreeItem {
     }
 
     @NotNull
-    public String getType() {
-        return type;
+    public String getUri() {
+        return uri;
     }
 
-    public void setType(@NotNull String type) {
-        this.type = type;
-    }
-
-    @NotNull
-    public String getLocation() {
-        return location;
-    }
-
-    public void setLocation(@NotNull String location) {
-        this.location = location;
+    public void setUri(@NotNull String uri) {
+        this.uri = uri;
     }
 
     @NotNull
-    public String getAffinityGroup() {
-        return affinityGroup;
+    @Override
+    public String getContainerName() {
+        return containerName;
     }
 
-    public void setAffinityGroup(@NotNull String affinityGroup) {
-        this.affinityGroup = affinityGroup;
+    public void setContainerName(@NotNull String containerName) {
+        this.containerName = containerName;
     }
 
     @NotNull
-    public String getKey() {
-        return key;
+    @Override
+    public String getPath() {
+        return path;
     }
 
-    public void setKey(@NotNull String key) {
-        this.key = key;
+    public void setPath(@NotNull String path) {
+        this.path = path;
+    }
+
+    @NotNull
+    @Override
+    public BlobItemType getItemType() {
+        return BlobItemType.BlobDirectory;
     }
 
     @NotNull

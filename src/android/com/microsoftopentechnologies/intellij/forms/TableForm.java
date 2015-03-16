@@ -21,7 +21,7 @@ import com.google.common.collect.Iterables;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
-import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManager;
+import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManagerImpl;
 import com.microsoftopentechnologies.intellij.model.ms.PermissionItem;
 import com.microsoftopentechnologies.intellij.model.ms.PermissionType;
 import com.microsoftopentechnologies.intellij.model.ms.Table;
@@ -166,9 +166,9 @@ public class TableForm extends JDialog {
                             form.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
                             if(editingTable == null) {
-                                AzureRestAPIManager.getManager().createTable(subscriptionId, serviceName, tableName, tablePermissions);
+                                AzureRestAPIManagerImpl.getManager().createTable(subscriptionId, serviceName, tableName, tablePermissions);
                             } else {
-                                AzureRestAPIManager.getManager().updateTable(subscriptionId, serviceName, tableName, tablePermissions);
+                                AzureRestAPIManagerImpl.getManager().updateTable(subscriptionId, serviceName, tableName, tablePermissions);
                             }
                             if(afterSave != null)
                                 afterSave.run();

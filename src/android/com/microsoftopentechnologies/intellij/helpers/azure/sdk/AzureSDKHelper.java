@@ -16,6 +16,7 @@
 package com.microsoftopentechnologies.intellij.helpers.azure.sdk;
 
 import com.intellij.ide.util.PropertiesComponent;
+import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.windowsazure.Configuration;
 import com.microsoft.windowsazure.core.pipeline.apache.ApacheConfigurationProperties;
 import com.microsoft.windowsazure.core.utils.Base64;
@@ -33,7 +34,8 @@ import com.microsoftopentechnologies.intellij.components.MSOpenTechToolsApplicat
 import com.microsoftopentechnologies.intellij.helpers.OpenSSLHelper;
 import com.microsoftopentechnologies.intellij.helpers.XmlHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureAuthenticationMode;
-import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManager;
+import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManagerImpl;
+import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.w3c.dom.Node;
@@ -45,6 +47,8 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import java.io.*;
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.security.InvalidKeyException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -69,7 +73,7 @@ public class AzureSDKHelper {
 
         // add a request filter for tacking on the A/D auth token if the current authentication
         // mode is active directory
-        if (AzureRestAPIManager.getManager().getAuthenticationMode() == AzureAuthenticationMode.ActiveDirectory) {
+        if (AzureRestAPIManagerImpl.getManager().getAuthenticationMode() == AzureAuthenticationMode.ActiveDirectory) {
             return client.withRequestFilterFirst(new AuthTokenRequestFilter(subscriptionId));
         }
 
@@ -89,7 +93,7 @@ public class AzureSDKHelper {
 
         // add a request filter for tacking on the A/D auth token if the current authentication
         // mode is active directory
-        if (AzureRestAPIManager.getManager().getAuthenticationMode() == AzureAuthenticationMode.ActiveDirectory) {
+        if (AzureRestAPIManagerImpl.getManager().getAuthenticationMode() == AzureAuthenticationMode.ActiveDirectory) {
             return client.withRequestFilterFirst(new AuthTokenRequestFilter(subscriptionId));
         }
 
@@ -109,7 +113,7 @@ public class AzureSDKHelper {
 
         // add a request filter for tacking on the A/D auth token if the current authentication
         // mode is active directory
-        if (AzureRestAPIManager.getManager().getAuthenticationMode() == AzureAuthenticationMode.ActiveDirectory) {
+        if (AzureRestAPIManagerImpl.getManager().getAuthenticationMode() == AzureAuthenticationMode.ActiveDirectory) {
             return client.withRequestFilterFirst(new AuthTokenRequestFilter(subscriptionId));
         }
 
@@ -129,16 +133,26 @@ public class AzureSDKHelper {
 
         // add a request filter for tacking on the A/D auth token if the current authentication
         // mode is active directory
-        if (AzureRestAPIManager.getManager().getAuthenticationMode() == AzureAuthenticationMode.ActiveDirectory) {
+        if (AzureRestAPIManagerImpl.getManager().getAuthenticationMode() == AzureAuthenticationMode.ActiveDirectory) {
             return client.withRequestFilterFirst(new AuthTokenRequestFilter(subscriptionId));
         }
 
         return client;
     }
 
+    @NotNull
+    public static CloudStorageAccount getCloudStorageAccount(@NotNull StorageAccount storageAccount)
+            throws URISyntaxException, InvalidKeyException {
+        return CloudStorageAccount.parse(String.format(StorageAccount.CONN_STR_TEMPLATE,
+                storageAccount.getName(),
+                storageAccount.getPrimaryKey()));
+    }
+
     @Nullable
-    private static Configuration getConfiguration(@NotNull String subscriptionId) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, XPathExpressionException, SAXException, ParserConfigurationException, IOException {
-        switch (AzureRestAPIManager.getManager().getAuthenticationMode()) {
+    private static Configuration getConfiguration(@NotNull String subscriptionId)
+            throws CertificateException, NoSuchAlgorithmException, KeyStoreException, XPathExpressionException,
+            SAXException, ParserConfigurationException, IOException {
+        switch (AzureRestAPIManagerImpl.getManager().getAuthenticationMode()) {
             case SubscriptionSettings:
                 return getConfigurationFromPublishSettings(subscriptionId);
             case ActiveDirectory:
@@ -149,8 +163,8 @@ public class AzureSDKHelper {
     }
 
     @Nullable
-    private static Configuration getConfigurationFromAuthToken(@NotNull String subscriptionId) throws SAXException, ParserConfigurationException, XPathExpressionException, IOException {
-
+    private static Configuration getConfigurationFromAuthToken(@NotNull String subscriptionId)
+            throws SAXException, ParserConfigurationException, XPathExpressionException, IOException {
         // NOTE: This implementation has to be considered as somewhat hacky. It relies on certain
         // internal implementation details of the Azure SDK for Java. For example we supply null
         // values for the key store location and password and specify a key store type value
@@ -173,18 +187,18 @@ public class AzureSDKHelper {
                 configuration.setProperty(
                         ManagementConfiguration.SUBSCRIPTION_CLOUD_CREDENTIALS,
                         new EmptyCloudCredentials(subscriptionId));
-            }
 
-            // remove the SSL connection factory in case one was added; this is needed
-            // in the case when the user switches from subscription based auth to A/D
-            // sign-in because in that scenario the CertificateCloudCredentials class
-            // would have added an SSL connection factory object to the configuration
-            // object which would then be used when making the SSL call to the Azure
-            // service management API. This tells us that the configuration object is
-            // reused across calls to ManagementConfiguration.configure. The SSL connection
-            // factory object so configured will attempt to use certificate based auth
-            // which will fail since we don't have a certificate handy when using A/D auth.
-            configuration.getProperties().remove(ApacheConfigurationProperties.PROPERTY_SSL_CONNECTION_SOCKET_FACTORY);
+                // remove the SSL connection factory in case one was added; this is needed
+                // in the case when the user switches from subscription based auth to A/D
+                // sign-in because in that scenario the CertificateCloudCredentials class
+                // would have added an SSL connection factory object to the configuration
+                // object which would then be used when making the SSL call to the Azure
+                // service management API. This tells us that the configuration object is
+                // reused across calls to ManagementConfiguration.configure. The SSL connection
+                // factory object so configured will attempt to use certificate based auth
+                // which will fail since we don't have a certificate handy when using A/D auth.
+                configuration.getProperties().remove(ApacheConfigurationProperties.PROPERTY_SSL_CONNECTION_SOCKET_FACTORY);
+            }
 
             return configuration;
         } finally {

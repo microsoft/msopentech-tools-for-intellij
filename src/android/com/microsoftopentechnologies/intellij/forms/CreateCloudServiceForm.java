@@ -13,7 +13,8 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package com.microsoftopentechnologies.intellij.wizards.createvm;
+
+package com.microsoftopentechnologies.intellij.forms;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.progress.ProgressIndicator;
@@ -26,8 +27,8 @@ import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerImpl;
 import com.microsoftopentechnologies.intellij.model.ms.Subscription;
 import com.microsoftopentechnologies.intellij.model.vm.AffinityGroup;
+import com.microsoftopentechnologies.intellij.model.vm.CloudService;
 import com.microsoftopentechnologies.intellij.model.vm.Location;
-import com.microsoftopentechnologies.intellij.model.vm.StorageAccount;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -35,50 +36,32 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.List;
 import java.util.Vector;
 
-
-public class CreateStorageAccountForm extends JDialog {
+public class CreateCloudServiceForm extends JDialog {
     private JPanel contentPane;
     private JButton buttonOK;
     private JButton buttonCancel;
     private JComboBox subscriptionComboBox;
     private JTextField nameTextField;
     private JComboBox regionOrAffinityGroupComboBox;
-    private JComboBox replicationComboBox;
     private JProgressBar createProgressBar;
 
-    private Runnable onCreate;
     private Subscription subscription;
-    private StorageAccount storageAccount;
+    private CloudService cloudService;
+    private Runnable onCreate;
 
-    private enum ReplicationTypes {
-        Standard_LRS,
-        Standard_GRS,
-        Standard_RAGRS;
-
-        public String getDescription() {
-            switch (this) {
-                case Standard_GRS:
-                    return "Geo-Redundant";
-                case Standard_LRS:
-                    return "Locally Redundant";
-                case Standard_RAGRS:
-                    return "Read Access Geo-Redundant";
-            }
-
-            return super.toString();
-        }
-    }
-
-    public CreateStorageAccountForm() {
+    public CreateCloudServiceForm() {
         setContentPane(contentPane);
         setModal(true);
-        getRootPane().setDefaultButton(buttonOK);
 
         setResizable(false);
-        setPreferredSize(new Dimension(411, 330));
-        setTitle("Create Storage Account");
+        setPreferredSize(new Dimension(411, 300));
+
+        getRootPane().setDefaultButton(buttonOK);
+
+        setTitle("Create Cloud Service");
 
         buttonOK.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -91,6 +74,7 @@ public class CreateStorageAccountForm extends JDialog {
                 onCancel();
             }
         });
+
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
@@ -105,11 +89,15 @@ public class CreateStorageAccountForm extends JDialog {
         }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
         regionOrAffinityGroupComboBox.setRenderer(new ListCellRendererWrapper<Object>() {
-
             @Override
             public void customize(JList jList, Object o, int i, boolean b, boolean b1) {
                 if (!(o instanceof String)) {
-                    setText("  " + o.toString());
+                    if (o instanceof AffinityGroup) {
+                        AffinityGroup ag = (AffinityGroup) o;
+                        setText(String.format("  %s (%s)", ag.getName(), ag.getLocation()));
+                    } else {
+                        setText("  " + o.toString());
+                    }
                 }
             }
         });
@@ -137,61 +125,13 @@ public class CreateStorageAccountForm extends JDialog {
                 validateEmptyFields();
             }
         });
-
-        replicationComboBox.setModel(new DefaultComboBoxModel(ReplicationTypes.values()));
-        replicationComboBox.setRenderer(new ListCellRendererWrapper<ReplicationTypes>() {
-            @Override
-            public void customize(JList jList, ReplicationTypes replicationTypes, int i, boolean b, boolean b1) {
-                setText(replicationTypes.getDescription());
-            }
-        });
     }
-
 
     private void validateEmptyFields() {
         boolean allFieldsCompleted = !(
                 nameTextField.getText().isEmpty() || regionOrAffinityGroupComboBox.getSelectedObjects().length == 0);
 
         buttonOK.setEnabled(allFieldsCompleted);
-    }
-
-    private void onOK() {
-
-        if (nameTextField.getText().length() < 3
-                || nameTextField.getText().length() > 24
-                || !nameTextField.getText().matches("[a-z0-9]+")) {
-            JOptionPane.showMessageDialog(this, "Invalid storage account name. The name should be between 3 and 24 characters long and \n" +
-                    "can contain only lowercase letters and numbers.", "Error creating the storage account", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        createProgressBar.setVisible(true);
-
-        try {
-            String name = nameTextField.getText();
-            String region = (regionOrAffinityGroupComboBox.getSelectedItem() instanceof Location) ? regionOrAffinityGroupComboBox.getSelectedItem().toString() : "";
-            String affinityGroup = (regionOrAffinityGroupComboBox.getSelectedItem() instanceof AffinityGroup) ? regionOrAffinityGroupComboBox.getSelectedItem().toString() : "";
-            String replication = replicationComboBox.getSelectedItem().toString();
-
-            storageAccount = new StorageAccount(name, replication, region, affinityGroup, "", subscription.getId().toString());
-            AzureSDKManagerImpl.getManager().createStorageAccount(storageAccount);
-            AzureSDKManagerImpl.getManager().refreshStorageAccountInformation(storageAccount);
-
-            onCreate.run();
-        } catch (AzureCmdException e) {
-            storageAccount = null;
-            UIHelper.showException("An error occurred while trying to create the specified storage account.", e, "Error Creating Storage Account", false, true);
-        }
-
-        setCursor(Cursor.getDefaultCursor());
-
-        this.setVisible(false);
-        dispose();
-    }
-
-    private void onCancel() {
-        dispose();
     }
 
     public void fillFields(final Subscription subscription, Project project) {
@@ -204,12 +144,12 @@ public class CreateStorageAccountForm extends JDialog {
         ProgressManager.getInstance().run(new Task.Backgroundable(project, "Loading regions...", false) {
             @Override
             public void run(@NotNull ProgressIndicator progressIndicator) {
-
                 progressIndicator.setIndeterminate(true);
 
                 try {
-                    final java.util.List<AffinityGroup> affinityGroups = AzureSDKManagerImpl.getManager().getAffinityGroups(subscription.getId().toString());
-                    final java.util.List<Location> locations = AzureSDKManagerImpl.getManager().getLocations(subscription.getId().toString());
+
+                    final List<AffinityGroup> affinityGroups = AzureSDKManagerImpl.getManager().getAffinityGroups(subscription.getId().toString());
+                    final List<Location> locations = AzureSDKManagerImpl.getManager().getLocations(subscription.getId().toString());
 
                     ApplicationManager.getApplication().invokeLater(new Runnable() {
                         @Override
@@ -240,14 +180,52 @@ public class CreateStorageAccountForm extends JDialog {
                 }
             }
         });
+    }
 
+    private void onOK() {
+        if (!nameTextField.getText().matches("^[A-Za-z0-9][A-Za-z0-9-]+[A-Za-z0-9]$")) {
+            JOptionPane.showMessageDialog(this, "Invalid cloud service name. Cloud service name must start with a letter or number, \n" +
+                    "contain only letters, numbers, and hyphens, " +
+                    "and end with a letter or number.", "Error creating the cloud service", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        createProgressBar.setVisible(true);
+
+        try {
+            String name = nameTextField.getText();
+            Object regionOrAffinity = regionOrAffinityGroupComboBox.getSelectedItem();
+            String location = (regionOrAffinity instanceof Location) ?
+                    ((Location) regionOrAffinity).getName() :
+                    "";
+            String affinityGroup = (regionOrAffinity instanceof AffinityGroup) ?
+                    ((AffinityGroup) regionOrAffinity).getName() :
+                    "";
+
+            cloudService = new CloudService(name, location, affinityGroup, subscription.getId().toString());
+            AzureSDKManagerImpl.getManager().createCloudService(cloudService);
+        } catch (Exception e) {
+            cloudService = null;
+            UIHelper.showException("An error occurred while trying to create the specified cloud service", e, "Error Creating Storage Account", false, true);
+        }
+
+        onCreate.run();
+        this.setCursor(Cursor.getDefaultCursor());
+
+        this.setVisible(false);
+        dispose();
+    }
+
+    private void onCancel() {
+        dispose();
+    }
+
+    public CloudService getCloudService() {
+        return cloudService;
     }
 
     public void setOnCreate(Runnable onCreate) {
         this.onCreate = onCreate;
-    }
-
-    public StorageAccount getStorageAccount() {
-        return storageAccount;
     }
 }

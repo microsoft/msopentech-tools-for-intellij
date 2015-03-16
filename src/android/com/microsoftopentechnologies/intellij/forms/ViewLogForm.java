@@ -16,7 +16,7 @@
 
 package com.microsoftopentechnologies.intellij.forms;
 
-import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManager;
+import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManagerImpl;
 import com.microsoftopentechnologies.intellij.helpers.ReadOnlyCellTableModel;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.model.ms.LogEntry;
@@ -90,7 +90,7 @@ public class ViewLogForm extends JDialog {
             while(model.getRowCount() > 0)
                 model.removeRow(0);
 
-            for(LogEntry log : AzureRestAPIManager.getManager().listLog(subscriptionId, serviceName, runtime)) {
+            for(LogEntry log : AzureRestAPIManagerImpl.getManager().listLog(subscriptionId, serviceName, runtime)) {
 
                 Vector<Object> row = new Vector<Object>();
                 row.add(log.getType());

@@ -14,60 +14,70 @@
  *  limitations under the License.
  */
 
-package com.microsoftopentechnologies.intellij.serviceexplorer.azure.vm;
+package com.microsoftopentechnologies.intellij.serviceexplorer.azure.storage;
 
+import com.intellij.openapi.project.Project;
+import com.microsoftopentechnologies.intellij.forms.CreateStorageAccountForm;
+import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
+import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManager;
 import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManagerImpl;
 import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerImpl;
 import com.microsoftopentechnologies.intellij.model.ms.Subscription;
-import com.microsoftopentechnologies.intellij.model.vm.VirtualMachine;
+import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
 import com.microsoftopentechnologies.intellij.serviceexplorer.Node;
 import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionEvent;
 import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionListener;
-import com.microsoftopentechnologies.intellij.wizards.createvm.CreateVMWizard;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class VMServiceModule extends Node {
-    private static final String VM_SERVICE_MODULE_ID = VMServiceModule.class.getName();
-    private static final String ICON_PATH = "virtualmachines.png";
-    private static final String BASE_MODULE_NAME = "Virtual Machines";
+public class StorageModule extends Node {
 
-    public VMServiceModule(Node parent) {
-        super(VM_SERVICE_MODULE_ID, BASE_MODULE_NAME, parent, ICON_PATH, true);
+    private static final String STORAGE_MODULE_ID = StorageModule.class.getName();
+    private static final String ICON_PATH = "storage.png";
+    private static final String BASE_MODULE_NAME = "Storage";
+    private Project project;
+
+    public StorageModule(Node parent) {
+        super(STORAGE_MODULE_ID, BASE_MODULE_NAME, parent, ICON_PATH, true);
+
+        project = parent.getProject();
+    }
+
+    @Override
+    protected Map<String, Class<? extends NodeActionListener>> initActions() {
+        // register the "manage subscriptions" action
+        addAction("Create Storage Account", new CreateStorageAccountAction());
+        return null;
     }
 
     @Override
     protected void refreshItems() throws AzureCmdException {
-        // remove all child nodes
         removeAllChildNodes();
 
         // load all VMs
         ArrayList<Subscription> subscriptionList = AzureRestAPIManagerImpl.getManager().getSubscriptionList();
         if(subscriptionList != null) {
             for (Subscription subscription : subscriptionList) {
-                List<VirtualMachine> virtualMachines = AzureSDKManagerImpl.getManager().getVirtualMachines(subscription.getId().toString());
-                for (VirtualMachine vm : virtualMachines) {
-                    addChildNode(new VMNode(this, vm));
+                List<StorageAccount> storageAccounts = AzureSDKManagerImpl.getManager().getStorageAccounts(subscription.getId().toString());
+                for (StorageAccount sm : storageAccounts) {
+                    addChildNode(new StorageNode(this, sm));
                 }
             }
         }
+
     }
 
-    @Override
-    protected Map<String, Class<? extends NodeActionListener>> initActions() {
-        addAction("Create VM", new CreateVMAction());
-        return null;
-    }
+    private class CreateStorageAccountAction extends NodeActionListener {
 
-    public class CreateVMAction extends NodeActionListener {
         @Override
         public void actionPerformed(NodeActionEvent e) {
-            CreateVMWizard createVMWizard = new CreateVMWizard((VMServiceModule) e.getAction().getNode());
-            createVMWizard.show();
+            CreateStorageAccountForm createStorageAccountForm = new CreateStorageAccountForm();
+            createStorageAccountForm.fillFields(null, project);
+            UIHelper.packAndCenterJDialog(createStorageAccountForm);
+            createStorageAccountForm.setVisible(true);
         }
     }
-
 }

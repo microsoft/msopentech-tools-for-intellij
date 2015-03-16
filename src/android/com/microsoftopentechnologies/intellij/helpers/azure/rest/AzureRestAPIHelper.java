@@ -29,7 +29,6 @@ import com.microsoftopentechnologies.intellij.helpers.aadauth.AuthenticationResu
 import com.microsoftopentechnologies.intellij.helpers.aadauth.PromptValue;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureAuthenticationMode;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.intellij.helpers.azure.AzureManager;
 import com.microsoftopentechnologies.intellij.model.ms.Subscription;
 
 import org.jetbrains.annotations.Nullable;
@@ -365,7 +364,7 @@ public class AzureRestAPIHelper {
             AzureCmdException,
             NoSubscriptionException {
 
-        AzureManager apiManager = AzureRestAPIManager.getManager();
+        AzureRestAPIManager apiManager = AzureRestAPIManagerImpl.getManager();
         AzureAuthenticationMode authMode = apiManager.getAuthenticationMode();
         if (authMode == AzureAuthenticationMode.ActiveDirectory) {
             runWithSSLConnectionFromToken(path, jsonContent, subscriptionId, callback, apiManager);
@@ -394,7 +393,7 @@ public class AzureRestAPIHelper {
             boolean jsonContent,
             String subscriptionId,
             AzureRestCallback<T> callback,
-            AzureManager apiManager) throws IOException, KeyManagementException, NoSuchAlgorithmException, UnrecoverableKeyException, KeyStoreException, CertificateException, ParserConfigurationException, XPathExpressionException, SAXException, InterruptedException, ExecutionException, AzureCmdException, NoSubscriptionException {
+            AzureRestAPIManager apiManager) throws IOException, KeyManagementException, NoSuchAlgorithmException, UnrecoverableKeyException, KeyStoreException, CertificateException, ParserConfigurationException, XPathExpressionException, SAXException, InterruptedException, ExecutionException, AzureCmdException, NoSubscriptionException {
 
         HttpsURLConnection sslConnection;// there should already be a valid auth token by this time
         boolean isForSubscription = !StringHelper.isNullOrWhiteSpace(subscriptionId);
@@ -445,7 +444,7 @@ public class AzureRestAPIHelper {
     }
 
     public static AuthenticationResult acquireTokenInteractive(
-            String subscriptionId, AzureManager apiManager) throws IOException, CertificateException, NoSuchAlgorithmException, UnrecoverableKeyException, ExecutionException, ParserConfigurationException, InterruptedException, XPathExpressionException, SAXException, KeyManagementException, KeyStoreException, AzureCmdException, NoSubscriptionException {
+            String subscriptionId, AzureRestAPIManager apiManager) throws IOException, CertificateException, NoSuchAlgorithmException, UnrecoverableKeyException, ExecutionException, ParserConfigurationException, InterruptedException, XPathExpressionException, SAXException, KeyManagementException, KeyStoreException, AzureCmdException, NoSubscriptionException {
 
         PluginSettings settings = MSOpenTechToolsApplication.getCurrent().getSettings();
         AuthenticationContext context = null;
@@ -490,7 +489,7 @@ public class AzureRestAPIHelper {
             boolean useRefreshToken) throws IOException, KeyManagementException, NoSuchAlgorithmException, UnrecoverableKeyException, KeyStoreException, CertificateException, ParserConfigurationException, XPathExpressionException, SAXException, InterruptedException, ExecutionException, AzureCmdException, NoSubscriptionException {
 
         PluginSettings settings = MSOpenTechToolsApplication.getCurrent().getSettings();
-        AzureManager apiManager = AzureRestAPIManager.getManager();
+        AzureRestAPIManager apiManager = AzureRestAPIManagerImpl.getManager();
 
         // get the default token if there is no subscription ID; otherwise fetch
         // the token for the subscription
@@ -576,7 +575,7 @@ public class AzureRestAPIHelper {
         // azure subscription
         String tenantName = MSOpenTechToolsApplication.getCurrent().getSettings().getTenantName();
         if (!StringHelper.isNullOrWhiteSpace(subscriptionId)) {
-            Subscription subscription = AzureRestAPIManager.getManager().getSubscriptionFromId(subscriptionId);
+            Subscription subscription = AzureRestAPIManagerImpl.getManager().getSubscriptionFromId(subscriptionId);
             if (subscription != null) {
                 tenantName = subscription.getTenantId();
             }

@@ -29,7 +29,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoftopentechnologies.intellij.forms.CustomAPIForm;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManager;
+import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManagerImpl;
 import com.microsoftopentechnologies.intellij.model.ms.CustomAPI;
 import com.microsoftopentechnologies.intellij.model.ms.MobileService;
 import com.microsoftopentechnologies.intellij.serviceexplorer.Node;
@@ -66,7 +66,7 @@ public class CustomAPINode extends ScriptNodeBase {
 
     @Override
     protected void downloadScript(MobileService mobileService, String scriptName, String localFilePath) throws AzureCmdException {
-        AzureRestAPIManager.getManager().downloadAPIScript(
+        AzureRestAPIManagerImpl.getManager().downloadAPIScript(
                 mobileService.getSubcriptionId(),
                 mobileService.getName(),
                 scriptName,
@@ -108,7 +108,7 @@ public class CustomAPINode extends ScriptNodeBase {
                     public void run(@NotNull ProgressIndicator progressIndicator) {
                         try {
                             progressIndicator.setIndeterminate(true);
-                            AzureRestAPIManager.getManager().uploadAPIScript(subscriptionId, serviceName, customAPI.getName(), customAPI.getLocalFilePath(serviceName));
+                            AzureRestAPIManagerImpl.getManager().uploadAPIScript(subscriptionId, serviceName, customAPI.getName(), customAPI.getLocalFilePath(serviceName));
                         } catch (AzureCmdException e) {
                             UIHelper.showException("Error uploading script", e);
                         }

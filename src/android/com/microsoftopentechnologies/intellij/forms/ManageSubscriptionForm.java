@@ -30,8 +30,8 @@ import com.microsoftopentechnologies.intellij.helpers.aadauth.AuthenticationResu
 import com.microsoftopentechnologies.intellij.helpers.aadauth.PromptValue;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureAuthenticationMode;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.intellij.helpers.azure.AzureManager;
 import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManager;
+import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManagerImpl;
 import com.microsoftopentechnologies.intellij.model.ms.Subscription;
 
 import javax.swing.*;
@@ -92,7 +92,7 @@ public class ManageSubscriptionForm extends JDialog {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    if (AzureRestAPIManager.getManager().getAuthenticationToken() != null) {
+                    if (AzureRestAPIManagerImpl.getManager().getAuthenticationToken() != null) {
                         clearSubscriptions(false);
                     } else {
                         PluginSettings settings = MSOpenTechToolsApplication.getCurrent().getSettings();
@@ -110,7 +110,7 @@ public class ManageSubscriptionForm extends JDialog {
                                 context.dispose();
 
                                 if (authenticationResult != null) {
-                                    final AzureManager apiManager = AzureRestAPIManager.getManager();
+                                    final AzureRestAPIManager apiManager = AzureRestAPIManagerImpl.getManager();
                                     apiManager.setAuthenticationMode(AzureAuthenticationMode.ActiveDirectory);
                                     apiManager.setAuthenticationToken(authenticationResult);
 
@@ -194,7 +194,7 @@ public class ManageSubscriptionForm extends JDialog {
     }
 
     private void refreshSignInCaption() {
-        boolean isNotSigned = (AzureRestAPIManager.getManager().getAuthenticationToken() == null);
+        boolean isNotSigned = (AzureRestAPIManagerImpl.getManager().getAuthenticationToken() == null);
 
         signInButton.setText(isNotSigned ? "Sign In ..." : "Sign Out");
     }
@@ -211,7 +211,7 @@ public class ManageSubscriptionForm extends JDialog {
 
         if (res == JOptionPane.YES_OPTION) {
             try {
-                AzureManager apiManager = AzureRestAPIManager.getManager();
+                AzureRestAPIManager apiManager = AzureRestAPIManagerImpl.getManager();
                 apiManager.clearAuthenticationTokens();
                 apiManager.clearSubscriptions();
                 apiManager.setAuthenticationMode(AzureAuthenticationMode.Unknown);
@@ -248,7 +248,7 @@ public class ManageSubscriptionForm extends JDialog {
                 }
             }
 
-            AzureRestAPIManager.getManager().setSelectedSubscriptions(selectedList);
+            AzureRestAPIManagerImpl.getManager().setSelectedSubscriptions(selectedList);
 
             //Saving the project is necessary to save the changes on the PropertiesComponent
             if (project != null) {
@@ -287,7 +287,7 @@ public class ManageSubscriptionForm extends JDialog {
                         model.removeRow(0);
                     }
 
-                    subscriptionList = AzureRestAPIManager.getManager().getFullSubscriptionList();
+                    subscriptionList = AzureRestAPIManagerImpl.getManager().getFullSubscriptionList();
 
                     if (subscriptionList != null && subscriptionList.size() > 0) {
                         for (Subscription subs : subscriptionList) {

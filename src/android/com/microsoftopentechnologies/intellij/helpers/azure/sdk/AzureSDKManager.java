@@ -15,11 +15,19 @@
  */
 package com.microsoftopentechnologies.intellij.helpers.azure.sdk;
 
+import com.microsoft.azure.storage.RequestCompletedEvent;
+import com.microsoft.azure.storage.StorageEvent;
+import com.microsoftopentechnologies.intellij.helpers.CallableSingleArg;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
+import com.microsoftopentechnologies.intellij.model.storage.*;
 import com.microsoftopentechnologies.intellij.model.vm.*;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 public interface AzureSDKManager {
     @NotNull
@@ -79,5 +87,56 @@ public interface AzureSDKManager {
 
     String createServiceCertificate(@NotNull String subscriptionId, @NotNull String serviceName,
                                     @NotNull byte[] data, @NotNull String password)
+            throws AzureCmdException;
+
+    void deleteStorageAccount(@NotNull StorageAccount storageAccount) throws AzureCmdException;
+
+    @NotNull
+    List<BlobContainer> getBlobContainers(@NotNull StorageAccount storageAccount) throws AzureCmdException;
+
+    @NotNull
+    BlobContainer createBlobContainer(@NotNull StorageAccount storageAccount, @NotNull BlobContainer blobContainer)
+            throws AzureCmdException;
+
+    void deleteBlobContainer(@NotNull StorageAccount storageAccount, @NotNull BlobContainer blobContainer)
+            throws AzureCmdException;
+
+    @NotNull
+    BlobDirectory getRootDirectory(@NotNull StorageAccount storageAccount, @NotNull BlobContainer blobContainer)
+            throws AzureCmdException;
+
+    @NotNull
+    List<BlobItem> getBlobItems(@NotNull StorageAccount storageAccount, @NotNull BlobDirectory blobDirectory)
+            throws AzureCmdException;
+
+    @NotNull
+    BlobDirectory createBlobDirectory(@NotNull StorageAccount storageAccount,
+                                      @NotNull BlobDirectory parentBlobDirectory,
+                                      @NotNull BlobDirectory blobDirectory)
+            throws AzureCmdException;
+
+    @NotNull
+    BlobFile createBlobFile(@NotNull StorageAccount storageAccount,
+                            @NotNull BlobDirectory parentBlobDirectory,
+                            @NotNull BlobFile blobFile)
+            throws AzureCmdException;
+
+    void deleteBlobFile(@NotNull StorageAccount storageAccount,
+                        @NotNull BlobFile blobFile)
+            throws AzureCmdException;
+
+
+    public void uploadBlobFileContent(@NotNull StorageAccount storageAccount,
+                                      @NotNull BlobContainer blobContainer,
+                                      @NotNull String filePath,
+                                      @NotNull InputStream content,
+                                      CallableSingleArg<Void, Long> processBlockEvent,
+                                      long maxBlockSize,
+                                      long length)
+            throws AzureCmdException;
+
+    void downloadBlobFileContent(@NotNull StorageAccount storageAccount,
+                                 @NotNull BlobFile blobFile,
+                                 @NotNull OutputStream content)
             throws AzureCmdException;
 }

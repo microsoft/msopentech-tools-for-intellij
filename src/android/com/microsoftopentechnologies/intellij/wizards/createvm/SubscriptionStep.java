@@ -20,7 +20,7 @@ import com.intellij.ui.wizard.WizardStep;
 import com.microsoftopentechnologies.intellij.forms.ManageSubscriptionForm;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManager;
+import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManagerImpl;
 import com.microsoftopentechnologies.intellij.model.ms.Subscription;
 
 import javax.swing.*;
@@ -82,7 +82,7 @@ public class SubscriptionStep extends WizardStep<CreateVMWizardModel> {
 
     private void loadSubscriptions() {
         try {
-            ArrayList<Subscription> subscriptionList = AzureRestAPIManager.getManager().getSubscriptionList();
+            ArrayList<Subscription> subscriptionList = AzureRestAPIManagerImpl.getManager().getSubscriptionList();
 
             final Vector<Subscription> subscriptions = new Vector<Subscription>((subscriptionList == null) ? new Vector<Subscription>() : subscriptionList);
             subscriptionComboBox.setModel(new DefaultComboBoxModel(subscriptions));
