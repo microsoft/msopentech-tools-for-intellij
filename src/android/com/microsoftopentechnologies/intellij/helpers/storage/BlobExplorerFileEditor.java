@@ -28,6 +28,7 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
+import com.microsoftopentechnologies.intellij.forms.UploadBlobFileForm;
 import com.microsoftopentechnologies.intellij.helpers.CallableSingleArg;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
@@ -53,6 +54,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
 
@@ -305,11 +307,13 @@ public class BlobExplorerFileEditor implements FileEditor {
             openButton.setEnabled(false);
             saveAsButton.setEnabled(false);
 
+            blobListTable.setEnabled(false);
         } else {
             blobListTable.setEnabled(true);
             queryButton.setEnabled(true);
             refreshButton.setEnabled(true);
             uploadButton.setEnabled(true);
+            blobListTable.setEnabled(true);
 
             backButton.setEnabled(directoryQueue.size() > 1);
         }
@@ -544,78 +548,122 @@ public class BlobExplorerFileEditor implements FileEditor {
 
     private void uploadFile() {
 
-        JFileChooser jFileChooser = new JFileChooser();
-        jFileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        jFileChooser.setDialogTitle("Upload blob");
-        if(jFileChooser.showOpenDialog(this.mainPanel) == JFileChooser.APPROVE_OPTION) {
+        final UploadBlobFileForm form = new UploadBlobFileForm();
+        UIHelper.packAndCenterJDialog(form);
+        form.setUploadSelected(new Runnable() {
+            @Override
+            public void run() {
+                String path = form.getFolder();
+                File selectedFile = form.getSelectedFile();
 
-            final File selectedFile = jFileChooser.getSelectedFile();
+                if(!path.endsWith("/"))
+                    path = path + "/";
 
-            ProgressManager.getInstance().run(new Task.Backgroundable(project, "Uploading blob...", true) {
+                uploadFile(path, selectedFile);
+            }
+        });
 
-                @Override
-                public void run(@NotNull final ProgressIndicator progressIndicator) {
+        form.setVisible(true);
+    }
+
+    private void uploadFile(final String path, final File selectedFile)
+    {
+
+        ProgressManager.getInstance().run(new Task.Backgroundable(project, "Uploading blob...", true) {
+
+            @Override
+            public void run(@NotNull final ProgressIndicator progressIndicator) {
+                try {
+
+                    final BlobDirectory blobDirectory = directoryQueue.peekLast();
+
+                    final BufferedInputStream bufferedInputStream = new BufferedInputStream(new FileInputStream(selectedFile));
+
+                    progressIndicator.setIndeterminate(false);
+                    progressIndicator.setText("Uploading blob...");
+                    progressIndicator.setText2("0% uploaded");
+
                     try {
 
-                        final BlobDirectory blobDirectory = directoryQueue.peekLast();
+                        final CallableSingleArg<Void, Long> callable = new CallableSingleArg<Void, Long>() {
+                            @Override
+                            public Void call(Long uploadedBytes) throws Exception {
+                                double progress = ((double) uploadedBytes) / selectedFile.length();
 
-                        final BufferedInputStream bufferedInputStream = new BufferedInputStream(new FileInputStream(selectedFile));
+                                progressIndicator.setFraction(progress);
+                                progressIndicator.setText2(String.format("%s%% uploaded", (int) (progress * 100)));
 
-                        progressIndicator.setIndeterminate(false);
-                        progressIndicator.setText("Uploading blob...");
-                        progressIndicator.setText2("0% uploaded");
-
-                        try {
-
-                            CallableSingleArg<Boolean, Long> callable = new CallableSingleArg<Boolean, Long>() {
-                                @Override
-                                public Boolean call(Long uploadedBytes) throws Exception {
-                                    double progress = ((double) uploadedBytes) / selectedFile.length();
-
-                                    progressIndicator.setFraction(progress);
-                                    progressIndicator.setText2(String.format("%s%% uploaded", (int) (progress * 100)));
-                                    progressIndicator.checkCanceled();
-
-                                    return progressIndicator.isCanceled();
-                                }
-                            };
-
-                            AzureSDKManagerImpl.getManager().uploadBlobFileContent(
-                                    storageAccount,
-                                    blobContainer,
-                                    selectedFile.getName(),
-                                    bufferedInputStream,
-                                    callable,
-                                    1024 * 1024,
-                                    selectedFile.length());
-
-                        } catch (AzureCmdException e) {
-                            progressIndicator.checkCanceled();
-                            if (!progressIndicator.isCanceled()) {
-                                UIHelper.showException("Error uploading", e);
-                                /*
-                                Throwable connectionFault = e.getCause();
-                                if(connectionFault != null) {
-                                    connectionFault = connectionFault.getCause();
-                                }
-
-                                progressIndicator.setText("Error uploading Blob");
-                                String message = connectionFault != null ? connectionFault.getMessage() : null;
-                                if (message == null) {
-                                    message = "Error type " + connectionFault.getClass().getName();
-                                }
-                                progressIndicator.setText2((connectionFault instanceof SocketTimeoutException) ? "Connection timed out" : message);
-                                */
+                                return null;
                             }
-                        }  finally {
-                            bufferedInputStream.close();
+                        };
+
+                        Future<Void> future = ApplicationManager.getApplication().executeOnPooledThread(new Callable<Void>() {
+                            @Override
+                            public Void call() throws AzureCmdException {
+
+                                try {
+                                    AzureSDKManagerImpl.getManager().uploadBlobFileContent(
+                                            storageAccount,
+                                            blobContainer,
+                                            path + selectedFile.getName(),
+                                            bufferedInputStream,
+                                            callable,
+                                            1024 * 1024,
+                                            selectedFile.length());
+                                }  finally {
+                                    try {
+                                        bufferedInputStream.close();
+                                    } catch (IOException ignored) {
+                                    }
+                                }
+
+                                return null;
+                            }
+                        });
+
+                        while(!future.isDone()) {
+                            Thread.sleep(500);
+                            progressIndicator.checkCanceled();
+                            if(progressIndicator.isCanceled()) {
+                                future.cancel(true);
+                                bufferedInputStream.close();
+
+                                for (BlobItem blobItem : AzureSDKManagerImpl.getManager().getBlobItems(storageAccount, blobDirectory)) {
+                                    if(blobItem instanceof BlobFile && blobItem.getPath().equals(path + selectedFile.getName())) {
+                                        AzureSDKManagerImpl.getManager().deleteBlobFile(storageAccount, (BlobFile) blobItem);
+                                    }
+                                }
+                            }
                         }
-                    } catch (IOException e) {
-                        UIHelper.showException("Error uploading Blob", e, "Error uploading Blob", false, true);
+
+                        queryTextField.setText(path);
+
+                        ApplicationManager.getApplication().invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                fillGrid();
+                            }
+                        });
+
+                    } catch (Exception e) {
+                        Throwable connectionFault = e.getCause();
+                        Throwable realFault = null;
+                        if (connectionFault != null) {
+                            realFault = connectionFault.getCause();
+                        }
+
+                        progressIndicator.setText("Error uploading Blob");
+                        String message = realFault == null ? null : realFault.getMessage() ;
+                        if (connectionFault != null && message == null) {
+                            message = "Error type " + connectionFault.getClass().getName();
+                        }
+                        progressIndicator.setText2((connectionFault instanceof SocketTimeoutException) ? "Connection timed out" : message);
                     }
+                } catch (IOException e) {
+                    UIHelper.showException("Error uploading Blob", e, "Error uploading Blob", false, true);
                 }
-            });
-        }
+            }
+        });
     }
 
     @NotNull

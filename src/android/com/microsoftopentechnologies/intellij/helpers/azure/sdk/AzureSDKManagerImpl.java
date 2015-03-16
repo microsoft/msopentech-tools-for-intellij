@@ -57,8 +57,6 @@ import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
 import com.microsoftopentechnologies.intellij.model.vm.*;
 import com.microsoftopentechnologies.intellij.model.vm.CloudService.Deployment;
 import com.microsoftopentechnologies.intellij.model.vm.VirtualMachine.Status;
-import io.netty.handler.codec.base64.Base64Encoder;
-import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -68,7 +66,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.MessageDigest;
 import java.util.*;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
 public class AzureSDKManagerImpl implements AzureSDKManager {
@@ -1083,7 +1080,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
                                       @NotNull BlobContainer blobContainer,
                                       @NotNull String filePath,
                                       @NotNull InputStream content,
-                                      CallableSingleArg<Boolean, Long> processBlock,
+                                      CallableSingleArg<Void, Long> processBlock,
                                       long maxBlockSize,
                                       long length)
             throws AzureCmdException {
@@ -1097,9 +1094,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
 
             ArrayList<BlockEntry> blockEntries = new ArrayList<BlockEntry>();
 
-            boolean isCancelled = false;
-
-            while (uploadedBytes < length && !isCancelled) {
+            while (uploadedBytes < length) {
                 String blockId = Base64.encode(UUID.randomUUID().toString().getBytes());
                 BlockEntry entry = new BlockEntry(blockId, BlockSearchMode.UNCOMMITTED);
 
@@ -1109,7 +1104,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
                 }
 
                 if(processBlock != null) {
-                    isCancelled = processBlock.call(uploadedBytes);
+                    processBlock.call(uploadedBytes);
                 }
 
                 entry.setSize(blockSize);

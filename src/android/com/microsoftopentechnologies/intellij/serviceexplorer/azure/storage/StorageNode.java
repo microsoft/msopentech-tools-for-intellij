@@ -27,9 +27,7 @@ import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionListener
 import java.util.*;
 
 public class StorageNode extends Node {
-    private static final String ACTION_CREATE = "Create blob container";
     private static final String WAIT_ICON_PATH = "storageaccount.png";
-    private static final String BLOBS = "Blobs";
     private final StorageAccount storageAccount;
 
     public StorageNode(Node parent, StorageAccount sm) {
@@ -47,29 +45,13 @@ public class StorageNode extends Node {
 
         removeAllChildNodes();
 
-        Node blobsNode = new Node(BLOBS + storageAccount.getName(), BLOBS) {
-
-            @Override
-            protected Map<String, Class<? extends NodeActionListener>> initActions() {
-                HashMap<String, Class<? extends NodeActionListener>> hashMap = new HashMap<String, Class<? extends NodeActionListener>>();
-                hashMap.put(ACTION_CREATE, CreateBlobContainer.class);
-                return hashMap;
-            }
-
-        };
+        Node blobsNode = new BlobModule(this, storageAccount);
 
         for (BlobContainer blobContainer : AzureSDKManagerImpl.getManager().getBlobContainers(storageAccount)) {
             blobsNode.addChildNode(new ContainerNode(this, storageAccount, blobContainer));
         }
 
         addChildNode(blobsNode);
-    }
-
-    public class CreateBlobContainer extends  NodeActionListener {
-        @Override
-        public void actionPerformed(NodeActionEvent e) {
-
-        }
     }
 
 }

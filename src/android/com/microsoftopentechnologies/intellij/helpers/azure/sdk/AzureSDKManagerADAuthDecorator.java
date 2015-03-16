@@ -15,8 +15,6 @@
  */
 package com.microsoftopentechnologies.intellij.helpers.azure.sdk;
 
-import com.microsoft.azure.storage.RequestCompletedEvent;
-import com.microsoft.azure.storage.StorageEvent;
 import com.microsoft.windowsazure.exception.ServiceException;
 import com.microsoftopentechnologies.intellij.components.MSOpenTechToolsApplication;
 import com.microsoftopentechnologies.intellij.components.PluginSettings;
@@ -32,7 +30,6 @@ import com.microsoftopentechnologies.intellij.model.storage.*;
 import com.microsoftopentechnologies.intellij.model.vm.*;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
@@ -474,7 +471,7 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
                                       final @NotNull BlobContainer blobContainer,
                                       final @NotNull String filePath,
                                       final @NotNull InputStream content,
-                                      final CallableSingleArg<Boolean, Long> processBlock,
+                                      final CallableSingleArg<Void, Long> processBlock,
                                       final long maxBlockSize,
                                       final long length) throws AzureCmdException {
         runWithRetry(storageAccount.getSubscriptionId(), new Func0<Void>() {

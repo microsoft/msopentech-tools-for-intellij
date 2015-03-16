@@ -18,27 +18,35 @@
 package com.microsoftopentechnologies.intellij.serviceexplorer.azure.storage;
 
 
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.fileEditor.*;
 import com.intellij.openapi.fileTypes.FileType;
+import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.progress.ProgressManager;
+import com.intellij.openapi.progress.Task;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.LightVirtualFile;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
+import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
+import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerImpl;
 import com.microsoftopentechnologies.intellij.helpers.storage.BlobExplorerFileEditorProvider;
 import com.microsoftopentechnologies.intellij.model.storage.BlobContainer;
 import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
-import com.microsoftopentechnologies.intellij.serviceexplorer.Node;
-import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionEvent;
-import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionListener;
+import com.microsoftopentechnologies.intellij.serviceexplorer.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ContainerNode extends Node {
 
     private static final String CONTAINER_MODULE_ID = ContainerNode.class.getName();
     private static final String ICON_PATH = "container.png";
+    private static final String ACTION_DELETE = "Delete";
 
     private final BlobContainer blobContainer;
     private final StorageAccount storageAccount;
@@ -116,6 +124,53 @@ public class ContainerNode extends Node {
                 fileEditorManager.openFile(containerVirtualFile, true, true);
             }
         });
+
     }
 
+
+    @Override
+    public void addAction(NodeAction action) {
+        super.addAction(action);
+    }
+
+
+    @Override
+    protected Map<String, Class<? extends NodeActionListener>> initActions() {
+        Map<String, Class<? extends NodeActionListener>> hashMap = new HashMap<String, Class<? extends NodeActionListener>>();
+        hashMap.put(ACTION_DELETE, DeleteBlobContainer.class);
+        return hashMap;
+    }
+
+    public class DeleteBlobContainer extends NodeActionListener {
+
+        @Override
+        public void actionPerformed(final NodeActionEvent e) {
+            int optionDialog = JOptionPane.showOptionDialog(null,
+                "Are you sure you want to delete the blob container \"" + blobContainer.getName() + "\"?",
+                "Service explorer",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                new String[]{"Yes", "No"},
+                null);
+
+            if (optionDialog == JOptionPane.YES_OPTION) {
+
+                ProgressManager.getInstance().run(new Task.Backgroundable(getProject(), "Creating blob container...", false) {
+                    @Override
+                    public void run(@NotNull ProgressIndicator progressIndicator) {
+                        try {
+                            AzureSDKManagerImpl.getManager().deleteBlobContainer(storageAccount, blobContainer);
+
+                            parent.removeAllChildNodes();
+                            parent.load();
+                        } catch (AzureCmdException ex) {
+                            UIHelper.showException("Error deleting blob storage", ex, "Service explorer", false, true);
+                        }
+                    }
+                });
+
+            }
+        }
+    }
 }

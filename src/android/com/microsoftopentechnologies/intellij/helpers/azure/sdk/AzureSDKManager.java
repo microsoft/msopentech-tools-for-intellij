@@ -130,7 +130,7 @@ public interface AzureSDKManager {
                                       @NotNull BlobContainer blobContainer,
                                       @NotNull String filePath,
                                       @NotNull InputStream content,
-                                      CallableSingleArg<Boolean, Long> processBlockEvent,
+                                      CallableSingleArg<Void, Long> processBlockEvent,
                                       long maxBlockSize,
                                       long length)
             throws AzureCmdException;

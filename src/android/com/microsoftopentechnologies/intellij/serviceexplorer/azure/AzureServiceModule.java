@@ -75,14 +75,14 @@ public class AzureServiceModule extends Node {
             if (!isDirectChild(mobileServiceModule)) {
                 addChildNode(mobileServiceModule);
             }
-            // mobileServiceModule.load();
+            mobileServiceModule.load();
         }
 
         if(!vmServiceModule.isLoading()) {
             if (!isDirectChild(vmServiceModule)) {
                 addChildNode(vmServiceModule);
             }
-            // vmServiceModule.load();
+            vmServiceModule.load();
         }
 
 
