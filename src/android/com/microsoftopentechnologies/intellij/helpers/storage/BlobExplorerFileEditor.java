@@ -41,6 +41,7 @@ import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
@@ -106,6 +107,12 @@ public class BlobExplorerFileEditor implements FileEditor {
         blobListTable.getColumnModel().getColumn(2).setPreferredWidth(10);
         blobListTable.getColumnModel().getColumn(3).setPreferredWidth(15);
         blobListTable.getColumnModel().getColumn(4).setPreferredWidth(40);
+
+
+        JTableHeader tableHeader = blobListTable.getTableHeader();
+        Dimension headerSize = tableHeader.getPreferredSize();
+        headerSize.setSize(headerSize.getWidth(), 18);
+        tableHeader.setPreferredSize(headerSize);
 
         blobListTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             @Override
@@ -559,6 +566,12 @@ public class BlobExplorerFileEditor implements FileEditor {
                 if(!path.endsWith("/"))
                     path = path + "/";
 
+                if(!path.startsWith("/")) {
+                    path = path.substring(1);
+                }
+
+                path = path + selectedFile.getName();
+
                 uploadFile(path, selectedFile);
             }
         });
@@ -605,7 +618,7 @@ public class BlobExplorerFileEditor implements FileEditor {
                                     AzureSDKManagerImpl.getManager().uploadBlobFileContent(
                                             storageAccount,
                                             blobContainer,
-                                            path + selectedFile.getName(),
+                                            path,
                                             bufferedInputStream,
                                             callable,
                                             1024 * 1024,
@@ -629,14 +642,27 @@ public class BlobExplorerFileEditor implements FileEditor {
                                 bufferedInputStream.close();
 
                                 for (BlobItem blobItem : AzureSDKManagerImpl.getManager().getBlobItems(storageAccount, blobDirectory)) {
-                                    if(blobItem instanceof BlobFile && blobItem.getPath().equals(path + selectedFile.getName())) {
+                                    if(blobItem instanceof BlobFile && blobItem.getPath().equals(path)) {
                                         AzureSDKManagerImpl.getManager().deleteBlobFile(storageAccount, (BlobFile) blobItem);
                                     }
                                 }
                             }
                         }
 
-                        queryTextField.setText(path);
+                        try {
+                            directoryQueue.clear();
+                            directoryQueue.addLast(AzureSDKManagerImpl.getManager().getRootDirectory(storageAccount, blobContainer));
+
+                            for (String pathDir : path.split("/")) {
+                                for (BlobItem blobItem : AzureSDKManagerImpl.getManager().getBlobItems(storageAccount, directoryQueue.getLast()) ) {
+                                    if (blobItem instanceof BlobDirectory && blobItem.getName().equals(pathDir)) {
+                                        directoryQueue.addLast((BlobDirectory) blobItem);
+                                    }
+                                }
+                            }
+                        } catch (AzureCmdException e) {
+                            UIHelper.showException("Error showing new blob", e, "Error showing new blob", false, true);
+                        }
 
                         ApplicationManager.getApplication().invokeLater(new Runnable() {
                             @Override
