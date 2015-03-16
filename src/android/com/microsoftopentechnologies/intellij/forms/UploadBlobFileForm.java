@@ -34,7 +34,7 @@ public class UploadBlobFileForm extends JDialog {
         setModal(true);
         getRootPane().setDefaultButton(buttonOK);
 
-        setPreferredSize(new Dimension( 500, 250));
+        setPreferredSize(new Dimension( 600, 250));
         setResizable(false);
         setTitle("Upload blob file");
 

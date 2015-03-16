@@ -68,7 +68,9 @@ public class ContainerNode extends Node {
                     BlobContainer editedBlobContainer = editedFile.getUserData(BlobExplorerFileEditorProvider.CONTAINER_KEY);
                     StorageAccount editedStorageAccount = editedFile.getUserData(BlobExplorerFileEditorProvider.STORAGE_KEY);
 
-                    if(editedStorageAccount.getName().equals(storageAccount.getName())
+                    if(editedStorageAccount != null
+                            && editedBlobContainer != null
+                            && editedStorageAccount.getName().equals(storageAccount.getName())
                             && editedBlobContainer.getName().equals(blobContainer.getName())) {
                         return;
                     }
