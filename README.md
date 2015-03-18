@@ -6,13 +6,14 @@ For Android app developers, this plugin provides a highly productive integrated 
 
 At minimum you’ll need to install the following: 
 
+
+
 Prerequisites
 =============
 * Install the IntelliJ IDEA or Android Studio.
 * Android SDK - [http://developer.android.com/sdk/index.html](http://developer.android.com/sdk/index.html) minimum version is Android 2.3 / API 9. 
 * Install the Java JDK (For changing the plugin you need JDK 1.6. For creating android apps using the latest from http://www.oracle.com/technetwork/java/javase/downloads/index.html is sufficient
 * For windows OS you may need to manually install the appropriate Open SSL version to your local machine (for example C:\OpenSSL-Win64\) and add that location in the system environment variable PATH(add “C:\OpenSSL-Win64\bin”). 
-
 Azure Notes
 ===========
 * You will need an Azure account. If you don't have an account, you can create a free trial account in just a couple of minutes. For details, see [Azure Free Trial](http://www.windowsazure.com/en-us/pricing/free-trial/?WT.mc_id=AE564AB28).
