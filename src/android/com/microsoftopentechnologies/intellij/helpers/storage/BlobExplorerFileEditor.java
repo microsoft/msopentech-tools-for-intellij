@@ -573,7 +573,7 @@ public class BlobExplorerFileEditor implements FileEditor {
                 if(!path.endsWith("/"))
                     path = path + "/";
 
-                if(!path.startsWith("/")) {
+                if(path.startsWith("/")) {
                     path = path.substring(1);
                 }
 
