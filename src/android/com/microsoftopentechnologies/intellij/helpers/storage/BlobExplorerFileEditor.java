@@ -433,6 +433,13 @@ public class BlobExplorerFileEditor implements FileEditor {
                         try {
                             AzureSDKManagerImpl.getManager().deleteBlobFile(storageAccount, blobItem);
 
+                            if(blobItems.size() <= 1) {
+                                directoryQueue.clear();
+                                directoryQueue.addLast(AzureSDKManagerImpl.getManager().getRootDirectory(storageAccount, blobContainer));
+
+                                queryTextField.setText("");
+                            }
+
                             ApplicationManager.getApplication().invokeLater(new Runnable() {
                                 @Override
                                 public void run() {
