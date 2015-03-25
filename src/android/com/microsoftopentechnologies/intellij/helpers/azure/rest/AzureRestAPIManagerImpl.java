@@ -922,6 +922,8 @@ public class AzureRestAPIManagerImpl implements AzureRestAPIManager {
 
 
             AzureRestAPIHelper.postRestApiCommand(path, postData, subscriptionId.toString(), null, true);
+        } catch (AzureCmdException e) {
+            throw e;
         } catch (Exception e) {
             throw new AzureCmdException("Error creating jobs", e);
         }

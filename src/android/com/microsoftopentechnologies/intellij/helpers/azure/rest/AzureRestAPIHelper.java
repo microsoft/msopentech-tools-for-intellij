@@ -384,6 +384,10 @@ public class AzureRestAPIHelper {
         HttpsURLConnection sslConnection = getSSLConnectionFromCert(path, jsonContent, subscriptionId);
         int response = callback.apply(sslConnection);
         if (response < 200 || response > 299) {
+            if(callback.getError() != null) {
+                throw callback.getError();
+            }
+
             throw new AzureCmdException("Error connecting to service", readStream(sslConnection.getErrorStream()));
         }
     }

@@ -167,7 +167,7 @@ public class JobForm extends JDialog {
 
                 } catch (Throwable ex) {
                     form.setCursor(Cursor.getDefaultCursor());
-                    UIHelper.showException("Error trying to save job", ex);
+                    UIHelper.showException("Error trying to save job", ex, "Create job", false, true);
                 }
 
             }
