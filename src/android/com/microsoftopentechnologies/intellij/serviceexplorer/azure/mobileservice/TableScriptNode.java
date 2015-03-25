@@ -102,7 +102,7 @@ public class TableScriptNode extends ScriptNodeBase {
                     int i = JOptionPane.showConfirmDialog(
                             null,
                             "The file is modified. Do you want to save pending changes?",
-                            "Upload Script",
+                            "Service Explorer",
                             JOptionPane.YES_NO_CANCEL_OPTION,
                             JOptionPane.INFORMATION_MESSAGE);
 

@@ -186,7 +186,7 @@ public class CreateCloudServiceForm extends JDialog {
         if (!nameTextField.getText().matches("^[A-Za-z0-9][A-Za-z0-9-]+[A-Za-z0-9]$")) {
             JOptionPane.showMessageDialog(this, "Invalid cloud service name. Cloud service name must start with a letter or number, \n" +
                     "contain only letters, numbers, and hyphens, " +
-                    "and end with a letter or number.", "Error creating the cloud service", JOptionPane.ERROR_MESSAGE);
+                    "and end with a letter or number.", "Service Explorer", JOptionPane.ERROR_MESSAGE);
             return;
         }
 

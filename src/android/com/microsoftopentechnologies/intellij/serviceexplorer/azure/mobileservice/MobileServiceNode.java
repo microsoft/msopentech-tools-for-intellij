@@ -116,7 +116,7 @@ public class MobileServiceNode extends Node {
                     JOptionPane.showMessageDialog(null,
                             "The mobile service " + mobileService.getName() +
                                     " could not be reached. Please try again after some time.",
-                            "Microsoft Services Plugin",
+                            "Service Explorer",
                             JOptionPane.ERROR_MESSAGE);
                 }
             });
