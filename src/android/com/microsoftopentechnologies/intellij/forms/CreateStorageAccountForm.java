@@ -167,7 +167,7 @@ public class CreateStorageAccountForm extends JDialog {
                 || nameTextField.getText().length() > 24
                 || !nameTextField.getText().matches("[a-z0-9]+")) {
             JOptionPane.showMessageDialog(this, "Invalid storage account name. The name should be between 3 and 24 characters long and \n" +
-                    "can contain only lowercase letters and numbers.", "Error creating the storage account", JOptionPane.ERROR_MESSAGE);
+                    "can contain only lowercase letters and numbers.", "Service Explorer", JOptionPane.ERROR_MESSAGE);
             return;
         }
 

@@ -88,7 +88,7 @@ public class CreateBlobContainerForm extends JDialog {
             JOptionPane.showMessageDialog(this, "Container names must start with a letter or number, and can contain only letters, numbers, and the dash (-) character.\n" +
                     "Every dash (-) character must be immediately preceded and followed by a letter or number; consecutive dashes are not permitted in container names.\n" +
                     "All letters in a container name must be lowercase.\n" +
-                    "Container names must be from 3 through 63 characters long.", "Error creating the cloud service", JOptionPane.ERROR_MESSAGE);
+                    "Container names must be from 3 through 63 characters long.", "Service Explorer", JOptionPane.ERROR_MESSAGE);
             return;
         }
 

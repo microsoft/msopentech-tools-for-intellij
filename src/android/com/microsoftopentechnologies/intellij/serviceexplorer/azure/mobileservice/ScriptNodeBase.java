@@ -110,7 +110,7 @@ public class ScriptNodeBase extends Node {
                         String[] options = new String[]{"Use remote", "Use local"};
                         int optionDialog = JOptionPane.showOptionDialog(null,
                                 "There is a local copy of the script. Do you want you replace it with the remote version?",
-                                "Edit script",
+                                "Service Explorer",
                                 JOptionPane.YES_NO_OPTION,
                                 JOptionPane.QUESTION_MESSAGE,
                                 null,

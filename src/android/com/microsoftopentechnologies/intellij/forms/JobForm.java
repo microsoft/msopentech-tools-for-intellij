@@ -129,7 +129,7 @@ public class JobForm extends JDialog {
                     if(!jobName.matches("^[A-Za-z][A-Za-z0-9_]+")) {
                         form.setCursor(Cursor.getDefaultCursor());
                         JOptionPane.showMessageDialog(form, "Invalid service name. Job name must start with a letter, \n" +
-                                "contain only letters, numbers, and undercores.", "Error creating the job", JOptionPane.ERROR_MESSAGE);
+                                "contain only letters, numbers, and undercores.", "Service Explorer", JOptionPane.ERROR_MESSAGE);
                         return;
                     }
 
@@ -145,7 +145,7 @@ public class JobForm extends JDialog {
                         if(existingJobNames.contains(jobName.toLowerCase())) {
                             form.setCursor(Cursor.getDefaultCursor());
                             JOptionPane.showMessageDialog(form, "Invalid job name. A job with that name already exists in this service.",
-                                    "Error creating the job", JOptionPane.ERROR_MESSAGE);
+                                    "Service Explorer", JOptionPane.ERROR_MESSAGE);
                             return;
                         }
                     }
@@ -167,7 +167,7 @@ public class JobForm extends JDialog {
 
                 } catch (Throwable ex) {
                     form.setCursor(Cursor.getDefaultCursor());
-                    UIHelper.showException("Error trying to save job", ex);
+                    UIHelper.showException("Error trying to save job", ex, "Create job", false, true);
                 }
 
             }

@@ -123,7 +123,7 @@ public class CustomAPIForm extends JDialog {
                             if(!apiName.matches("^[A-Za-z][A-Za-z0-9_]+")) {
                                 form.setCursor(Cursor.getDefaultCursor());
                                 JOptionPane.showMessageDialog(form, "Invalid api name. Api name must start with a letter, \n" +
-                                        "contain only letters, numbers, and undercores.", "Error creating the api", JOptionPane.ERROR_MESSAGE);
+                                        "contain only letters, numbers, and undercores.", "Service Explorer", JOptionPane.ERROR_MESSAGE);
                                 return;
                             }
 
@@ -138,7 +138,7 @@ public class CustomAPIForm extends JDialog {
                             if(editingCustomAPI == null && existingApiNames.contains(apiName.toLowerCase())) {
                                 form.setCursor(Cursor.getDefaultCursor());
                                 JOptionPane.showMessageDialog(form, "Invalid API name. An API with that name already exists in this service.",
-                                        "Error creating the API", JOptionPane.ERROR_MESSAGE);
+                                        "Service Explorer", JOptionPane.ERROR_MESSAGE);
                                 return;
                             }
 

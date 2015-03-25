@@ -28,10 +28,7 @@ import com.microsoftopentechnologies.intellij.model.ms.Subscription;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
+import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -68,6 +65,13 @@ public class CreateNewServiceForm extends JDialog {
 
         lblPrivacy.addMouseListener(new LinkListener("http://msdn.microsoft.com/en-us/vstudio/dn425032.aspx"));
         lblPricing.addMouseListener(new LinkListener("http://www.azure.com/en-us/pricing/details/mobile-services/"));
+
+        mainPanel.registerKeyboardAction(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                form.setVisible(false);
+                form.dispose();
+            }
+        }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
         btnCloseButton.addActionListener(new ActionListener() {
             @Override

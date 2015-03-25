@@ -106,7 +106,7 @@ public class ScheduledJobNode extends ScriptNodeBase {
                 FileEditor[] fe = FileEditorManager.getInstance(getProject()).getAllEditors(editorFile);
 
                 if (fe.length > 0 && fe[0].isModified()) {
-                    int i = JOptionPane.showConfirmDialog(null, "The file is modified. Do you want to save pending changes?", "Upload Script", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE);
+                    int i = JOptionPane.showConfirmDialog(null, "The file is modified. Do you want to save pending changes?", "Service Explorer", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE);
                     switch (i) {
                         case JOptionPane.YES_OPTION:
                             ApplicationManager.getApplication().saveAll();

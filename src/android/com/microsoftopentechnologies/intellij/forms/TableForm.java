@@ -143,7 +143,7 @@ public class TableForm extends JDialog {
 
                             if(!tableName.matches("^[A-Za-z][A-Za-z0-9_]+")) {
                                 JOptionPane.showMessageDialog(form, "Invalid table name. Table name must start with a letter, \n" +
-                                        "contain only letters, numbers, and underscores.", "Error creating the table", JOptionPane.ERROR_MESSAGE);
+                                        "contain only letters, numbers, and underscores.", "Service Explorer", JOptionPane.ERROR_MESSAGE);
                                 return;
                             }
 
