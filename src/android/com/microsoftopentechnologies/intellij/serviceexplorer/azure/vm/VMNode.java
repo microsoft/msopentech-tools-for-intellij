@@ -25,12 +25,14 @@ import com.microsoftopentechnologies.intellij.model.vm.Endpoint;
 import com.microsoftopentechnologies.intellij.model.vm.VirtualMachine;
 import com.microsoftopentechnologies.intellij.model.vm.VirtualMachine.Status;
 import com.microsoftopentechnologies.intellij.serviceexplorer.*;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 public class VMNode extends Node {
     private static final String WAIT_ICON_PATH = "virtualmachinewait.png";
@@ -200,32 +202,42 @@ public class VMNode extends Node {
         }
 
         @Override
-        protected void runInBackground(NodeActionEvent e) throws AzureCmdException {
-            ApplicationManager.getApplication().invokeAndWait(new Runnable() {
+        @NotNull
+        protected Callable<Boolean> beforeAsyncActionPerfomed() {
+            return new Callable<Boolean>() {
                 @Override
-                public void run() {
-                    optionDialog = JOptionPane.showOptionDialog(null,
-                            String.format(promptMessageFormat, virtualMachine.getName()),
-                            "Service explorer",
-                            JOptionPane.YES_NO_OPTION,
-                            JOptionPane.QUESTION_MESSAGE,
-                            null,
-                            new String[]{"Yes", "No"},
-                            null);
-                }
-            }, ModalityState.any());
+                public Boolean call() throws Exception {
+                    ApplicationManager.getApplication().invokeAndWait(new Runnable() {
+                        @Override
+                        public void run() {
+                            optionDialog = JOptionPane.showOptionDialog(null,
+                                    String.format(promptMessageFormat, virtualMachine.getName()),
+                                    "Service explorer",
+                                    JOptionPane.YES_NO_OPTION,
+                                    JOptionPane.QUESTION_MESSAGE,
+                                    null,
+                                    new String[]{"Yes", "No"},
+                                    null);
+                        }
+                    }, ModalityState.any());
 
-            if (optionDialog == JOptionPane.YES_OPTION) {
-                try {
-                    runVMAction();
-
-                    // reload vm details
-                    refreshItems();
-                } catch (AzureCmdException ex) {
-                    UIHelper.showException("Error " + progressMessage + " " + virtualMachine.getName(), ex);
-                    throw ex;
+                    return (optionDialog == JOptionPane.YES_OPTION);
                 }
+            };
+        }
+
+        @Override
+        protected void runInBackground(NodeActionEvent e) throws AzureCmdException {
+            try {
+                runVMAction();
+
+                // reload vm details
+                refreshItems();
+            } catch (AzureCmdException ex) {
+                UIHelper.showException("Error " + progressMessage + " " + virtualMachine.getName(), ex);
+                throw ex;
             }
+
         }
 
         protected void runVMAction() throws AzureCmdException {

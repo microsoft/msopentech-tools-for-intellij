@@ -24,30 +24,56 @@ import com.intellij.openapi.progress.Task;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
+import java.util.concurrent.Callable;
 
 public abstract class NodeActionListenerAsync extends NodeActionListener {
     private String progressMessage;
+
+    @NotNull
+    protected  Callable<Boolean> beforeAsyncActionPerfomed() {
+        return new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                return true;
+            }
+        };
+    }
 
     public NodeActionListenerAsync(String progressMessage) {
         this.progressMessage = progressMessage;
     }
 
     public ListenableFuture<Void> actionPerformedAsync(final NodeActionEvent actionEvent) {
+
+        Callable<Boolean> booleanCallable = beforeAsyncActionPerfomed();
+
+
+        boolean shouldRun = true;
+
+        try {
+            shouldRun = booleanCallable.call();
+        } catch (Exception ignored) {}
+
         final SettableFuture<Void> future = SettableFuture.create();
-        ProgressManager.getInstance().run(new Task.Backgroundable(actionEvent.getAction().getNode().getProject(), progressMessage) {
-            @Override
-            public void run(@NotNull ProgressIndicator progressIndicator) {
-                try {
-                    runInBackground(actionEvent);
-                    future.set(null);
-                } catch (AzureCmdException e) {
-                    future.setException(e);
+
+        if(shouldRun) {
+            ProgressManager.getInstance().run(new Task.Backgroundable(actionEvent.getAction().getNode().getProject(), progressMessage) {
+                @Override
+                public void run(@NotNull ProgressIndicator progressIndicator) {
+                    try {
+                        runInBackground(actionEvent);
+                        future.set(null);
+                    } catch (AzureCmdException e) {
+                        future.setException(e);
+                    }
                 }
-            }
-        });
+            });
+        } else {
+            future.set(null);
+        }
 
         return future;
+
     }
 
     protected void runInBackground(NodeActionEvent actionEvent) throws AzureCmdException {}
