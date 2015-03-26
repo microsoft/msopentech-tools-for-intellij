@@ -18,14 +18,12 @@
 package com.microsoftopentechnologies.intellij.serviceexplorer.azure.storage;
 
 
-import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.application.ModalityState;
-import com.intellij.openapi.fileEditor.*;
+import com.google.common.collect.ImmutableMap;
+import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
-import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.LightVirtualFile;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
@@ -34,19 +32,19 @@ import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerI
 import com.microsoftopentechnologies.intellij.helpers.storage.BlobExplorerFileEditorProvider;
 import com.microsoftopentechnologies.intellij.model.storage.BlobContainer;
 import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
-import com.microsoftopentechnologies.intellij.serviceexplorer.*;
+import com.microsoftopentechnologies.intellij.serviceexplorer.Node;
+import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionEvent;
+import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionListener;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.util.HashMap;
 import java.util.Map;
 
 public class ContainerNode extends Node {
 
     private static final String CONTAINER_MODULE_ID = ContainerNode.class.getName();
     private static final String ICON_PATH = "container.png";
-    private static final String ACTION_DELETE = "Delete";
 
     private final BlobContainer blobContainer;
     private final StorageAccount storageAccount;
@@ -60,87 +58,91 @@ public class ContainerNode extends Node {
         addClickActionListener(new NodeActionListener() {
             @Override
             public void actionPerformed(NodeActionEvent e) {
-
-
-                FileEditorManager fileEditorManager = FileEditorManager.getInstance(getProject());
-
-                for (VirtualFile editedFile : fileEditorManager.getOpenFiles()) {
-                    BlobContainer editedBlobContainer = editedFile.getUserData(BlobExplorerFileEditorProvider.CONTAINER_KEY);
-                    StorageAccount editedStorageAccount = editedFile.getUserData(BlobExplorerFileEditorProvider.STORAGE_KEY);
-
-                    if(editedStorageAccount != null
-                            && editedBlobContainer != null
-                            && editedStorageAccount.getName().equals(storageAccount.getName())
-                            && editedBlobContainer.getName().equals(blobContainer.getName())) {
-                        return;
-                    }
-                }
-
-
-                LightVirtualFile containerVirtualFile = new LightVirtualFile(blobContainer.getName() + " [Container]");
-                containerVirtualFile.putUserData(BlobExplorerFileEditorProvider.CONTAINER_KEY, blobContainer);
-                containerVirtualFile.putUserData(BlobExplorerFileEditorProvider.STORAGE_KEY, storageAccount);
-
-                containerVirtualFile.setFileType(new FileType() {
-                    @NotNull
-                    @Override
-                    public String getName() {
-                        return "BlobContainer";
-                    }
-
-                    @NotNull
-                    @Override
-                    public String getDescription() {
-                        return "BlobContainer";
-                    }
-
-                    @NotNull
-                    @Override
-                    public String getDefaultExtension() {
-                        return "";
-                    }
-
-                    @Nullable
-                    @Override
-                    public Icon getIcon() {
-                        return UIHelper.loadIcon("container.png");
-                    }
-
-                    @Override
-                    public boolean isBinary() {
-                        return true;
-                    }
-
-                    @Override
-                    public boolean isReadOnly() {
-                        return false;
-                    }
-
-                    @Nullable
-                    @Override
-                    public String getCharset(VirtualFile virtualFile, byte[] bytes) {
-                        return "UTF8";
-                    }
-                });
-
-                fileEditorManager.openFile(containerVirtualFile, true, true);
+                openContainer();
             }
         });
 
     }
 
-
     @Override
-    public void addAction(NodeAction action) {
-        super.addAction(action);
+    protected Map<String, Class<? extends NodeActionListener>> initActions() {
+
+        return ImmutableMap.of(
+                "Delete", DeleteBlobContainer.class,
+                "View Container", ViewBlobContainer.class);
+    }
+
+    private void openContainer() {
+        FileEditorManager fileEditorManager = FileEditorManager.getInstance(getProject());
+
+        for (VirtualFile editedFile : fileEditorManager.getOpenFiles()) {
+            BlobContainer editedBlobContainer = editedFile.getUserData(BlobExplorerFileEditorProvider.CONTAINER_KEY);
+            StorageAccount editedStorageAccount = editedFile.getUserData(BlobExplorerFileEditorProvider.STORAGE_KEY);
+
+            if(editedStorageAccount != null
+                    && editedBlobContainer != null
+                    && editedStorageAccount.getName().equals(storageAccount.getName())
+                    && editedBlobContainer.getName().equals(blobContainer.getName())) {
+                return;
+            }
+        }
+
+
+        LightVirtualFile containerVirtualFile = new LightVirtualFile(blobContainer.getName() + " [Container]");
+        containerVirtualFile.putUserData(BlobExplorerFileEditorProvider.CONTAINER_KEY, blobContainer);
+        containerVirtualFile.putUserData(BlobExplorerFileEditorProvider.STORAGE_KEY, storageAccount);
+
+        containerVirtualFile.setFileType(new FileType() {
+            @NotNull
+            @Override
+            public String getName() {
+                return "BlobContainer";
+            }
+
+            @NotNull
+            @Override
+            public String getDescription() {
+                return "BlobContainer";
+            }
+
+            @NotNull
+            @Override
+            public String getDefaultExtension() {
+                return "";
+            }
+
+            @Nullable
+            @Override
+            public Icon getIcon() {
+                return UIHelper.loadIcon("container.png");
+            }
+
+            @Override
+            public boolean isBinary() {
+                return true;
+            }
+
+            @Override
+            public boolean isReadOnly() {
+                return false;
+            }
+
+            @Override
+            public String getCharset(@NotNull VirtualFile virtualFile, @NotNull byte[] bytes) {
+                return "UTF8";
+            }
+        });
+
+        fileEditorManager.openFile(containerVirtualFile, true, true);
+
     }
 
 
-    @Override
-    protected Map<String, Class<? extends NodeActionListener>> initActions() {
-        Map<String, Class<? extends NodeActionListener>> hashMap = new HashMap<String, Class<? extends NodeActionListener>>();
-        hashMap.put(ACTION_DELETE, DeleteBlobContainer.class);
-        return hashMap;
+    public class ViewBlobContainer extends NodeActionListener {
+        @Override
+        public void actionPerformed(NodeActionEvent e) {
+            openContainer();
+        }
     }
 
     public class DeleteBlobContainer extends NodeActionListener {

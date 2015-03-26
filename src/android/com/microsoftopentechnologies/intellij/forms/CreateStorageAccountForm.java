@@ -22,7 +22,9 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.ListCellRendererWrapper;
+import com.microsoftopentechnologies.intellij.helpers.LinkListener;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
+import com.microsoftopentechnologies.intellij.helpers.azure.AzureAuthenticationMode;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManager;
 import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManagerImpl;
@@ -52,11 +54,15 @@ public class CreateStorageAccountForm extends JDialog {
     private JComboBox regionOrAffinityGroupComboBox;
     private JComboBox replicationComboBox;
     private JProgressBar createProgressBar;
+    private JLabel pricingLabel;
+    private JLabel userInfoLabel;
 
     private Runnable onCreate;
     private Subscription subscription;
     private StorageAccount storageAccount;
     private Project project;
+
+    private final String PRICING_LINK = "http://go.microsoft.com/fwlink/?LinkID=400838";
 
     private enum ReplicationTypes {
         Standard_LRS,
@@ -86,6 +92,8 @@ public class CreateStorageAccountForm extends JDialog {
         setPreferredSize(new Dimension(411, 330));
         setTitle("Create Storage Account");
 
+
+        pricingLabel.addMouseListener(new LinkListener(PRICING_LINK));
         buttonOK.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 onOK();
@@ -114,7 +122,7 @@ public class CreateStorageAccountForm extends JDialog {
 
             @Override
             public void customize(JList jList, Object o, int i, boolean b, boolean b1) {
-                if(!(o instanceof String) && o != null) {
+                if (!(o instanceof String) && o != null) {
                     setText("  " + o.toString());
                 }
             }
@@ -144,6 +152,11 @@ public class CreateStorageAccountForm extends JDialog {
             }
         });
 
+        if(AzureRestAPIManagerImpl.getManager().getAuthenticationMode().equals(AzureAuthenticationMode.ActiveDirectory)) {
+            String upn = AzureRestAPIManagerImpl.getManager().getAuthenticationToken().getUserInfo().getUniqueName();
+            userInfoLabel.setText("Signed in as: " + (upn.contains("#") ? upn.split("#")[1] : upn));
+        }
+
         replicationComboBox.setModel(new DefaultComboBoxModel(ReplicationTypes.values()));
         replicationComboBox.setRenderer(new ListCellRendererWrapper<ReplicationTypes>() {
             @Override
@@ -151,6 +164,8 @@ public class CreateStorageAccountForm extends JDialog {
                 setText(replicationTypes.getDescription());
             }
         });
+
+
     }
 
 
@@ -185,7 +200,9 @@ public class CreateStorageAccountForm extends JDialog {
             AzureSDKManagerImpl.getManager().createStorageAccount(storageAccount);
             AzureSDKManagerImpl.getManager().refreshStorageAccountInformation(storageAccount);
 
-            onCreate.run();
+            if(onCreate != null) {
+                onCreate.run();
+            }
         } catch (AzureCmdException e) {
             storageAccount = null;
             UIHelper.showException("An error occurred while trying to create the specified storage account.", e, "Error Creating Storage Account", false, true);
