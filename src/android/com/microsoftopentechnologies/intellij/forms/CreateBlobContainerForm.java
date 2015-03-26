@@ -30,6 +30,8 @@ import com.microsoftopentechnologies.intellij.model.storage.BlobContainer;
 import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.Calendar;
@@ -75,11 +77,32 @@ public class CreateBlobContainerForm extends JDialog {
             }
         });
 
+        nameTextField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent documentEvent) {
+                changedName();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent documentEvent) {
+                changedName();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent documentEvent) {
+                changedName();
+            }
+        });
+
         contentPane.registerKeyboardAction(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 onCancel();
             }
         }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+    }
+
+    private void changedName() {
+        buttonOK.setEnabled(nameTextField.getText().length() > 0);
     }
 
     private void onOK() {
