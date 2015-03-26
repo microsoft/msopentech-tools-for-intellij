@@ -116,14 +116,31 @@ public class CreateBlobContainerForm extends JDialog {
         }
 
 
+
         ProgressManager.getInstance().run(new Task.Backgroundable(project, "Creating blob container...", false) {
 
             @Override
             public void run(ProgressIndicator progressIndicator) {
                 try {
                     progressIndicator.setIndeterminate(true);
-
                     String name = nameTextField.getText();
+
+                    for (BlobContainer blobContainer : AzureSDKManagerImpl.getManager().getBlobContainers(storageAccount)) {
+
+                        if(blobContainer.getName().equals(name)) {
+                            ApplicationManager.getApplication().invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    JOptionPane.showMessageDialog(null, "A blob container with the specified name already exists.", "Service Explorer", JOptionPane.ERROR_MESSAGE);
+                                }
+                            });
+
+                            return;
+
+                        }
+                    }
+
+
                     BlobContainer blobContainer = new BlobContainer(name, storageAccount.getBlobsUri() + name, "", Calendar.getInstance(), "", storageAccount.getSubscriptionId());
                     AzureSDKManagerImpl.getManager().createBlobContainer(storageAccount, blobContainer);
 
