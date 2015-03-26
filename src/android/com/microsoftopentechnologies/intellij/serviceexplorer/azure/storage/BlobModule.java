@@ -18,6 +18,9 @@ package com.microsoftopentechnologies.intellij.serviceexplorer.azure.storage;
 
 import com.microsoftopentechnologies.intellij.forms.CreateBlobContainerForm;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
+import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
+import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerImpl;
+import com.microsoftopentechnologies.intellij.model.storage.BlobContainer;
 import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
 import com.microsoftopentechnologies.intellij.serviceexplorer.Node;
 import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionEvent;
@@ -33,16 +36,26 @@ public class BlobModule extends Node {
     private final StorageAccount storageAccount;
 
     public BlobModule(Node parent, StorageAccount storageAccount) {
-        super(BLOBS + storageAccount.getName(), BLOBS);
+        super(BLOBS + storageAccount.getName(), BLOBS, parent, null, true);
         this.parent = parent;
         this.storageAccount = storageAccount;
     }
 
     @Override
+    protected void refreshItems() throws AzureCmdException {
+
+        removeAllChildNodes();
+
+        for (BlobContainer blobContainer : AzureSDKManagerImpl.getManager().getBlobContainers(storageAccount)) {
+            addChildNode(new ContainerNode(this, storageAccount, blobContainer));
+        }
+
+    }
+
+    @Override
     protected Map<String, Class<? extends NodeActionListener>> initActions() {
-        HashMap<String, Class<? extends NodeActionListener>> hashMap = new HashMap<String, Class<? extends NodeActionListener>>();
-        hashMap.put(ACTION_CREATE, CreateBlobContainer.class);
-        return hashMap;
+        addAction(ACTION_CREATE, new CreateBlobContainer());
+        return null;
     }
 
     public class CreateBlobContainer extends NodeActionListener {
