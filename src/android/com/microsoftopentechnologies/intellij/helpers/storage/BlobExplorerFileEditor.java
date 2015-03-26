@@ -113,6 +113,8 @@ public class BlobExplorerFileEditor implements FileEditor {
         Dimension headerSize = tableHeader.getPreferredSize();
         headerSize.setSize(headerSize.getWidth(), 18);
         tableHeader.setPreferredSize(headerSize);
+        tableHeader.setReorderingAllowed(false);
+        tableHeader.setResizingAllowed(true);
 
         blobListTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             @Override

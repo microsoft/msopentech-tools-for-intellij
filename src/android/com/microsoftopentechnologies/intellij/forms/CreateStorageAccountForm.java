@@ -185,7 +185,9 @@ public class CreateStorageAccountForm extends JDialog {
             AzureSDKManagerImpl.getManager().createStorageAccount(storageAccount);
             AzureSDKManagerImpl.getManager().refreshStorageAccountInformation(storageAccount);
 
-            onCreate.run();
+            if(onCreate != null) {
+                onCreate.run();
+            }
         } catch (AzureCmdException e) {
             storageAccount = null;
             UIHelper.showException("An error occurred while trying to create the specified storage account.", e, "Error Creating Storage Account", false, true);
