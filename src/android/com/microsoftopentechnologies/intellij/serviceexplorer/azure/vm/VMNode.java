@@ -1,17 +1,17 @@
 /**
  * Copyright 2014 Microsoft Open Technologies Inc.
- *
+ * <p/>
  * Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p/>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p/>
  * Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.microsoftopentechnologies.intellij.serviceexplorer.azure.vm;
 
@@ -103,20 +103,21 @@ public class VMNode extends Node {
     @Override
     public List<NodeAction> getNodeActions() {
         // enable/disable menu items according to VM status
-        getNodeActionByName(ACTION_SHUTDOWN).setEnabled(virtualMachine.getStatus().equals(Status.Ready));
-        getNodeActionByName(ACTION_START).setEnabled(!virtualMachine.getStatus().equals(Status.Ready));
-        getNodeActionByName(ACTION_RESTART).setEnabled(virtualMachine.getStatus().equals(Status.Ready));
-        getNodeActionByName(ACTION_DOWNLOAD_RDP_FILE).setEnabled(
-                virtualMachine.getStatus().equals(Status.Ready)
-                && hasRDPPort(virtualMachine)
-        );
+        boolean started = virtualMachine.getStatus().equals(Status.Ready);
+        boolean stopped = virtualMachine.getStatus().equals(Status.Stopped) ||
+                virtualMachine.getStatus().equals(Status.StoppedDeallocated);
+
+        getNodeActionByName(ACTION_DOWNLOAD_RDP_FILE).setEnabled(!stopped && hasRDPPort(virtualMachine));
+        getNodeActionByName(ACTION_SHUTDOWN).setEnabled(started);
+        getNodeActionByName(ACTION_START).setEnabled(stopped);
+        getNodeActionByName(ACTION_RESTART).setEnabled(started);
 
         return super.getNodeActions();
     }
 
     private boolean hasRDPPort(VirtualMachine virtualMachine) {
         for (Endpoint endpoint : virtualMachine.getEndpoints()) {
-            if(endpoint.getPrivatePort() == REMOTE_DESKTOP_PORT) {
+            if (endpoint.getPrivatePort() == REMOTE_DESKTOP_PORT) {
                 return true;
             }
         }
