@@ -311,8 +311,9 @@ public class AuthenticationContext {
             params.put(OAuthParameter.redirectUri, redirectUri);
             params.put(OAuthParameter.correlationId, correlationId);
             params.put(OAuthParameter.prompt, promptValue);
-            params.put("site_id", "500879");
+            params.put("site_id", "501454");
             params.put("display", "popup");
+            params.put("nux","1");
             String query = null;
             query = EncodingHelper.toQueryString(params);
 
