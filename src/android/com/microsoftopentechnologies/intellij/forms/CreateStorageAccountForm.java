@@ -1,17 +1,17 @@
 /**
  * Copyright 2014 Microsoft Open Technologies Inc.
- *
+ * <p/>
  * Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p/>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p/>
  * Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.microsoftopentechnologies.intellij.forms;
@@ -26,7 +26,6 @@ import com.microsoftopentechnologies.intellij.helpers.LinkListener;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureAuthenticationMode;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManager;
 import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManagerImpl;
 import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerImpl;
 import com.microsoftopentechnologies.intellij.model.ms.Subscription;
@@ -40,8 +39,8 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.GregorianCalendar;
 import java.util.ArrayList;
+import java.util.GregorianCalendar;
 import java.util.Vector;
 
 
@@ -152,7 +151,7 @@ public class CreateStorageAccountForm extends JDialog {
             }
         });
 
-        if(AzureRestAPIManagerImpl.getManager().getAuthenticationMode().equals(AzureAuthenticationMode.ActiveDirectory)) {
+        if (AzureRestAPIManagerImpl.getManager().getAuthenticationMode().equals(AzureAuthenticationMode.ActiveDirectory)) {
             String upn = AzureRestAPIManagerImpl.getManager().getAuthenticationToken().getUserInfo().getUniqueName();
             userInfoLabel.setText("Signed in as: " + (upn.contains("#") ? upn.split("#")[1] : upn));
         }
@@ -200,7 +199,7 @@ public class CreateStorageAccountForm extends JDialog {
             AzureSDKManagerImpl.getManager().createStorageAccount(storageAccount);
             AzureSDKManagerImpl.getManager().refreshStorageAccountInformation(storageAccount);
 
-            if(onCreate != null) {
+            if (onCreate != null) {
                 onCreate.run();
             }
         } catch (AzureCmdException e) {
@@ -221,7 +220,8 @@ public class CreateStorageAccountForm extends JDialog {
     public void fillFields(final Subscription subscription, Project project) {
         final CreateStorageAccountForm createStorageAccountForm = this;
         this.project = project;
-        if(subscription == null) {
+
+        if (subscription == null) {
             try {
                 subscriptionComboBox.setEnabled(true);
 
@@ -235,7 +235,7 @@ public class CreateStorageAccountForm extends JDialog {
                     }
                 });
 
-                if(fullSubscriptionList.size() > 0) {
+                if (fullSubscriptionList.size() > 0) {
                     createStorageAccountForm.subscription = fullSubscriptionList.get(0);
                     loadRegions();
                 }
