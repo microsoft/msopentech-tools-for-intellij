@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.microsoftopentechnologies.intellij.forms;
 
 import com.intellij.openapi.application.ApplicationManager;
@@ -42,7 +41,6 @@ import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.Vector;
-
 
 public class CreateStorageAccountForm extends JDialog {
     private JPanel contentPane;
@@ -90,7 +88,6 @@ public class CreateStorageAccountForm extends JDialog {
         setResizable(false);
         setPreferredSize(new Dimension(411, 330));
         setTitle("Create Storage Account");
-
 
         pricingLabel.addMouseListener(new LinkListener(PRICING_LINK));
         buttonOK.addActionListener(new ActionListener() {
@@ -154,6 +151,8 @@ public class CreateStorageAccountForm extends JDialog {
         if (AzureRestAPIManagerImpl.getManager().getAuthenticationMode().equals(AzureAuthenticationMode.ActiveDirectory)) {
             String upn = AzureRestAPIManagerImpl.getManager().getAuthenticationToken().getUserInfo().getUniqueName();
             userInfoLabel.setText("Signed in as: " + (upn.contains("#") ? upn.split("#")[1] : upn));
+        } else {
+            userInfoLabel.setText("");
         }
 
         replicationComboBox.setModel(new DefaultComboBoxModel(ReplicationTypes.values()));
@@ -163,8 +162,6 @@ public class CreateStorageAccountForm extends JDialog {
                 setText(replicationTypes.getDescription());
             }
         });
-
-
     }
 
 
@@ -176,7 +173,6 @@ public class CreateStorageAccountForm extends JDialog {
     }
 
     private void onOK() {
-
         if (nameTextField.getText().length() < 3
                 || nameTextField.getText().length() > 24
                 || !nameTextField.getText().matches("[a-z0-9]+")) {
