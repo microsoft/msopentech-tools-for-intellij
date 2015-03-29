@@ -1,17 +1,17 @@
 /**
  * Copyright 2014 Microsoft Open Technologies Inc.
- *
+ * <p/>
  * Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p/>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p/>
  * Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.microsoftopentechnologies.intellij.wizards.createvm;
 
@@ -19,7 +19,9 @@ import com.intellij.ui.wizard.WizardNavigationState;
 import com.intellij.ui.wizard.WizardStep;
 import com.microsoftopentechnologies.intellij.forms.ManageSubscriptionForm;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
+import com.microsoftopentechnologies.intellij.helpers.azure.AzureAuthenticationMode;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
+import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManager;
 import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManagerImpl;
 import com.microsoftopentechnologies.intellij.model.ms.Subscription;
 
@@ -37,6 +39,7 @@ public class SubscriptionStep extends WizardStep<CreateVMWizardModel> {
     private JList createVmStepsList;
     private JButton buttonLogin;
     private JComboBox subscriptionComboBox;
+    private JLabel userInfoLabel;
 
     public SubscriptionStep(final CreateVMWizardModel model) {
         super("Choose a Subscription", null, null);
@@ -44,7 +47,6 @@ public class SubscriptionStep extends WizardStep<CreateVMWizardModel> {
         this.model = model;
 
         model.configStepList(createVmStepsList, 0);
-
 
         buttonLogin.addActionListener(new ActionListener() {
             @Override
@@ -65,8 +67,6 @@ public class SubscriptionStep extends WizardStep<CreateVMWizardModel> {
                 }
             }
         });
-
-
     }
 
     @Override
@@ -75,14 +75,21 @@ public class SubscriptionStep extends WizardStep<CreateVMWizardModel> {
 
         loadSubscriptions();
 
-        // model.getCurrentNavigationState().NEXT.setEnabled(false);
-
         return rootPanel;
     }
 
     private void loadSubscriptions() {
         try {
-            ArrayList<Subscription> subscriptionList = AzureRestAPIManagerImpl.getManager().getSubscriptionList();
+            AzureRestAPIManager manager = AzureRestAPIManagerImpl.getManager();
+
+            if (manager.getAuthenticationMode().equals(AzureAuthenticationMode.ActiveDirectory)) {
+                String upn = manager.getAuthenticationToken().getUserInfo().getUniqueName();
+                userInfoLabel.setText("Signed in as: " + (upn.contains("#") ? upn.split("#")[1] : upn));
+            } else {
+                userInfoLabel.setText("");
+            }
+
+            ArrayList<Subscription> subscriptionList = manager.getSubscriptionList();
 
             final Vector<Subscription> subscriptions = new Vector<Subscription>((subscriptionList == null) ? new Vector<Subscription>() : subscriptionList);
             subscriptionComboBox.setModel(new DefaultComboBoxModel(subscriptions));
@@ -91,9 +98,7 @@ public class SubscriptionStep extends WizardStep<CreateVMWizardModel> {
                 model.setSubscription(subscriptions.get(0));
             }
 
-
             model.getCurrentNavigationState().NEXT.setEnabled(!subscriptions.isEmpty());
-
         } catch (AzureCmdException e) {
             UIHelper.showException("An error occurred while trying to load the subscriptions list",
                     e, "Error Loading Subscriptions", false, true);
