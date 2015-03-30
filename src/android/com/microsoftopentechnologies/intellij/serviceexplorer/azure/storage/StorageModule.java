@@ -101,6 +101,18 @@ public class StorageModule extends Node {
             CreateStorageAccountForm createStorageAccountForm = new CreateStorageAccountForm();
             createStorageAccountForm.fillFields(null, project);
             UIHelper.packAndCenterJDialog(createStorageAccountForm);
+
+            createStorageAccountForm.setOnCreate(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        refreshItems();
+                    } catch (AzureCmdException ex) {
+                        UIHelper.showException("Error refreshing storage accounts", ex, "Service Explorer", false, true);
+                    }
+                }
+            });
+
             createStorageAccountForm.setVisible(true);
         }
     }
