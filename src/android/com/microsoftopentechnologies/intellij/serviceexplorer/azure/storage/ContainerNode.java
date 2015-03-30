@@ -69,7 +69,7 @@ public class ContainerNode extends Node {
 
         return ImmutableMap.of(
                 "Delete", DeleteBlobContainer.class,
-                "View Container", ViewBlobContainer.class);
+                "View Blob Container", ViewBlobContainer.class);
     }
 
     private void openContainer() {
