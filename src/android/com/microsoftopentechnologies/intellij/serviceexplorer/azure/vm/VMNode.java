@@ -132,11 +132,13 @@ public class VMNode extends Node {
             super("Deleting VM");
         }
 
+        @NotNull
         @Override
-        protected void runInBackground(NodeActionEvent e) throws AzureCmdException {
-            ApplicationManager.getApplication().invokeAndWait(new Runnable() {
+        protected Callable<Boolean> beforeAsyncActionPerfomed() {
+
+            return new Callable<Boolean>() {
                 @Override
-                public void run() {
+                public Boolean call() throws Exception {
                     optionDialog = JOptionPane.showOptionDialog(null,
                             "This operation will delete virtual machine " + virtualMachine.getName() +
                                     ". The associated disks will not be deleted from your storage account. " +
@@ -147,24 +149,24 @@ public class VMNode extends Node {
                             null,
                             new String[]{"Yes", "No"},
                             null);
-                }
-            }, ModalityState.any());
 
-            if (optionDialog == JOptionPane.YES_OPTION) {
-                try {
-                    AzureSDKManagerImpl.getManager().deleteVirtualMachine(virtualMachine, false);
-                    ApplicationManager.getApplication().invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            // instruct parent node to remove this node
-                            getParent().removeDirectChildNode(VMNode.this);
-                        }
-                    });
-                } catch (AzureCmdException ex) {
-                    UIHelper.showException("Error deleting virtual machine", ex);
-                    throw ex;
+                    return (optionDialog == JOptionPane.YES_OPTION);
                 }
-            }
+            };
+        }
+
+        @Override
+        protected void runInBackground(NodeActionEvent e) throws AzureCmdException {
+
+            AzureSDKManagerImpl.getManager().deleteVirtualMachine(virtualMachine, false);
+            ApplicationManager.getApplication().invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    // instruct parent node to remove this node
+                    getParent().removeDirectChildNode(VMNode.this);
+                }
+            });
+
         }
     }
 
