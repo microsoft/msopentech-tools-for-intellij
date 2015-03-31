@@ -58,8 +58,9 @@ public class StorageModule extends Node {
     protected void refreshItems() throws AzureCmdException {
         removeAllChildNodes();
 
-        // load all VMs
+        // load all Storage Accounts
         ArrayList<Subscription> subscriptionList = AzureRestAPIManagerImpl.getManager().getSubscriptionList();
+
         if (subscriptionList != null) {
             for (Subscription subscription : subscriptionList) {
                 List<StorageAccount> storageAccounts = AzureSDKManagerImpl.getManager().getStorageAccounts(subscription.getId().toString());

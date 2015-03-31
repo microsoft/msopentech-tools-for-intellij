@@ -1,17 +1,17 @@
 /**
  * Copyright 2014 Microsoft Open Technologies Inc.
- *
+ * <p/>
  * Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p/>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p/>
  * Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.microsoftopentechnologies.intellij.helpers.azure.rest;
 
@@ -290,11 +290,14 @@ public class AzureRestAPIManagerImpl implements AzureRestAPIManager {
                     PropertiesComponent.getInstance().setValue(MSOpenTechToolsApplication.AppSettingsNames.SUBSCRIPTION_FILE, savedXml);
                 }
             } else if (mode == AzureAuthenticationMode.ActiveDirectory) {
-                for (Subscription subscription : subscriptions) {
-                    subscription.setSelected(selectedList.contains(subscription.getId()));
+                if (subscriptions != null) {
+                    for (Subscription subscription : subscriptions) {
+                        subscription.setSelected(selectedList.contains(subscription.getId()));
+                    }
                 }
 
                 ArrayList<String> selectedIds = new ArrayList<String>();
+
                 for (UUID uuid : selectedList) {
                     selectedIds.add(uuid.toString());
                 }
@@ -405,9 +408,15 @@ public class AzureRestAPIManagerImpl implements AzureRestAPIManager {
     public void loadSubscriptionFile(String subscriptionFile) throws AzureCmdException {
         // update the auth mode and clear out the subscriptions xml
         setAuthenticationMode(AzureAuthenticationMode.SubscriptionSettings);
-        apiManager.clearSubscriptions();
 
-        AzureRestAPIHelper.importSubscription(new File(subscriptionFile));
+        try {
+            apiManager.clearSubscriptions();
+            AzureRestAPIHelper.importSubscription(new File(subscriptionFile));
+        } catch (AzureCmdException ex) {
+            setAuthenticationMode(AzureAuthenticationMode.Unknown);
+
+            throw ex;
+        }
     }
 
     @Override
@@ -426,7 +435,8 @@ public class AzureRestAPIManagerImpl implements AzureRestAPIManager {
 
             String json = AzureRestAPIHelper.getRestApiCommand(path, subscriptionId.toString());
 
-            Type type = new TypeToken<ArrayList<MobileServiceData>>() {}.getType();
+            Type type = new TypeToken<ArrayList<MobileServiceData>>() {
+            }.getType();
             List<MobileServiceData> tempRes = new Gson().fromJson(json, type);
 
             List<MobileService> res = new ArrayList<MobileService>();
@@ -476,7 +486,8 @@ public class AzureRestAPIManagerImpl implements AzureRestAPIManager {
             String json = AzureRestAPIHelper.getRestApiCommand(path, subscriptionId.toString());
 
 
-            Type type = new TypeToken<ArrayList<RegionData>>() {}.getType();
+            Type type = new TypeToken<ArrayList<RegionData>>() {
+            }.getType();
             List<RegionData> tempRes = new Gson().fromJson(json, type);
             List<String> res = new ArrayList<String>();
 
@@ -625,7 +636,8 @@ public class AzureRestAPIManagerImpl implements AzureRestAPIManager {
 
             String json = AzureRestAPIHelper.getRestApiCommand(path, subscriptionId.toString());
 
-            Type type = new TypeToken<ArrayList<TableData>>() {}.getType();
+            Type type = new TypeToken<ArrayList<TableData>>() {
+            }.getType();
             List<TableData> tempRes = new Gson().fromJson(json, type);
 
             List<Table> res = new ArrayList<Table>();
@@ -703,9 +715,10 @@ public class AzureRestAPIManagerImpl implements AzureRestAPIManager {
             tablePermissions.setDelete(PermissionItem.getPermitionType(restTablePermissions.getDelete()));
             t.setTablePermissions(tablePermissions);
 
-            Type colType = new TypeToken<ArrayList<TableColumnData>>() {}.getType();
+            Type colType = new TypeToken<ArrayList<TableColumnData>>() {
+            }.getType();
             List<TableColumnData> colList = gson.fromJson(AzureRestAPIHelper.getRestApiCommand(path + "/columns", subscriptionId.toString()), colType);
-            if(colList != null) {
+            if (colList != null) {
                 for (TableColumnData column : colList) {
                     Column c = new Column();
                     c.setName(column.getName());
@@ -719,10 +732,11 @@ public class AzureRestAPIManagerImpl implements AzureRestAPIManager {
             }
 
 
-            Type scrType = new TypeToken<ArrayList<TableScriptData>>() {}.getType();
+            Type scrType = new TypeToken<ArrayList<TableScriptData>>() {
+            }.getType();
             List<TableScriptData> scrList = gson.fromJson(AzureRestAPIHelper.getRestApiCommand(path + "/scripts", subscriptionId.toString()), scrType);
 
-            if(scrList != null) {
+            if (scrList != null) {
                 for (TableScriptData script : scrList) {
                     Script s = new Script();
 
@@ -783,7 +797,8 @@ public class AzureRestAPIManagerImpl implements AzureRestAPIManager {
 
             String json = AzureRestAPIHelper.getRestApiCommand(path, subscriptionId.toString());
 
-            Type type = new TypeToken<ArrayList<CustomAPIData>>() {}.getType();
+            Type type = new TypeToken<ArrayList<CustomAPIData>>() {
+            }.getType();
             List<CustomAPIData> tempRes = new Gson().fromJson(json, type);
 
             List<CustomAPI> res = new ArrayList<CustomAPI>();
@@ -882,7 +897,8 @@ public class AzureRestAPIManagerImpl implements AzureRestAPIManager {
 
             String json = AzureRestAPIHelper.getRestApiCommand(path, subscriptionId.toString());
 
-            Type type = new TypeToken<ArrayList<JobData>>() {}.getType();
+            Type type = new TypeToken<ArrayList<JobData>>() {
+            }.getType();
             List<JobData> tempRes = new Gson().fromJson(json, type);
 
             List<Job> res = new ArrayList<Job>();
