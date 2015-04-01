@@ -48,11 +48,13 @@ import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.*;
+import java.awt.geom.Arc2D;
 import java.beans.PropertyChangeListener;
 import java.io.*;
 import java.net.SocketTimeoutException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -128,6 +130,41 @@ public class BlobExplorerFileEditor implements FileEditor {
         });
 
         TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>(model);
+
+        sorter.setComparator(2, new Comparator<String>() {
+            @Override
+            public int compare(String s, String t1) {
+                if(s == null || s.isEmpty()) {
+                    s = "0B";
+                }
+
+                if(t1 == null || t1.isEmpty()) {
+                    t1 = "0B";
+                }
+
+                return getValue(s).compareTo(getValue(t1));
+            }
+
+            private Long getValue(String strValue) {
+                if(strValue.endsWith("kB")) {
+                    double l = Double.parseDouble(strValue.substring(0, strValue.length() - 2));
+                    return (long) (l * 1024);
+                } else if(strValue.endsWith("MB")) {
+                    double l = Double.parseDouble(strValue.substring(0, strValue.length() - 2));
+                    return (long) (l * 1024 * 1024);
+                } else if(strValue.endsWith("GB")) {
+                    double l = Double.parseDouble(strValue.substring(0, strValue.length() - 2));
+                    return (long)(l * 1024 * 1024 * 1024);
+                } else if(strValue.endsWith("TB")) {
+                    double l = Double.parseDouble(strValue.substring(0, strValue.length() - 2));
+                    return (long)(l * 1024 * 1024 * 1024 * 1024);
+                } else {
+                    double l = Double.parseDouble(strValue.substring(0, strValue.length() - 1));
+                    return (long) l;
+                }
+            }
+        });
+
         blobListTable.setRowSorter(sorter);
         List<RowSorter.SortKey> sortKeys = new ArrayList<RowSorter.SortKey>();
 
