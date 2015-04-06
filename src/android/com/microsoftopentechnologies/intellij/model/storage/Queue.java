@@ -22,13 +22,16 @@ public class Queue implements ServiceTreeItem {
     private boolean loading;
     private String name;
     private String uri;
+    private long approximateMessageCount;
     private String subscriptionId;
 
     public Queue(@NotNull String name,
                  @NotNull String uri,
+                 long approximateMessageCount,
                  @NotNull String subscriptionId) {
         this.name = name;
         this.uri = uri;
+        this.approximateMessageCount = approximateMessageCount;
         this.subscriptionId = subscriptionId;
     }
 
@@ -54,6 +57,14 @@ public class Queue implements ServiceTreeItem {
 
     public void setUri(@NotNull String uri) {
         this.uri = uri;
+    }
+
+    public long getApproximateMessageCount() {
+        return approximateMessageCount;
+    }
+
+    public void setApproximateMessageCount(long approximateMessageCount) {
+        this.approximateMessageCount = approximateMessageCount;
     }
 
     @NotNull

@@ -1158,17 +1158,55 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         try {
             CloudQueueClient client = getCloudQueueClient(storageAccount);
 
-            for (CloudQueue queue : client.listQueues(null, QueueListingDetails.ALL, null, null)) {
-                String uri = queue.getUri() != null ? queue.getUri().toString() : "";
+            for (CloudQueue cloudQueue : client.listQueues(null, QueueListingDetails.ALL, null, null)) {
+                String uri = cloudQueue.getUri() != null ? cloudQueue.getUri().toString() : "";
 
-                qList.add(new Queue(Strings.nullToEmpty(queue.getName()),
+                qList.add(new Queue(Strings.nullToEmpty(cloudQueue.getName()),
                         uri,
+                        cloudQueue.getApproximateMessageCount(),
                         storageAccount.getSubscriptionId()));
             }
 
             return qList;
         } catch (Throwable t) {
-            throw new AzureCmdException("Error retrieving the Blob Container list", t);
+            throw new AzureCmdException("Error retrieving the Queue list", t);
+        }
+    }
+
+    @NotNull
+    @Override
+    public Queue createQueue(@NotNull StorageAccount storageAccount,
+                             @NotNull Queue queue)
+            throws AzureCmdException {
+        try {
+            CloudQueueClient client = getCloudQueueClient(storageAccount);
+
+            CloudQueue cloudQueue = client.getQueueReference(queue.getName());
+            cloudQueue.createIfNotExists();
+            cloudQueue.downloadAttributes();
+
+            String uri = cloudQueue.getUri() != null ? cloudQueue.getUri().toString() : "";
+            long approximateMessageCount = cloudQueue.getApproximateMessageCount();
+
+            queue.setUri(uri);
+            queue.setApproximateMessageCount(approximateMessageCount);
+
+            return queue;
+        } catch (Throwable t) {
+            throw new AzureCmdException("Error creating the Queue", t);
+        }
+    }
+
+    @Override
+    public void deleteQueue(@NotNull StorageAccount storageAccount, @NotNull Queue queue)
+            throws AzureCmdException {
+        try {
+            CloudQueueClient client = getCloudQueueClient(storageAccount);
+
+            CloudQueue cloudQueue = client.getQueueReference(queue.getName());
+            cloudQueue.deleteIfExists();
+        } catch (Throwable t) {
+            throw new AzureCmdException("Error deleting the Queue", t);
         }
     }
 

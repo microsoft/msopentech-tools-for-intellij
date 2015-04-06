@@ -508,4 +508,28 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
             }
         });
     }
+
+    @NotNull
+    @Override
+    public Queue createQueue(@NotNull final StorageAccount storageAccount, @NotNull final Queue queue)
+            throws AzureCmdException {
+        return runWithRetry(storageAccount.getSubscriptionId(), new Func0<Queue>() {
+            @Override
+            public Queue run() throws AzureCmdException {
+                return sdkManager.createQueue(storageAccount, queue);
+            }
+        });
+    }
+
+    @Override
+    public void deleteQueue(@NotNull final StorageAccount storageAccount, @NotNull final Queue queue)
+            throws AzureCmdException {
+        runWithRetry(storageAccount.getSubscriptionId(), new Func0<Void>() {
+            @Override
+            public Void run() throws AzureCmdException {
+                sdkManager.deleteQueue(storageAccount, queue);
+                return null;
+            }
+        });
+    }
 }
