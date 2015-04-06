@@ -139,4 +139,8 @@ public interface AzureSDKManager {
                                  @NotNull BlobFile blobFile,
                                  @NotNull OutputStream content)
             throws AzureCmdException;
+
+    @NotNull
+    List<Queue> getQueues(@NotNull StorageAccount storageAccount)
+            throws AzureCmdException;
 }

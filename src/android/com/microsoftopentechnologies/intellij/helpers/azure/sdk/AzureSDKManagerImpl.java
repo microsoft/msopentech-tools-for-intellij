@@ -1,17 +1,17 @@
 /**
  * Copyright 2014 Microsoft Open Technologies Inc.
- *
+ * <p/>
  * Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p/>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p/>
  * Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.microsoftopentechnologies.intellij.helpers.azure.sdk;
 
@@ -20,8 +20,13 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import com.intellij.openapi.application.ApplicationManager;
-import com.microsoft.azure.storage.*;
+import com.microsoft.azure.storage.CloudStorageAccount;
+import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.blob.*;
+import com.microsoft.azure.storage.queue.CloudQueue;
+import com.microsoft.azure.storage.queue.CloudQueueClient;
+import com.microsoft.azure.storage.queue.QueueListingDetails;
+import com.microsoft.azure.storage.table.CloudTableClient;
 import com.microsoft.windowsazure.core.OperationResponse;
 import com.microsoft.windowsazure.core.OperationStatus;
 import com.microsoft.windowsazure.core.OperationStatusResponse;
@@ -53,6 +58,7 @@ import com.microsoftopentechnologies.intellij.helpers.azure.AzureAuthenticationM
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManagerImpl;
 import com.microsoftopentechnologies.intellij.model.storage.*;
+import com.microsoftopentechnologies.intellij.model.storage.Queue;
 import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
 import com.microsoftopentechnologies.intellij.model.vm.*;
 import com.microsoftopentechnologies.intellij.model.vm.CloudService.Deployment;
@@ -61,7 +67,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.security.cert.X509Certificate;
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.MessageDigest;
@@ -1103,7 +1112,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
                     blockSize = length - uploadedBytes;
                 }
 
-                if(processBlock != null) {
+                if (processBlock != null) {
                     processBlock.call(uploadedBytes);
                 }
 
@@ -1137,6 +1146,29 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
             blob.download(content);
         } catch (Throwable t) {
             throw new AzureCmdException("Error downloading the Blob File content", t);
+        }
+    }
+
+    @NotNull
+    @Override
+    public List<Queue> getQueues(@NotNull StorageAccount storageAccount)
+            throws AzureCmdException {
+        List<Queue> qList = new ArrayList<Queue>();
+
+        try {
+            CloudQueueClient client = getCloudQueueClient(storageAccount);
+
+            for (CloudQueue queue : client.listQueues(null, QueueListingDetails.ALL, null, null)) {
+                String uri = queue.getUri() != null ? queue.getUri().toString() : "";
+
+                qList.add(new Queue(Strings.nullToEmpty(queue.getName()),
+                        uri,
+                        storageAccount.getSubscriptionId()));
+            }
+
+            return qList;
+        } catch (Throwable t) {
+            throw new AzureCmdException("Error retrieving the Blob Container list", t);
         }
     }
 
@@ -1190,6 +1222,22 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         CloudStorageAccount csa = AzureSDKHelper.getCloudStorageAccount(storageAccount);
 
         return csa.createCloudBlobClient();
+    }
+
+    @NotNull
+    private static CloudQueueClient getCloudQueueClient(@NotNull StorageAccount storageAccount)
+            throws Exception {
+        CloudStorageAccount csa = AzureSDKHelper.getCloudStorageAccount(storageAccount);
+
+        return csa.createCloudQueueClient();
+    }
+
+    @NotNull
+    private static CloudTableClient getCloudTableClient(@NotNull StorageAccount storageAccount)
+            throws Exception {
+        CloudStorageAccount csa = AzureSDKHelper.getCloudStorageAccount(storageAccount);
+
+        return csa.createCloudTableClient();
     }
 
     @NotNull
