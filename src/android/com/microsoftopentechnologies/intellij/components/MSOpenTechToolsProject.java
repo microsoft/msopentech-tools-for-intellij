@@ -15,27 +15,15 @@
  */
 package com.microsoftopentechnologies.intellij.components;
 
-import com.google.common.base.Function;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Iterators;
-import com.google.common.collect.UnmodifiableIterator;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
 import com.intellij.openapi.components.AbstractProjectComponent;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.*;
+import com.microsoftopentechnologies.intellij.helpers.AndroidStudioHelper;
 import com.microsoftopentechnologies.intellij.helpers.ProjectFileMonitor;
-import com.microsoftopentechnologies.intellij.helpers.ServiceCodeReferenceHelper;
-import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 
 import java.io.*;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.List;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -55,7 +43,7 @@ public class MSOpenTechToolsProject extends AbstractProjectComponent {
     public void projectOpened() {
         try {
             // get project root dir and check if this is an Android project
-            if (ServiceCodeReferenceHelper.isAndroidGradleModule(myProject.getBaseDir())) {
+            if (AndroidStudioHelper.isAndroidGradleModule(myProject.getBaseDir())) {
                 createActivityTemplates();
             }
             else {
@@ -72,7 +60,7 @@ public class MSOpenTechToolsProject extends AbstractProjectComponent {
                         // copy the template files
                         try {
                             if(event.getFileName().contains("build.gradle") &&
-                                    ServiceCodeReferenceHelper.isAndroidGradleBuildFile(event.getFile())) {
+                                    AndroidStudioHelper.isAndroidGradleBuildFile(event.getFile())) {
                                 createActivityTemplates();
 
                                 // now that we have the activity templates installed in this project

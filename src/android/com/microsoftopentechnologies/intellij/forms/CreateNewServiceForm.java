@@ -17,8 +17,8 @@ package com.microsoftopentechnologies.intellij.forms;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
+import com.microsoftopentechnologies.intellij.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.helpers.LinkListener;
-import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManagerImpl;
@@ -134,7 +134,7 @@ public class CreateNewServiceForm extends JDialog {
                 } catch (Throwable e) {
 
                     form.setCursor(Cursor.getDefaultCursor());
-                    UIHelper.showException("Error retrieving the subscription list: ", e, "Error retrieving the subscription list");
+                    DefaultLoader.getUIHelper().showException("Error retrieving the subscription list: ", e, "Error retrieving the subscription list");
                 }
             }
         });
@@ -231,7 +231,7 @@ public class CreateNewServiceForm extends JDialog {
                         } catch (Throwable e) {
                             form.setCursor(Cursor.getDefaultCursor());
 
-                            UIHelper.showException("An error occurred while creating the service.", e, "Error creating the service");
+                            DefaultLoader.getUIHelper().showException("An error occurred while creating the service.", e, "Error creating the service");
                         }
                     }
                 });
@@ -269,7 +269,7 @@ public class CreateNewServiceForm extends JDialog {
                         }
                     }, ModalityState.any());
                 } catch (AzureCmdException e) {
-                    UIHelper.showException("Error retrieving the location list: ", e, "Error retrieving the location list");
+                    DefaultLoader.getUIHelper().showException("Error retrieving the location list: ", e, "Error retrieving the location list");
                 }
             }
         });
@@ -313,7 +313,7 @@ public class CreateNewServiceForm extends JDialog {
                         }
                     }, ModalityState.any());
                 } catch (Exception e) {
-                    UIHelper.showException("Error retrieving the server and database list: ", e, "Error retrieving the server and database list");
+                    DefaultLoader.getUIHelper().showException("Error retrieving the server and database list: ", e, "Error retrieving the server and database list");
                 }
             }
         });

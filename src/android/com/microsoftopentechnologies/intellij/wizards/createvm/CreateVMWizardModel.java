@@ -80,7 +80,7 @@ public class CreateVMWizardModel extends WizardModel {
     public CreateVMWizardModel(VMServiceModule node) {
         super(ApplicationNamesInfo.getInstance().getFullProductName() + " - Create new Virtual Machine");
 
-        Project project = node.getProject();
+        Project project = (Project) node.getProject();
 
         add(new SubscriptionStep(this));
         add(new SelectImageStep(this, project));

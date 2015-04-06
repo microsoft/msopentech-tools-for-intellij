@@ -18,7 +18,8 @@ package com.microsoftopentechnologies.intellij.forms;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
-import com.microsoftopentechnologies.intellij.helpers.UIHelper;
+import com.microsoftopentechnologies.intellij.components.DefaultLoader;
+import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
 import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManagerImpl;
 import com.microsoftopentechnologies.intellij.model.ms.CustomAPI;
 import com.microsoftopentechnologies.intellij.model.ms.CustomAPIPermissions;
@@ -160,7 +161,7 @@ public class CustomAPIForm extends JDialog {
 
                         } catch (Throwable e) {
                             form.setCursor(Cursor.getDefaultCursor());
-                            UIHelper.showException("Error creating table", e);
+                            DefaultLoader.getUIHelper().showException("Error creating table", e);
                         }
 
                     }

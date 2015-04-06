@@ -25,7 +25,8 @@ import com.intellij.openapi.ui.ComboBox;
 import com.intellij.ui.table.JBTable;
 import com.intellij.ui.wizard.WizardNavigationState;
 import com.intellij.ui.wizard.WizardStep;
-import com.microsoftopentechnologies.intellij.helpers.UIHelper;
+import com.microsoftopentechnologies.intellij.components.DefaultLoader;
+import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerImpl;
 import com.microsoftopentechnologies.intellij.model.vm.Endpoint;
@@ -257,7 +258,7 @@ public class EndpointStep extends WizardStep<CreateVMWizardModel> {
                             try {
                                 node.addChildNode(new VMNode(node, vm));
                             } catch (AzureCmdException e) {
-                                UIHelper.showException("An error occurred while trying to refresh the list of virtual machines",
+                                DefaultLoader.getUIHelper().showException("An error occurred while trying to refresh the list of virtual machines",
                                         e,
                                         "Error Refreshing VM List",
                                         false,
@@ -266,7 +267,7 @@ public class EndpointStep extends WizardStep<CreateVMWizardModel> {
                         }
                     });
                 } catch (Exception e) {
-                    UIHelper.showException("An error occurred while trying to create the specified virtual machine",
+                    DefaultLoader.getUIHelper().showException("An error occurred while trying to create the specified virtual machine",
                             e,
                             "Error Creating Virtual Machine",
                             false,

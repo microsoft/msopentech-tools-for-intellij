@@ -40,8 +40,8 @@ import com.intellij.ui.wizard.WizardStep;
 import com.microsoft.directoryservices.Application;
 import com.microsoft.services.odata.ODataException;
 import com.microsoft.services.odata.interfaces.ODataResponse;
+import com.microsoftopentechnologies.intellij.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.helpers.ServiceCodeReferenceHelper;
-import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.helpers.o365.Office365Manager;
 import com.microsoftopentechnologies.intellij.helpers.o365.Office365RestAPIManager;
 import org.jetbrains.annotations.NotNull;
@@ -70,7 +70,7 @@ public class SummaryStep extends WizardStep<AddServiceWizardModel> {
                     try {
                         Desktop.getDesktop().browse(e.getURL().toURI());
                     } catch (Exception ex) {
-                        UIHelper.showException("Unable to follow link.", ex);
+                        DefaultLoader.getUIHelper().showException("Unable to follow link.", ex);
                     }
                 }
             }
@@ -217,13 +217,13 @@ public class SummaryStep extends WizardStep<AddServiceWizardModel> {
                                             false,
                                             ProgressExecutionMode.IN_BACKGROUND_ASYNC);
                                 } catch (Throwable ex) {
-                                    UIHelper.showException("Error invoking Gradle build", ex);
+                                    DefaultLoader.getUIHelper().showException("Error invoking Gradle build", ex);
                                 }
                             }
                         }, ModalityState.NON_MODAL);
                     }
                 } catch (Throwable ex) {
-                    UIHelper.showException("Error setting up Microsoft services", ex);
+                    DefaultLoader.getUIHelper().showException("Error setting up Microsoft services", ex);
                 }
             }
         });
@@ -245,10 +245,10 @@ public class SummaryStep extends WizardStep<AddServiceWizardModel> {
                     @Override
                     public void run() {
                         try {
-                            ServiceCodeReferenceHelper scrh = new ServiceCodeReferenceHelper(project, module);
-                            scrh.fillMobileServiceResource(activityName, appUrl, appKey);
+                            ServiceCodeReferenceHelper scrh = new ServiceCodeReferenceHelper();
+                            scrh.fillMobileServiceResource(activityName, appUrl, appKey, module);
                         } catch (Throwable ex) {
-                            UIHelper.showException("Error creating Service helper", ex);
+                            DefaultLoader.getUIHelper().showException("Error creating Service helper", ex);
                         }
                     }
                 });
@@ -257,7 +257,6 @@ public class SummaryStep extends WizardStep<AddServiceWizardModel> {
     }
 
     private void associateNotificationHub() {
-        final Project project = this.model.getProject();
         final Module module = this.model.getModule();
         final String activityName = this.model.getActivityName();
         final String senderId = this.model.getSenderId();
@@ -271,11 +270,11 @@ public class SummaryStep extends WizardStep<AddServiceWizardModel> {
                     @Override
                     public void run() {
                         try {
-                            ServiceCodeReferenceHelper scrh = new ServiceCodeReferenceHelper(project, module);
-                            scrh.addNotificationHubsLibs();
-                            scrh.fillNotificationHubResource(activityName, senderId, connStr, hubName);
+                            ServiceCodeReferenceHelper scrh = new ServiceCodeReferenceHelper();
+                            scrh.addNotificationHubsLibs(module);
+                            scrh.fillNotificationHubResource(activityName, senderId, connStr, hubName, module);
                         } catch (Throwable ex) {
-                            UIHelper.showException("Error:", ex);
+                            DefaultLoader.getUIHelper().showException("Error:", ex);
                         }
                     }
                 });
@@ -297,10 +296,10 @@ public class SummaryStep extends WizardStep<AddServiceWizardModel> {
                     @Override
                     public void run() {
                         try {
-                            ServiceCodeReferenceHelper scrh = new ServiceCodeReferenceHelper(project, module);
-                            scrh.fillOffice365Resource(activityName, appId, name);
+                            ServiceCodeReferenceHelper scrh = new ServiceCodeReferenceHelper();
+                            scrh.fillOffice365Resource(activityName, appId, name, module);
                         } catch (Throwable ex) {
-                            UIHelper.showException("Error:", ex);
+                            DefaultLoader.getUIHelper().showException("Error:", ex);
                         }
                     }
                 });
@@ -324,18 +323,18 @@ public class SummaryStep extends WizardStep<AddServiceWizardModel> {
             }
 
             if (!message.isEmpty()) {
-                UIHelper.showException("An error occurred while trying to associate the Office 365 application - " + message,
+                DefaultLoader.getUIHelper().showException("An error occurred while trying to associate the Office 365 application - " + message,
                         ex.getCause(),
                         "Error associating Office 365 application",
                         false,
                         false);
             } else {
-                UIHelper.showException("An error occurred while trying to associate the Office 365 application",
+                DefaultLoader.getUIHelper().showException("An error occurred while trying to associate the Office 365 application",
                         ex.getCause(),
                         "Error associating Office 365 application");
             }
         } catch (Throwable ex) {
-            UIHelper.showException("An error occurred while trying to associate the Office 365 application",
+            DefaultLoader.getUIHelper().showException("An error occurred while trying to associate the Office 365 application",
                     ex,
                     "Error associating Office 365 application");
         }

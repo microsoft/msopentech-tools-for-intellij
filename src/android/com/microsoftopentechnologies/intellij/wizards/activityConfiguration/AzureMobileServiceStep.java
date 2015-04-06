@@ -20,10 +20,11 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.ui.wizard.WizardNavigationState;
 import com.intellij.ui.wizard.WizardStep;
+import com.microsoftopentechnologies.intellij.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.forms.CreateNewServiceForm;
 import com.microsoftopentechnologies.intellij.forms.ManageSubscriptionForm;
 import com.microsoftopentechnologies.intellij.helpers.ReadOnlyCellTableModel;
-import com.microsoftopentechnologies.intellij.helpers.UIHelper;
+import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManagerImpl;
 import com.microsoftopentechnologies.intellij.model.ms.MobileService;
@@ -131,7 +132,7 @@ public class AzureMobileServiceStep extends WizardStep<AddServiceWizardModel> {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 ManageSubscriptionForm form = new ManageSubscriptionForm(null);
-                UIHelper.packAndCenterJDialog(form);
+                DefaultLoader.getUIHelper().packAndCenterJDialog(form);
                 form.setVisible(true);
 
                 try {
@@ -184,7 +185,7 @@ public class AzureMobileServiceStep extends WizardStep<AddServiceWizardModel> {
                 });
 
                 form.setModal(true);
-                UIHelper.packAndCenterJDialog(form);
+                DefaultLoader.getUIHelper().packAndCenterJDialog(form);
                 form.setVisible(true);
             }
         });
@@ -296,7 +297,7 @@ public class AzureMobileServiceStep extends WizardStep<AddServiceWizardModel> {
                         buttonEdit.doClick();
                     }
                 } catch (Throwable ex) {
-                    UIHelper.showException("Error retrieving service list", ex);
+                    DefaultLoader.getUIHelper().showException("Error retrieving service list", ex);
                     mobileServiceList.clear();
 
                     while (messageTableModel.getRowCount() > 0) {

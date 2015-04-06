@@ -20,7 +20,8 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
-import com.microsoftopentechnologies.intellij.helpers.UIHelper;
+import com.microsoftopentechnologies.intellij.components.DefaultLoader;
+import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
 import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManagerImpl;
 import com.microsoftopentechnologies.intellij.model.ms.PermissionItem;
 import com.microsoftopentechnologies.intellij.model.ms.PermissionType;
@@ -179,7 +180,7 @@ public class TableForm extends JDialog {
 
                         } catch (Throwable e) {
                             form.setCursor(Cursor.getDefaultCursor());
-                            UIHelper.showException("Error creating table", e);
+                            DefaultLoader.getUIHelper().showException("Error creating table", e);
                         }
 
                     }

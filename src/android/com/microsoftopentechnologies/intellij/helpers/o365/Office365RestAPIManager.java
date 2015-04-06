@@ -31,6 +31,7 @@ import com.microsoft.directoryservices.odata.DirectoryObjectOperations;
 import com.microsoft.services.odata.ODataCollectionFetcher;
 import com.microsoft.services.odata.ODataEntityFetcher;
 import com.microsoft.services.odata.ODataOperations;
+import com.microsoftopentechnologies.intellij.components.AppSettingsNames;
 import com.microsoftopentechnologies.intellij.components.MSOpenTechToolsApplication;
 import com.microsoftopentechnologies.intellij.components.PluginSettings;
 import com.microsoftopentechnologies.intellij.helpers.StringHelper;
@@ -110,9 +111,9 @@ public class Office365RestAPIManager implements Office365Manager {
         if (token != null) {
             Gson gson = new Gson();
             String json = gson.toJson(token, AuthenticationResult.class);
-            PropertiesComponent.getInstance().setValue(MSOpenTechToolsApplication.AppSettingsNames.O365_AUTHENTICATION_TOKEN, json);
+            PropertiesComponent.getInstance().setValue(AppSettingsNames.O365_AUTHENTICATION_TOKEN, json);
         } else {
-            PropertiesComponent.getInstance().unsetValue(MSOpenTechToolsApplication.AppSettingsNames.O365_AUTHENTICATION_TOKEN);
+            PropertiesComponent.getInstance().unsetValue(AppSettingsNames.O365_AUTHENTICATION_TOKEN);
         }
 
         // reference assignments in java are atomic; so we don't need a
@@ -125,7 +126,7 @@ public class Office365RestAPIManager implements Office365Manager {
     @Override
     public AuthenticationResult getAuthenticationToken() {
         if (authenticationToken == null) {
-            String json = PropertiesComponent.getInstance().getValue(MSOpenTechToolsApplication.AppSettingsNames.O365_AUTHENTICATION_TOKEN);
+            String json = PropertiesComponent.getInstance().getValue(AppSettingsNames.O365_AUTHENTICATION_TOKEN);
             if (!StringHelper.isNullOrWhiteSpace(json)) {
                 Gson gson = new Gson();
                 setAuthenticationToken(gson.fromJson(json, AuthenticationResult.class));

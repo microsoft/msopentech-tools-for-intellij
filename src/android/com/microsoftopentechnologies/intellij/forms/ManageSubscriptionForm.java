@@ -22,9 +22,11 @@ import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.project.Project;
+import com.microsoftopentechnologies.intellij.components.AppSettingsNames;
+import com.microsoftopentechnologies.intellij.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.components.MSOpenTechToolsApplication;
 import com.microsoftopentechnologies.intellij.components.PluginSettings;
-import com.microsoftopentechnologies.intellij.helpers.UIHelper;
+import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
 import com.microsoftopentechnologies.intellij.helpers.aadauth.AuthenticationContext;
 import com.microsoftopentechnologies.intellij.helpers.aadauth.AuthenticationResult;
 import com.microsoftopentechnologies.intellij.helpers.aadauth.PromptValue;
@@ -123,7 +125,7 @@ public class ManageSubscriptionForm extends JDialog {
 
                                                 refreshSignInCaption();
                                             } catch (AzureCmdException e1) {
-                                                UIHelper.showException("An error occurred while attempting to " +
+                                                DefaultLoader.getUIHelper().showException("An error occurred while attempting to " +
                                                         "clear your old subscriptions.", e1);
                                             }
 
@@ -136,12 +138,12 @@ public class ManageSubscriptionForm extends JDialog {
                             @Override
                             public void onFailure(Throwable throwable) {
                                 context.dispose();
-                                UIHelper.showException("An error occurred while attempting to sign in to your account.", throwable);
+                                DefaultLoader.getUIHelper().showException("An error occurred while attempting to sign in to your account.", throwable);
                             }
                         });
                     }
                 } catch (IOException e1) {
-                    UIHelper.showException("An error occurred while attempting to sign in to your account.", e1);
+                    DefaultLoader.getUIHelper().showException("An error occurred while attempting to sign in to your account.", e1);
                 }
             }
         });
@@ -165,7 +167,7 @@ public class ManageSubscriptionForm extends JDialog {
                         loadList();
                     }
                 });
-                UIHelper.packAndCenterJDialog(isf);
+                DefaultLoader.getUIHelper().packAndCenterJDialog(isf);
                 isf.setVisible(true);
             }
         });
@@ -216,7 +218,7 @@ public class ManageSubscriptionForm extends JDialog {
                 apiManager.clearSubscriptions();
                 apiManager.setAuthenticationMode(AzureAuthenticationMode.Unknown);
             } catch (AzureCmdException t) {
-                UIHelper.showException("Error clearing user subscriptions", t);
+                DefaultLoader.getUIHelper().showException("Error clearing user subscriptions", t);
             }
 
             DefaultTableModel model = (DefaultTableModel) subscriptionTable.getModel();
@@ -225,7 +227,7 @@ public class ManageSubscriptionForm extends JDialog {
                 model.removeRow(0);
             }
 
-            PropertiesComponent.getInstance().unsetValue(MSOpenTechToolsApplication.AppSettingsNames.SELECTED_SUBSCRIPTIONS);
+            PropertiesComponent.getInstance().unsetValue(AppSettingsNames.SELECTED_SUBSCRIPTIONS);
             ApplicationManager.getApplication().saveSettings();
 
             removeButton.setEnabled(false);
@@ -257,7 +259,7 @@ public class ManageSubscriptionForm extends JDialog {
 
             dispose();
         } catch (AzureCmdException e) {
-            UIHelper.showException("Error setting selected subscriptions", e);
+            DefaultLoader.getUIHelper().showException("Error setting selected subscriptions", e);
         }
     }
 
@@ -306,7 +308,7 @@ public class ManageSubscriptionForm extends JDialog {
                     form.setCursor(Cursor.getDefaultCursor());
                 } catch (AzureCmdException e) {
                     form.setCursor(Cursor.getDefaultCursor());
-                    UIHelper.showException("Error getting subscription list", e);
+                    DefaultLoader.getUIHelper().showException("Error getting subscription list", e);
                 }
             }
         });

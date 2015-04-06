@@ -24,9 +24,10 @@ import com.intellij.openapi.project.Project;
 import com.intellij.ui.ListCellRendererWrapper;
 import com.intellij.ui.wizard.WizardNavigationState;
 import com.intellij.ui.wizard.WizardStep;
+import com.microsoftopentechnologies.intellij.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.forms.CreateCloudServiceForm;
 import com.microsoftopentechnologies.intellij.forms.CreateStorageAccountForm;
-import com.microsoftopentechnologies.intellij.helpers.UIHelper;
+import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerImpl;
 import com.microsoftopentechnologies.intellij.model.vm.CloudService;
@@ -151,7 +152,7 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
                         try {
                             Desktop.getDesktop().browse(hyperlinkEvent.getURL().toURI());
                         } catch (Exception e) {
-                            UIHelper.showException("An error occurred while trying to open the specified Link",
+                            DefaultLoader.getUIHelper().showException("An error occurred while trying to open the specified Link",
                                     e, "Error Opening Link", false, true);
                         }
                     }
@@ -229,7 +230,7 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
                             csInitialized.signalAll();
                         } catch (AzureCmdException e) {
                             cloudServices = null;
-                            UIHelper.showException("An error occurred while trying to retrieve the cloud services list",
+                            DefaultLoader.getUIHelper().showException("An error occurred while trying to retrieve the cloud services list",
                                     e, "Error Retrieving Cloud Services", false, true);
                         }
                     }
@@ -283,7 +284,7 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
                         cloudServices.put(selectedCS.getName(), selectedCS);
                     }
                 } catch (InterruptedException e) {
-                    UIHelper.showException("An error occurred while trying to load the cloud services list", e,
+                    DefaultLoader.getUIHelper().showException("An error occurred while trying to load the cloud services list", e,
                             "Error Loading Cloud Services", false, true);
                 } finally {
                     csLock.unlock();
@@ -406,7 +407,7 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
                             vnInitialized.signalAll();
                         } catch (AzureCmdException e) {
                             virtualNetworks = null;
-                            UIHelper.showException("An error occurred while trying to retrieve the virtual networks list",
+                            DefaultLoader.getUIHelper().showException("An error occurred while trying to retrieve the virtual networks list",
                                     e, "Error Retrieving Virtual Networks", false, true);
                         }
                     }
@@ -449,7 +450,7 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
                         vnInitialized.await();
                     }
                 } catch (InterruptedException e) {
-                    UIHelper.showException("An error occurred while trying load the virtual networks list", e,
+                    DefaultLoader.getUIHelper().showException("An error occurred while trying load the virtual networks list", e,
                             "Error Loading Virtual Networks", false, true);
                 } finally {
                     vnLock.unlock();
@@ -611,7 +612,7 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
                             saInitialized.signalAll();
                         } catch (AzureCmdException e) {
                             storageAccounts = null;
-                            UIHelper.showException("An error occurred while trying to retrieve the storage accounts list",
+                            DefaultLoader.getUIHelper().showException("An error occurred while trying to retrieve the storage accounts list",
                                     e, "Error Retrieving Storage Accounts", false, true);
                         }
                     }
@@ -664,7 +665,7 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
                         storageAccounts.put(selectedSA.getName(), selectedSA);
                     }
                 } catch (InterruptedException e) {
-                    UIHelper.showException("An error occurred while trying load the storage accounts list", e,
+                    DefaultLoader.getUIHelper().showException("An error occurred while trying load the storage accounts list", e,
                             "Error Loading Storage Accounts", false, true);
                 } finally {
                     saLock.unlock();
@@ -751,7 +752,7 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
     private void showNewCloudServiceForm(final VirtualNetwork selectedVN, final boolean cascade) {
         final CreateCloudServiceForm form = new CreateCloudServiceForm();
         form.fillFields(model.getSubscription(), project);
-        UIHelper.packAndCenterJDialog(form);
+        DefaultLoader.getUIHelper().packAndCenterJDialog(form);
 
         form.setOnCreate(new Runnable() {
             @Override
@@ -775,7 +776,7 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
     private void showNewStorageForm(final CloudService selectedCS) {
         final CreateStorageAccountForm form = new CreateStorageAccountForm();
         form.fillFields(model.getSubscription(), project);
-        UIHelper.packAndCenterJDialog(form);
+        DefaultLoader.getUIHelper().packAndCenterJDialog(form);
 
         form.setOnCreate(new Runnable() {
             @Override

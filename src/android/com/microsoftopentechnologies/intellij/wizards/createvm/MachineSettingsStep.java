@@ -27,7 +27,8 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.wizard.WizardNavigationState;
 import com.intellij.ui.wizard.WizardStep;
 import com.intellij.util.Consumer;
-import com.microsoftopentechnologies.intellij.helpers.UIHelper;
+import com.microsoftopentechnologies.intellij.components.DefaultLoader;
+import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerImpl;
 import com.microsoftopentechnologies.intellij.model.vm.VirtualMachineImage;
@@ -106,7 +107,7 @@ public class MachineSettingsStep extends WizardStep<CreateVMWizardModel> {
                         try {
                             Desktop.getDesktop().browse(hyperlinkEvent.getURL().toURI());
                         } catch (Exception e) {
-                            UIHelper.showException("An error occurred while trying to open the specified Link",
+                            DefaultLoader.getUIHelper().showException("An error occurred while trying to open the specified Link",
                                     e, "Error Opening Link", false, true);
                         }
                     }
@@ -239,7 +240,7 @@ public class MachineSettingsStep extends WizardStep<CreateVMWizardModel> {
                             }
                         }, ModalityState.any());
                     } catch (AzureCmdException e) {
-                        UIHelper.showException("An error occurred while trying to load the VM sizes list",
+                        DefaultLoader.getUIHelper().showException("An error occurred while trying to load the VM sizes list",
                                 e, "Error Loading VM Sizes", false, true);
                     }
                 }

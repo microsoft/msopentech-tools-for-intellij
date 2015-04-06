@@ -19,6 +19,7 @@ package com.microsoftopentechnologies.intellij.helpers;
 import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.microsoftopentechnologies.intellij.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import sun.misc.IOUtils;
 
@@ -103,7 +104,7 @@ public class AndroidStudioHelper {
                     Thread.sleep(3000);
 
                     if (!new File(templatePath + mobileServicesTemplateName).exists() || errorCode != 0)
-                        UIHelper.showException("Error copying template files. Please refer to documentation to copy manually.", new Exception());
+                        DefaultLoader.getUIHelper().showException("Error copying template files. Please refer to documentation to copy manually.", new Exception());
                 }
             } else if (System.getProperty("os.name").toLowerCase().startsWith("mac")) {
 
@@ -278,6 +279,20 @@ public class AndroidStudioHelper {
         return sb.toString();
     }
 
+    public static boolean isAndroidGradleModule(VirtualFile virtualFileDir) throws IOException {
+        for (VirtualFile file : virtualFileDir.getChildren()) {
+            if (file.getName().contains("build.gradle")) {
+                if(isAndroidGradleBuildFile(file))
+                    return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean isAndroidGradleBuildFile(VirtualFile buildGradleFile) throws IOException {
+        return ServiceCodeReferenceHelper.getStringAndCloseStream(buildGradleFile.getInputStream()).contains("com.android.tools.build");
+    }
+
     private static class StreamGobbler extends Thread {
         InputStream is;
         boolean isError;
@@ -302,10 +317,10 @@ public class AndroidStudioHelper {
                 String streamContent = sb.toString();
 
                 if (isError && !streamContent.isEmpty())
-                    UIHelper.showException("Error copying Microsoft Services templates", new AzureCmdException("Error copying Microsoft Services templates", "Error: " + streamContent));
+                    DefaultLoader.getUIHelper().showException("Error copying Microsoft Services templates", new AzureCmdException("Error copying Microsoft Services templates", "Error: " + streamContent));
 
             } catch (IOException ioe) {
-                UIHelper.showException("Error copying Microsoft Services templates", ioe);
+                DefaultLoader.getUIHelper().showException("Error copying Microsoft Services templates", ioe);
             }
         }
     }

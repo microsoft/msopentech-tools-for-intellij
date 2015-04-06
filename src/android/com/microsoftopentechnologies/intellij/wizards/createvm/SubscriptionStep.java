@@ -17,8 +17,8 @@ package com.microsoftopentechnologies.intellij.wizards.createvm;
 
 import com.intellij.ui.wizard.WizardNavigationState;
 import com.intellij.ui.wizard.WizardStep;
+import com.microsoftopentechnologies.intellij.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.forms.ManageSubscriptionForm;
-import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureAuthenticationMode;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManager;
@@ -52,7 +52,7 @@ public class SubscriptionStep extends WizardStep<CreateVMWizardModel> {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 ManageSubscriptionForm form = new ManageSubscriptionForm(null);
-                UIHelper.packAndCenterJDialog(form);
+                DefaultLoader.getUIHelper().packAndCenterJDialog(form);
                 form.setVisible(true);
 
                 loadSubscriptions();
@@ -100,7 +100,7 @@ public class SubscriptionStep extends WizardStep<CreateVMWizardModel> {
 
             model.getCurrentNavigationState().NEXT.setEnabled(!subscriptions.isEmpty());
         } catch (AzureCmdException e) {
-            UIHelper.showException("An error occurred while trying to load the subscriptions list",
+            DefaultLoader.getUIHelper().showException("An error occurred while trying to load the subscriptions list",
                     e, "Error Loading Subscriptions", false, true);
         }
     }

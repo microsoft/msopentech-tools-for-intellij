@@ -21,9 +21,10 @@ import com.google.common.util.concurrent.Futures;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.microsoft.directoryservices.Application;
+import com.microsoftopentechnologies.intellij.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.helpers.LinkListener;
 import com.microsoftopentechnologies.intellij.helpers.StringHelper;
-import com.microsoftopentechnologies.intellij.helpers.UIHelper;
+import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
 import com.microsoftopentechnologies.intellij.helpers.o365.Office365RestAPIManager;
 
 import javax.swing.*;
@@ -149,7 +150,7 @@ public class CreateNewOffice365AppForm extends JDialog {
                                         @Override
                                         public void run() {
                                             form.setCursor(Cursor.getDefaultCursor());
-                                            UIHelper.showException(
+                                            DefaultLoader.getUIHelper().showException(
                                                     "An error occurred while registering the application.",
                                                     throwable, "Error registering the application");
                                         }
@@ -158,7 +159,7 @@ public class CreateNewOffice365AppForm extends JDialog {
                             });
                         } catch (Throwable e) {
                             form.setCursor(Cursor.getDefaultCursor());
-                            UIHelper.showException("An error occurred while creating the service.", e, "Error creating the service");
+                            DefaultLoader.getUIHelper().showException("An error occurred while creating the service.", e, "Error creating the service");
                         }
                     }
                 });
