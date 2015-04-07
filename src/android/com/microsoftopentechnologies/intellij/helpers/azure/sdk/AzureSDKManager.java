@@ -154,4 +154,13 @@ public interface AzureSDKManager {
 
     void clearQueue(@NotNull StorageAccount storageAccount, @NotNull Queue queue)
             throws AzureCmdException;
+
+    void createQueueMessage(@NotNull StorageAccount storageAccount,
+                            @NotNull QueueMessage queueMessage,
+                            int timeToLiveInSeconds)
+            throws AzureCmdException;
+
+    @NotNull
+    QueueMessage dequeueFirstQueueMessage(@NotNull StorageAccount storageAccount, @NotNull Queue queue)
+            throws AzureCmdException;
 }

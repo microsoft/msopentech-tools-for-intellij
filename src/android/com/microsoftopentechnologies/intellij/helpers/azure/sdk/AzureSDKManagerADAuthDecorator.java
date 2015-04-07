@@ -535,7 +535,8 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
 
     @NotNull
     @Override
-    public List<QueueMessage> getQueueMessages(@NotNull final StorageAccount storageAccount, @NotNull final Queue queue) throws AzureCmdException {
+    public List<QueueMessage> getQueueMessages(@NotNull final StorageAccount storageAccount, @NotNull final Queue queue)
+            throws AzureCmdException {
         return runWithRetry(storageAccount.getSubscriptionId(), new Func0<List<QueueMessage>>() {
             @Override
             public List<QueueMessage> run() throws AzureCmdException {
@@ -545,12 +546,40 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
     }
 
     @Override
-    public void clearQueue(@NotNull final StorageAccount storageAccount, @NotNull final Queue queue) throws AzureCmdException {
+    public void clearQueue(@NotNull final StorageAccount storageAccount, @NotNull final Queue queue)
+            throws AzureCmdException {
         runWithRetry(storageAccount.getSubscriptionId(), new Func0<Void>() {
             @Override
             public Void run() throws AzureCmdException {
                 sdkManager.clearQueue(storageAccount, queue);
                 return null;
+            }
+        });
+    }
+
+    @Override
+    public void createQueueMessage(@NotNull final StorageAccount storageAccount,
+                                   @NotNull final QueueMessage queueMessage,
+                                   final int timeToLiveInSeconds)
+            throws AzureCmdException {
+        runWithRetry(storageAccount.getSubscriptionId(), new Func0<Void>() {
+            @Override
+            public Void run() throws AzureCmdException {
+                sdkManager.createQueueMessage(storageAccount, queueMessage, timeToLiveInSeconds);
+                return null;
+            }
+        });
+    }
+
+    @NotNull
+    @Override
+    public QueueMessage dequeueFirstQueueMessage(@NotNull final StorageAccount storageAccount,
+                                                 @NotNull final Queue queue)
+            throws AzureCmdException {
+        return runWithRetry(storageAccount.getSubscriptionId(), new Func0<QueueMessage>() {
+            @Override
+            public QueueMessage run() throws AzureCmdException {
+                return sdkManager.dequeueFirstQueueMessage(storageAccount, queue);
             }
         });
     }
