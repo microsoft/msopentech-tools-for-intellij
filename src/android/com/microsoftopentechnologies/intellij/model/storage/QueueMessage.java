@@ -58,6 +58,10 @@ public class QueueMessage implements ServiceTreeItem {
         return id;
     }
 
+    public void setId(@NotNull String id) {
+        this.id = id;
+    }
+
     @NotNull
     public String getQueueName() {
         return queueName;

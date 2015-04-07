@@ -1264,6 +1264,45 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     }
 
     @NotNull
+    @Override
+    public QueueMessage createQueueMessage(@NotNull StorageAccount storageAccount,
+                                           @NotNull QueueMessage queueMessage)
+            throws AzureCmdException {
+        try {
+            CloudQueueClient client = getCloudQueueClient(storageAccount);
+
+            CloudQueue cloudQueue = client.getQueueReference(queueMessage.getQueueName());
+            cloudQueue.addMessage(new CloudQueueMessage(queueMessage.getContent()));
+
+
+            CloudQueueMessage cqm = cloudQueue.peekMessage();
+            String id = Strings.nullToEmpty(cqm.getId());
+            String content = Strings.nullToEmpty(cqm.getMessageContentAsString());
+
+            Calendar insertionTime = new GregorianCalendar();
+
+            if (cqm.getInsertionTime() != null) {
+                insertionTime.setTime(cqm.getInsertionTime());
+            }
+
+            Calendar expirationTime = new GregorianCalendar();
+
+            if (cqm.getExpirationTime() != null) {
+                expirationTime.setTime(cqm.getExpirationTime());
+            }
+
+            queueMessage.setId(id);
+            queueMessage.setContent(content);
+            queueMessage.setInsertionTime(insertionTime);
+            queueMessage.setExpirationTime(expirationTime);
+
+            return queueMessage;
+        } catch (Throwable t) {
+            throw new AzureCmdException("Error creating the Queue Message", t);
+        }
+    }
+
+    @NotNull
     private static ComputeManagementClient getComputeManagementClient(@NotNull String subscriptionId) throws Exception {
         ComputeManagementClient client = AzureSDKHelper.getComputeManagementClient(subscriptionId);
 
