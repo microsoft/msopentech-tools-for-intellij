@@ -18,41 +18,31 @@ package com.microsoftopentechnologies.intellij.serviceexplorer.azure.storage;
 
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerImpl;
-import com.microsoftopentechnologies.intellij.model.storage.BlobContainer;
+import com.microsoftopentechnologies.intellij.model.storage.Queue;
 import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
 import com.microsoftopentechnologies.intellij.serviceexplorer.Node;
-import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionEvent;
-import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionListener;
 
-import java.util.*;
-
-public class StorageNode extends Node {
-    private static final String WAIT_ICON_PATH = "storageaccount.png";
+public class QueueModule extends Node {
+    private static final String QUEUES = "Queues";
+    private static final String ACTION_CREATE = "Create queue";
+    private Node parent;
     private final StorageAccount storageAccount;
 
-    public StorageNode(Node parent, StorageAccount sm) {
-        super(sm.getName(), sm.getName(), parent, WAIT_ICON_PATH, true);
-        this.storageAccount = sm;
-    }
+    public QueueModule(StorageNode parent, StorageAccount storageAccount) {
+        super(QUEUES + storageAccount.getName(), QUEUES, parent, null, true);
 
-    @Override
-    protected void onNodeClick(NodeActionEvent e) {
-        this.load();
+        this.storageAccount = storageAccount;
+        this.parent = parent;
     }
 
     @Override
     protected void refreshItems() throws AzureCmdException {
-
         removeAllChildNodes();
 
-        Node blobsNode = new BlobModule(this, storageAccount);
-        blobsNode.load();
-
-        Node queueNode = new QueueModule(this, storageAccount);
-        queueNode.load();
-
-        addChildNode(blobsNode);
-        addChildNode(queueNode);
+        for (Queue queue : AzureSDKManagerImpl.getManager().getQueues(storageAccount)) {
+            addChildNode(new QueueNode(this, storageAccount, queue));
+        }
     }
+
 
 }

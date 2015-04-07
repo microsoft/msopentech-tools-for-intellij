@@ -18,15 +18,23 @@ package com.microsoftopentechnologies.intellij.helpers.storage;
 
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter;
 import com.intellij.ide.structureView.StructureViewBuilder;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorLocation;
 import com.intellij.openapi.fileEditor.FileEditorState;
 import com.intellij.openapi.fileEditor.FileEditorStateLevel;
+import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.progress.ProgressManager;
+import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
+import com.microsoftopentechnologies.intellij.helpers.UIHelper;
+import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
+import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerImpl;
 import com.microsoftopentechnologies.intellij.model.storage.Queue;
 import com.microsoftopentechnologies.intellij.model.storage.QueueMessage;
 import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
+import org.apache.commons.lang.NotImplementedException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -34,24 +42,24 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import java.awt.*;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.beans.PropertyChangeListener;
+import java.text.SimpleDateFormat;
+import java.util.List;
 
 public class QueueFileEditor implements FileEditor {
     private Project project;
     private StorageAccount storageAccount;
     private Queue queue;
     private JPanel mainPanel;
-    private JButton decueueMessageButton;
+    private JButton dequeueMessageButton;
     private JButton refreshButton;
     private JButton addMessageButton;
     private JButton clearQueueButton;
     private JTable queueTable;
+    private List<QueueMessage> queueMessages;
 
-    public void fillGrid() {
+    public QueueFileEditor(){
         queueTable.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
         DefaultTableModel model =  new DefaultTableModel() {
@@ -130,18 +138,102 @@ public class QueueFileEditor implements FileEditor {
             }
         });
 
+        refreshButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                fillGrid();
+            }
+        });
+
+        dequeueMessageButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                dequeueFirstMessage();
+            }
+        });
+    }
+
+    public void fillGrid() {
+        ProgressManager.getInstance().run(new Task.Backgroundable(project, "Loading queue messages", false) {
+
+            @Override
+            public void run(@NotNull ProgressIndicator progressIndicator) {
+                try {
+                    queueMessages = AzureSDKManagerImpl.getManager().getQueueMessages(storageAccount, queue);
+
+                    ApplicationManager.getApplication().invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            DefaultTableModel model = (DefaultTableModel) queueTable.getModel();
+                            while (model.getRowCount() > 0) {
+                                model.removeRow(0);
+                            }
+
+                            for (QueueMessage queueMessage : queueMessages) {
+                                String[] values = {
+                                        queueMessage.getId(),
+                                        queueMessage.getContent(),
+                                        UIHelper.readableFileSize(queueMessage.getContent().length()),
+                                        new SimpleDateFormat().format(queueMessage.getInsertionTime().getTime()),
+                                        new SimpleDateFormat().format(queueMessage.getExpirationTime().getTime()),
+                                        "0",
+                                };
+
+                                model.addRow(values);
+                            }
+                        }
+                    });
+
+                } catch (AzureCmdException e) {
+                    UIHelper.showException("Error getting queue messages", e, "Service Explorer", false, true);
+                }
+            }
+        });
     }
 
     private JPopupMenu createTablePopUp() {
-        return null;
+        JPopupMenu menu = new JPopupMenu();
+
+        JMenuItem openMenu = new JMenuItem("Open");
+        openMenu.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                editMessageText();
+            }
+        });
+
+        JMenuItem dequeueMenu = new JMenuItem("Dequeue");
+        dequeueMenu.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                dequeueFirstMessage();
+            }
+        });
+
+        menu.add(openMenu);
+        menu.add(dequeueMenu);
+
+        return menu;
+
+    }
+
+    private void dequeueFirstMessage() {
+        ProgressManager.getInstance().run(new Task.Backgroundable(project, "Dequeuing message", false) {
+
+            @Override
+            public void run(@NotNull ProgressIndicator progressIndicator) {
+
+            }
+        });
     }
 
     private QueueMessage getSelectedQueueMessage() {
-        return null;
+        return (queueMessages != null && queueMessages.size() > 0)
+                ? queueMessages.get(queueTable.getSelectedRow()) : null;
     }
 
     private void editMessageText() {
-
+        throw new NotImplementedException();
     }
 
     public void setProject(Project project) {
