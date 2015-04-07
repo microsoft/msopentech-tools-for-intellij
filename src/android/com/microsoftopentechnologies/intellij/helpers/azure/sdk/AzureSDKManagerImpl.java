@@ -25,6 +25,7 @@ import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.blob.*;
 import com.microsoft.azure.storage.queue.CloudQueue;
 import com.microsoft.azure.storage.queue.CloudQueueClient;
+import com.microsoft.azure.storage.queue.CloudQueueMessage;
 import com.microsoft.azure.storage.queue.QueueListingDetails;
 import com.microsoft.azure.storage.table.CloudTableClient;
 import com.microsoft.windowsazure.core.OperationResponse;
@@ -1207,6 +1208,58 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
             cloudQueue.deleteIfExists();
         } catch (Throwable t) {
             throw new AzureCmdException("Error deleting the Queue", t);
+        }
+    }
+
+    @NotNull
+    @Override
+    public List<QueueMessage> getQueueMessages(@NotNull StorageAccount storageAccount, @NotNull Queue queue)
+            throws AzureCmdException {
+        List<QueueMessage> qmList = new ArrayList<QueueMessage>();
+
+        try {
+            CloudQueueClient client = getCloudQueueClient(storageAccount);
+            String queueName = queue.getName();
+            String subscriptionId = storageAccount.getSubscriptionId();
+
+            CloudQueue cloudQueue = client.getQueueReference(queueName);
+
+            for (CloudQueueMessage cqm : cloudQueue.retrieveMessages(32)) {
+                String id = Strings.nullToEmpty(cqm.getId());
+                String content = Strings.nullToEmpty(cqm.getMessageContentAsString());
+
+                Calendar insertionTime = new GregorianCalendar();
+
+                if (cqm.getInsertionTime() != null) {
+                    insertionTime.setTime(cqm.getInsertionTime());
+                }
+
+                Calendar expirationTime = new GregorianCalendar();
+
+                if (cqm.getExpirationTime() != null) {
+                    expirationTime.setTime(cqm.getExpirationTime());
+                }
+
+
+                qmList.add(new QueueMessage(id, queueName, content, insertionTime, expirationTime, subscriptionId));
+            }
+
+            return qmList;
+        } catch (Throwable t) {
+            throw new AzureCmdException("Error retrieving the Queue Message list", t);
+        }
+    }
+
+    @Override
+    public void clearQueue(@NotNull StorageAccount storageAccount, @NotNull Queue queue)
+            throws AzureCmdException {
+        try {
+            CloudQueueClient client = getCloudQueueClient(storageAccount);
+
+            CloudQueue cloudQueue = client.getQueueReference(queue.getName());
+            cloudQueue.clear();
+        } catch (Throwable t) {
+            throw new AzureCmdException("Error clearing the Queue", t);
         }
     }
 
