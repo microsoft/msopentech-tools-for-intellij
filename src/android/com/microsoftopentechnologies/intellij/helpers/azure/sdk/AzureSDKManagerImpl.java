@@ -27,6 +27,7 @@ import com.microsoft.azure.storage.queue.CloudQueue;
 import com.microsoft.azure.storage.queue.CloudQueueClient;
 import com.microsoft.azure.storage.queue.CloudQueueMessage;
 import com.microsoft.azure.storage.queue.QueueListingDetails;
+import com.microsoft.azure.storage.table.CloudTable;
 import com.microsoft.azure.storage.table.CloudTableClient;
 import com.microsoft.windowsazure.core.OperationResponse;
 import com.microsoft.windowsazure.core.OperationStatus;
@@ -1317,6 +1318,65 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
             return new QueueMessage(id, queueName, content, insertionTime, expirationTime, dequeueCount, subscriptionId);
         } catch (Throwable t) {
             throw new AzureCmdException("Error dequeuing the first Queue Message", t);
+        }
+    }
+
+    @NotNull
+    @Override
+    public List<Table> getTables(@NotNull StorageAccount storageAccount)
+            throws AzureCmdException {
+        List<Table> tList = new ArrayList<Table>();
+
+        try {
+            CloudTableClient client = getCloudTableClient(storageAccount);
+
+            for (String tableName : client.listTables()) {
+                CloudTable cloudTable = client.getTableReference(tableName);
+
+                String uri = cloudTable.getUri() != null ? cloudTable.getUri().toString() : "";
+
+                tList.add(new Table(tableName,
+                        uri,
+                        storageAccount.getSubscriptionId()));
+            }
+
+            return tList;
+        } catch (Throwable t) {
+            throw new AzureCmdException("Error retrieving the Table list", t);
+        }
+    }
+
+    @NotNull
+    @Override
+    public Table createTable(@NotNull StorageAccount storageAccount,
+                             @NotNull Table table)
+            throws AzureCmdException {
+        try {
+            CloudTableClient client = getCloudTableClient(storageAccount);
+
+            CloudTable cloudTable = client.getTableReference(table.getName());
+            cloudTable.createIfNotExists();
+
+            String uri = cloudTable.getUri() != null ? cloudTable.getUri().toString() : "";
+
+            table.setUri(uri);
+
+            return table;
+        } catch (Throwable t) {
+            throw new AzureCmdException("Error creating the Table", t);
+        }
+    }
+
+    @Override
+    public void deleteTable(@NotNull StorageAccount storageAccount, @NotNull Table table)
+            throws AzureCmdException {
+        try {
+            CloudTableClient client = getCloudTableClient(storageAccount);
+
+            CloudTable cloudTable = client.getTableReference(table.getName());
+            cloudTable.deleteIfExists();
+        } catch (Throwable t) {
+            throw new AzureCmdException("Error deleting the Table", t);
         }
     }
 

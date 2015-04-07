@@ -122,13 +122,13 @@ public interface AzureSDKManager {
             throws AzureCmdException;
 
 
-    public void uploadBlobFileContent(@NotNull StorageAccount storageAccount,
-                                      @NotNull BlobContainer blobContainer,
-                                      @NotNull String filePath,
-                                      @NotNull InputStream content,
-                                      CallableSingleArg<Void, Long> processBlockEvent,
-                                      long maxBlockSize,
-                                      long length)
+    void uploadBlobFileContent(@NotNull StorageAccount storageAccount,
+                               @NotNull BlobContainer blobContainer,
+                               @NotNull String filePath,
+                               @NotNull InputStream content,
+                               CallableSingleArg<Void, Long> processBlockEvent,
+                               long maxBlockSize,
+                               long length)
             throws AzureCmdException;
 
     void downloadBlobFileContent(@NotNull StorageAccount storageAccount,
@@ -162,5 +162,17 @@ public interface AzureSDKManager {
 
     @NotNull
     QueueMessage dequeueFirstQueueMessage(@NotNull StorageAccount storageAccount, @NotNull Queue queue)
+            throws AzureCmdException;
+
+    @NotNull
+    List<Table> getTables(@NotNull StorageAccount storageAccount)
+            throws AzureCmdException;
+
+    @NotNull
+    Table createTable(@NotNull StorageAccount storageAccount,
+                      @NotNull Table table)
+            throws AzureCmdException;
+
+    void deleteTable(@NotNull StorageAccount storageAccount, @NotNull Table table)
             throws AzureCmdException;
 }
