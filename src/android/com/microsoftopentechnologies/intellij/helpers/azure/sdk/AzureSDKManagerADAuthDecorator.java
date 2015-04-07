@@ -559,12 +559,13 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
 
     @Override
     public void createQueueMessage(@NotNull final StorageAccount storageAccount,
-                                   @NotNull final QueueMessage queueMessage)
+                                   @NotNull final QueueMessage queueMessage,
+                                   final int timeToLiveInSeconds)
             throws AzureCmdException {
         runWithRetry(storageAccount.getSubscriptionId(), new Func0<Void>() {
             @Override
             public Void run() throws AzureCmdException {
-                sdkManager.createQueueMessage(storageAccount, queueMessage);
+                sdkManager.createQueueMessage(storageAccount, queueMessage, timeToLiveInSeconds);
                 return null;
             }
         });

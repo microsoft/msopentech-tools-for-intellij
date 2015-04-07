@@ -27,6 +27,7 @@ public class QueueMessage implements ServiceTreeItem {
     private String content;
     private Calendar insertionTime;
     private Calendar expirationTime;
+    private int dequeueCount;
     private String subscriptionId;
 
     public QueueMessage(@NotNull String id,
@@ -34,12 +35,14 @@ public class QueueMessage implements ServiceTreeItem {
                         @NotNull String content,
                         @NotNull Calendar insertionTime,
                         @NotNull Calendar expirationTime,
+                        int dequeueCount,
                         @NotNull String subscriptionId) {
         this.id = id;
         this.queueName = queueName;
         this.content = content;
         this.insertionTime = insertionTime;
         this.expirationTime = expirationTime;
+        this.dequeueCount = dequeueCount;
         this.subscriptionId = subscriptionId;
     }
 
@@ -96,6 +99,14 @@ public class QueueMessage implements ServiceTreeItem {
 
     public void setExpirationTime(@NotNull Calendar expirationTime) {
         this.expirationTime = expirationTime;
+    }
+
+    public int getDequeueCount() {
+        return dequeueCount;
+    }
+
+    public void setDequeueCount(int dequeueCount) {
+        this.dequeueCount = dequeueCount;
     }
 
     @NotNull

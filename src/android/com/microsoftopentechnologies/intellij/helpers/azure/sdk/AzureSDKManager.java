@@ -156,7 +156,8 @@ public interface AzureSDKManager {
             throws AzureCmdException;
 
     void createQueueMessage(@NotNull StorageAccount storageAccount,
-                            @NotNull QueueMessage queueMessage)
+                            @NotNull QueueMessage queueMessage,
+                            int timeToLiveInSeconds)
             throws AzureCmdException;
 
     @NotNull

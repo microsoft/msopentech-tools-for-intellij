@@ -1240,8 +1240,9 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
                     expirationTime.setTime(cqm.getExpirationTime());
                 }
 
+                int dequeueCount = cqm.getDequeueCount();
 
-                qmList.add(new QueueMessage(id, queueName, content, insertionTime, expirationTime, subscriptionId));
+                qmList.add(new QueueMessage(id, queueName, content, insertionTime, expirationTime, dequeueCount, subscriptionId));
             }
 
             return qmList;
@@ -1265,13 +1266,14 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
 
     @Override
     public void createQueueMessage(@NotNull StorageAccount storageAccount,
-                                   @NotNull QueueMessage queueMessage)
+                                   @NotNull QueueMessage queueMessage,
+                                   int timeToLiveInSeconds)
             throws AzureCmdException {
         try {
             CloudQueueClient client = getCloudQueueClient(storageAccount);
 
             CloudQueue cloudQueue = client.getQueueReference(queueMessage.getQueueName());
-            cloudQueue.addMessage(new CloudQueueMessage(queueMessage.getContent()));
+            cloudQueue.addMessage(new CloudQueueMessage(queueMessage.getContent()), timeToLiveInSeconds, 0, null, null);
         } catch (Throwable t) {
             throw new AzureCmdException("Error creating the Queue Message", t);
         }
@@ -1293,6 +1295,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
             String content = "";
             Calendar insertionTime = new GregorianCalendar();
             Calendar expirationTime = new GregorianCalendar();
+            int dequeueCount = 0;
 
             if (cqm != null) {
                 id = Strings.nullToEmpty(cqm.getId());
@@ -1306,10 +1309,12 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
                     expirationTime.setTime(cqm.getExpirationTime());
                 }
 
+                dequeueCount = cqm.getDequeueCount();
+
                 cloudQueue.deleteMessage(cqm);
             }
 
-            return new QueueMessage(id, queueName, content, insertionTime, expirationTime, subscriptionId);
+            return new QueueMessage(id, queueName, content, insertionTime, expirationTime, dequeueCount, subscriptionId);
         } catch (Throwable t) {
             throw new AzureCmdException("Error dequeuing the first Queue Message", t);
         }
