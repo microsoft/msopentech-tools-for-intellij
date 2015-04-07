@@ -1224,7 +1224,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
 
             CloudQueue cloudQueue = client.getQueueReference(queueName);
 
-            for (CloudQueueMessage cqm : cloudQueue.retrieveMessages(32)) {
+            for (CloudQueueMessage cqm : cloudQueue.peekMessages(32)) {
                 String id = Strings.nullToEmpty(cqm.getId());
                 String content = Strings.nullToEmpty(cqm.getMessageContentAsString());
 
