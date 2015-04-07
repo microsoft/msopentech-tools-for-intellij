@@ -1263,42 +1263,55 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         }
     }
 
-    @NotNull
     @Override
-    public QueueMessage createQueueMessage(@NotNull StorageAccount storageAccount,
-                                           @NotNull QueueMessage queueMessage)
+    public void createQueueMessage(@NotNull StorageAccount storageAccount,
+                                   @NotNull QueueMessage queueMessage)
             throws AzureCmdException {
         try {
             CloudQueueClient client = getCloudQueueClient(storageAccount);
 
             CloudQueue cloudQueue = client.getQueueReference(queueMessage.getQueueName());
             cloudQueue.addMessage(new CloudQueueMessage(queueMessage.getContent()));
-
-
-            CloudQueueMessage cqm = cloudQueue.peekMessage();
-            String id = Strings.nullToEmpty(cqm.getId());
-            String content = Strings.nullToEmpty(cqm.getMessageContentAsString());
-
-            Calendar insertionTime = new GregorianCalendar();
-
-            if (cqm.getInsertionTime() != null) {
-                insertionTime.setTime(cqm.getInsertionTime());
-            }
-
-            Calendar expirationTime = new GregorianCalendar();
-
-            if (cqm.getExpirationTime() != null) {
-                expirationTime.setTime(cqm.getExpirationTime());
-            }
-
-            queueMessage.setId(id);
-            queueMessage.setContent(content);
-            queueMessage.setInsertionTime(insertionTime);
-            queueMessage.setExpirationTime(expirationTime);
-
-            return queueMessage;
         } catch (Throwable t) {
             throw new AzureCmdException("Error creating the Queue Message", t);
+        }
+    }
+
+    @NotNull
+    @Override
+    public QueueMessage dequeueFirstQueueMessage(@NotNull StorageAccount storageAccount, @NotNull Queue queue)
+            throws AzureCmdException {
+        try {
+            CloudQueueClient client = getCloudQueueClient(storageAccount);
+            String queueName = queue.getName();
+            String subscriptionId = storageAccount.getSubscriptionId();
+
+            CloudQueue cloudQueue = client.getQueueReference(queueName);
+            CloudQueueMessage cqm = cloudQueue.retrieveMessage();
+
+            String id = "";
+            String content = "";
+            Calendar insertionTime = new GregorianCalendar();
+            Calendar expirationTime = new GregorianCalendar();
+
+            if (cqm != null) {
+                id = Strings.nullToEmpty(cqm.getId());
+                content = Strings.nullToEmpty(cqm.getMessageContentAsString());
+
+                if (cqm.getInsertionTime() != null) {
+                    insertionTime.setTime(cqm.getInsertionTime());
+                }
+
+                if (cqm.getExpirationTime() != null) {
+                    expirationTime.setTime(cqm.getExpirationTime());
+                }
+
+                cloudQueue.deleteMessage(cqm);
+            }
+
+            return new QueueMessage(id, queueName, content, insertionTime, expirationTime, subscriptionId);
+        } catch (Throwable t) {
+            throw new AzureCmdException("Error dequeuing the first Queue Message", t);
         }
     }
 

@@ -557,15 +557,28 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
         });
     }
 
+    @Override
+    public void createQueueMessage(@NotNull final StorageAccount storageAccount,
+                                   @NotNull final QueueMessage queueMessage)
+            throws AzureCmdException {
+        runWithRetry(storageAccount.getSubscriptionId(), new Func0<Void>() {
+            @Override
+            public Void run() throws AzureCmdException {
+                sdkManager.createQueueMessage(storageAccount, queueMessage);
+                return null;
+            }
+        });
+    }
+
     @NotNull
     @Override
-    public QueueMessage createQueueMessage(@NotNull final StorageAccount storageAccount,
-                                           @NotNull final QueueMessage queueMessage)
+    public QueueMessage dequeueFirstQueueMessage(@NotNull final StorageAccount storageAccount,
+                                                 @NotNull final Queue queue)
             throws AzureCmdException {
         return runWithRetry(storageAccount.getSubscriptionId(), new Func0<QueueMessage>() {
             @Override
             public QueueMessage run() throws AzureCmdException {
-                return sdkManager.createQueueMessage(storageAccount, queueMessage);
+                return sdkManager.dequeueFirstQueueMessage(storageAccount, queue);
             }
         });
     }
