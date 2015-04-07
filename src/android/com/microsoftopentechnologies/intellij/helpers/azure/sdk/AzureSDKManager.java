@@ -147,4 +147,11 @@ public interface AzureSDKManager {
 
     void deleteQueue(@NotNull StorageAccount storageAccount, @NotNull Queue queue)
             throws AzureCmdException;
+
+    @NotNull
+    List<QueueMessage> getQueueMessages(@NotNull StorageAccount storageAccount, @NotNull Queue queue)
+            throws AzureCmdException;
+
+    void clearQueue(@NotNull StorageAccount storageAccount, @NotNull Queue queue)
+            throws AzureCmdException;
 }
