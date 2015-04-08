@@ -16,7 +16,7 @@
 
 package com.microsoftopentechnologies.intellij.forms;
 
-import com.intellij.openapi.application.Application;
+
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
@@ -28,6 +28,7 @@ import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerImpl;
 import com.microsoftopentechnologies.intellij.model.storage.BlobContainer;
 import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -121,7 +122,7 @@ public class CreateBlobContainerForm extends JDialog {
         ProgressManager.getInstance().run(new Task.Backgroundable(project, "Creating blob container...", false) {
 
             @Override
-            public void run(ProgressIndicator progressIndicator) {
+            public void run(@NotNull ProgressIndicator progressIndicator) {
                 try {
                     progressIndicator.setIndeterminate(true);
 

@@ -16,7 +16,7 @@
 
 package com.microsoftopentechnologies.intellij.serviceexplorer.azure.storage;
 
-import com.microsoftopentechnologies.intellij.forms.CreateBlobContainerForm;
+
 import com.microsoftopentechnologies.intellij.forms.CreateQueueForm;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;

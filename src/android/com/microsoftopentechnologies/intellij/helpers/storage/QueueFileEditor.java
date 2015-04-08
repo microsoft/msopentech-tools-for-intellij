@@ -36,7 +36,6 @@ import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerI
 import com.microsoftopentechnologies.intellij.model.storage.Queue;
 import com.microsoftopentechnologies.intellij.model.storage.QueueMessage;
 import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
-import org.apache.commons.lang.NotImplementedException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
