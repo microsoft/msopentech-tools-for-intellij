@@ -583,4 +583,54 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
             }
         });
     }
+
+    @NotNull
+    @Override
+    public List<Table> getTables(@NotNull final StorageAccount storageAccount)
+            throws AzureCmdException {
+        return runWithRetry(storageAccount.getSubscriptionId(), new Func0<List<Table>>() {
+            @Override
+            public List<Table> run() throws AzureCmdException {
+                return sdkManager.getTables(storageAccount);
+            }
+        });
+    }
+
+    @NotNull
+    @Override
+    public Table createTable(@NotNull final StorageAccount storageAccount, @NotNull final Table table)
+            throws AzureCmdException {
+        return runWithRetry(storageAccount.getSubscriptionId(), new Func0<Table>() {
+            @Override
+            public Table run() throws AzureCmdException {
+                return sdkManager.createTable(storageAccount, table);
+            }
+        });
+    }
+
+    @Override
+    public void deleteTable(@NotNull final StorageAccount storageAccount, @NotNull final Table table)
+            throws AzureCmdException {
+        runWithRetry(storageAccount.getSubscriptionId(), new Func0<Void>() {
+            @Override
+            public Void run() throws AzureCmdException {
+                sdkManager.deleteTable(storageAccount, table);
+                return null;
+            }
+        });
+    }
+
+    @NotNull
+    @Override
+    public List<TableEntity> getTableEntities(@NotNull final StorageAccount storageAccount,
+                                              @NotNull final Table table,
+                                              @NotNull final String filter)
+            throws AzureCmdException {
+        return runWithRetry(storageAccount.getSubscriptionId(), new Func0<List<TableEntity>>() {
+            @Override
+            public List<TableEntity> run() throws AzureCmdException {
+                return sdkManager.getTableEntities(storageAccount, table, filter);
+            }
+        });
+    }
 }
