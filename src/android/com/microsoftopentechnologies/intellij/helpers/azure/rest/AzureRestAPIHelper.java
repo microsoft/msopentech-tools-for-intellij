@@ -465,19 +465,22 @@ public class AzureRestAPIHelper {
                             apiManager.getSubscriptionFromId(subscriptionId).getName() :
                     "Sign in to your Microsoft account";
 
-            String promptValue = (isForSubscription) ? PromptValue.attemptNone : PromptValue.login;
+            String promptValue = PromptValue.login;
+            if(isForSubscription) {
+                promptValue = PromptValue.attemptNone;
 
-            // if we are on OS X Mavericks or lesser then we use
-            // "refreshSession" because "attemptNone" causes Azure AD
-            // to throw errors; this causes the user to have to deal
-            // with the login screen multiple times but it at least
-            // works!
-            boolean isMac = System.getProperty("os.name").toLowerCase().contains("mac");
-            String osVersion = System.getProperty("os.version");
-            String[] tokens = Iterables.toArray(Splitter.on('.').split(osVersion), String.class);
-            if(tokens != null && tokens.length > 1 && tokens[0].equals("10")) {
-                if(Integer.parseInt(tokens[1]) < 10) {
-                    promptValue = PromptValue.refreshSession;
+                // if we are on OS X Mavericks or lesser then we use
+                // "refreshSession" because "attemptNone" causes Azure AD
+                // to throw errors; this causes the user to have to deal
+                // with the login screen multiple times but it at least
+                // works!
+                boolean isMac = System.getProperty("os.name").toLowerCase().contains("mac");
+                String osVersion = System.getProperty("os.version");
+                String[] tokens = Iterables.toArray(Splitter.on('.').split(osVersion), String.class);
+                if (tokens != null && tokens.length > 1 && tokens[0].equals("10")) {
+                    if (Integer.parseInt(tokens[1]) < 10) {
+                        promptValue = PromptValue.refreshSession;
+                    }
                 }
             }
 
