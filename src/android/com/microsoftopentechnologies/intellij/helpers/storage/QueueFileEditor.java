@@ -114,7 +114,7 @@ public class QueueFileEditor implements FileEditor {
 
                         QueueMessage message = getSelectedQueueMessage();
                         if (message != null) {
-                            JPopupMenu popup = createTablePopUp();
+                            JPopupMenu popup = createTablePopUp(r == 0);
                             popup.show(me.getComponent(), me.getX(), me.getY());
                         }
                     }
@@ -239,7 +239,7 @@ public class QueueFileEditor implements FileEditor {
         });
     }
 
-    private JPopupMenu createTablePopUp() {
+    private JPopupMenu createTablePopUp(boolean isFirstRow) {
         JPopupMenu menu = new JPopupMenu();
 
         JMenuItem openMenu = new JMenuItem("Open");
@@ -257,6 +257,7 @@ public class QueueFileEditor implements FileEditor {
                 dequeueFirstMessage();
             }
         });
+        dequeueMenu.setEnabled(isFirstRow);
 
         menu.add(openMenu);
         menu.add(dequeueMenu);
