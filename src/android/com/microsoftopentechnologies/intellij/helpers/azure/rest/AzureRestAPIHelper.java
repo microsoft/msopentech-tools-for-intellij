@@ -16,6 +16,9 @@
 
 package com.microsoftopentechnologies.intellij.helpers.azure.rest;
 
+import com.google.common.base.Splitter;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Iterators;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.intellij.ide.util.PropertiesComponent;
 import com.microsoftopentechnologies.intellij.components.MSOpenTechToolsApplication;
@@ -461,6 +464,23 @@ public class AzureRestAPIHelper {
                     "Sign in: " +
                             apiManager.getSubscriptionFromId(subscriptionId).getName() :
                     "Sign in to your Microsoft account";
+
+            String promptValue = (isForSubscription) ? PromptValue.attemptNone : PromptValue.login;
+
+            // if we are on OS X Mavericks or lesser then we use
+            // "refreshSession" because "attemptNone" causes Azure AD
+            // to throw errors; this causes the user to have to deal
+            // with the login screen multiple times but it at least
+            // works!
+            boolean isMac = System.getProperty("os.name").toLowerCase().contains("mac");
+            String osVersion = System.getProperty("os.version");
+            String[] tokens = Iterables.toArray(Splitter.on('.').split(osVersion), String.class);
+            if(tokens != null && tokens.length > 1 && tokens[0].equals("10")) {
+                if(Integer.parseInt(tokens[1]) < 10) {
+                    promptValue = PromptValue.refreshSession;
+                }
+            }
+
             ListenableFuture<AuthenticationResult> future = context.acquireTokenInteractiveAsync(
                     getTenantName(subscriptionId),
                     settings.getAzureServiceManagementUri(),
@@ -468,7 +488,7 @@ public class AzureRestAPIHelper {
                     settings.getRedirectUri(),
                     null,
                     windowTitle,
-                    (isForSubscription) ? PromptValue.attemptNone : PromptValue.login);
+                    promptValue);
             token = future.get();
 
             // save the token
