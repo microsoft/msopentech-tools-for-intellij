@@ -30,6 +30,7 @@ import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class AADWebServer extends WebServer {
     private static final String STATUS_SUCCESS = "success";
@@ -39,6 +40,7 @@ public class AADWebServer extends WebServer {
     private static final String DATA_PARAM_NAME = "data";
     private AuthCodeCallback authCodeCallback;
     private ClosedCallback closedCallback;
+    private ReentrantLock requestHandlerLock = new ReentrantLock();
 
     public AADWebServer() throws IOException {
         super(-1);
@@ -66,38 +68,48 @@ public class AADWebServer extends WebServer {
 
         @Override
         public void handle(HttpExchange httpExchange) throws IOException {
-            Map<String, String> params = EncodingHelper.parseKeyValueList(
-                    httpExchange.getRequestURI().getQuery(), '&', true);
+            requestHandlerLock.lock();
 
-            if(params == null ||
-               !params.containsKey(STATUS_PARAM_NAME) ||
-               !params.containsKey(DATA_PARAM_NAME) ||
-               !params.get(STATUS_PARAM_NAME).equals(STATUS_SUCCESS)) {
+            try {
+                Map<String, String> params = EncodingHelper.parseKeyValueList(
+                        httpExchange.getRequestURI().getQuery(), '&', true);
 
-                httpExchange.sendResponseHeaders(400, -1);
-                if(authCodeCallback != null) {
-                    authCodeCallback.onAuthCodeReceived(null, params);
+                if(params == null ||
+                   !params.containsKey(STATUS_PARAM_NAME) ||
+                   !params.containsKey(DATA_PARAM_NAME) ||
+                   !params.get(STATUS_PARAM_NAME).equals(STATUS_SUCCESS)) {
+
+                    httpExchange.sendResponseHeaders(400, -1);
+                    if(authCodeCallback != null) {
+                        authCodeCallback.onAuthCodeReceived(null, params);
+                    }
+                    return;
                 }
-                return;
-            }
 
-            code = params.get(DATA_PARAM_NAME);
+                code = params.get(DATA_PARAM_NAME);
 
-            // setup response headers
-            Headers headers = httpExchange.getResponseHeaders();
-            headers.add("Content-Type", "text/html");
-            httpExchange.sendResponseHeaders(200, 0);
+                // setup response headers
+                Headers headers = httpExchange.getResponseHeaders();
+                headers.add("Content-Type", "text/html");
+                httpExchange.sendResponseHeaders(200, 0);
 
-            // send browser response
-            InputStream input = ServiceCodeReferenceHelper.getTemplateResource("auth-response.html");
-            OutputStream output = httpExchange.getResponseBody();
-            ByteStreams.copy(input, output);
-            output.close();
-            input.close();
+                // send browser response
+                try {
+                    InputStream input = ServiceCodeReferenceHelper.getTemplateResource("auth-response.html");
+                    OutputStream output = httpExchange.getResponseBody();
+                    ByteStreams.copy(input, output);
+                    output.close();
+                    input.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
 
-            // raise the notification for the code
-            if(authCodeCallback != null) {
-                authCodeCallback.onAuthCodeReceived(code, params);
+                // raise the notification for the code
+                if(authCodeCallback != null) {
+                    authCodeCallback.onAuthCodeReceived(code, params);
+                }
+            } finally {
+                requestHandlerLock.unlock();
             }
         }
 
@@ -110,11 +122,17 @@ public class AADWebServer extends WebServer {
 
         @Override
         public void handle(HttpExchange httpExchange) throws IOException {
-            if(closedCallback != null) {
-                closedCallback.onClosed();
-            }
+            requestHandlerLock.lock();
 
-            httpExchange.sendResponseHeaders(200, -1);
+            try {
+                if(closedCallback != null) {
+                    closedCallback.onClosed();
+                }
+
+                httpExchange.sendResponseHeaders(200, -1);
+            } finally {
+                requestHandlerLock.unlock();
+            }
         }
     }
 }
