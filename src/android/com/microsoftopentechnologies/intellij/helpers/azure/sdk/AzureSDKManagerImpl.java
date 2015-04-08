@@ -27,8 +27,7 @@ import com.microsoft.azure.storage.queue.CloudQueue;
 import com.microsoft.azure.storage.queue.CloudQueueClient;
 import com.microsoft.azure.storage.queue.CloudQueueMessage;
 import com.microsoft.azure.storage.queue.QueueListingDetails;
-import com.microsoft.azure.storage.table.CloudTable;
-import com.microsoft.azure.storage.table.CloudTableClient;
+import com.microsoft.azure.storage.table.*;
 import com.microsoft.windowsazure.core.OperationResponse;
 import com.microsoft.windowsazure.core.OperationStatus;
 import com.microsoft.windowsazure.core.OperationStatusResponse;
@@ -62,6 +61,7 @@ import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIMan
 import com.microsoftopentechnologies.intellij.model.storage.*;
 import com.microsoftopentechnologies.intellij.model.storage.Queue;
 import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
+import com.microsoftopentechnologies.intellij.model.storage.TableEntity;
 import com.microsoftopentechnologies.intellij.model.vm.*;
 import com.microsoftopentechnologies.intellij.model.vm.CloudService.Deployment;
 import com.microsoftopentechnologies.intellij.model.vm.VirtualMachine.Status;
@@ -1377,6 +1377,65 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
             cloudTable.deleteIfExists();
         } catch (Throwable t) {
             throw new AzureCmdException("Error deleting the Table", t);
+        }
+    }
+
+    @NotNull
+    @Override
+    public List<TableEntity> getTableEntities(@NotNull StorageAccount storageAccount, @NotNull Table table,
+                                              @NotNull String filter)
+            throws AzureCmdException {
+        List<TableEntity> teList = new ArrayList<TableEntity>();
+
+        try {
+            CloudTableClient client = getCloudTableClient(storageAccount);
+            String tableName = table.getName();
+            String subscriptionId = storageAccount.getSubscriptionId();
+
+            CloudTable cloudTable = client.getTableReference(tableName);
+
+            TableQuery<DynamicTableEntity> tableQuery = TableQuery.from(DynamicTableEntity.class);
+
+            if (!filter.isEmpty()) {
+                tableQuery.where(filter);
+            }
+
+            TableRequestOptions tro = new TableRequestOptions();
+            tro.setTablePayloadFormat(TablePayloadFormat.JsonFullMetadata);
+
+            for (DynamicTableEntity dte : cloudTable.execute(tableQuery, tro, null)) {
+                String partitionKey = Strings.nullToEmpty(dte.getPartitionKey());
+                String rowKey = Strings.nullToEmpty(dte.getRowKey());
+                String eTag = Strings.nullToEmpty(dte.getEtag());
+
+                Calendar timestamp = new GregorianCalendar();
+
+                if (dte.getTimestamp() != null) {
+                    timestamp.setTime(dte.getTimestamp());
+                }
+
+                Map<String, String> properties = new HashMap<String, String>();
+
+
+                if (dte.getProperties() != null) {
+                    for (Map.Entry<String, EntityProperty> entry : dte.getProperties().entrySet()) {
+                        String key = Strings.nullToEmpty(entry.getKey());
+                        String value = "";
+
+                        if (entry.getValue() != null) {
+                            value = Strings.nullToEmpty(entry.getValue().getValueAsString());
+                        }
+
+                        properties.put(key, value);
+                    }
+                }
+
+                teList.add(new TableEntity(partitionKey, rowKey, tableName, eTag, timestamp, properties, subscriptionId));
+            }
+
+            return teList;
+        } catch (Throwable t) {
+            throw new AzureCmdException("Error retrieving the Table Entity list", t);
         }
     }
 

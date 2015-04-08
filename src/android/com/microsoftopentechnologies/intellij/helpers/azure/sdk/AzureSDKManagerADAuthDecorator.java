@@ -619,4 +619,18 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
             }
         });
     }
+
+    @NotNull
+    @Override
+    public List<TableEntity> getTableEntities(@NotNull final StorageAccount storageAccount,
+                                              @NotNull final Table table,
+                                              @NotNull final String filter)
+            throws AzureCmdException {
+        return runWithRetry(storageAccount.getSubscriptionId(), new Func0<List<TableEntity>>() {
+            @Override
+            public List<TableEntity> run() throws AzureCmdException {
+                return sdkManager.getTableEntities(storageAccount, table, filter);
+            }
+        });
+    }
 }

@@ -175,4 +175,9 @@ public interface AzureSDKManager {
 
     void deleteTable(@NotNull StorageAccount storageAccount, @NotNull Table table)
             throws AzureCmdException;
+
+    @NotNull
+    List<TableEntity> getTableEntities(@NotNull StorageAccount storageAccount, @NotNull Table table,
+                                       @NotNull String filter)
+            throws AzureCmdException;
 }
