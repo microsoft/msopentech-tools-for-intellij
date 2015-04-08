@@ -77,6 +77,11 @@ public class MSOpenTechToolsApplication extends ApplicationComponent.Adapter imp
         // save the object instance
         current = this;
 
+        DefaultLoader.setPluginComponent(this);
+        DefaultLoader.setUiHelper(new UIHelperImpl());
+        DefaultLoader.setIdeHelper(new IDEHelperImpl());
+        DefaultLoader.setNode2Actions(NodeActionsMap.node2Actions);
+
         // load up the plugin settings
         try {
             loadPluginSettings();
@@ -88,11 +93,6 @@ public class MSOpenTechToolsApplication extends ApplicationComponent.Adapter imp
         cleanTempData(PropertiesComponent.getInstance());
 
         VirtualFileManager.getInstance().addVirtualFileListener(vfl);
-
-        DefaultLoader.setPluginComponent(this);
-        DefaultLoader.setUiHelper(new UIHelperImpl());
-        DefaultLoader.setIdeHelper(new IDEHelperImpl());
-        DefaultLoader.setNode2Actions(NodeActionsMap.node2Actions);
     }
 
     @Override
