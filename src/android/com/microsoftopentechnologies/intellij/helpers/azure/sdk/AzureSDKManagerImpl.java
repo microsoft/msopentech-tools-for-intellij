@@ -110,8 +110,8 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     @NotNull
     public static AzureSDKManager getManager() {
         if (apiManager == null) {
-            apiManager = new AzureSDKManagerImpl();
-            apiManagerADAuth = new AzureSDKManagerADAuthDecorator(apiManager);
+            apiManagerADAuth = new AzureSDKManagerADAuthDecorator(
+                    apiManager = new AzureSDKManagerImpl());
         }
 
         if (AzureRestAPIManagerImpl.getManager().getAuthenticationMode() == AzureAuthenticationMode.ActiveDirectory) {
