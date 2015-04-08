@@ -28,6 +28,8 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
+import com.microsoftopentechnologies.intellij.forms.QueueMessageForm;
+import com.microsoftopentechnologies.intellij.forms.ViewMessageForm;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerImpl;
@@ -106,7 +108,7 @@ public class QueueFileEditor implements FileEditor {
                         return;
 
                     if (me.getClickCount() == 2) {
-                        editMessageText();
+                        viewMessageText();
                     }
 
                     if (me.getButton() == 3) {
@@ -129,7 +131,7 @@ public class QueueFileEditor implements FileEditor {
             @Override
             public void keyPressed(KeyEvent keyEvent) {
                 if (keyEvent.getKeyCode() == KeyEvent.VK_ENTER) {
-                    editMessageText();
+                    viewMessageText();
                 }
             }
 
@@ -149,6 +151,53 @@ public class QueueFileEditor implements FileEditor {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 dequeueFirstMessage();
+            }
+        });
+
+        addMessageButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                QueueMessageForm queueMessageForm = new QueueMessageForm();
+                queueMessageForm.setProject(project);
+                queueMessageForm.setQueue(queue);
+                queueMessageForm.setStorageAccount(storageAccount);
+
+                queueMessageForm.setOnAddedMessage(new Runnable() {
+                    @Override
+                    public void run() {
+                        fillGrid();
+                    }
+                });
+
+                UIHelper.packAndCenterJDialog(queueMessageForm);
+
+                queueMessageForm.setVisible(true);
+            }
+        });
+
+
+        clearQueueButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                ProgressManager.getInstance().run(new Task.Backgroundable(project, "Clearing queue messages", false) {
+
+                    @Override
+                    public void run(@NotNull ProgressIndicator progressIndicator) {
+                        try {
+                            AzureSDKManagerImpl.getManager().clearQueue(storageAccount, queue);
+
+                            ApplicationManager.getApplication().invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    fillGrid();
+                                }
+                            });
+                        }
+                        catch (AzureCmdException e) {
+                            UIHelper.showException("Error clearing queue messages", e, "Service Explorer", false, true);
+                        }
+                    }
+                });
             }
         });
     }
@@ -176,7 +225,7 @@ public class QueueFileEditor implements FileEditor {
                                         UIHelper.readableFileSize(queueMessage.getContent().length()),
                                         new SimpleDateFormat().format(queueMessage.getInsertionTime().getTime()),
                                         new SimpleDateFormat().format(queueMessage.getExpirationTime().getTime()),
-                                        "0",
+                                        String.valueOf(queueMessage.getDequeueCount()),
                                 };
 
                                 model.addRow(values);
@@ -198,7 +247,7 @@ public class QueueFileEditor implements FileEditor {
         openMenu.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                editMessageText();
+                viewMessageText();
             }
         });
 
@@ -218,13 +267,31 @@ public class QueueFileEditor implements FileEditor {
     }
 
     private void dequeueFirstMessage() {
-        ProgressManager.getInstance().run(new Task.Backgroundable(project, "Dequeuing message", false) {
+        if(JOptionPane.showConfirmDialog(mainPanel,
+                "Are you sure you want to dequeue the first message in the queue?",
+                "Service Explorer",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.INFORMATION_MESSAGE) == JOptionPane.YES_OPTION) {
 
-            @Override
-            public void run(@NotNull ProgressIndicator progressIndicator) {
+            ProgressManager.getInstance().run(new Task.Backgroundable(project, "Dequeuing message", false) {
 
-            }
-        });
+                @Override
+                public void run(@NotNull ProgressIndicator progressIndicator) {
+                    try {
+                        AzureSDKManagerImpl.getManager().dequeueFirstQueueMessage(storageAccount, queue);
+
+                        ApplicationManager.getApplication().invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                fillGrid();
+                            }
+                        });
+                    } catch (AzureCmdException e) {
+                        UIHelper.showException("Error dequeuing messages", e, "Service Explorer", false, true);
+                    }
+                }
+            });
+        }
     }
 
     private QueueMessage getSelectedQueueMessage() {
@@ -232,8 +299,14 @@ public class QueueFileEditor implements FileEditor {
                 ? queueMessages.get(queueTable.getSelectedRow()) : null;
     }
 
-    private void editMessageText() {
-        throw new NotImplementedException();
+    private void viewMessageText() {
+
+        ViewMessageForm viewMessageForm = new ViewMessageForm();
+        viewMessageForm.setMessage(queueMessages.get(queueTable.getSelectedRow()).getContent());
+
+        UIHelper.packAndCenterJDialog(viewMessageForm);
+        viewMessageForm.setVisible(true);
+
     }
 
     public void setProject(Project project) {

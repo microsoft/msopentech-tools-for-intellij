@@ -16,15 +16,22 @@
 
 package com.microsoftopentechnologies.intellij.serviceexplorer.azure.storage;
 
+import com.microsoftopentechnologies.intellij.forms.CreateBlobContainerForm;
+import com.microsoftopentechnologies.intellij.forms.CreateQueueForm;
+import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerImpl;
 import com.microsoftopentechnologies.intellij.model.storage.Queue;
 import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
 import com.microsoftopentechnologies.intellij.serviceexplorer.Node;
+import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionEvent;
+import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionListener;
+
+import java.util.Map;
 
 public class QueueModule extends Node {
     private static final String QUEUES = "Queues";
-    private static final String ACTION_CREATE = "Create queue";
+    private static final String ACTION_CREATE = "Create new queue";
     private Node parent;
     private final StorageAccount storageAccount;
 
@@ -44,5 +51,33 @@ public class QueueModule extends Node {
         }
     }
 
+    @Override
+    protected Map<String, Class<? extends NodeActionListener>> initActions() {
 
+        addAction(ACTION_CREATE, new CreateQueueAction());
+
+        return null;
+    }
+
+    public class CreateQueueAction extends NodeActionListener {
+        @Override
+        public void actionPerformed(NodeActionEvent e) {
+            CreateQueueForm form = new CreateQueueForm();
+
+            form.setProject(getProject());
+            form.setStorageAccount(storageAccount);
+
+            form.setOnCreate(new Runnable() {
+                @Override
+                public void run() {
+                    parent.removeAllChildNodes();
+                    parent.load();
+                }
+            });
+
+            UIHelper.packAndCenterJDialog(form);
+            form.setVisible(true);
+
+        }
+    }
 }

@@ -73,6 +73,61 @@ public class ContainerNode extends Node {
     }
 
     private void openContainer() {
+
+        if(getOpenedFile() == null) {
+
+            LightVirtualFile containerVirtualFile = new LightVirtualFile(blobContainer.getName() + " [Container]");
+            containerVirtualFile.putUserData(BlobExplorerFileEditorProvider.CONTAINER_KEY, blobContainer);
+            containerVirtualFile.putUserData(BlobExplorerFileEditorProvider.STORAGE_KEY, storageAccount);
+
+            containerVirtualFile.setFileType(new FileType() {
+                @NotNull
+                @Override
+                public String getName() {
+                    return "BlobContainer";
+                }
+
+                @NotNull
+                @Override
+                public String getDescription() {
+                    return "BlobContainer";
+                }
+
+                @NotNull
+                @Override
+                public String getDefaultExtension() {
+                    return "";
+                }
+
+                @Nullable
+                @Override
+                public Icon getIcon() {
+                    return UIHelper.loadIcon("container.png");
+                }
+
+                @Override
+                public boolean isBinary() {
+                    return true;
+                }
+
+                @Override
+                public boolean isReadOnly() {
+                    return false;
+                }
+
+                @Override
+                public String getCharset(@NotNull VirtualFile virtualFile, @NotNull byte[] bytes) {
+                    return "UTF8";
+                }
+            });
+
+            FileEditorManager.getInstance(getProject()).openFile(containerVirtualFile, true, true);
+        }
+
+
+    }
+
+    private VirtualFile getOpenedFile() {
         FileEditorManager fileEditorManager = FileEditorManager.getInstance(getProject());
 
         for (VirtualFile editedFile : fileEditorManager.getOpenFiles()) {
@@ -83,60 +138,12 @@ public class ContainerNode extends Node {
                     && editedBlobContainer != null
                     && editedStorageAccount.getName().equals(storageAccount.getName())
                     && editedBlobContainer.getName().equals(blobContainer.getName())) {
-                return;
+                return editedFile;
             }
         }
 
-
-        LightVirtualFile containerVirtualFile = new LightVirtualFile(blobContainer.getName() + " [Container]");
-        containerVirtualFile.putUserData(BlobExplorerFileEditorProvider.CONTAINER_KEY, blobContainer);
-        containerVirtualFile.putUserData(BlobExplorerFileEditorProvider.STORAGE_KEY, storageAccount);
-
-        containerVirtualFile.setFileType(new FileType() {
-            @NotNull
-            @Override
-            public String getName() {
-                return "BlobContainer";
-            }
-
-            @NotNull
-            @Override
-            public String getDescription() {
-                return "BlobContainer";
-            }
-
-            @NotNull
-            @Override
-            public String getDefaultExtension() {
-                return "";
-            }
-
-            @Nullable
-            @Override
-            public Icon getIcon() {
-                return UIHelper.loadIcon("container.png");
-            }
-
-            @Override
-            public boolean isBinary() {
-                return true;
-            }
-
-            @Override
-            public boolean isReadOnly() {
-                return false;
-            }
-
-            @Override
-            public String getCharset(@NotNull VirtualFile virtualFile, @NotNull byte[] bytes) {
-                return "UTF8";
-            }
-        });
-
-        fileEditorManager.openFile(containerVirtualFile, true, true);
-
+        return null;
     }
-
 
     public class ViewBlobContainer extends NodeActionListener {
         @Override
@@ -159,6 +166,11 @@ public class ContainerNode extends Node {
                 null);
 
             if (optionDialog == JOptionPane.YES_OPTION) {
+
+                VirtualFile openedFile = getOpenedFile();
+                if(openedFile != null) {
+                    FileEditorManager.getInstance(getProject()).closeFile(openedFile);
+                }
 
                 ProgressManager.getInstance().run(new Task.Backgroundable(getProject(), "Creating blob container...", false) {
                     @Override
