@@ -469,18 +469,20 @@ public class AzureRestAPIHelper {
             if(isForSubscription) {
                 promptValue = PromptValue.attemptNone;
 
-                // if we are on OS X Mavericks or lesser then we use
-                // "refreshSession" because "attemptNone" causes Azure AD
-                // to throw errors; this causes the user to have to deal
-                // with the login screen multiple times but it at least
-                // works!
-                boolean isMac = System.getProperty("os.name").toLowerCase().contains("mac");
+                // if we are on Linux or OS X version Mavericks or lesser then we use
+                // "refreshSession" because "attemptNone" causes Azure AD to throw errors;
+                // this causes the user to have to deal with the login screen multiple
+                // times but it at least works!
+                String osName = System.getProperty("os.name").toLowerCase();
+                boolean isLinux = osName.contains("linux");
+                boolean isMac = osName.contains("mac");
                 String osVersion = System.getProperty("os.version");
                 String[] tokens = Iterables.toArray(Splitter.on('.').split(osVersion), String.class);
-                if (tokens != null && tokens.length > 1 && tokens[0].equals("10")) {
-                    if (Integer.parseInt(tokens[1]) < 10) {
-                        promptValue = PromptValue.refreshSession;
-                    }
+
+                if (isLinux ||
+                        (isMac && tokens != null && tokens.length > 1 &&
+                                tokens[0].equals("10") && Integer.parseInt(tokens[1]) < 10)) {
+                    promptValue = PromptValue.refreshSession;
                 }
             }
 
