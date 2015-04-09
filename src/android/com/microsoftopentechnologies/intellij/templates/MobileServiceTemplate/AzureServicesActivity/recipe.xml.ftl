@@ -19,7 +19,7 @@ limitations under the License.
 <#if includeMobileServices>
 	<dependency mavenUrl="com.google.code.gson:gson:2.3" />
 	<dependency mavenUrl="com.google.guava:guava:18.0" />
-	<dependency mavenUrl="com.microsoft.azure:azure-mobile-services-android-sdk:2.0.2-beta@aar" />
+	<dependency mavenUrl="com.microsoft.azure:azure-mobile-services-android-sdk:2.+@aar" />
 
 </#if>
 <#if includeNotificationHub>
