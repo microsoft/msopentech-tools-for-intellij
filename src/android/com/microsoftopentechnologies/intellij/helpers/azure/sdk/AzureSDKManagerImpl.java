@@ -1393,7 +1393,6 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
             CloudTableClient client = getCloudTableClient(storageAccount);
             String tableName = table.getName();
             String subscriptionId = storageAccount.getSubscriptionId();
-
             CloudTable cloudTable = client.getTableReference(tableName);
 
             TableQuery<DynamicTableEntity> tableQuery = TableQuery.from(DynamicTableEntity.class);
@@ -1406,60 +1405,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
             tro.setTablePayloadFormat(TablePayloadFormat.JsonFullMetadata);
 
             for (DynamicTableEntity dte : cloudTable.execute(tableQuery, tro, null)) {
-                String partitionKey = Strings.nullToEmpty(dte.getPartitionKey());
-                String rowKey = Strings.nullToEmpty(dte.getRowKey());
-                String eTag = Strings.nullToEmpty(dte.getEtag());
-
-                Calendar timestamp = new GregorianCalendar();
-
-                if (dte.getTimestamp() != null) {
-                    timestamp.setTime(dte.getTimestamp());
-                }
-
-                Map<String, Property> properties = new HashMap<String, Property>();
-
-
-                if (dte.getProperties() != null) {
-                    for (Entry<String, EntityProperty> entry : dte.getProperties().entrySet()) {
-                        if (entry.getKey() != null && entry.getValue() != null) {
-                            String key = entry.getKey();
-                            Property property;
-
-                            switch (entry.getValue().getEdmType()) {
-                                case BOOLEAN:
-                                    property = new Property(entry.getValue().getValueAsBooleanObject());
-                                    break;
-                                case DATE_TIME:
-                                    Calendar value = new GregorianCalendar();
-                                    value.setTime(entry.getValue().getValueAsDate());
-                                    property = new Property(value);
-                                    break;
-                                case DOUBLE:
-                                    property = new Property(entry.getValue().getValueAsDoubleObject());
-                                    break;
-                                case GUID:
-                                    property = new Property(entry.getValue().getValueAsUUID());
-                                    break;
-                                case INT32:
-                                    property = new Property(entry.getValue().getValueAsIntegerObject());
-                                    break;
-                                case INT64:
-                                    property = new Property(entry.getValue().getValueAsLongObject());
-                                    break;
-                                case STRING:
-                                    property = new Property(entry.getValue().getValueAsString());
-                                    break;
-                                default:
-                                    property = new Property(entry.getValue().getValueAsString());
-                                    break;
-                            }
-
-                            properties.put(key, property);
-                        }
-                    }
-                }
-
-                teList.add(new TableEntity(partitionKey, rowKey, tableName, eTag, timestamp, properties, subscriptionId));
+                teList.add(getTableEntity(tableName, dte, subscriptionId));
             }
 
             return teList;
@@ -1477,67 +1423,17 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         try {
             CloudTableClient client = getCloudTableClient(storageAccount);
             String subscriptionId = storageAccount.getSubscriptionId();
-
             CloudTable cloudTable = client.getTableReference(tableName);
 
-            DynamicTableEntity entity = new DynamicTableEntity(partitionKey, rowKey);
-
-            HashMap<String, EntityProperty> entityProperties = new HashMap<String, EntityProperty>();
-
-            for (Entry<String, Property> entry : properties.entrySet()) {
-                String key = entry.getKey();
-                Property property = entry.getValue();
-
-                EntityProperty entityProperty;
-
-                switch (property.getType()) {
-                    case Boolean:
-                        entityProperty = new EntityProperty(property.getValueAsBoolean());
-                        break;
-                    case Calendar:
-                        entityProperty = new EntityProperty(property.getValueAsCalendar().getTime());
-                        break;
-                    case Double:
-                        entityProperty = new EntityProperty(property.getValueAsDouble());
-                        break;
-                    case Uuid:
-                        entityProperty = new EntityProperty(property.getValueAsUuid());
-                        break;
-                    case Integer:
-                        entityProperty = new EntityProperty(property.getValueAsInteger());
-                        break;
-                    case Long:
-                        entityProperty = new EntityProperty(property.getValueAsLong());
-                        break;
-                    case String:
-                        entityProperty = new EntityProperty(property.getValueAsString());
-                        break;
-                    default:
-                        entityProperty = new EntityProperty(property.getValueAsString());
-                        break;
-                }
-
-                entityProperties.put(key, entityProperty);
-            }
-
-            entity.setProperties(entityProperties);
+            DynamicTableEntity entity = getDynamicTableEntity(partitionKey, rowKey, properties);
 
             TableRequestOptions tro = new TableRequestOptions();
             tro.setTablePayloadFormat(TablePayloadFormat.JsonFullMetadata);
 
             TableResult result = cloudTable.execute(TableOperation.insert(entity, true), tro, null);
+            DynamicTableEntity resultEntity = result.getResultAsType();
 
-            String eTag = Strings.nullToEmpty(result.getEtag());
-
-            Calendar timestamp = new GregorianCalendar();
-
-            if (result.getProperties() != null && result.getProperties().containsKey("Timestamp")) {
-                EntityProperty entityTimestamp = result.getProperties().get("Timestamp");
-
-                timestamp.setTime(entityTimestamp.getValueAsDate());
-            }
-
-            return new TableEntity(partitionKey, rowKey, tableName, eTag, timestamp, properties, subscriptionId);
+            return getTableEntity(tableName, resultEntity, subscriptionId);
         } catch (Throwable t) {
             throw new AzureCmdException("Error creating the Table Entity", t);
         }
@@ -2670,6 +2566,115 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
                 return parts[parts.length - 1];
             }
         }
+    }
+
+    @NotNull
+    private static TableEntity getTableEntity(@NotNull String tableName,
+                                              @NotNull DynamicTableEntity dte,
+                                              @NotNull String subscriptionId) {
+        String partitionKey = Strings.nullToEmpty(dte.getPartitionKey());
+        String rowKey = Strings.nullToEmpty(dte.getRowKey());
+        String eTag = Strings.nullToEmpty(dte.getEtag());
+
+        Calendar timestamp = new GregorianCalendar();
+
+        if (dte.getTimestamp() != null) {
+            timestamp.setTime(dte.getTimestamp());
+        }
+
+        Map<String, Property> properties = new HashMap<String, Property>();
+
+        if (dte.getProperties() != null) {
+            for (Entry<String, EntityProperty> entry : dte.getProperties().entrySet()) {
+                if (entry.getKey() != null && entry.getValue() != null) {
+                    String key = entry.getKey();
+                    Property property;
+
+                    switch (entry.getValue().getEdmType()) {
+                        case BOOLEAN:
+                            property = new Property(entry.getValue().getValueAsBooleanObject());
+                            break;
+                        case DATE_TIME:
+                            Calendar value = new GregorianCalendar();
+                            value.setTime(entry.getValue().getValueAsDate());
+                            property = new Property(value);
+                            break;
+                        case DOUBLE:
+                            property = new Property(entry.getValue().getValueAsDoubleObject());
+                            break;
+                        case GUID:
+                            property = new Property(entry.getValue().getValueAsUUID());
+                            break;
+                        case INT32:
+                            property = new Property(entry.getValue().getValueAsIntegerObject());
+                            break;
+                        case INT64:
+                            property = new Property(entry.getValue().getValueAsLongObject());
+                            break;
+                        case STRING:
+                            property = new Property(entry.getValue().getValueAsString());
+                            break;
+                        default:
+                            property = new Property(entry.getValue().getValueAsString());
+                            break;
+                    }
+
+                    properties.put(key, property);
+                }
+            }
+        }
+
+        return new TableEntity(partitionKey, rowKey, tableName, eTag, timestamp, properties, subscriptionId);
+    }
+
+    @NotNull
+    private static DynamicTableEntity getDynamicTableEntity(@NotNull String partitionKey,
+                                                            @NotNull String rowKey,
+                                                            @NotNull Map<String, Property> properties)
+            throws AzureCmdException {
+        DynamicTableEntity entity = new DynamicTableEntity(partitionKey, rowKey);
+
+        HashMap<String, EntityProperty> entityProperties = new HashMap<String, EntityProperty>();
+
+        for (Entry<String, Property> entry : properties.entrySet()) {
+            String key = entry.getKey();
+            Property property = entry.getValue();
+
+            EntityProperty entityProperty;
+
+            switch (property.getType()) {
+                case Boolean:
+                    entityProperty = new EntityProperty(property.getValueAsBoolean());
+                    break;
+                case Calendar:
+                    entityProperty = new EntityProperty(property.getValueAsCalendar().getTime());
+                    break;
+                case Double:
+                    entityProperty = new EntityProperty(property.getValueAsDouble());
+                    break;
+                case Uuid:
+                    entityProperty = new EntityProperty(property.getValueAsUuid());
+                    break;
+                case Integer:
+                    entityProperty = new EntityProperty(property.getValueAsInteger());
+                    break;
+                case Long:
+                    entityProperty = new EntityProperty(property.getValueAsLong());
+                    break;
+                case String:
+                    entityProperty = new EntityProperty(property.getValueAsString());
+                    break;
+                default:
+                    entityProperty = new EntityProperty(property.getValueAsString());
+                    break;
+            }
+
+            entityProperties.put(key, entityProperty);
+        }
+
+        entity.setProperties(entityProperties);
+
+        return entity;
     }
 
     @NotNull
