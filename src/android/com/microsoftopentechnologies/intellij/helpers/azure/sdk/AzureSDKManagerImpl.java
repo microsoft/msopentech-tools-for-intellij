@@ -78,6 +78,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.MessageDigest;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
 
 public class AzureSDKManagerImpl implements AzureSDKManager {
@@ -1419,7 +1420,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
 
 
                 if (dte.getProperties() != null) {
-                    for (Map.Entry<String, EntityProperty> entry : dte.getProperties().entrySet()) {
+                    for (Entry<String, EntityProperty> entry : dte.getProperties().entrySet()) {
                         if (entry.getKey() != null && entry.getValue() != null) {
                             String key = entry.getKey();
                             Property property;
@@ -1464,6 +1465,81 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
             return teList;
         } catch (Throwable t) {
             throw new AzureCmdException("Error retrieving the Table Entity list", t);
+        }
+    }
+
+    @NotNull
+    @Override
+    public TableEntity createTableEntity(@NotNull StorageAccount storageAccount, @NotNull String tableName,
+                                         @NotNull String partitionKey, @NotNull String rowKey,
+                                         @NotNull Map<String, Property> properties)
+            throws AzureCmdException {
+        try {
+            CloudTableClient client = getCloudTableClient(storageAccount);
+            String subscriptionId = storageAccount.getSubscriptionId();
+
+            CloudTable cloudTable = client.getTableReference(tableName);
+
+            DynamicTableEntity entity = new DynamicTableEntity(partitionKey, rowKey);
+
+            HashMap<String, EntityProperty> entityProperties = new HashMap<String, EntityProperty>();
+
+            for (Entry<String, Property> entry : properties.entrySet()) {
+                String key = entry.getKey();
+                Property property = entry.getValue();
+
+                EntityProperty entityProperty;
+
+                switch (property.getType()) {
+                    case Boolean:
+                        entityProperty = new EntityProperty(property.getValueAsBoolean());
+                        break;
+                    case Calendar:
+                        entityProperty = new EntityProperty(property.getValueAsCalendar().getTime());
+                        break;
+                    case Double:
+                        entityProperty = new EntityProperty(property.getValueAsDouble());
+                        break;
+                    case Uuid:
+                        entityProperty = new EntityProperty(property.getValueAsUuid());
+                        break;
+                    case Integer:
+                        entityProperty = new EntityProperty(property.getValueAsInteger());
+                        break;
+                    case Long:
+                        entityProperty = new EntityProperty(property.getValueAsLong());
+                        break;
+                    case String:
+                        entityProperty = new EntityProperty(property.getValueAsString());
+                        break;
+                    default:
+                        entityProperty = new EntityProperty(property.getValueAsString());
+                        break;
+                }
+
+                entityProperties.put(key, entityProperty);
+            }
+
+            entity.setProperties(entityProperties);
+
+            TableRequestOptions tro = new TableRequestOptions();
+            tro.setTablePayloadFormat(TablePayloadFormat.JsonFullMetadata);
+
+            TableResult result = cloudTable.execute(TableOperation.insert(entity, true), tro, null);
+
+            String eTag = Strings.nullToEmpty(result.getEtag());
+
+            Calendar timestamp = new GregorianCalendar();
+
+            if (result.getProperties() != null && result.getProperties().containsKey("Timestamp")) {
+                EntityProperty entityTimestamp = result.getProperties().get("Timestamp");
+
+                timestamp.setTime(entityTimestamp.getValueAsDate());
+            }
+
+            return new TableEntity(partitionKey, rowKey, tableName, eTag, timestamp, properties, subscriptionId);
+        } catch (Throwable t) {
+            throw new AzureCmdException("Error creating the Table Entity", t);
         }
     }
 

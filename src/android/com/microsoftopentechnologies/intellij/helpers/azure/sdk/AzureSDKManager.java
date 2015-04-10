@@ -18,12 +18,14 @@ package com.microsoftopentechnologies.intellij.helpers.azure.sdk;
 import com.microsoftopentechnologies.intellij.helpers.CallableSingleArg;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.model.storage.*;
+import com.microsoftopentechnologies.intellij.model.storage.TableEntity.Property;
 import com.microsoftopentechnologies.intellij.model.vm.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
+import java.util.Map;
 
 public interface AzureSDKManager {
     @NotNull
@@ -179,5 +181,11 @@ public interface AzureSDKManager {
     @NotNull
     List<TableEntity> getTableEntities(@NotNull StorageAccount storageAccount, @NotNull Table table,
                                        @NotNull String filter)
+            throws AzureCmdException;
+
+    @NotNull
+    TableEntity createTableEntity(@NotNull StorageAccount storageAccount, @NotNull String tableName,
+                                  @NotNull String partitionKey, @NotNull String rowKey,
+                                  @NotNull Map<String, Property> properties)
             throws AzureCmdException;
 }
