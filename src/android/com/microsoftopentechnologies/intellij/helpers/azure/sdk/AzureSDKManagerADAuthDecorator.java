@@ -27,6 +27,7 @@ import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIHel
 import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManager;
 import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManagerImpl;
 import com.microsoftopentechnologies.intellij.model.storage.*;
+import com.microsoftopentechnologies.intellij.model.storage.TableEntity.Property;
 import com.microsoftopentechnologies.intellij.model.vm.*;
 import org.jetbrains.annotations.NotNull;
 
@@ -34,6 +35,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.util.List;
+import java.util.Map;
 
 public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
     protected AzureSDKManager sdkManager;
@@ -630,6 +632,20 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
             @Override
             public List<TableEntity> run() throws AzureCmdException {
                 return sdkManager.getTableEntities(storageAccount, table, filter);
+            }
+        });
+    }
+
+    @NotNull
+    @Override
+    public TableEntity createTableEntity(@NotNull final StorageAccount storageAccount, @NotNull final String tableName,
+                                         @NotNull final String partitionKey, @NotNull final String rowKey,
+                                         @NotNull final Map<String, Property> properties)
+            throws AzureCmdException {
+        return runWithRetry(storageAccount.getSubscriptionId(), new Func0<TableEntity>() {
+            @Override
+            public TableEntity run() throws AzureCmdException {
+                return sdkManager.createTableEntity(storageAccount, tableName, partitionKey, rowKey, properties);
             }
         });
     }
