@@ -66,13 +66,13 @@ public class TableNode extends Node {
                 @NotNull
                 @Override
                 public String getName() {
-                    return "BlobContainer";
+                    return "Table";
                 }
 
                 @NotNull
                 @Override
                 public String getDescription() {
-                    return "BlobContainer";
+                    return "Table";
                 }
 
                 @NotNull

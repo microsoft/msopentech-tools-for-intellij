@@ -67,13 +67,13 @@ public class QueueNode extends Node {
                 @NotNull
                 @Override
                 public String getName() {
-                    return "BlobContainer";
+                    return "Queue";
                 }
 
                 @NotNull
                 @Override
                 public String getDescription() {
-                    return "BlobContainer";
+                    return "Queue";
                 }
 
                 @NotNull
