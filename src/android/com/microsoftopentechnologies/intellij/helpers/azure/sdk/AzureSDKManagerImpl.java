@@ -62,6 +62,7 @@ import com.microsoftopentechnologies.intellij.model.storage.*;
 import com.microsoftopentechnologies.intellij.model.storage.Queue;
 import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
 import com.microsoftopentechnologies.intellij.model.storage.TableEntity;
+import com.microsoftopentechnologies.intellij.model.storage.TableEntity.Property;
 import com.microsoftopentechnologies.intellij.model.vm.*;
 import com.microsoftopentechnologies.intellij.model.vm.CloudService.Deployment;
 import com.microsoftopentechnologies.intellij.model.vm.VirtualMachine.Status;
@@ -1414,19 +1415,46 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
                     timestamp.setTime(dte.getTimestamp());
                 }
 
-                Map<String, String> properties = new HashMap<String, String>();
+                Map<String, Property> properties = new HashMap<String, Property>();
 
 
                 if (dte.getProperties() != null) {
                     for (Map.Entry<String, EntityProperty> entry : dte.getProperties().entrySet()) {
-                        String key = Strings.nullToEmpty(entry.getKey());
-                        String value = "";
+                        if (entry.getKey() != null && entry.getValue() != null) {
+                            String key = entry.getKey();
+                            Property property;
 
-                        if (entry.getValue() != null) {
-                            value = Strings.nullToEmpty(entry.getValue().getValueAsString());
+                            switch (entry.getValue().getEdmType()) {
+                                case BOOLEAN:
+                                    property = new Property(entry.getValue().getValueAsBooleanObject());
+                                    break;
+                                case DATE_TIME:
+                                    Calendar value = new GregorianCalendar();
+                                    value.setTime(entry.getValue().getValueAsDate());
+                                    property = new Property(value);
+                                    break;
+                                case DOUBLE:
+                                    property = new Property(entry.getValue().getValueAsDoubleObject());
+                                    break;
+                                case GUID:
+                                    property = new Property(entry.getValue().getValueAsUUID());
+                                    break;
+                                case INT32:
+                                    property = new Property(entry.getValue().getValueAsIntegerObject());
+                                    break;
+                                case INT64:
+                                    property = new Property(entry.getValue().getValueAsLongObject());
+                                    break;
+                                case STRING:
+                                    property = new Property(entry.getValue().getValueAsString());
+                                    break;
+                                default:
+                                    property = new Property(entry.getValue().getValueAsString());
+                                    break;
+                            }
+
+                            properties.put(key, property);
                         }
-
-                        properties.put(key, value);
                     }
                 }
 
