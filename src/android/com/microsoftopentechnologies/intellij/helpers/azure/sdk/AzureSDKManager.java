@@ -188,4 +188,12 @@ public interface AzureSDKManager {
                                   @NotNull String partitionKey, @NotNull String rowKey,
                                   @NotNull Map<String, Property> properties)
             throws AzureCmdException;
+
+    @NotNull
+    TableEntity updateTableEntity(@NotNull StorageAccount storageAccount, @NotNull TableEntity tableEntity)
+            throws AzureCmdException;
+
+    @NotNull
+    void deleteTableEntity(@NotNull StorageAccount storageAccount, @NotNull TableEntity tableEntity)
+            throws AzureCmdException;
 }
