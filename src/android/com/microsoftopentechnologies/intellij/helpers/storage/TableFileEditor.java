@@ -32,6 +32,7 @@ import com.microsoftopentechnologies.intellij.forms.TableEntityForm;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerImpl;
+import com.microsoftopentechnologies.intellij.model.storage.QueueMessage;
 import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
 import com.microsoftopentechnologies.intellij.model.storage.Table;
 import com.microsoftopentechnologies.intellij.model.storage.TableEntity;
@@ -42,8 +43,7 @@ import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 import java.beans.PropertyChangeListener;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -91,22 +91,20 @@ public class TableFileEditor implements FileEditor {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
 
-                final TableEntity tableEntity = new TableEntity("", "", table.getName(), "", Calendar.getInstance(), new HashMap<String, String>(), "");
-
-                //Temp
-                tableEntity.getProperties().put("Lla","kdkdk");
-
-                TableEntityForm form = new TableEntityForm();
+                final TableEntityForm form = new TableEntityForm();
                 form.setProject(project);
+                form.setTableName(table.getName());
                 form.setStorageAccount(storageAccount);
-                form.setTableEntity(tableEntity);
+                form.setTableEntity(null);
 
                 form.setTitle("Add Entity");
 
-                form.setOnAddedEntity(new Runnable() {
+                form.setOnFinish(new Runnable() {
                     @Override
                     public void run() {
-                        fillGrid();
+                        tableEntities.add(form.getTableEntity());
+
+                        refreshGrid();
                     }
                 });
 
@@ -123,6 +121,88 @@ public class TableFileEditor implements FileEditor {
                 deleteButton.setEnabled(entitiesTable.getSelectedRows().length > 0);
             }
         });
+
+        entitiesTable.addMouseListener(new MouseAdapter() {
+            public void mousePressed(MouseEvent me) {
+                if (me.getComponent() instanceof JTable) {
+                    if (me.getClickCount() == 2) {
+                        editEntity();
+                    }
+
+                    if (me.getButton() == 3) {
+                        JPopupMenu popup = createTablePopUp();
+                        popup.show(me.getComponent(), me.getX(), me.getY());
+                    }
+                }
+            }
+        });
+
+        entitiesTable.addKeyListener(new KeyListener() {
+            @Override
+            public void keyTyped(KeyEvent keyEvent) {
+            }
+
+            @Override
+            public void keyPressed(KeyEvent keyEvent) {
+                if (keyEvent.getKeyCode() == KeyEvent.VK_ENTER) {
+                    editEntity();
+                }
+            }
+
+            @Override
+            public void keyReleased(KeyEvent keyEvent) {
+            }
+        });
+    }
+
+    private JPopupMenu createTablePopUp() {
+        JPopupMenu menu = new JPopupMenu();
+
+        JMenuItem editMenu = new JMenuItem("Edit");
+        editMenu.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                editEntity();
+            }
+        });
+
+        JMenuItem deleteMenu = new JMenuItem("Delete");
+        deleteMenu.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                deleteSelection();
+            }
+        });
+
+        menu.add(editMenu);
+        menu.add(deleteMenu);
+
+        return menu;
+
+    }
+
+    private void editEntity() {
+        final TableEntity selectedEntity = getSelectedEntities()[0];
+
+        final TableEntityForm form = new TableEntityForm();
+        form.setProject(project);
+        form.setTableName(table.getName());
+        form.setStorageAccount(storageAccount);
+        form.setTableEntity(selectedEntity);
+
+        form.setTitle("Edit Entity");
+
+
+        form.setOnFinish(new Runnable() {
+            @Override
+            public void run() {
+                tableEntities.add(entitiesTable.getSelectedRow(), form.getTableEntity());
+            }
+        });
+
+        UIHelper.packAndCenterJDialog(form);
+
+        form.setVisible(true);
     }
 
     public void fillGrid() {
@@ -136,56 +216,61 @@ public class TableFileEditor implements FileEditor {
                 try {
                     tableEntities = AzureSDKManagerImpl.getManager().getTableEntities(storageAccount, table, queryText);
 
-                    ApplicationManager.getApplication().invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-
-                            Map<String, List<String>> columnData = new LinkedHashMap<String, List<String>>();
-                            columnData.put(PARTITION_KEY, new ArrayList<String>());
-                            columnData.put(ROW_KEY, new ArrayList<String>());
-                            columnData.put(TIMESTAMP, new ArrayList<String>());
-
-                            for (TableEntity tableEntity : tableEntities) {
-                                columnData.get(PARTITION_KEY).add(tableEntity.getPartitionKey());
-                                columnData.get(ROW_KEY).add(tableEntity.getRowKey());
-                                columnData.get(TIMESTAMP).add(new SimpleDateFormat().format(tableEntity.getTimestamp().getTime()));
-
-                                for (String entityColumn : tableEntity.getProperties().keySet()) {
-                                    if (!columnData.keySet().contains(entityColumn)) {
-                                        columnData.put(entityColumn, new ArrayList<String>());
-                                    }
-                                }
-
-                            }
-
-                            for (TableEntity tableEntity : tableEntities) {
-                                for (String column : columnData.keySet()) {
-                                    columnData.get(column).add(tableEntity.getProperties().containsKey(column)
-                                            ? tableEntity.getProperties().get(column)
-                                            : "");
-                                }
-                            }
-
-                            DefaultTableModel model = new DefaultTableModel(){
-                                @Override
-                                public boolean isCellEditable(int i, int i1) {
-                                    return false;
-                                }
-                            };
-
-                            for (String column : columnData.keySet()) {
-                                model.addColumn(column, columnData.get(column).toArray());
-                            }
-
-                            entitiesTable.setModel(model);
-                        }
-                    });
-
+                    refreshGrid();
                 } catch (AzureCmdException e) {
                     UIHelper.showException("Error querying entities", e, "Service Explorer", false, true);
                 }
             }
         });
+    }
+
+    private void refreshGrid() {
+        ApplicationManager.getApplication().invokeLater(new Runnable() {
+            @Override
+            public void run() {
+
+                Map<String, List<String>> columnData = new LinkedHashMap<String, List<String>>();
+                columnData.put(PARTITION_KEY, new ArrayList<String>());
+                columnData.put(ROW_KEY, new ArrayList<String>());
+                columnData.put(TIMESTAMP, new ArrayList<String>());
+
+                for (TableEntity tableEntity : tableEntities) {
+                    columnData.get(PARTITION_KEY).add(tableEntity.getPartitionKey());
+                    columnData.get(ROW_KEY).add(tableEntity.getRowKey());
+                    columnData.get(TIMESTAMP).add(new SimpleDateFormat().format(tableEntity.getTimestamp().getTime()));
+
+                    for (String entityColumn : tableEntity.getProperties().keySet()) {
+                        if (!columnData.keySet().contains(entityColumn)) {
+                            columnData.put(entityColumn, new ArrayList<String>());
+                        }
+                    }
+
+                }
+
+                for (TableEntity tableEntity : tableEntities) {
+                    for (String column : columnData.keySet()) {
+                        columnData.get(column).add(tableEntity.getProperties().containsKey(column)
+                                ? getFormattedProperty(tableEntity.getProperties().get(column))
+                                : "");
+                    }
+                }
+
+
+                DefaultTableModel model = new DefaultTableModel() {
+                    @Override
+                    public boolean isCellEditable(int i, int i1) {
+                        return false;
+                    }
+                };
+
+                for (String column : columnData.keySet()) {
+                    model.addColumn(column, columnData.get(column).toArray());
+                }
+
+                entitiesTable.setModel(model);
+            }
+        });
+
     }
 
     private void deleteSelection(){
@@ -254,6 +339,29 @@ public class TableFileEditor implements FileEditor {
         return selectedEntities.toArray(new TableEntity[selectedEntities.size()]);
     }
 
+    @NotNull
+    public static String getFormattedProperty(@NotNull TableEntity.Property property) {
+        try {
+            switch (property.getType()) {
+                case Boolean:
+                    return property.getValueAsBoolean().toString();
+                case Calendar:
+                    return new SimpleDateFormat().format(property.getValueAsCalendar().getTime());
+                case Double:
+                    return property.getValueAsDouble().toString();
+                case Integer:
+                    return property.getValueAsInteger().toString();
+                case Long:
+                    return property.getValueAsLong().toString();
+                case Uuid:
+                    return property.getValueAsUuid().toString();
+                case String:
+                    return property.getValueAsString();
+            }
+        } catch (AzureCmdException ignored) {}
+
+        return "";
+    }
 
     public void setStorageAccount(StorageAccount storageAccount) {
         this.storageAccount = storageAccount;

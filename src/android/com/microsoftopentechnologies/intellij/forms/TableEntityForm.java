@@ -1,19 +1,31 @@
 package com.microsoftopentechnologies.intellij.forms;
 
+import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.progress.ProgressManager;
+import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBoxTableRenderer;
+import com.intellij.util.text.DateFormatUtil;
 import com.intellij.util.ui.table.ComboBoxTableCellEditor;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
+import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
+import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerImpl;
 import com.microsoftopentechnologies.intellij.helpers.storage.TableFileEditor;
 import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
 import com.microsoftopentechnologies.intellij.model.storage.TableEntity;
+import org.apache.commons.lang.time.DateFormatUtils;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableModel;
 import java.awt.*;
 import java.awt.event.*;
+import java.text.DateFormat;
+import java.util.Calendar;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.UUID;
 
 public class TableEntityForm extends JDialog {
     private JPanel contentPane;
@@ -25,12 +37,14 @@ public class TableEntityForm extends JDialog {
     private Project project;
     private TableEntity tableEntity;
     private StorageAccount storageAccount;
-    private Runnable onAddedEntity;
+    private Runnable onFinish;
+    private String tableName;
 
     public TableEntityForm() {
         setContentPane(contentPane);
         setModal(true);
         getRootPane().setDefaultButton(buttonOK);
+        setResizable(false);
 
         DefaultTableModel model = new DefaultTableModel(){
 
@@ -52,7 +66,7 @@ public class TableEntityForm extends JDialog {
         propertiesTable.getColumn("").setCellRenderer(new DeleteButtonRenderer());
         propertiesTable.getColumn("").setMaxWidth(30);
         propertiesTable.getColumn("").setMinWidth(30);
-        propertiesTable.getColumn("Type").setCellRenderer(new ComboBoxTableRenderer<Types>(Types.values()));
+        propertiesTable.getColumn("Type").setCellRenderer(new ComboBoxTableRenderer<TableEntity.PropertyType>(TableEntity.PropertyType.values()));
         propertiesTable.getColumn("Type").setCellEditor(new ComboBoxTableCellEditor());
 
         buttonOK.addActionListener(new ActionListener() {
@@ -78,6 +92,19 @@ public class TableEntityForm extends JDialog {
                 onCancel();
             }
         }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+
+        addPropertyButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                final DefaultTableModel model = (DefaultTableModel) propertiesTable.getModel();
+                model.addRow(new Object[]{
+                        "",
+                        "",
+                        TableEntity.PropertyType.String,
+                        ""
+                });
+            }
+        });
     }
 
     public void setTableEntity(TableEntity tableEntity) {
@@ -87,31 +114,100 @@ public class TableEntityForm extends JDialog {
         model.addRow(new Object[]{
                 "",
                 TableFileEditor.PARTITION_KEY,
-                Types.String,
-                tableEntity.getPartitionKey()
+                TableEntity.PropertyType.String,
+                tableEntity == null ? "" : tableEntity.getPartitionKey()
         });
 
         model.addRow(new Object[]{
                 "",
                 TableFileEditor.ROW_KEY,
-                Types.String,
-                tableEntity.getRowKey()
+                TableEntity.PropertyType.String,
+                tableEntity == null ? "" : tableEntity.getRowKey()
         });
 
-        for (String propertyName : tableEntity.getProperties().keySet()) {
-            model.addRow(new Object[] {
-                    "",
-                    propertyName,
-                    Types.String,
-                    tableEntity.getProperties().get(propertyName)
-            });
+        if(tableEntity != null) {
+            for (String propertyName : tableEntity.getProperties().keySet()) {
+                model.addRow(new Object[]{
+                        "",
+                        propertyName,
+                        tableEntity.getProperties().get(propertyName).getType(),
+                        TableFileEditor.getFormattedProperty(tableEntity.getProperties().get(propertyName))
+                });
+            }
+        }
+    }
+
+    private void onOK() {
+
+        final TableModel model = propertiesTable.getModel();
+        final String partitionKey =  model.getValueAt(0, 3).toString();
+        final String rowKey =  model.getValueAt(1, 3).toString();
+        final Map<String, TableEntity.Property> properties = new LinkedHashMap<String, TableEntity.Property>();
+
+        for(int row = 2; row != model.getRowCount(); row++) {
+            TableEntity.PropertyType propertyType = (TableEntity.PropertyType) model.getValueAt(row, 2);
+            String name = model.getValueAt(row, 1).toString();
+            String value = model.getValueAt(row, 3).toString();
+
+            properties.put(name, getProperty(value, propertyType));
         }
 
+        ProgressManager.getInstance().run(new Task.Backgroundable(project, tableEntity == null ? "Creating entity" : "Updating entity") {
+            @Override
+            public void run(ProgressIndicator progressIndicator) {
+                progressIndicator.setIndeterminate(true);
+
+                try {
+                    if (tableEntity == null) {
+                        ;
+                        tableEntity = AzureSDKManagerImpl.getManager().createTableEntity(storageAccount,
+                                tableName,
+                                partitionKey,
+                                rowKey,
+                                properties);
+                    }
+
+
+                    onFinish.run();
+
+                } catch (AzureCmdException e) {
+                    UIHelper.showException("Error creating entity", e, "Service Explorer", false, true);
+                }
+            }
+        });
+
+        dispose();
     }
 
 
-    private void onOK() {
-        dispose();
+
+    private TableEntity.Property getProperty(String value, TableEntity.PropertyType propertyType) {
+        try{
+            switch(propertyType) {
+                case Boolean:
+                    return new TableEntity.Property(Boolean.parseBoolean(value));
+                case Integer:
+                    return new TableEntity.Property(Integer.parseInt(value));
+                case Double:
+                    return new TableEntity.Property(Double.parseDouble(value));
+                case Calendar:
+                    DateFormat format = DateFormat.getDateTimeInstance(
+                            DateFormat.MEDIUM, DateFormat.SHORT);
+
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.setTime(format.parse(value));
+
+                    return new TableEntity.Property(calendar);
+                case Uuid:
+                    return new TableEntity.Property(UUID.fromString(value));
+                case Long:
+                    return new TableEntity.Property(Long.parseLong(value));
+                default:
+                    return new TableEntity.Property(value);
+            }
+        } catch (Exception ex) {
+            return null;
+        }
     }
 
     private void onCancel() {
@@ -126,10 +222,16 @@ public class TableEntityForm extends JDialog {
         this.storageAccount = storageAccount;
     }
 
-    public void setOnAddedEntity(Runnable onAddedEntity) {
-        this.onAddedEntity = onAddedEntity;
+    public void setOnFinish(Runnable onFinish) {
+        this.onFinish = onFinish;
+    }
+    public TableEntity getTableEntity() {
+        return tableEntity;
     }
 
+    public void setTableName(String tableName) {
+        this.tableName = tableName;
+    }
 
     private class DeleteButtonRenderer extends DefaultTableCellRenderer {
         JButton deleteButton;
@@ -150,10 +252,5 @@ public class TableEntityForm extends JDialog {
         public Component getTableCellRendererComponent(JTable jTable, Object o, boolean b, boolean b1, int row, int i1) {
             return (row < 2) ? super.getTableCellRendererComponent(jTable, o, b, b1, row, i1) : deleteButton;
         }
-    }
-
-    public enum Types {
-        String,
-        Int_32
     }
 }
