@@ -435,9 +435,9 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
 
             return saList;
         } catch (ExecutionException e) {
-            throw new AzureCmdException("Error retrieving the VM list", e.getCause());
+            throw new AzureCmdException("Error retrieving Storage Accounts list", e.getCause());
         } catch (Throwable t) {
-            throw new AzureCmdException("Error retrieving the VM list", t);
+            throw new AzureCmdException("Error retrieving Storage Accounts list", t);
         } finally {
             if (client != null) {
                 try {
@@ -582,9 +582,9 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
 
             return vnList;
         } catch (ExecutionException e) {
-            throw new AzureCmdException("Error retrieving the VM list", e.getCause());
+            throw new AzureCmdException("Error retrieving Virtual Networks list", e.getCause());
         } catch (Throwable t) {
-            throw new AzureCmdException("Error retrieving the VM list", t);
+            throw new AzureCmdException("Error retrieving Virtual Networks list", t);
         } finally {
             if (client != null) {
                 try {
