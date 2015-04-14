@@ -1440,6 +1440,47 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     }
 
     @NotNull
+    @Override
+    public TableEntity updateTableEntity(@NotNull StorageAccount storageAccount, @NotNull TableEntity tableEntity)
+            throws AzureCmdException {
+        try {
+            CloudTableClient client = getCloudTableClient(storageAccount);
+            CloudTable cloudTable = client.getTableReference(tableEntity.getTableName());
+
+            DynamicTableEntity entity = getDynamicTableEntity(tableEntity);
+
+            TableRequestOptions tro = new TableRequestOptions();
+            tro.setTablePayloadFormat(TablePayloadFormat.JsonFullMetadata);
+
+            TableResult result = cloudTable.execute(TableOperation.replace(entity), tro, null);
+            //// DynamicTableEntity resultEntity = result.getResultAsType();
+
+            return tableEntity;
+        } catch (Throwable t) {
+            throw new AzureCmdException("Error updating the Table Entity", t);
+        }
+    }
+
+    @NotNull
+    @Override
+    public void deleteTableEntity(@NotNull StorageAccount storageAccount, @NotNull TableEntity tableEntity)
+            throws AzureCmdException {
+        try {
+            CloudTableClient client = getCloudTableClient(storageAccount);
+            CloudTable cloudTable = client.getTableReference(tableEntity.getTableName());
+
+            DynamicTableEntity entity = getDynamicTableEntity(tableEntity);
+
+            TableRequestOptions tro = new TableRequestOptions();
+            tro.setTablePayloadFormat(TablePayloadFormat.JsonFullMetadata);
+
+            cloudTable.execute(TableOperation.delete(entity), tro, null);
+        } catch (Throwable t) {
+            throw new AzureCmdException("Error deleting the Table Entity", t);
+        }
+    }
+
+    @NotNull
     private static ComputeManagementClient getComputeManagementClient(@NotNull String subscriptionId) throws Exception {
         ComputeManagementClient client = AzureSDKHelper.getComputeManagementClient(subscriptionId);
 
@@ -2628,12 +2669,41 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     }
 
     @NotNull
+    private static DynamicTableEntity getDynamicTableEntity(@NotNull TableEntity tableEntity)
+            throws AzureCmdException {
+        return getDynamicTableEntity(tableEntity.getPartitionKey(), tableEntity.getRowKey(),
+                tableEntity.getTimestamp(), tableEntity.getETag(), tableEntity.getProperties());
+
+    }
+
+    @NotNull
     private static DynamicTableEntity getDynamicTableEntity(@NotNull String partitionKey,
                                                             @NotNull String rowKey,
                                                             @NotNull Map<String, Property> properties)
             throws AzureCmdException {
-        DynamicTableEntity entity = new DynamicTableEntity(partitionKey, rowKey);
+        return getDynamicTableEntity(partitionKey, rowKey, null, null, properties);
+    }
 
+    @NotNull
+    private static DynamicTableEntity getDynamicTableEntity(@NotNull String partitionKey,
+                                                            @NotNull String rowKey,
+                                                            @Nullable Calendar timestamp,
+                                                            @Nullable String eTag,
+                                                            @NotNull Map<String, Property> properties)
+            throws AzureCmdException {
+        Date ts = null;
+
+        if (timestamp != null) {
+            ts = timestamp.getTime();
+        }
+
+        HashMap<String, EntityProperty> entityProperties = getEntityProperties(properties);
+
+        return new DynamicTableEntity(partitionKey, rowKey, ts, eTag, entityProperties);
+    }
+
+    @NotNull
+    private static HashMap<String, EntityProperty> getEntityProperties(@NotNull Map<String, Property> properties) throws AzureCmdException {
         HashMap<String, EntityProperty> entityProperties = new HashMap<String, EntityProperty>();
 
         for (Entry<String, Property> entry : properties.entrySet()) {
@@ -2671,10 +2741,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
 
             entityProperties.put(key, entityProperty);
         }
-
-        entity.setProperties(entityProperties);
-
-        return entity;
+        return entityProperties;
     }
 
     @NotNull
