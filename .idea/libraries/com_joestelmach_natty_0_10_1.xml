@@ -1,0 +1,16 @@
+<component name="libraryTable">
+  <library name="com.joestelmach:natty:0.10.1" type="repository">
+    <properties maven-id="com.joestelmach:natty:0.10.1" />
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/joestelmach/natty/0.10.1/natty-0.10.1.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/antlr/antlr-runtime/3.5.2/antlr-runtime-3.5.2.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/mnode/ical4j/ical4j/1.0.2/ical4j-1.0.2.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/commons-logging/commons-logging/1.1.1/commons-logging-1.1.1.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/commons-codec/commons-codec/1.5/commons-codec-1.5.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/commons-lang/commons-lang/2.6/commons-lang-2.6.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/backport-util-concurrent/backport-util-concurrent/3.1/backport-util-concurrent-3.1.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

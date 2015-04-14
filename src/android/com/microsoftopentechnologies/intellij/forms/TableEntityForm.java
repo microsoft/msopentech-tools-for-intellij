@@ -5,15 +5,15 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBoxTableRenderer;
-import com.intellij.util.text.DateFormatUtil;
 import com.intellij.util.ui.table.ComboBoxTableCellEditor;
+import com.joestelmach.natty.Parser;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerImpl;
 import com.microsoftopentechnologies.intellij.helpers.storage.TableFileEditor;
 import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
 import com.microsoftopentechnologies.intellij.model.storage.TableEntity;
-import org.apache.commons.lang.time.DateFormatUtils;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -21,7 +21,6 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import java.awt.*;
 import java.awt.event.*;
-import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -68,6 +67,17 @@ public class TableEntityForm extends JDialog {
         propertiesTable.getColumn("").setMinWidth(30);
         propertiesTable.getColumn("Type").setCellRenderer(new ComboBoxTableRenderer<TableEntity.PropertyType>(TableEntity.PropertyType.values()));
         propertiesTable.getColumn("Type").setCellEditor(new ComboBoxTableCellEditor());
+
+        propertiesTable.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent mouseEvent) {
+                int row = propertiesTable.rowAtPoint(mouseEvent.getPoint());
+                int col = propertiesTable.columnAtPoint(mouseEvent.getPoint());
+                if (col == 0 && row > 1) {
+                    ((DefaultTableModel) propertiesTable.getModel()).removeRow(row);
+                }
+            }
+        });
 
         buttonOK.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -144,22 +154,34 @@ public class TableEntityForm extends JDialog {
         final String rowKey =  model.getValueAt(1, 3).toString();
         final Map<String, TableEntity.Property> properties = new LinkedHashMap<String, TableEntity.Property>();
 
+        String errors = "";
+
         for(int row = 2; row != model.getRowCount(); row++) {
             TableEntity.PropertyType propertyType = (TableEntity.PropertyType) model.getValueAt(row, 2);
             String name = model.getValueAt(row, 1).toString();
             String value = model.getValueAt(row, 3).toString();
 
-            properties.put(name, getProperty(value, propertyType));
+            TableEntity.Property property = getProperty(value, propertyType);
+            if(property == null) {
+                errors = errors + String.format("The field %s has an invalid value for its type.\n", name);
+            } else {
+                properties.put(name, property);
+            }
+        }
+
+        if(errors.length() > 0) {
+            JOptionPane.showMessageDialog(this, errors, "Service Explorer", JOptionPane.ERROR_MESSAGE);
+            return;
         }
 
         ProgressManager.getInstance().run(new Task.Backgroundable(project, tableEntity == null ? "Creating entity" : "Updating entity") {
             @Override
-            public void run(ProgressIndicator progressIndicator) {
+            public void run(@NotNull ProgressIndicator progressIndicator) {
                 progressIndicator.setIndeterminate(true);
 
                 try {
                     if (tableEntity == null) {
-                        ;
+
                         tableEntity = AzureSDKManagerImpl.getManager().createTableEntity(storageAccount,
                                 tableName,
                                 partitionKey,
@@ -191,11 +213,9 @@ public class TableEntityForm extends JDialog {
                 case Double:
                     return new TableEntity.Property(Double.parseDouble(value));
                 case Calendar:
-                    DateFormat format = DateFormat.getDateTimeInstance(
-                            DateFormat.MEDIUM, DateFormat.SHORT);
-
+                    Parser parser = new Parser();
                     Calendar calendar = Calendar.getInstance();
-                    calendar.setTime(format.parse(value));
+                    calendar.setTime(parser.parse(value).get(0).getRecursUntil());
 
                     return new TableEntity.Property(calendar);
                 case Uuid:
@@ -240,12 +260,6 @@ public class TableEntityForm extends JDialog {
             deleteButton = new JButton();
             deleteButton.setIcon(UIHelper.loadIcon("storagedelete.png"));
             deleteButton.setBorderPainted(false);
-            deleteButton.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent actionEvent) {
-
-                }
-            });
         }
 
         @Override
@@ -253,4 +267,5 @@ public class TableEntityForm extends JDialog {
             return (row < 2) ? super.getTableCellRendererComponent(jTable, o, b, b1, row, i1) : deleteButton;
         }
     }
+
 }

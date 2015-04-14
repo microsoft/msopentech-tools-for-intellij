@@ -23,5 +23,6 @@
     <orderEntry type="library" name="com.microsoft.azure:azure-storage:1.3.1" level="project" />
     <orderEntry type="library" name=".cspack" level="project" />
     <orderEntry type="library" name="azure-sdk" level="project" />
+    <orderEntry type="library" name="com.joestelmach:natty:0.10.1" level="project" />
   </component>
 </module>
