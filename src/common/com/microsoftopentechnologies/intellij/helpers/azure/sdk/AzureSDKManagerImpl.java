@@ -46,7 +46,7 @@ import com.microsoft.windowsazure.management.network.models.NetworkListResponse.
 import com.microsoft.windowsazure.management.storage.StorageAccountOperations;
 import com.microsoft.windowsazure.management.storage.StorageManagementClient;
 import com.microsoft.windowsazure.management.storage.models.*;
-import com.microsoftopentechnologies.azuremanagementutil.util.Base64;
+import com.microsoft.azure.storage.core.Base64;
 import com.microsoftopentechnologies.intellij.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.helpers.CallableSingleArg;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureAuthenticationMode;
