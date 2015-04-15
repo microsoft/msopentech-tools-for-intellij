@@ -16,20 +16,18 @@
 
 package com.microsoftopentechnologies.intellij.serviceexplorer.azure.mobileservice;
 
-import com.google.common.collect.ImmutableMap;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManagerImpl;
 import com.microsoftopentechnologies.intellij.model.ms.CustomAPI;
 import com.microsoftopentechnologies.intellij.model.ms.MobileService;
 import com.microsoftopentechnologies.intellij.serviceexplorer.Node;
 import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionEvent;
-import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionListener;
 
 public class CustomAPINode extends ScriptNodeBase {
     public static final String ICON_PATH = "api.png";
     protected CustomAPI customAPI;
 
-    public CustomAPINode(Node parent, CustomAPI customAPI, Class<? extends NodeActionListener>... action) {
+    public CustomAPINode(Node parent, CustomAPI customAPI) {
         super(customAPI.getName(), customAPI.getName(), parent, ICON_PATH, false);
         this.customAPI = customAPI;
     }
