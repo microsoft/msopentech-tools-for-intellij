@@ -16,7 +16,7 @@
 package com.microsoftopentechnologies.intellij.helpers.graph;
 
 import com.microsoft.services.odata.impl.desktop.JvmDependencyResolver;
-import com.microsoftopentechnologies.intellij.components.MSOpenTechToolsApplication;
+import com.microsoftopentechnologies.intellij.components.DefaultLoader;
 
 public class PluginDependencyResolver extends JvmDependencyResolver {
     public PluginDependencyResolver(String token) {
@@ -25,10 +25,10 @@ public class PluginDependencyResolver extends JvmDependencyResolver {
 
     @Override
     public String getPlatformUserAgent(String productName) {
-        String version = MSOpenTechToolsApplication.getCurrent().getSettings().getPluginVersion();
+        String version = DefaultLoader.getPluginComponent().getSettings().getPluginVersion();
         return String.format(
                 "%s/%s (lang=%s; os=%s; version=%s)",
-                MSOpenTechToolsApplication.PLUGIN_ID,
+                DefaultLoader.getPluginComponent().getPluginId(),
                 version,
                 "Java",
                 System.getProperty("os.name"),

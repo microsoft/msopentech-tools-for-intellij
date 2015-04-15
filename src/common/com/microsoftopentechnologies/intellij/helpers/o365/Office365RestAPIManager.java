@@ -32,7 +32,7 @@ import com.microsoft.services.odata.ODataCollectionFetcher;
 import com.microsoft.services.odata.ODataEntityFetcher;
 import com.microsoft.services.odata.ODataOperations;
 import com.microsoftopentechnologies.intellij.components.AppSettingsNames;
-import com.microsoftopentechnologies.intellij.components.MSOpenTechToolsApplication;
+import com.microsoftopentechnologies.intellij.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.components.PluginSettings;
 import com.microsoftopentechnologies.intellij.helpers.StringHelper;
 import com.microsoftopentechnologies.intellij.helpers.aadauth.AuthenticationContext;
@@ -137,7 +137,7 @@ public class Office365RestAPIManager implements Office365Manager {
 
     @Override
     public void authenticate() throws IOException, ExecutionException, InterruptedException, ParseException {
-        PluginSettings settings = MSOpenTechToolsApplication.getCurrent().getSettings();
+        PluginSettings settings = DefaultLoader.getPluginComponent().getSettings();
         AuthenticationContext context = null;
         try {
             context = new AuthenticationContext(settings.getAdAuthority());
@@ -158,7 +158,7 @@ public class Office365RestAPIManager implements Office365Manager {
 
     private String getGraphApiUri() throws ParseException {
         if (graphApiUri == null) {
-            PluginSettings settings = MSOpenTechToolsApplication.getCurrent().getSettings();
+            PluginSettings settings = DefaultLoader.getPluginComponent().getSettings();
             setGraphApiUri(GRAPH_API_URI_TEMPLATE.
                     replace("{base_uri}", settings.getGraphApiUri()).
                     replace("{tenant_domain}", getTenantDomain()).
@@ -234,7 +234,7 @@ public class Office365RestAPIManager implements Office365Manager {
             final SettableFuture<T> wrappedFuture) throws ParseException {
 
         // acquire token via refresh token
-        PluginSettings settings = MSOpenTechToolsApplication.getCurrent().getSettings();
+        PluginSettings settings = DefaultLoader.getPluginComponent().getSettings();
         AuthenticationContext context = null;
 
         // Now there might be multiple concurrent requests all of which are likely
@@ -640,7 +640,7 @@ public class Office365RestAPIManager implements Office365Manager {
     private ListenableFuture<Application> createServicePrincipalForApp(final Application application) throws ParseException {
         ServicePrincipal servicePrincipal = new ServicePrincipal();
         servicePrincipal.setappId(application.getappId());
-        ;
+
         servicePrincipal.setaccountEnabled(true);
 
         return Futures.transform(getDirectoryClient().getservicePrincipals().add(servicePrincipal), new AsyncFunction<ServicePrincipal, Application>() {

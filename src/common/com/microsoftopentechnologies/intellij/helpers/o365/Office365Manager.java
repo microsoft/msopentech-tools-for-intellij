@@ -23,14 +23,11 @@ import com.microsoft.directoryservices.OAuth2PermissionGrant;
 import com.microsoft.directoryservices.ServicePrincipal;
 import com.microsoftopentechnologies.intellij.helpers.aadauth.AuthenticationResult;
 import com.microsoftopentechnologies.intellij.helpers.graph.ServicePermissionEntry;
-import com.microsoftopentechnologies.intellij.model.Office365PermissionList;
-import com.microsoftopentechnologies.intellij.model.Office365Service;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 

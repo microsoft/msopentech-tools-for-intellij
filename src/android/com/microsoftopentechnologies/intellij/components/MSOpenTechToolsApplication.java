@@ -100,8 +100,14 @@ public class MSOpenTechToolsApplication extends ApplicationComponent.Adapter imp
         VirtualFileManager.getInstance().removeVirtualFileListener(vfl);
     }
 
+    @Override
     public PluginSettings getSettings() {
         return settings;
+    }
+
+    @Override
+    public String getPluginId() {
+        return PLUGIN_ID;
     }
 
     private void loadPluginSettings() throws IOException {
