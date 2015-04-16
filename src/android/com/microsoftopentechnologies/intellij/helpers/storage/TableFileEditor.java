@@ -113,6 +113,7 @@ public class TableFileEditor implements FileEditor {
             }
         });
 
+        entitiesTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         entitiesTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         entitiesTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             @Override
@@ -268,6 +269,10 @@ public class TableFileEditor implements FileEditor {
                 }
 
                 entitiesTable.setModel(model);
+
+                for(int i = 0; i != entitiesTable.getColumnCount(); i++) {
+                    entitiesTable.getColumnModel().getColumn(i).setPreferredWidth(100);
+                }
             }
         });
 

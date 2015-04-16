@@ -41,11 +41,21 @@ public class TableEntityForm extends JDialog {
     private Runnable onFinish;
     private String tableName;
 
+    private static String[] INVALID_KEYWORDS = {
+        "abstract","as","base","bool","break","byte","case","catch","char","checked","class","const","continue","decimal","default","delegate","do","double","else",
+        "enum","event","explicit","extern","false","finally","fixed","float","for","foreach","goto","if","implicit",
+        "in","int","interface","internal","is","lock","long","namespace","new","null","object","operator","out","override","params","private","protected","public",
+        "readonly","ref","return","sbyte","sealed","short","sizeof","stackalloc","static","string","struct","switch","this","throw","true",
+        "try","typeof","uint","ulong","unchecked","unsafe","ushort","using","virtual","void","volatile","while"
+    };
+
+
     public TableEntityForm() {
         setContentPane(contentPane);
         setModal(true);
         getRootPane().setDefaultButton(buttonOK);
         setResizable(false);
+        setPreferredSize(new Dimension(500, 400));
 
         DefaultTableModel model = new DefaultTableModel(){
 
@@ -169,12 +179,18 @@ public class TableEntityForm extends JDialog {
             String name = model.getValueAt(row, 1).toString();
             String value = model.getValueAt(row, 3).toString();
 
+            if(!isValidPropertyName(name)){
+                errors = errors + String.format("The property name \"%s\" is invalid\n", name);
+            }
+
             TableEntity.Property property = getProperty(value, propertyType);
             if(property == null) {
                 errors = errors + String.format("The field %s has an invalid value for its type.\n", name);
             } else {
                 properties.put(name, property);
             }
+
+
         }
 
         if(errors.length() > 0) {
@@ -241,6 +257,20 @@ public class TableEntityForm extends JDialog {
         }
     }
 
+    private boolean isValidPropertyName(String propertyName) {
+        //Validate starting with number
+        if(propertyName.matches("^[0-9]\\w*")) {
+            return false;
+        }
+        //Validate special characters
+        if(!propertyName.matches("[_\\p{Lu}\\p{Ll}\\p{Lt}\\p{Lm}\\p{Lo}\\p{Nl}][\\p{Lu}\\p{Ll}\\p{Lt}\\p{Lm}\\p{Lo}\\p{Nl}\\p{Mn}\\p{Mc}\\p{Nd}\\p{Pc}\\p{Cf}]*")) {
+            return false;
+        }
+        //Validate invalid keywords
+        return !Arrays.asList(INVALID_KEYWORDS).contains(propertyName);
+
+    }
+
     private void onCancel() {
         dispose();
     }
@@ -281,7 +311,7 @@ public class TableEntityForm extends JDialog {
 
 
     private class ValueCellEditor extends DefaultCellEditor {
-        Class[] argTypes = new Class[]{String.class};
+
         Constructor constructor;
         Object value;
 
@@ -319,15 +349,15 @@ public class TableEntityForm extends JDialog {
             ((JComponent)this.getComponent()).setBorder(new LineBorder(JBColor.BLACK));
 
             try {
-                Class var6 = jTable.getColumnClass(col);
-                if(var6 == Object.class) {
-                    var6 = String.class;
+                Class columnClass = jTable.getColumnClass(col);
+                if(columnClass == Object.class) {
+                    columnClass = String.class;
                 }
 
-                ReflectUtil.checkPackageAccess(var6);
-                SwingUtilities2.checkAccess(var6.getModifiers());
-                this.constructor = var6.getConstructor(this.argTypes);
-            } catch (Exception var7) {
+                ReflectUtil.checkPackageAccess(columnClass);
+                SwingUtilities2.checkAccess(columnClass.getModifiers());
+                this.constructor = columnClass.getConstructor(String.class);
+            } catch (Exception ignored) {
                 return null;
             }
 
