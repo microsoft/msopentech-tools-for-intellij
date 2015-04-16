@@ -5,26 +5,28 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBoxTableRenderer;
+import com.intellij.ui.JBColor;
 import com.intellij.util.ui.table.ComboBoxTableCellEditor;
-import com.joestelmach.natty.Parser;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerImpl;
 import com.microsoftopentechnologies.intellij.helpers.storage.TableFileEditor;
 import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
 import com.microsoftopentechnologies.intellij.model.storage.TableEntity;
+import org.jdesktop.swingx.JXMonthView;
+import org.jdesktop.swingx.calendar.DateSelectionModel;
 import org.jetbrains.annotations.NotNull;
+import sun.reflect.misc.ReflectUtil;
+import sun.swing.SwingUtilities2;
 
 import javax.swing.*;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableModel;
+import javax.swing.border.LineBorder;
+import javax.swing.table.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.Calendar;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.lang.reflect.Constructor;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 public class TableEntityForm extends JDialog {
     private JPanel contentPane;
@@ -49,7 +51,7 @@ public class TableEntityForm extends JDialog {
 
            @Override
             public boolean isCellEditable(int row, int col) {
-                return (col != 0) && (row > 1 || col == 3);
+                return (col != 0) && (row > 1 || (col == 3 && tableEntity == null));
             }
         };
 
@@ -65,8 +67,12 @@ public class TableEntityForm extends JDialog {
         propertiesTable.getColumn("").setCellRenderer(new DeleteButtonRenderer());
         propertiesTable.getColumn("").setMaxWidth(30);
         propertiesTable.getColumn("").setMinWidth(30);
+        propertiesTable.getColumn("Type").setMaxWidth(100);
+        propertiesTable.getColumn("Type").setMinWidth(100);
         propertiesTable.getColumn("Type").setCellRenderer(new ComboBoxTableRenderer<TableEntity.PropertyType>(TableEntity.PropertyType.values()));
         propertiesTable.getColumn("Type").setCellEditor(new ComboBoxTableCellEditor());
+
+        propertiesTable.getColumn("Value").setCellEditor(new ValueCellEditor());
 
         propertiesTable.addMouseListener(new MouseAdapter() {
             @Override
@@ -118,6 +124,8 @@ public class TableEntityForm extends JDialog {
     }
 
     public void setTableEntity(TableEntity tableEntity) {
+
+
         this.tableEntity = tableEntity;
 
         final DefaultTableModel model = (DefaultTableModel) propertiesTable.getModel();
@@ -174,19 +182,22 @@ public class TableEntityForm extends JDialog {
             return;
         }
 
-        ProgressManager.getInstance().run(new Task.Backgroundable(project, tableEntity == null ? "Creating entity" : "Updating entity") {
+        ProgressManager.getInstance().run(new Task.Backgroundable(project, tableEntity == null ? "Creating entity" : "Updating entity", false) {
             @Override
             public void run(@NotNull ProgressIndicator progressIndicator) {
                 progressIndicator.setIndeterminate(true);
 
                 try {
                     if (tableEntity == null) {
-
                         tableEntity = AzureSDKManagerImpl.getManager().createTableEntity(storageAccount,
                                 tableName,
                                 partitionKey,
                                 rowKey,
                                 properties);
+                    } else {
+                        tableEntity.getProperties().clear();
+                        tableEntity.getProperties().putAll(properties);
+                        tableEntity = AzureSDKManagerImpl.getManager().updateTableEntity(storageAccount, tableEntity);
                     }
 
 
@@ -212,10 +223,10 @@ public class TableEntityForm extends JDialog {
                     return new TableEntity.Property(Integer.parseInt(value));
                 case Double:
                     return new TableEntity.Property(Double.parseDouble(value));
-                case Calendar:
-                    Parser parser = new Parser();
+                case DateTime:
+
                     Calendar calendar = Calendar.getInstance();
-                    calendar.setTime(parser.parse(value).get(0).getRecursUntil());
+                    calendar.setTime(new SimpleDateFormat().parse(value));
 
                     return new TableEntity.Property(calendar);
                 case Uuid:
@@ -268,4 +279,102 @@ public class TableEntityForm extends JDialog {
         }
     }
 
+
+    private class ValueCellEditor extends DefaultCellEditor {
+        Class[] argTypes = new Class[]{String.class};
+        Constructor constructor;
+        Object value;
+
+        public ValueCellEditor() {
+            super(new JTextField());
+            this.getComponent().setName("Table.editor");
+        }
+
+        @Override
+        public boolean stopCellEditing() {
+            String var1 = (String)super.getCellEditorValue();
+
+            try {
+                if("".equals(var1)) {
+                    if(this.constructor.getDeclaringClass() == String.class) {
+                        this.value = var1;
+                    }
+
+                    super.stopCellEditing();
+                }
+
+                SwingUtilities2.checkAccess(this.constructor.getModifiers());
+                this.value = this.constructor.newInstance(var1);
+            } catch (Exception var3) {
+                ((JComponent)this.getComponent()).setBorder(new LineBorder( JBColor.RED));
+                return false;
+            }
+
+            return super.stopCellEditing();
+        }
+
+        @Override
+        public Component getTableCellEditorComponent(JTable jTable, Object value, boolean b, int row, int col) {
+            this.value = null;
+            ((JComponent)this.getComponent()).setBorder(new LineBorder(JBColor.BLACK));
+
+            try {
+                Class var6 = jTable.getColumnClass(col);
+                if(var6 == Object.class) {
+                    var6 = String.class;
+                }
+
+                ReflectUtil.checkPackageAccess(var6);
+                SwingUtilities2.checkAccess(var6.getModifiers());
+                this.constructor = var6.getConstructor(this.argTypes);
+            } catch (Exception var7) {
+                return null;
+            }
+
+            final Component component = super.getTableCellEditorComponent(jTable, value, b, row, col);
+
+            TableEntity.PropertyType type = (TableEntity.PropertyType) jTable.getValueAt(row, 2);
+            if(type != TableEntity.PropertyType.DateTime) {
+                return component;
+            }
+
+            JButton button = new JButton("...");
+            button.setPreferredSize(new Dimension(button.getPreferredSize().height, 40));
+            button.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent actionEvent) {
+                    final JXMonthView monthView = new JXMonthView();
+                    monthView.setSelectionMode(DateSelectionModel.SelectionMode.SINGLE_SELECTION);
+                    monthView.setTraversable(true);
+                    monthView.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent actionEvent) {
+                            String date = new SimpleDateFormat().format(monthView.getSelectionDate());
+                            ((JTextField) component).setText(date);
+                        }
+                    });
+
+                    JDialog frame = new JDialog();
+                    frame.getContentPane().add(monthView);
+                    frame.setModal(true);
+                    frame.setAlwaysOnTop(true);
+                    frame.setMinimumSize(monthView.getPreferredSize());
+                    UIHelper.packAndCenterJDialog(frame);
+                    frame.setVisible(true);
+                }
+            });
+
+            JPanel panel = new JPanel(new BorderLayout());
+            panel.add(component, BorderLayout.CENTER);
+            panel.add(button, BorderLayout.LINE_END);
+
+            return panel;
+
+        }
+
+        public Object getCellEditorValue() {
+            return this.value;
+        }
+
+    }
 }

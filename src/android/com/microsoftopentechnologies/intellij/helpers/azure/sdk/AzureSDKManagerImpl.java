@@ -1453,9 +1453,9 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
             tro.setTablePayloadFormat(TablePayloadFormat.JsonFullMetadata);
 
             TableResult result = cloudTable.execute(TableOperation.replace(entity), tro, null);
-            //// DynamicTableEntity resultEntity = result.getResultAsType();
+            DynamicTableEntity resultEntity = result.getResultAsType();
 
-            return tableEntity;
+            return getTableEntity(tableEntity.getTableName(), resultEntity, tableEntity.getSubscriptionId());
         } catch (Throwable t) {
             throw new AzureCmdException("Error updating the Table Entity", t);
         }
@@ -1562,7 +1562,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
 
     @NotNull
     private static DeploymentOperations getDeploymentOperations(@NotNull ComputeManagementClient client)
-            throws Exception {
+    throws Exception {
         DeploymentOperations dop = client.getDeploymentsOperations();
 
         if (dop == null) {
@@ -1610,7 +1610,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
 
     @NotNull
     private static RoleSizeOperations getRoleSizeOperations(@NotNull ManagementClient client)
-            throws Exception {
+    throws Exception {
         RoleSizeOperations rso = client.getRoleSizesOperations();
 
         if (rso == null) {
@@ -1622,7 +1622,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
 
     @NotNull
     private static LocationOperations getLocationsOperations(@NotNull ManagementClient client)
-            throws Exception {
+    throws Exception {
         LocationOperations lo = client.getLocationsOperations();
 
         if (lo == null) {
@@ -1658,7 +1658,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
 
     @NotNull
     private static NetworkOperations getNetworkOperations(@NotNull NetworkManagementClient client)
-            throws Exception {
+    throws Exception {
         NetworkOperations no = client.getNetworksOperations();
 
         if (no == null) {
@@ -2073,7 +2073,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
 
     private static void deleteDeployment(@NotNull ComputeManagementClient client, @NotNull String serviceName,
                                          @NotNull String deploymentName, boolean deleteFromStorage)
-            throws Exception {
+    throws Exception {
         DeploymentOperations dop = getDeploymentOperations(client);
 
         OperationStatusResponse osr = dop.deleteByName(serviceName, deploymentName, deleteFromStorage);
@@ -2216,7 +2216,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     @NotNull
     private static List<VirtualMachineSize> loadVMSizes(@NotNull ManagementClient client,
                                                         @NotNull List<VirtualMachineSize> vmSizeList)
-            throws Exception {
+    throws Exception {
         RoleSizeListResponse rslr = getRoleSizeOperations(client).list();
 
         if (rslr == null) {
@@ -2716,7 +2716,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
                 case Boolean:
                     entityProperty = new EntityProperty(property.getValueAsBoolean());
                     break;
-                case Calendar:
+                case DateTime:
                     entityProperty = new EntityProperty(property.getValueAsCalendar().getTime());
                     break;
                 case Double:

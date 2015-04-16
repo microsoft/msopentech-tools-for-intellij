@@ -26,7 +26,7 @@ import java.util.UUID;
 public class TableEntity implements ServiceTreeItem {
     public enum PropertyType {
         Boolean,
-        Calendar,
+        DateTime,
         Double,
         Uuid,
         Integer,
@@ -45,7 +45,7 @@ public class TableEntity implements ServiceTreeItem {
 
         public Property(@NotNull Calendar value) {
             this.value = value;
-            this.type = PropertyType.Calendar;
+            this.type = PropertyType.DateTime;
         }
 
         public Property(@NotNull Double value) {
@@ -84,7 +84,7 @@ public class TableEntity implements ServiceTreeItem {
 
         @NotNull
         public Calendar getValueAsCalendar() throws AzureCmdException {
-            if (type.equals(PropertyType.Calendar) && this.value instanceof Calendar) {
+            if (type.equals(PropertyType.DateTime) && this.value instanceof Calendar) {
                 return (Calendar) this.value;
             } else {
                 throw new AzureCmdException("Property value is not of Calendar type", "");

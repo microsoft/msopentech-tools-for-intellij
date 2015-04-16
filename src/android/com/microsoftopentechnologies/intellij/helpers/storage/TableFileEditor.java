@@ -45,10 +45,7 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.event.*;
 import java.beans.PropertyChangeListener;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class TableFileEditor implements FileEditor {
     public static final String PARTITION_KEY = "Partition key";
@@ -198,7 +195,8 @@ public class TableFileEditor implements FileEditor {
         form.setOnFinish(new Runnable() {
             @Override
             public void run() {
-                tableEntities.add(entitiesTable.getSelectedRow(), form.getTableEntity());
+                tableEntities.set(entitiesTable.getSelectedRow(), form.getTableEntity());
+                refreshGrid();
             }
         });
 
@@ -289,16 +287,17 @@ public class TableFileEditor implements FileEditor {
                         for (int i = 0; i < selectedEntities.length; i++) {
                             progressIndicator.setFraction((double) i / selectedEntities.length);
 
-                            //Todo: Replace this line: AzureSDKManagerImpl.getManager().deleteTableEntity(storageAccount, selectedEntities[i]);
-                            AzureSDKManagerImpl.getManager().getTableEntities(storageAccount, table, "");
-
-                            ApplicationManager.getApplication().invokeLater(new Runnable() {
-                                @Override
-                                public void run() {
-                                    fillGrid();
-                                }
-                            });
+                            AzureSDKManagerImpl.getManager().deleteTableEntity(storageAccount, selectedEntities[i]);
                         }
+
+                        ApplicationManager.getApplication().invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                tableEntities.removeAll(Arrays.asList(selectedEntities));
+
+                                refreshGrid();
+                            }
+                        });
                     }
                 } catch(AzureCmdException ex) {
                     UIHelper.showException("Error deleting entities", ex, "Service Explorer", false, true);
@@ -347,7 +346,7 @@ public class TableFileEditor implements FileEditor {
             switch (property.getType()) {
                 case Boolean:
                     return property.getValueAsBoolean().toString();
-                case Calendar:
+                case DateTime:
                     return new SimpleDateFormat().format(property.getValueAsCalendar().getTime());
                 case Double:
                     return property.getValueAsDouble().toString();
