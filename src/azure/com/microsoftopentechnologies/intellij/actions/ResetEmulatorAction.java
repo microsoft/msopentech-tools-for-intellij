@@ -72,4 +72,8 @@ public class ResetEmulatorAction extends AnAction {
             AzurePlugin.log(message("ioErrMsg"), e1);
         }
     }
+
+    public void update(AnActionEvent event) {
+        event.getPresentation().setVisible(AzurePlugin.IS_WINDOWS);
+    }
 }

@@ -47,7 +47,7 @@ public class AzureConfigurable extends SearchableConfigurable.Parent.Abstract im
     @Override
     protected Configurable[] buildConfigurables() {
         myPanels = new ArrayList<Configurable>();
-        if (!AzurePlugin.IS_ANDROID_STUDIO && AzurePlugin.IS_WINDOWS) {
+        if (!AzurePlugin.IS_ANDROID_STUDIO) {
             myPanels.add(new AzureAbstractConfigurable(new ServiceEndpointsPanel()));
             myPanels.add(new AzureAbstractConfigurable(new StorageAccountPanel(myProject)));
         }

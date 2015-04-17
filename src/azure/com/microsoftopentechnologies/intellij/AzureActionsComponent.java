@@ -29,7 +29,7 @@ public class AzureActionsComponent implements ApplicationComponent {
     }
 
     public void initComponent() {
-        if(!AzurePlugin.IS_ANDROID_STUDIO && AzurePlugin.IS_WINDOWS) {
+        if(!AzurePlugin.IS_ANDROID_STUDIO) {
             ActionManager am = ActionManager.getInstance();
             DefaultActionGroup toolbarGroup = (DefaultActionGroup) am.getAction(IdeActions.GROUP_MAIN_TOOLBAR);
             toolbarGroup.addAll((DefaultActionGroup) am.getAction("AzureToolbarGroup"));

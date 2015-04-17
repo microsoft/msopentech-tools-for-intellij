@@ -22,6 +22,7 @@ import com.intellij.openapi.module.Module;
 import com.interopbridges.tools.windowsazure.WindowsAzureInvalidProjectOperationException;
 import com.interopbridges.tools.windowsazure.WindowsAzurePackageType;
 import com.interopbridges.tools.windowsazure.WindowsAzureProjectManager;
+import com.microsoftopentechnologies.intellij.AzurePlugin;
 import com.microsoftopentechnologies.intellij.module.AzureModuleType;
 import com.microsoftopentechnologies.intellij.util.AntHelper;
 import com.microsoftopentechnologies.intellij.util.PluginUtil;
@@ -65,6 +66,6 @@ public class RunInEmulatorAction extends AnAction {
 
     public void update(AnActionEvent event) {
         final Module module = event.getData(LangDataKeys.MODULE);
-        event.getPresentation().setEnabled(module != null && AzureModuleType.AZURE_MODULE.equals(module.getOptionValue(Module.ELEMENT_TYPE)));
+        event.getPresentation().setEnabled(AzurePlugin.IS_WINDOWS && module != null && AzureModuleType.AZURE_MODULE.equals(module.getOptionValue(Module.ELEMENT_TYPE)));
     }
 }
