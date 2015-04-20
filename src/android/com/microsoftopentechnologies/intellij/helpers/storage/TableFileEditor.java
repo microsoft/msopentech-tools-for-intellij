@@ -29,6 +29,7 @@ import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.microsoftopentechnologies.intellij.forms.TableEntityForm;
+import com.microsoftopentechnologies.intellij.forms.TablesQueryDesigner;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerImpl;
@@ -109,6 +110,25 @@ public class TableFileEditor implements FileEditor {
 
                 UIHelper.packAndCenterJDialog(form);
 
+                form.setVisible(true);
+            }
+        });
+
+        queryDesignerButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+
+                final TablesQueryDesigner form = new TablesQueryDesigner();
+
+                form.setOnFinish(new Runnable() {
+                    @Override
+                    public void run() {
+                        queryTextField.setText(form.getQueryText());
+                    }
+                });
+
+
+                UIHelper.packAndCenterJDialog(form);
                 form.setVisible(true);
             }
         });

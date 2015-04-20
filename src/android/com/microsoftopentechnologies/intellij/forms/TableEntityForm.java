@@ -1,3 +1,19 @@
+/**
+ * Copyright 2014 Microsoft Open Technologies Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
 package com.microsoftopentechnologies.intellij.forms;
 
 import com.intellij.openapi.progress.ProgressIndicator;
@@ -5,26 +21,22 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBoxTableRenderer;
-import com.intellij.ui.JBColor;
 import com.intellij.util.ui.table.ComboBoxTableCellEditor;
+import com.microsoftopentechnologies.intellij.helpers.DatePickerCellEditor;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerImpl;
 import com.microsoftopentechnologies.intellij.helpers.storage.TableFileEditor;
 import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
 import com.microsoftopentechnologies.intellij.model.storage.TableEntity;
-import org.jdesktop.swingx.JXMonthView;
-import org.jdesktop.swingx.calendar.DateSelectionModel;
 import org.jetbrains.annotations.NotNull;
-import sun.reflect.misc.ReflectUtil;
-import sun.swing.SwingUtilities2;
 
 import javax.swing.*;
-import javax.swing.border.LineBorder;
-import javax.swing.table.*;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
 import java.awt.*;
 import java.awt.event.*;
-import java.lang.reflect.Constructor;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -82,7 +94,12 @@ public class TableEntityForm extends JDialog {
         propertiesTable.getColumn("Type").setCellRenderer(new ComboBoxTableRenderer<TableEntity.PropertyType>(TableEntity.PropertyType.values()));
         propertiesTable.getColumn("Type").setCellEditor(new ComboBoxTableCellEditor());
 
-        propertiesTable.getColumn("Value").setCellEditor(new ValueCellEditor());
+        propertiesTable.getColumn("Value").setCellEditor(new DatePickerCellEditor() {
+            @Override
+            protected boolean isCellDate(JTable table, int row, int col) {
+                return (table.getValueAt(row, 2) == TableEntity.PropertyType.DateTime);
+            }
+        });
 
         propertiesTable.addMouseListener(new MouseAdapter() {
             @Override
@@ -310,101 +327,5 @@ public class TableEntityForm extends JDialog {
     }
 
 
-    private class ValueCellEditor extends DefaultCellEditor {
 
-        Constructor constructor;
-        Object value;
-
-        public ValueCellEditor() {
-            super(new JTextField());
-            this.getComponent().setName("Table.editor");
-        }
-
-        @Override
-        public boolean stopCellEditing() {
-            String var1 = (String)super.getCellEditorValue();
-
-            try {
-                if("".equals(var1)) {
-                    if(this.constructor.getDeclaringClass() == String.class) {
-                        this.value = var1;
-                    }
-
-                    super.stopCellEditing();
-                }
-
-                SwingUtilities2.checkAccess(this.constructor.getModifiers());
-                this.value = this.constructor.newInstance(var1);
-            } catch (Exception var3) {
-                ((JComponent)this.getComponent()).setBorder(new LineBorder( JBColor.RED));
-                return false;
-            }
-
-            return super.stopCellEditing();
-        }
-
-        @Override
-        public Component getTableCellEditorComponent(JTable jTable, Object value, boolean b, int row, int col) {
-            this.value = null;
-            ((JComponent)this.getComponent()).setBorder(new LineBorder(JBColor.BLACK));
-
-            try {
-                Class columnClass = jTable.getColumnClass(col);
-                if(columnClass == Object.class) {
-                    columnClass = String.class;
-                }
-
-                ReflectUtil.checkPackageAccess(columnClass);
-                SwingUtilities2.checkAccess(columnClass.getModifiers());
-                this.constructor = columnClass.getConstructor(String.class);
-            } catch (Exception ignored) {
-                return null;
-            }
-
-            final Component component = super.getTableCellEditorComponent(jTable, value, b, row, col);
-
-            TableEntity.PropertyType type = (TableEntity.PropertyType) jTable.getValueAt(row, 2);
-            if(type != TableEntity.PropertyType.DateTime) {
-                return component;
-            }
-
-            JButton button = new JButton("...");
-            button.setPreferredSize(new Dimension(button.getPreferredSize().height, 40));
-            button.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent actionEvent) {
-                    final JXMonthView monthView = new JXMonthView();
-                    monthView.setSelectionMode(DateSelectionModel.SelectionMode.SINGLE_SELECTION);
-                    monthView.setTraversable(true);
-                    monthView.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent actionEvent) {
-                            String date = new SimpleDateFormat().format(monthView.getSelectionDate());
-                            ((JTextField) component).setText(date);
-                        }
-                    });
-
-                    JDialog frame = new JDialog();
-                    frame.getContentPane().add(monthView);
-                    frame.setModal(true);
-                    frame.setAlwaysOnTop(true);
-                    frame.setMinimumSize(monthView.getPreferredSize());
-                    UIHelper.packAndCenterJDialog(frame);
-                    frame.setVisible(true);
-                }
-            });
-
-            JPanel panel = new JPanel(new BorderLayout());
-            panel.add(component, BorderLayout.CENTER);
-            panel.add(button, BorderLayout.LINE_END);
-
-            return panel;
-
-        }
-
-        public Object getCellEditorValue() {
-            return this.value;
-        }
-
-    }
 }
