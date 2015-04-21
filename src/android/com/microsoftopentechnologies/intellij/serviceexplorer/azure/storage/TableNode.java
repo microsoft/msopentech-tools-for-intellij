@@ -14,7 +14,6 @@
  *  limitations under the License.
  */
 
-
 package com.microsoftopentechnologies.intellij.serviceexplorer.azure.storage;
 
 
@@ -29,9 +28,9 @@ import com.intellij.testFramework.LightVirtualFile;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerImpl;
-import com.microsoftopentechnologies.intellij.helpers.storage.BlobExplorerFileEditorProvider;
-import com.microsoftopentechnologies.intellij.model.storage.BlobContainer;
+import com.microsoftopentechnologies.intellij.helpers.storage.TableExplorerFileEditorProvider;
 import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
+import com.microsoftopentechnologies.intellij.model.storage.Table;
 import com.microsoftopentechnologies.intellij.serviceexplorer.Node;
 import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionEvent;
 import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionListener;
@@ -41,56 +40,39 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.util.Map;
 
-public class ContainerNode extends Node {
-
-    private static final String CONTAINER_MODULE_ID = ContainerNode.class.getName();
+public class TableNode extends Node {
+    private static final String TABLE_MODULE_ID = TableNode.class.getName();
     private static final String ICON_PATH = "container.png";
-
-    private final BlobContainer blobContainer;
+    private final Table table;
     private final StorageAccount storageAccount;
 
-    public ContainerNode(final Node parent, StorageAccount sa, BlobContainer bc) {
-        super(CONTAINER_MODULE_ID, bc.getName(), parent, ICON_PATH, true);
+    public TableNode(TableModule parent, StorageAccount storageAccount, Table table) {
+        super(TABLE_MODULE_ID, table.getName(), parent, ICON_PATH, true);
 
-        blobContainer = bc;
-        storageAccount = sa;
-
-        addClickActionListener(new NodeActionListener() {
-            @Override
-            public void actionPerformed(NodeActionEvent e) {
-                openContainer();
-            }
-        });
-
+        this.storageAccount = storageAccount;
+        this.table = table;
     }
 
     @Override
-    protected Map<String, Class<? extends NodeActionListener>> initActions() {
-
-        return ImmutableMap.of(
-                "Delete", DeleteBlobContainer.class,
-                "View Blob Container", ViewBlobContainer.class);
-    }
-
-    private void openContainer() {
-
+    protected void onNodeClick(NodeActionEvent ex) {
         if(getOpenedFile() == null) {
 
-            LightVirtualFile containerVirtualFile = new LightVirtualFile(blobContainer.getName() + " [Container]");
-            containerVirtualFile.putUserData(BlobExplorerFileEditorProvider.CONTAINER_KEY, blobContainer);
-            containerVirtualFile.putUserData(BlobExplorerFileEditorProvider.STORAGE_KEY, storageAccount);
 
-            containerVirtualFile.setFileType(new FileType() {
+            LightVirtualFile tableVirtualFile = new LightVirtualFile(table.getName() + " [Table]");
+            tableVirtualFile.putUserData(TableExplorerFileEditorProvider.TABLE_KEY, table);
+            tableVirtualFile.putUserData(TableExplorerFileEditorProvider.STORAGE_KEY, storageAccount);
+
+            tableVirtualFile.setFileType(new FileType() {
                 @NotNull
                 @Override
                 public String getName() {
-                    return "BlobContainer";
+                    return "Table";
                 }
 
                 @NotNull
                 @Override
                 public String getDescription() {
-                    return "BlobContainer";
+                    return "Table";
                 }
 
                 @NotNull
@@ -121,23 +103,29 @@ public class ContainerNode extends Node {
                 }
             });
 
-            FileEditorManager.getInstance(getProject()).openFile(containerVirtualFile, true, true);
+            FileEditorManager.getInstance(getProject()).openFile(tableVirtualFile, true, true);
         }
+    }
 
-
+    @Override
+    protected Map<String, Class<? extends NodeActionListener>> initActions() {
+        return ImmutableMap.of(
+                "View Table", ViewTable.class,
+                "Delete", DeleteTable.class
+        );
     }
 
     private VirtualFile getOpenedFile() {
         FileEditorManager fileEditorManager = FileEditorManager.getInstance(getProject());
 
         for (VirtualFile editedFile : fileEditorManager.getOpenFiles()) {
-            BlobContainer editedBlobContainer = editedFile.getUserData(BlobExplorerFileEditorProvider.CONTAINER_KEY);
-            StorageAccount editedStorageAccount = editedFile.getUserData(BlobExplorerFileEditorProvider.STORAGE_KEY);
+            Table editedTable = editedFile.getUserData(TableExplorerFileEditorProvider.TABLE_KEY);
+            StorageAccount editedStorageAccount = editedFile.getUserData(TableExplorerFileEditorProvider.STORAGE_KEY);
 
             if(editedStorageAccount != null
-                    && editedBlobContainer != null
+                    && editedTable != null
                     && editedStorageAccount.getName().equals(storageAccount.getName())
-                    && editedBlobContainer.getName().equals(blobContainer.getName())) {
+                    && editedTable.getName().equals(table.getName())) {
                 return editedFile;
             }
         }
@@ -145,25 +133,26 @@ public class ContainerNode extends Node {
         return null;
     }
 
-    public class ViewBlobContainer extends NodeActionListener {
+
+    public class ViewTable extends NodeActionListener {
         @Override
         public void actionPerformed(NodeActionEvent e) {
-            openContainer();
+            onNodeClick(null);
         }
     }
 
-    public class DeleteBlobContainer extends NodeActionListener {
+    public class DeleteTable extends NodeActionListener {
 
         @Override
         public void actionPerformed(final NodeActionEvent e) {
             int optionDialog = JOptionPane.showOptionDialog(null,
-                "Are you sure you want to delete the blob container \"" + blobContainer.getName() + "\"?",
-                "Service explorer",
-                JOptionPane.YES_NO_OPTION,
-                JOptionPane.QUESTION_MESSAGE,
-                null,
-                new String[]{"Yes", "No"},
-                null);
+                    "Are you sure you want to delete the table \"" + table.getName() + "\"?",
+                    "Service explorer",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.QUESTION_MESSAGE,
+                    null,
+                    new String[]{"Yes", "No"},
+                    null);
 
             if (optionDialog == JOptionPane.YES_OPTION) {
 
@@ -172,16 +161,16 @@ public class ContainerNode extends Node {
                     FileEditorManager.getInstance(getProject()).closeFile(openedFile);
                 }
 
-                ProgressManager.getInstance().run(new Task.Backgroundable(getProject(), "Creating blob container...", false) {
+                ProgressManager.getInstance().run(new Task.Backgroundable(getProject(), "Deleting table...", false) {
                     @Override
                     public void run(@NotNull ProgressIndicator progressIndicator) {
                         try {
-                            AzureSDKManagerImpl.getManager().deleteBlobContainer(storageAccount, blobContainer);
+                            AzureSDKManagerImpl.getManager().deleteTable(storageAccount, table);
 
                             parent.removeAllChildNodes();
                             parent.load();
                         } catch (AzureCmdException ex) {
-                            UIHelper.showException("Error deleting blob storage", ex, "Service explorer", false, true);
+                            UIHelper.showException("Error deleting table", ex, "Service explorer", false, true);
                         }
                     }
                 });
@@ -189,4 +178,5 @@ public class ContainerNode extends Node {
             }
         }
     }
+
 }

@@ -59,6 +59,8 @@ limitations under the License.
 
     <extensions defaultExtensionNs="com.intellij">
         <fileEditorProvider implementation="com.microsoftopentechnologies.intellij.helpers.storage.BlobExplorerFileEditorProvider"/>
+        <fileEditorProvider implementation="com.microsoftopentechnologies.intellij.helpers.storage.QueueExplorerFileEditorProvider"/>
+        <fileEditorProvider implementation="com.microsoftopentechnologies.intellij.helpers.storage.TableExplorerFileEditorProvider"/>
         <toolWindow
                 anchor="left"
                 factoryClass="com.microsoftopentechnologies.intellij.components.ServerExplorerToolWindowFactory"

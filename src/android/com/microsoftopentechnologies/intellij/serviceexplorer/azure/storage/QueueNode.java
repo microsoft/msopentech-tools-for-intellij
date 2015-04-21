@@ -14,9 +14,7 @@
  *  limitations under the License.
  */
 
-
 package com.microsoftopentechnologies.intellij.serviceexplorer.azure.storage;
-
 
 import com.google.common.collect.ImmutableMap;
 import com.intellij.openapi.fileEditor.FileEditorManager;
@@ -29,8 +27,8 @@ import com.intellij.testFramework.LightVirtualFile;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerImpl;
-import com.microsoftopentechnologies.intellij.helpers.storage.BlobExplorerFileEditorProvider;
-import com.microsoftopentechnologies.intellij.model.storage.BlobContainer;
+import com.microsoftopentechnologies.intellij.helpers.storage.QueueExplorerFileEditorProvider;
+import com.microsoftopentechnologies.intellij.model.storage.Queue;
 import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
 import com.microsoftopentechnologies.intellij.serviceexplorer.Node;
 import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionEvent;
@@ -41,56 +39,41 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.util.Map;
 
-public class ContainerNode extends Node {
-
-    private static final String CONTAINER_MODULE_ID = ContainerNode.class.getName();
+public class QueueNode extends Node {
+    private static final String QUEUE_MODULE_ID = QueueNode.class.getName();
     private static final String ICON_PATH = "container.png";
-
-    private final BlobContainer blobContainer;
+    private final Queue queue;
     private final StorageAccount storageAccount;
 
-    public ContainerNode(final Node parent, StorageAccount sa, BlobContainer bc) {
-        super(CONTAINER_MODULE_ID, bc.getName(), parent, ICON_PATH, true);
+    public QueueNode(QueueModule parent, StorageAccount storageAccount, Queue queue) {
+        super(QUEUE_MODULE_ID, queue.getName(), parent, ICON_PATH, true);
 
-        blobContainer = bc;
-        storageAccount = sa;
-
-        addClickActionListener(new NodeActionListener() {
-            @Override
-            public void actionPerformed(NodeActionEvent e) {
-                openContainer();
-            }
-        });
-
+        this.storageAccount = storageAccount;
+        this.queue = queue;
     }
+
+
 
     @Override
-    protected Map<String, Class<? extends NodeActionListener>> initActions() {
-
-        return ImmutableMap.of(
-                "Delete", DeleteBlobContainer.class,
-                "View Blob Container", ViewBlobContainer.class);
-    }
-
-    private void openContainer() {
-
+    protected void onNodeClick(NodeActionEvent ex) {
         if(getOpenedFile() == null) {
 
-            LightVirtualFile containerVirtualFile = new LightVirtualFile(blobContainer.getName() + " [Container]");
-            containerVirtualFile.putUserData(BlobExplorerFileEditorProvider.CONTAINER_KEY, blobContainer);
-            containerVirtualFile.putUserData(BlobExplorerFileEditorProvider.STORAGE_KEY, storageAccount);
 
-            containerVirtualFile.setFileType(new FileType() {
+            LightVirtualFile queueVirtualFile = new LightVirtualFile(queue.getName() + " [Queue]");
+            queueVirtualFile.putUserData(QueueExplorerFileEditorProvider.QUEUE_KEY, queue);
+            queueVirtualFile.putUserData(QueueExplorerFileEditorProvider.STORAGE_KEY, storageAccount);
+
+            queueVirtualFile.setFileType(new FileType() {
                 @NotNull
                 @Override
                 public String getName() {
-                    return "BlobContainer";
+                    return "Queue";
                 }
 
                 @NotNull
                 @Override
                 public String getDescription() {
-                    return "BlobContainer";
+                    return "Queue";
                 }
 
                 @NotNull
@@ -121,23 +104,30 @@ public class ContainerNode extends Node {
                 }
             });
 
-            FileEditorManager.getInstance(getProject()).openFile(containerVirtualFile, true, true);
+            FileEditorManager.getInstance(getProject()).openFile(queueVirtualFile, true, true);
         }
+    }
 
-
+    @Override
+    protected Map<String, Class<? extends NodeActionListener>> initActions() {
+        return ImmutableMap.of(
+                "View Queue", ViewQueue.class,
+                "Delete", DeleteQueue.class,
+                "Clear Queue", ClearQueue.class
+        );
     }
 
     private VirtualFile getOpenedFile() {
         FileEditorManager fileEditorManager = FileEditorManager.getInstance(getProject());
 
         for (VirtualFile editedFile : fileEditorManager.getOpenFiles()) {
-            BlobContainer editedBlobContainer = editedFile.getUserData(BlobExplorerFileEditorProvider.CONTAINER_KEY);
-            StorageAccount editedStorageAccount = editedFile.getUserData(BlobExplorerFileEditorProvider.STORAGE_KEY);
+            Queue editedQueue = editedFile.getUserData(QueueExplorerFileEditorProvider.QUEUE_KEY);
+            StorageAccount editedStorageAccount = editedFile.getUserData(QueueExplorerFileEditorProvider.STORAGE_KEY);
 
             if(editedStorageAccount != null
-                    && editedBlobContainer != null
+                    && editedQueue != null
                     && editedStorageAccount.getName().equals(storageAccount.getName())
-                    && editedBlobContainer.getName().equals(blobContainer.getName())) {
+                    && editedQueue.getName().equals(queue.getName())) {
                 return editedFile;
             }
         }
@@ -145,25 +135,25 @@ public class ContainerNode extends Node {
         return null;
     }
 
-    public class ViewBlobContainer extends NodeActionListener {
+    public class ViewQueue extends NodeActionListener {
         @Override
         public void actionPerformed(NodeActionEvent e) {
-            openContainer();
+            onNodeClick(null);
         }
     }
 
-    public class DeleteBlobContainer extends NodeActionListener {
+    public class DeleteQueue extends NodeActionListener {
 
         @Override
         public void actionPerformed(final NodeActionEvent e) {
             int optionDialog = JOptionPane.showOptionDialog(null,
-                "Are you sure you want to delete the blob container \"" + blobContainer.getName() + "\"?",
-                "Service explorer",
-                JOptionPane.YES_NO_OPTION,
-                JOptionPane.QUESTION_MESSAGE,
-                null,
-                new String[]{"Yes", "No"},
-                null);
+                    "Are you sure you want to delete the queue \"" + queue.getName() + "\"?",
+                    "Service explorer",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.QUESTION_MESSAGE,
+                    null,
+                    new String[]{"Yes", "No"},
+                    null);
 
             if (optionDialog == JOptionPane.YES_OPTION) {
 
@@ -172,16 +162,16 @@ public class ContainerNode extends Node {
                     FileEditorManager.getInstance(getProject()).closeFile(openedFile);
                 }
 
-                ProgressManager.getInstance().run(new Task.Backgroundable(getProject(), "Creating blob container...", false) {
+                ProgressManager.getInstance().run(new Task.Backgroundable(getProject(), "Deleting queue...", false) {
                     @Override
                     public void run(@NotNull ProgressIndicator progressIndicator) {
                         try {
-                            AzureSDKManagerImpl.getManager().deleteBlobContainer(storageAccount, blobContainer);
+                            AzureSDKManagerImpl.getManager().deleteQueue(storageAccount, queue);
 
                             parent.removeAllChildNodes();
                             parent.load();
                         } catch (AzureCmdException ex) {
-                            UIHelper.showException("Error deleting blob storage", ex, "Service explorer", false, true);
+                            UIHelper.showException("Error deleting queue", ex, "Service explorer", false, true);
                         }
                     }
                 });
@@ -189,4 +179,38 @@ public class ContainerNode extends Node {
             }
         }
     }
+
+    public class ClearQueue extends NodeActionListener {
+
+        @Override
+        public void actionPerformed(final NodeActionEvent e) {
+            int optionDialog = JOptionPane.showOptionDialog(null,
+                    "Are you sure you want to clear the queue \"" + queue.getName() + "\"?",
+                    "Service explorer",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.QUESTION_MESSAGE,
+                    null,
+                    new String[]{"Yes", "No"},
+                    null);
+
+            if (optionDialog == JOptionPane.YES_OPTION) {
+
+                ProgressManager.getInstance().run(new Task.Backgroundable(getProject(), "Clearing queue...", false) {
+                    @Override
+                    public void run(@NotNull ProgressIndicator progressIndicator) {
+                        try {
+                            AzureSDKManagerImpl.getManager().clearQueue(storageAccount, queue);
+
+                            parent.removeAllChildNodes();
+                            parent.load();
+                        } catch (AzureCmdException ex) {
+                            UIHelper.showException("Error clearing queue", ex, "Service explorer", false, true);
+                        }
+                    }
+                });
+
+            }
+        }
+    }
+
 }

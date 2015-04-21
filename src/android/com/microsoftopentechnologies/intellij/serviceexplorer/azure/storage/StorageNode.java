@@ -48,7 +48,15 @@ public class StorageNode extends Node {
         Node blobsNode = new BlobModule(this, storageAccount);
         blobsNode.load();
 
+        Node queueNode = new QueueModule(this, storageAccount);
+        queueNode.load();
+
+        Node tableNode = new TableModule(this, storageAccount);
+        tableNode.load();
+
         addChildNode(blobsNode);
+        addChildNode(queueNode);
+        addChildNode(tableNode);
     }
 
 }
