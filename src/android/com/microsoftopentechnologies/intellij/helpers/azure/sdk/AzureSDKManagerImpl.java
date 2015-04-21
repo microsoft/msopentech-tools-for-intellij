@@ -1313,11 +1313,15 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
                 }
 
                 dequeueCount = cqm.getDequeueCount();
+            }
 
+            QueueMessage queueMessage = new QueueMessage(id, queueName, content, insertionTime, expirationTime, dequeueCount, subscriptionId);
+
+            if (cqm != null) {
                 cloudQueue.deleteMessage(cqm);
             }
 
-            return new QueueMessage(id, queueName, content, insertionTime, expirationTime, dequeueCount, subscriptionId);
+            return queueMessage;
         } catch (Throwable t) {
             throw new AzureCmdException("Error dequeuing the first Queue Message", t);
         }
@@ -1461,7 +1465,6 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         }
     }
 
-    @NotNull
     @Override
     public void deleteTableEntity(@NotNull StorageAccount storageAccount, @NotNull TableEntity tableEntity)
             throws AzureCmdException {
@@ -1562,7 +1565,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
 
     @NotNull
     private static DeploymentOperations getDeploymentOperations(@NotNull ComputeManagementClient client)
-    throws Exception {
+            throws Exception {
         DeploymentOperations dop = client.getDeploymentsOperations();
 
         if (dop == null) {
@@ -1610,7 +1613,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
 
     @NotNull
     private static RoleSizeOperations getRoleSizeOperations(@NotNull ManagementClient client)
-    throws Exception {
+            throws Exception {
         RoleSizeOperations rso = client.getRoleSizesOperations();
 
         if (rso == null) {
@@ -1622,7 +1625,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
 
     @NotNull
     private static LocationOperations getLocationsOperations(@NotNull ManagementClient client)
-    throws Exception {
+            throws Exception {
         LocationOperations lo = client.getLocationsOperations();
 
         if (lo == null) {
@@ -1658,7 +1661,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
 
     @NotNull
     private static NetworkOperations getNetworkOperations(@NotNull NetworkManagementClient client)
-    throws Exception {
+            throws Exception {
         NetworkOperations no = client.getNetworksOperations();
 
         if (no == null) {
@@ -2073,7 +2076,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
 
     private static void deleteDeployment(@NotNull ComputeManagementClient client, @NotNull String serviceName,
                                          @NotNull String deploymentName, boolean deleteFromStorage)
-    throws Exception {
+            throws Exception {
         DeploymentOperations dop = getDeploymentOperations(client);
 
         OperationStatusResponse osr = dop.deleteByName(serviceName, deploymentName, deleteFromStorage);
@@ -2216,7 +2219,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     @NotNull
     private static List<VirtualMachineSize> loadVMSizes(@NotNull ManagementClient client,
                                                         @NotNull List<VirtualMachineSize> vmSizeList)
-    throws Exception {
+            throws Exception {
         RoleSizeListResponse rslr = getRoleSizeOperations(client).list();
 
         if (rslr == null) {

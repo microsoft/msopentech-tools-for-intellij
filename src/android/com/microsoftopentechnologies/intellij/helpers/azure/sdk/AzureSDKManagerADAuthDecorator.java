@@ -45,7 +45,7 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
     }
 
     private interface Func0<T> {
-        abstract T run() throws AzureCmdException;
+        T run() throws AzureCmdException;
     }
 
     protected <T> T runWithRetry(String subscriptionId, Func0<T> func) throws AzureCmdException {
@@ -663,7 +663,6 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
         });
     }
 
-    @NotNull
     @Override
     public void deleteTableEntity(@NotNull final StorageAccount storageAccount,
                                   @NotNull final TableEntity tableEntity)
