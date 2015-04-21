@@ -35,6 +35,9 @@ import java.awt.*;
 import java.awt.event.*;
 
 public class CreateQueueForm extends JDialog {
+    private static final String NAME_REGEX = "^[a-z0-9](?!.*--)[a-z0-9-]+[a-z0-9]$";
+    private static final int NAME_MAX = 63;
+    private static final int NAME_MIN = 3;
     private JPanel contentPane;
     private JButton buttonOK;
     private JButton buttonCancel;
@@ -43,6 +46,8 @@ public class CreateQueueForm extends JDialog {
     private Runnable onCreate;
     private StorageAccount storageAccount;
     private Project project;
+
+
 
     public CreateQueueForm() {
         setContentPane(contentPane);
@@ -104,7 +109,7 @@ public class CreateQueueForm extends JDialog {
 
     private void onOK() {
         final String name = nameTextField.getText();
-        if (name.length() < 3 || name.length() > 63 || !name.matches("^[a-z0-9](?!.*--)[a-z0-9-]+[a-z0-9]$")) {
+        if (name.length() < NAME_MIN || name.length() > NAME_MAX || !name.matches(NAME_REGEX)) {
             JOptionPane.showMessageDialog(this, "Queue names must start with a letter or number, and can contain only letters, numbers, and the dash (-) character.\n" +
                     "Every dash (-) character must be immediately preceded and followed by a letter or number; consecutive dashes are not permitted in container names.\n" +
                     "All letters in a container name must be lowercase.\n" +

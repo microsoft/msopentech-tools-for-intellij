@@ -92,7 +92,7 @@ public class QueueMessageForm extends JDialog {
 
             @Override
             public void replace(FilterBypass filterBypass, int i, int i1, String s, AttributeSet attributeSet) throws BadLocationException {
-                if(pat.matcher(s).matches()) {
+                if (pat.matcher(s).matches()) {
                     super.replace(filterBypass, i, i1, s, attributeSet);
                 }
             }
@@ -145,7 +145,9 @@ public class QueueMessageForm extends JDialog {
 
                     AzureSDKManagerImpl.getManager().createQueueMessage(storageAccount, queueMessage, expireSeconds);
 
-                    ApplicationManager.getApplication().invokeLater(onAddedMessage);
+                    if(onAddedMessage != null) {
+                        ApplicationManager.getApplication().invokeLater(onAddedMessage);
+                    }
                 } catch (AzureCmdException e) {
                     UIHelper.showException("Error adding queue message", e, "Service Explorer", false, true);
                 }
