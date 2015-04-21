@@ -20,7 +20,6 @@ import com.intellij.ui.JBColor;
 import org.jdesktop.swingx.JXMonthView;
 import org.jdesktop.swingx.calendar.DateSelectionModel;
 import sun.reflect.misc.ReflectUtil;
-import sun.swing.SwingUtilities2;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
@@ -28,6 +27,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
 import java.text.SimpleDateFormat;
 
 public abstract class DatePickerCellEditor extends DefaultCellEditor {
@@ -53,7 +53,7 @@ public abstract class DatePickerCellEditor extends DefaultCellEditor {
                 super.stopCellEditing();
             }
 
-            SwingUtilities2.checkAccess(this.constructor.getModifiers());
+            checkAccess(this.constructor.getModifiers());
             this.value = this.constructor.newInstance(var1);
         } catch (Exception var3) {
             ((JComponent)this.getComponent()).setBorder(new LineBorder( JBColor.RED));
@@ -75,7 +75,7 @@ public abstract class DatePickerCellEditor extends DefaultCellEditor {
             }
 
             ReflectUtil.checkPackageAccess(columnClass);
-            SwingUtilities2.checkAccess(columnClass.getModifiers());
+            checkAccess(columnClass.getModifiers());
             this.constructor = columnClass.getConstructor(String.class);
         } catch (Exception ignored) {
             return null;
@@ -125,6 +125,12 @@ public abstract class DatePickerCellEditor extends DefaultCellEditor {
 
     public Object getCellEditorValue() {
         return this.value;
+    }
+
+    private static void checkAccess(int var0) {
+        if(System.getSecurityManager() != null && !Modifier.isPublic(var0)) {
+            throw new SecurityException("Resource is not accessible");
+        }
     }
 
 }
