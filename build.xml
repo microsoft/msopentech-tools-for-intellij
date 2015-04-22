@@ -403,6 +403,7 @@ limitations under the License.
     <property name="msopentech-tools-for-intellij.output.dir" value="${module.msopentech-tools-for-intellij.basedir}/out/production/msopentech-tools-for-intellij"/>
 
     <path id="msopentech-tools-for-intellij.module.bootclasspath">
+        <pathelement location="${jdk.home}/jre/lib/rt.jar"/>
         <!-- Paths to be included in compilation bootclasspath -->
     </path>
 
