@@ -17,6 +17,7 @@
 package com.microsoftopentechnologies.intellij.serviceexplorer.azure.storage;
 
 import com.google.common.collect.ImmutableMap;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.progress.ProgressIndicator;
@@ -28,6 +29,7 @@ import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerImpl;
 import com.microsoftopentechnologies.intellij.helpers.storage.QueueExplorerFileEditorProvider;
+import com.microsoftopentechnologies.intellij.helpers.storage.QueueFileEditor;
 import com.microsoftopentechnologies.intellij.model.storage.Queue;
 import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
 import com.microsoftopentechnologies.intellij.serviceexplorer.Node;
@@ -201,8 +203,22 @@ public class QueueNode extends Node {
                         try {
                             AzureSDKManagerImpl.getManager().clearQueue(storageAccount, queue);
 
-                            parent.removeAllChildNodes();
-                            parent.load();
+                            ApplicationManager.getApplication().runReadAction(new Runnable() {
+                                @Override
+                                public void run() {
+                                    VirtualFile file = getOpenedFile();
+                                    if(file != null) {
+                                        final QueueFileEditor queueFileEditor = (QueueFileEditor) FileEditorManager.getInstance(getProject()).getEditors(file)[0];
+                                        ApplicationManager.getApplication().invokeLater(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                queueFileEditor.fillGrid();
+                                            }
+                                        });
+                                    }
+                                }
+                            });
+
                         } catch (AzureCmdException ex) {
                             UIHelper.showException("Error clearing queue", ex, "Service explorer", false, true);
                         }
