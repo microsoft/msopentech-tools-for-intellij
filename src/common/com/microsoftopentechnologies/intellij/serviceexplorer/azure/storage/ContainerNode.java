@@ -26,7 +26,6 @@ import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
 import com.microsoftopentechnologies.intellij.serviceexplorer.*;
 
 import javax.swing.*;
-import java.util.HashMap;
 import java.util.Map;
 
 public class ContainerNode extends Node {
@@ -87,6 +86,10 @@ public class ContainerNode extends Node {
                 null);
 
             if (optionDialog == JOptionPane.YES_OPTION) {
+                Object openedFile = DefaultLoader.getIdeHelper().getOpenedFile(getProject(), storageAccount, blobContainer);
+                if(openedFile != null) {
+                    DefaultLoader.getIdeHelper().closeFile(getProject(), openedFile);
+                }
                 DefaultLoader.getIdeHelper().runInBackground(getProject(), "Creating blob container...", false, false, null, new Runnable(){
                     @Override
                     public void run() {

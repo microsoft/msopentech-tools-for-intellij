@@ -226,6 +226,59 @@ public class IDEHelperImpl implements IDEHelper {
     }
 
     public void openContainer(@NotNull Object projectObject, StorageAccount storageAccount, BlobContainer blobContainer) {
+
+        if (getOpenedFile(projectObject, storageAccount, blobContainer) == null) {
+
+            LightVirtualFile containerVirtualFile = new LightVirtualFile(blobContainer.getName() + " [Container]");
+            containerVirtualFile.putUserData(BlobExplorerFileEditorProvider.CONTAINER_KEY, blobContainer);
+            containerVirtualFile.putUserData(BlobExplorerFileEditorProvider.STORAGE_KEY, storageAccount);
+
+            containerVirtualFile.setFileType(new FileType() {
+                @NotNull
+                @Override
+                public String getName() {
+                    return "BlobContainer";
+                }
+
+                @NotNull
+                @Override
+                public String getDescription() {
+                    return "BlobContainer";
+                }
+
+                @NotNull
+                @Override
+                public String getDefaultExtension() {
+                    return "";
+                }
+
+                @Nullable
+                @Override
+                public Icon getIcon() {
+                    return DefaultLoader.getUIHelper().loadIcon("container.png");
+                }
+
+                @Override
+                public boolean isBinary() {
+                    return true;
+                }
+
+                @Override
+                public boolean isReadOnly() {
+                    return false;
+                }
+
+                @Override
+                public String getCharset(@NotNull VirtualFile virtualFile, @NotNull byte[] bytes) {
+                    return "UTF8";
+                }
+            });
+
+            FileEditorManager.getInstance((Project) projectObject).openFile(containerVirtualFile, true, true);
+        }
+    }
+
+    public Object getOpenedFile(Object projectObject, StorageAccount storageAccount, BlobContainer blobContainer) {
         FileEditorManager fileEditorManager = FileEditorManager.getInstance((Project) projectObject);
 
         for (VirtualFile editedFile : fileEditorManager.getOpenFiles()) {
@@ -236,56 +289,14 @@ public class IDEHelperImpl implements IDEHelper {
                     && editedBlobContainer != null
                     && editedStorageAccount.getName().equals(storageAccount.getName())
                     && editedBlobContainer.getName().equals(blobContainer.getName())) {
-                return;
+                return editedFile;
             }
         }
+        return null;
+    }
 
-        LightVirtualFile containerVirtualFile = new LightVirtualFile(blobContainer.getName() + " [Container]");
-        containerVirtualFile.putUserData(BlobExplorerFileEditorProvider.CONTAINER_KEY, blobContainer);
-        containerVirtualFile.putUserData(BlobExplorerFileEditorProvider.STORAGE_KEY, storageAccount);
-
-        containerVirtualFile.setFileType(new FileType() {
-            @NotNull
-            @Override
-            public String getName() {
-                return "BlobContainer";
-            }
-
-            @NotNull
-            @Override
-            public String getDescription() {
-                return "BlobContainer";
-            }
-
-            @NotNull
-            @Override
-            public String getDefaultExtension() {
-                return "";
-            }
-
-            @Nullable
-            @Override
-            public Icon getIcon() {
-                return DefaultLoader.getUIHelper().loadIcon("container.png");
-            }
-
-            @Override
-            public boolean isBinary() {
-                return true;
-            }
-
-            @Override
-            public boolean isReadOnly() {
-                return false;
-            }
-
-            @Override
-            public String getCharset(@NotNull VirtualFile virtualFile, @NotNull byte[] bytes) {
-                return "UTF8";
-            }
-        });
-
-        fileEditorManager.openFile(containerVirtualFile, true, true);
+    public void closeFile(Object projectObject, Object openedFile) {
+        FileEditorManager.getInstance((Project) projectObject).closeFile((VirtualFile) openedFile);
     }
 
     public void invokeAuthLauncherTask(Object projectObject, BrowserLauncher browserLauncher, String windowTitle) {

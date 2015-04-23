@@ -16,20 +16,18 @@
 
 package com.microsoftopentechnologies.intellij.serviceexplorer.azure.storage;
 
+
 import com.google.common.collect.ImmutableMap;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileTypes.FileType;
-import com.intellij.openapi.progress.ProgressIndicator;
-import com.intellij.openapi.progress.ProgressManager;
-import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.LightVirtualFile;
-import com.microsoftopentechnologies.intellij.helpers.UIHelper;
+import com.microsoftopentechnologies.intellij.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerImpl;
-import com.microsoftopentechnologies.intellij.helpers.storage.QueueExplorerFileEditorProvider;
-import com.microsoftopentechnologies.intellij.model.storage.Queue;
+import com.microsoftopentechnologies.intellij.helpers.storage.TableExplorerFileEditorProvider;
 import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
+import com.microsoftopentechnologies.intellij.model.storage.Table;
 import com.microsoftopentechnologies.intellij.serviceexplorer.Node;
 import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionEvent;
 import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionListener;
@@ -39,41 +37,39 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.util.Map;
 
-public class QueueNode extends Node {
-    private static final String QUEUE_MODULE_ID = QueueNode.class.getName();
+public class TableNode extends Node {
+    private static final String TABLE_MODULE_ID = TableNode.class.getName();
     private static final String ICON_PATH = "container.png";
-    private final Queue queue;
+    private final Table table;
     private final StorageAccount storageAccount;
 
-    public QueueNode(QueueModule parent, StorageAccount storageAccount, Queue queue) {
-        super(QUEUE_MODULE_ID, queue.getName(), parent, ICON_PATH, true);
+    public TableNode(TableModule parent, StorageAccount storageAccount, Table table) {
+        super(TABLE_MODULE_ID, table.getName(), parent, ICON_PATH, true);
 
         this.storageAccount = storageAccount;
-        this.queue = queue;
+        this.table = table;
     }
-
-
 
     @Override
     protected void onNodeClick(NodeActionEvent ex) {
         if(getOpenedFile() == null) {
 
 
-            LightVirtualFile queueVirtualFile = new LightVirtualFile(queue.getName() + " [Queue]");
-            queueVirtualFile.putUserData(QueueExplorerFileEditorProvider.QUEUE_KEY, queue);
-            queueVirtualFile.putUserData(QueueExplorerFileEditorProvider.STORAGE_KEY, storageAccount);
+            LightVirtualFile tableVirtualFile = new LightVirtualFile(table.getName() + " [Table]");
+            tableVirtualFile.putUserData(TableExplorerFileEditorProvider.TABLE_KEY, table);
+            tableVirtualFile.putUserData(TableExplorerFileEditorProvider.STORAGE_KEY, storageAccount);
 
-            queueVirtualFile.setFileType(new FileType() {
+            tableVirtualFile.setFileType(new FileType() {
                 @NotNull
                 @Override
                 public String getName() {
-                    return "Queue";
+                    return "Table";
                 }
 
                 @NotNull
                 @Override
                 public String getDescription() {
-                    return "Queue";
+                    return "Table";
                 }
 
                 @NotNull
@@ -85,7 +81,7 @@ public class QueueNode extends Node {
                 @Nullable
                 @Override
                 public Icon getIcon() {
-                    return UIHelper.loadIcon("container.png");
+                    return DefaultLoader.getUIHelper().loadIcon("container.png");
                 }
 
                 @Override
@@ -104,16 +100,15 @@ public class QueueNode extends Node {
                 }
             });
 
-            FileEditorManager.getInstance(getProject()).openFile(queueVirtualFile, true, true);
+            FileEditorManager.getInstance(getProject()).openFile(tableVirtualFile, true, true);
         }
     }
 
     @Override
     protected Map<String, Class<? extends NodeActionListener>> initActions() {
         return ImmutableMap.of(
-                "View Queue", ViewQueue.class,
-                "Delete", DeleteQueue.class,
-                "Clear Queue", ClearQueue.class
+                "View Table", ViewTable.class,
+                "Delete", DeleteTable.class
         );
     }
 
@@ -121,13 +116,13 @@ public class QueueNode extends Node {
         FileEditorManager fileEditorManager = FileEditorManager.getInstance(getProject());
 
         for (VirtualFile editedFile : fileEditorManager.getOpenFiles()) {
-            Queue editedQueue = editedFile.getUserData(QueueExplorerFileEditorProvider.QUEUE_KEY);
-            StorageAccount editedStorageAccount = editedFile.getUserData(QueueExplorerFileEditorProvider.STORAGE_KEY);
+            Table editedTable = editedFile.getUserData(TableExplorerFileEditorProvider.TABLE_KEY);
+            StorageAccount editedStorageAccount = editedFile.getUserData(TableExplorerFileEditorProvider.STORAGE_KEY);
 
             if(editedStorageAccount != null
-                    && editedQueue != null
+                    && editedTable != null
                     && editedStorageAccount.getName().equals(storageAccount.getName())
-                    && editedQueue.getName().equals(queue.getName())) {
+                    && editedTable.getName().equals(table.getName())) {
                 return editedFile;
             }
         }
@@ -135,19 +130,20 @@ public class QueueNode extends Node {
         return null;
     }
 
-    public class ViewQueue extends NodeActionListener {
+
+    public class ViewTable extends NodeActionListener {
         @Override
         public void actionPerformed(NodeActionEvent e) {
             onNodeClick(null);
         }
     }
 
-    public class DeleteQueue extends NodeActionListener {
+    public class DeleteTable extends NodeActionListener {
 
         @Override
         public void actionPerformed(final NodeActionEvent e) {
             int optionDialog = JOptionPane.showOptionDialog(null,
-                    "Are you sure you want to delete the queue \"" + queue.getName() + "\"?",
+                    "Are you sure you want to delete the table \"" + table.getName() + "\"?",
                     "Service explorer",
                     JOptionPane.YES_NO_OPTION,
                     JOptionPane.QUESTION_MESSAGE,
@@ -159,56 +155,22 @@ public class QueueNode extends Node {
 
                 VirtualFile openedFile = getOpenedFile();
                 if(openedFile != null) {
-                    FileEditorManager.getInstance(getProject()).closeFile(openedFile);
+                    DefaultLoader.getIdeHelper().closeFile(getProject(), openedFile);
                 }
 
-                ProgressManager.getInstance().run(new Task.Backgroundable(getProject(), "Deleting queue...", false) {
+                DefaultLoader.getIdeHelper().runInBackground(getProject(), "Deleting table...", false, false, null, new Runnable() {
                     @Override
-                    public void run(@NotNull ProgressIndicator progressIndicator) {
+                    public void run() {
                         try {
-                            AzureSDKManagerImpl.getManager().deleteQueue(storageAccount, queue);
+                            AzureSDKManagerImpl.getManager().deleteTable(storageAccount, table);
 
                             parent.removeAllChildNodes();
                             parent.load();
                         } catch (AzureCmdException ex) {
-                            UIHelper.showException("Error deleting queue", ex, "Service explorer", false, true);
+                            DefaultLoader.getUIHelper().showException("Error deleting table", ex, "Service explorer", false, true);
                         }
                     }
                 });
-
-            }
-        }
-    }
-
-    public class ClearQueue extends NodeActionListener {
-
-        @Override
-        public void actionPerformed(final NodeActionEvent e) {
-            int optionDialog = JOptionPane.showOptionDialog(null,
-                    "Are you sure you want to clear the queue \"" + queue.getName() + "\"?",
-                    "Service explorer",
-                    JOptionPane.YES_NO_OPTION,
-                    JOptionPane.QUESTION_MESSAGE,
-                    null,
-                    new String[]{"Yes", "No"},
-                    null);
-
-            if (optionDialog == JOptionPane.YES_OPTION) {
-
-                ProgressManager.getInstance().run(new Task.Backgroundable(getProject(), "Clearing queue...", false) {
-                    @Override
-                    public void run(@NotNull ProgressIndicator progressIndicator) {
-                        try {
-                            AzureSDKManagerImpl.getManager().clearQueue(storageAccount, queue);
-
-                            parent.removeAllChildNodes();
-                            parent.load();
-                        } catch (AzureCmdException ex) {
-                            UIHelper.showException("Error clearing queue", ex, "Service explorer", false, true);
-                        }
-                    }
-                });
-
             }
         }
     }

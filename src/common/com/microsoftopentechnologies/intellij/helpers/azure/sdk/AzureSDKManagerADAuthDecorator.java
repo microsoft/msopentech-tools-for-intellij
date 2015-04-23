@@ -499,9 +499,9 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
         });
     }
 
-    @NotNull
+
     @Override
-    public List<Queue> getQueues(@NotNull final StorageAccount storageAccount)
+    public List<Queue> getQueues(final StorageAccount storageAccount)
             throws AzureCmdException {
         return runWithRetry(storageAccount.getSubscriptionId(), new Func0<List<Queue>>() {
             @Override
@@ -511,9 +511,9 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
         });
     }
 
-    @NotNull
+
     @Override
-    public Queue createQueue(@NotNull final StorageAccount storageAccount, @NotNull final Queue queue)
+    public Queue createQueue(final StorageAccount storageAccount, final Queue queue)
             throws AzureCmdException {
         return runWithRetry(storageAccount.getSubscriptionId(), new Func0<Queue>() {
             @Override
@@ -524,7 +524,7 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
     }
 
     @Override
-    public void deleteQueue(@NotNull final StorageAccount storageAccount, @NotNull final Queue queue)
+    public void deleteQueue(final StorageAccount storageAccount, final Queue queue)
             throws AzureCmdException {
         runWithRetry(storageAccount.getSubscriptionId(), new Func0<Void>() {
             @Override
@@ -535,9 +535,9 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
         });
     }
 
-    @NotNull
+
     @Override
-    public List<QueueMessage> getQueueMessages(@NotNull final StorageAccount storageAccount, @NotNull final Queue queue)
+    public List<QueueMessage> getQueueMessages(final StorageAccount storageAccount, final Queue queue)
             throws AzureCmdException {
         return runWithRetry(storageAccount.getSubscriptionId(), new Func0<List<QueueMessage>>() {
             @Override
@@ -548,7 +548,7 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
     }
 
     @Override
-    public void clearQueue(@NotNull final StorageAccount storageAccount, @NotNull final Queue queue)
+    public void clearQueue(final StorageAccount storageAccount, final Queue queue)
             throws AzureCmdException {
         runWithRetry(storageAccount.getSubscriptionId(), new Func0<Void>() {
             @Override
@@ -560,8 +560,8 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
     }
 
     @Override
-    public void createQueueMessage(@NotNull final StorageAccount storageAccount,
-                                   @NotNull final QueueMessage queueMessage,
+    public void createQueueMessage(final StorageAccount storageAccount,
+                                   final QueueMessage queueMessage,
                                    final int timeToLiveInSeconds)
             throws AzureCmdException {
         runWithRetry(storageAccount.getSubscriptionId(), new Func0<Void>() {
@@ -573,10 +573,10 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
         });
     }
 
-    @NotNull
+
     @Override
-    public QueueMessage dequeueFirstQueueMessage(@NotNull final StorageAccount storageAccount,
-                                                 @NotNull final Queue queue)
+    public QueueMessage dequeueFirstQueueMessage(final StorageAccount storageAccount,
+                                                 final Queue queue)
             throws AzureCmdException {
         return runWithRetry(storageAccount.getSubscriptionId(), new Func0<QueueMessage>() {
             @Override
@@ -586,9 +586,9 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
         });
     }
 
-    @NotNull
+
     @Override
-    public List<Table> getTables(@NotNull final StorageAccount storageAccount)
+    public List<Table> getTables(final StorageAccount storageAccount)
             throws AzureCmdException {
         return runWithRetry(storageAccount.getSubscriptionId(), new Func0<List<Table>>() {
             @Override
@@ -598,9 +598,9 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
         });
     }
 
-    @NotNull
+
     @Override
-    public Table createTable(@NotNull final StorageAccount storageAccount, @NotNull final Table table)
+    public Table createTable(final StorageAccount storageAccount, final Table table)
             throws AzureCmdException {
         return runWithRetry(storageAccount.getSubscriptionId(), new Func0<Table>() {
             @Override
@@ -611,7 +611,7 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
     }
 
     @Override
-    public void deleteTable(@NotNull final StorageAccount storageAccount, @NotNull final Table table)
+    public void deleteTable(final StorageAccount storageAccount, final Table table)
             throws AzureCmdException {
         runWithRetry(storageAccount.getSubscriptionId(), new Func0<Void>() {
             @Override
@@ -622,11 +622,11 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
         });
     }
 
-    @NotNull
+
     @Override
-    public List<TableEntity> getTableEntities(@NotNull final StorageAccount storageAccount,
-                                              @NotNull final Table table,
-                                              @NotNull final String filter)
+    public List<TableEntity> getTableEntities(final StorageAccount storageAccount,
+                                              final Table table,
+                                              final String filter)
             throws AzureCmdException {
         return runWithRetry(storageAccount.getSubscriptionId(), new Func0<List<TableEntity>>() {
             @Override
@@ -636,11 +636,11 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
         });
     }
 
-    @NotNull
+
     @Override
-    public TableEntity createTableEntity(@NotNull final StorageAccount storageAccount, @NotNull final String tableName,
-                                         @NotNull final String partitionKey, @NotNull final String rowKey,
-                                         @NotNull final Map<String, Property> properties)
+    public TableEntity createTableEntity(final StorageAccount storageAccount, final String tableName,
+                                         final String partitionKey, final String rowKey,
+                                         final Map<String, Property> properties)
             throws AzureCmdException {
         return runWithRetry(storageAccount.getSubscriptionId(), new Func0<TableEntity>() {
             @Override
@@ -650,10 +650,10 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
         });
     }
 
-    @NotNull
+
     @Override
-    public TableEntity updateTableEntity(@NotNull final StorageAccount storageAccount,
-                                         @NotNull final TableEntity tableEntity)
+    public TableEntity updateTableEntity(final StorageAccount storageAccount,
+                                         final TableEntity tableEntity)
             throws AzureCmdException {
         return runWithRetry(storageAccount.getSubscriptionId(), new Func0<TableEntity>() {
             @Override
@@ -664,8 +664,8 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
     }
 
     @Override
-    public void deleteTableEntity(@NotNull final StorageAccount storageAccount,
-                                  @NotNull final TableEntity tableEntity)
+    public void deleteTableEntity(final StorageAccount storageAccount,
+                                  final TableEntity tableEntity)
             throws AzureCmdException {
         runWithRetry(storageAccount.getSubscriptionId(), new Func0<Void>() {
             @Override

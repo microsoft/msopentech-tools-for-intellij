@@ -1,12 +1,12 @@
 /**
  * Copyright 2014 Microsoft Open Technologies Inc.
- *
+ * <p/>
  * Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * <p/>
  *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p/>
  * Unless required by applicable law or agreed to in writing, software
  *  distributed under the License is distributed on an "AS IS" BASIS,
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,19 +15,16 @@
  */
 package com.microsoftopentechnologies.intellij.helpers.azure.sdk;
 
-import com.microsoft.azure.storage.RequestCompletedEvent;
-import com.microsoft.azure.storage.StorageEvent;
 import com.microsoftopentechnologies.intellij.helpers.CallableSingleArg;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.model.storage.*;
+import com.microsoftopentechnologies.intellij.model.storage.TableEntity.Property;
 import com.microsoftopentechnologies.intellij.model.vm.*;
 
-
-import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
-import java.util.concurrent.Callable;
+import java.util.Map;
 
 public interface AzureSDKManager {
 
@@ -126,17 +123,75 @@ public interface AzureSDKManager {
             throws AzureCmdException;
 
 
-    public void uploadBlobFileContent(StorageAccount storageAccount,
-                                      BlobContainer blobContainer,
-                                      String filePath,
-                                      InputStream content,
-                                      CallableSingleArg<Void, Long> processBlockEvent,
-                                      long maxBlockSize,
-                                      long length)
+    void uploadBlobFileContent(StorageAccount storageAccount,
+                               BlobContainer blobContainer,
+                               String filePath,
+                               InputStream content,
+                               CallableSingleArg<Void, Long> processBlockEvent,
+                               long maxBlockSize,
+                               long length)
             throws AzureCmdException;
 
     void downloadBlobFileContent(StorageAccount storageAccount,
                                  BlobFile blobFile,
                                  OutputStream content)
+            throws AzureCmdException;
+
+
+    List<Queue> getQueues(StorageAccount storageAccount)
+            throws AzureCmdException;
+
+
+    Queue createQueue(StorageAccount storageAccount,
+                      Queue queue)
+            throws AzureCmdException;
+
+    void deleteQueue(StorageAccount storageAccount, Queue queue)
+            throws AzureCmdException;
+
+
+    List<QueueMessage> getQueueMessages(StorageAccount storageAccount, Queue queue)
+            throws AzureCmdException;
+
+    void clearQueue(StorageAccount storageAccount, Queue queue)
+            throws AzureCmdException;
+
+    void createQueueMessage(StorageAccount storageAccount,
+                            QueueMessage queueMessage,
+                            int timeToLiveInSeconds)
+            throws AzureCmdException;
+
+
+    QueueMessage dequeueFirstQueueMessage(StorageAccount storageAccount, Queue queue)
+            throws AzureCmdException;
+
+
+    List<Table> getTables(StorageAccount storageAccount)
+            throws AzureCmdException;
+
+
+    Table createTable(StorageAccount storageAccount,
+                      Table table)
+            throws AzureCmdException;
+
+    void deleteTable(StorageAccount storageAccount, Table table)
+            throws AzureCmdException;
+
+
+    List<TableEntity> getTableEntities(StorageAccount storageAccount, Table table,
+                                       String filter)
+            throws AzureCmdException;
+
+
+    TableEntity createTableEntity(StorageAccount storageAccount, String tableName,
+                                  String partitionKey, String rowKey,
+                                  Map<String, Property> properties)
+            throws AzureCmdException;
+
+
+    TableEntity updateTableEntity(StorageAccount storageAccount, TableEntity tableEntity)
+            throws AzureCmdException;
+
+    void deleteTableEntity(StorageAccount storageAccount, TableEntity tableEntity)
             throws AzureCmdException;
 }

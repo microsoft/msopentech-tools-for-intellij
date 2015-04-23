@@ -27,6 +27,10 @@ public interface IDEHelper {
 
     void openContainer(Object projectObject, StorageAccount storageAccount, BlobContainer blobContainer);
 
+    public Object getOpenedFile(Object projectObject, StorageAccount storageAccount, BlobContainer blobContainer);
+
+    public void closeFile(Object projectObject, Object openedFile);
+
     void invokeAuthLauncherTask(Object projectObject, BrowserLauncher browserLauncher, String windowTitle);
 
     void invokeBackgroundLoader(Object projectObject, Node node, SettableFuture<List<Node>> future, String name);

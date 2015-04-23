@@ -16,25 +16,16 @@
 
 package com.microsoftopentechnologies.intellij.serviceexplorer.azure.storage;
 
-
-import com.microsoftopentechnologies.intellij.forms.CreateTableForm;
-import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerImpl;
 import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
 import com.microsoftopentechnologies.intellij.model.storage.Table;
 import com.microsoftopentechnologies.intellij.serviceexplorer.Node;
-import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionEvent;
-import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionListener;
-
-import java.util.Map;
 
 public class TableModule extends Node {
 
     private static final String TABLES = "Tables";
-    private static final String ACTION_CREATE = "Create new table";
-    private Node parent;
-    private final StorageAccount storageAccount;
+    final StorageAccount storageAccount;
 
     public TableModule(StorageNode parent, StorageAccount storageAccount) {
         super(TABLES + storageAccount.getName(), TABLES, parent, null, true);
@@ -51,35 +42,4 @@ public class TableModule extends Node {
             addChildNode(new TableNode(this, storageAccount, table));
         }
     }
-
-    @Override
-    protected Map<String, Class<? extends NodeActionListener>> initActions() {
-
-        addAction(ACTION_CREATE, new CreateTableAction());
-
-        return null;
-    }
-
-
-    public class CreateTableAction extends NodeActionListener {
-        @Override
-        public void actionPerformed(NodeActionEvent e) {
-            CreateTableForm form = new CreateTableForm();
-
-            form.setProject(getProject());
-            form.setStorageAccount(storageAccount);
-
-            form.setOnCreate(new Runnable() {
-                @Override
-                public void run() {
-                    parent.removeAllChildNodes();
-                    parent.load();
-                }
-            });
-
-            UIHelper.packAndCenterJDialog(form);
-            form.setVisible(true);
-        }
-    }
-
 }

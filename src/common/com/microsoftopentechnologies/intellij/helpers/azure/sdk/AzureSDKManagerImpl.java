@@ -19,7 +19,6 @@ import com.google.common.base.Strings;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
-import com.intellij.openapi.application.ApplicationManager;
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.blob.*;
@@ -462,7 +461,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         }
     }
 
-    @NotNull
+
     @Override
     public List<VirtualMachineImage> getVirtualMachineImages(String subscriptionId) throws AzureCmdException {
         List<VirtualMachineImage> vmImageList = new ArrayList<VirtualMachineImage>();
@@ -1152,9 +1151,9 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         }
     }
 
-    @NotNull
+
     @Override
-    public List<Queue> getQueues(@NotNull StorageAccount storageAccount)
+    public List<Queue> getQueues(StorageAccount storageAccount)
             throws AzureCmdException {
         List<Queue> qList = new ArrayList<Queue>();
 
@@ -1176,10 +1175,10 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         }
     }
 
-    @NotNull
+
     @Override
-    public Queue createQueue(@NotNull StorageAccount storageAccount,
-                             @NotNull Queue queue)
+    public Queue createQueue(StorageAccount storageAccount,
+                             Queue queue)
             throws AzureCmdException {
         try {
             CloudQueueClient client = getCloudQueueClient(storageAccount);
@@ -1201,7 +1200,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     }
 
     @Override
-    public void deleteQueue(@NotNull StorageAccount storageAccount, @NotNull Queue queue)
+    public void deleteQueue(StorageAccount storageAccount, Queue queue)
             throws AzureCmdException {
         try {
             CloudQueueClient client = getCloudQueueClient(storageAccount);
@@ -1213,9 +1212,9 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         }
     }
 
-    @NotNull
+
     @Override
-    public List<QueueMessage> getQueueMessages(@NotNull StorageAccount storageAccount, @NotNull Queue queue)
+    public List<QueueMessage> getQueueMessages(StorageAccount storageAccount, Queue queue)
             throws AzureCmdException {
         List<QueueMessage> qmList = new ArrayList<QueueMessage>();
 
@@ -1254,7 +1253,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     }
 
     @Override
-    public void clearQueue(@NotNull StorageAccount storageAccount, @NotNull Queue queue)
+    public void clearQueue(StorageAccount storageAccount, Queue queue)
             throws AzureCmdException {
         try {
             CloudQueueClient client = getCloudQueueClient(storageAccount);
@@ -1267,8 +1266,8 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     }
 
     @Override
-    public void createQueueMessage(@NotNull StorageAccount storageAccount,
-                                   @NotNull QueueMessage queueMessage,
+    public void createQueueMessage(StorageAccount storageAccount,
+                                   QueueMessage queueMessage,
                                    int timeToLiveInSeconds)
             throws AzureCmdException {
         try {
@@ -1281,9 +1280,9 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         }
     }
 
-    @NotNull
+
     @Override
-    public QueueMessage dequeueFirstQueueMessage(@NotNull StorageAccount storageAccount, @NotNull Queue queue)
+    public QueueMessage dequeueFirstQueueMessage(StorageAccount storageAccount, Queue queue)
             throws AzureCmdException {
         try {
             CloudQueueClient client = getCloudQueueClient(storageAccount);
@@ -1326,9 +1325,9 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         }
     }
 
-    @NotNull
+
     @Override
-    public List<Table> getTables(@NotNull StorageAccount storageAccount)
+    public List<Table> getTables(StorageAccount storageAccount)
             throws AzureCmdException {
         List<Table> tList = new ArrayList<Table>();
 
@@ -1351,10 +1350,10 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         }
     }
 
-    @NotNull
+
     @Override
-    public Table createTable(@NotNull StorageAccount storageAccount,
-                             @NotNull Table table)
+    public Table createTable(StorageAccount storageAccount,
+                             Table table)
             throws AzureCmdException {
         try {
             CloudTableClient client = getCloudTableClient(storageAccount);
@@ -1373,7 +1372,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     }
 
     @Override
-    public void deleteTable(@NotNull StorageAccount storageAccount, @NotNull Table table)
+    public void deleteTable(StorageAccount storageAccount, Table table)
             throws AzureCmdException {
         try {
             CloudTableClient client = getCloudTableClient(storageAccount);
@@ -1385,10 +1384,10 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         }
     }
 
-    @NotNull
+
     @Override
-    public List<TableEntity> getTableEntities(@NotNull StorageAccount storageAccount, @NotNull Table table,
-                                              @NotNull String filter)
+    public List<TableEntity> getTableEntities(StorageAccount storageAccount, Table table,
+                                              String filter)
             throws AzureCmdException {
         List<TableEntity> teList = new ArrayList<TableEntity>();
 
@@ -1417,11 +1416,11 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         }
     }
 
-    @NotNull
+
     @Override
-    public TableEntity createTableEntity(@NotNull StorageAccount storageAccount, @NotNull String tableName,
-                                         @NotNull String partitionKey, @NotNull String rowKey,
-                                         @NotNull Map<String, Property> properties)
+    public TableEntity createTableEntity(StorageAccount storageAccount, String tableName,
+                                         String partitionKey, String rowKey,
+                                         Map<String, Property> properties)
             throws AzureCmdException {
         try {
             CloudTableClient client = getCloudTableClient(storageAccount);
@@ -1442,9 +1441,9 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         }
     }
 
-    @NotNull
+
     @Override
-    public TableEntity updateTableEntity(@NotNull StorageAccount storageAccount, @NotNull TableEntity tableEntity)
+    public TableEntity updateTableEntity(StorageAccount storageAccount, TableEntity tableEntity)
             throws AzureCmdException {
         try {
             CloudTableClient client = getCloudTableClient(storageAccount);
@@ -1465,7 +1464,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     }
 
     @Override
-    public void deleteTableEntity(@NotNull StorageAccount storageAccount, @NotNull TableEntity tableEntity)
+    public void deleteTableEntity(StorageAccount storageAccount, TableEntity tableEntity)
             throws AzureCmdException {
         try {
             CloudTableClient client = getCloudTableClient(storageAccount);
@@ -1482,8 +1481,8 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         }
     }
 
-    @NotNull
-    private static ComputeManagementClient getComputeManagementClient(@NotNull String subscriptionId) throws Exception {
+
+    private static ComputeManagementClient getComputeManagementClient(String subscriptionId) throws Exception {
         ComputeManagementClient client = AzureSDKHelper.getComputeManagementClient(subscriptionId);
 
         if (client == null) {
@@ -1534,7 +1533,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         return csa.createCloudBlobClient();
     }
 
-    @NotNull
+
     private static CloudQueueClient getCloudQueueClient(StorageAccount storageAccount)
             throws Exception {
         CloudStorageAccount csa = AzureSDKHelper.getCloudStorageAccount(storageAccount);
@@ -1542,7 +1541,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         return csa.createCloudQueueClient();
     }
 
-    @NotNull
+
     private static CloudTableClient getCloudTableClient(StorageAccount storageAccount)
             throws Exception {
         CloudStorageAccount csa = AzureSDKHelper.getCloudStorageAccount(storageAccount);
@@ -1550,7 +1549,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         return csa.createCloudTableClient();
     }
 
-    @NotNull
+
     private static HostedServiceOperations getHostedServiceOperations(ComputeManagementClient client)
             throws Exception {
         HostedServiceOperations hso = client.getHostedServicesOperations();
@@ -2603,10 +2602,10 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         }
     }
 
-    @NotNull
-    private static TableEntity getTableEntity(@NotNull String tableName,
-                                              @NotNull DynamicTableEntity dte,
-                                              @NotNull String subscriptionId) {
+
+    private static TableEntity getTableEntity(String tableName,
+                                              DynamicTableEntity dte,
+                                              String subscriptionId) {
         String partitionKey = Strings.nullToEmpty(dte.getPartitionKey());
         String rowKey = Strings.nullToEmpty(dte.getRowKey());
         String eTag = Strings.nullToEmpty(dte.getEtag());
@@ -2662,28 +2661,28 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         return new TableEntity(partitionKey, rowKey, tableName, eTag, timestamp, properties, subscriptionId);
     }
 
-    @NotNull
-    private static DynamicTableEntity getDynamicTableEntity(@NotNull TableEntity tableEntity)
+
+    private static DynamicTableEntity getDynamicTableEntity(TableEntity tableEntity)
             throws AzureCmdException {
         return getDynamicTableEntity(tableEntity.getPartitionKey(), tableEntity.getRowKey(),
                 tableEntity.getTimestamp(), tableEntity.getETag(), tableEntity.getProperties());
 
     }
 
-    @NotNull
-    private static DynamicTableEntity getDynamicTableEntity(@NotNull String partitionKey,
-                                                            @NotNull String rowKey,
-                                                            @NotNull Map<String, Property> properties)
+
+    private static DynamicTableEntity getDynamicTableEntity(String partitionKey,
+                                                            String rowKey,
+                                                            Map<String, Property> properties)
             throws AzureCmdException {
         return getDynamicTableEntity(partitionKey, rowKey, null, null, properties);
     }
 
-    @NotNull
-    private static DynamicTableEntity getDynamicTableEntity(@NotNull String partitionKey,
-                                                            @NotNull String rowKey,
-                                                            @Nullable Calendar timestamp,
-                                                            @Nullable String eTag,
-                                                            @NotNull Map<String, Property> properties)
+
+    private static DynamicTableEntity getDynamicTableEntity(String partitionKey,
+                                                            String rowKey,
+                                                            Calendar timestamp,
+                                                            String eTag,
+                                                            Map<String, Property> properties)
             throws AzureCmdException {
         Date ts = null;
 
@@ -2696,8 +2695,8 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         return new DynamicTableEntity(partitionKey, rowKey, ts, eTag, entityProperties);
     }
 
-    @NotNull
-    private static HashMap<String, EntityProperty> getEntityProperties(@NotNull Map<String, Property> properties) throws AzureCmdException {
+
+    private static HashMap<String, EntityProperty> getEntityProperties(Map<String, Property> properties) throws AzureCmdException {
         HashMap<String, EntityProperty> entityProperties = new HashMap<String, EntityProperty>();
 
         for (Entry<String, Property> entry : properties.entrySet()) {
