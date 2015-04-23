@@ -22,6 +22,6 @@ import com.microsoftopentechnologies.intellij.AzurePlugin;
 public class ActivityLogToolWindowFactoryCondition implements Condition<Project> {
     @Override
     public boolean value(Project project) {
-        return !AzurePlugin.IS_ANDROID_STUDIO && AzurePlugin.IS_WINDOWS;
+        return !AzurePlugin.IS_ANDROID_STUDIO;
     }
 }

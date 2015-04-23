@@ -1,17 +1,17 @@
 /**
  * Copyright 2014 Microsoft Open Technologies Inc.
- *
+ * <p/>
  * Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p/>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p/>
  * Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.microsoftopentechnologies.intellij.helpers.azure.sdk;
 
@@ -27,6 +27,7 @@ import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIHel
 import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManager;
 import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManagerImpl;
 import com.microsoftopentechnologies.intellij.model.storage.*;
+import com.microsoftopentechnologies.intellij.model.storage.TableEntity.Property;
 import com.microsoftopentechnologies.intellij.model.vm.*;
 
 
@@ -34,6 +35,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.util.List;
+import java.util.Map;
 
 public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
     protected AzureSDKManager sdkManager;
@@ -43,7 +45,7 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
     }
 
     private interface Func0<T> {
-        abstract T run() throws AzureCmdException;
+        T run() throws AzureCmdException;
     }
 
     protected <T> T runWithRetry(String subscriptionId, Func0<T> func) throws AzureCmdException {
@@ -492,6 +494,183 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
             @Override
             public Void run() throws AzureCmdException {
                 sdkManager.downloadBlobFileContent(storageAccount, blobFile, content);
+                return null;
+            }
+        });
+    }
+
+    @NotNull
+    @Override
+    public List<Queue> getQueues(@NotNull final StorageAccount storageAccount)
+            throws AzureCmdException {
+        return runWithRetry(storageAccount.getSubscriptionId(), new Func0<List<Queue>>() {
+            @Override
+            public List<Queue> run() throws AzureCmdException {
+                return sdkManager.getQueues(storageAccount);
+            }
+        });
+    }
+
+    @NotNull
+    @Override
+    public Queue createQueue(@NotNull final StorageAccount storageAccount, @NotNull final Queue queue)
+            throws AzureCmdException {
+        return runWithRetry(storageAccount.getSubscriptionId(), new Func0<Queue>() {
+            @Override
+            public Queue run() throws AzureCmdException {
+                return sdkManager.createQueue(storageAccount, queue);
+            }
+        });
+    }
+
+    @Override
+    public void deleteQueue(@NotNull final StorageAccount storageAccount, @NotNull final Queue queue)
+            throws AzureCmdException {
+        runWithRetry(storageAccount.getSubscriptionId(), new Func0<Void>() {
+            @Override
+            public Void run() throws AzureCmdException {
+                sdkManager.deleteQueue(storageAccount, queue);
+                return null;
+            }
+        });
+    }
+
+    @NotNull
+    @Override
+    public List<QueueMessage> getQueueMessages(@NotNull final StorageAccount storageAccount, @NotNull final Queue queue)
+            throws AzureCmdException {
+        return runWithRetry(storageAccount.getSubscriptionId(), new Func0<List<QueueMessage>>() {
+            @Override
+            public List<QueueMessage> run() throws AzureCmdException {
+                return sdkManager.getQueueMessages(storageAccount, queue);
+            }
+        });
+    }
+
+    @Override
+    public void clearQueue(@NotNull final StorageAccount storageAccount, @NotNull final Queue queue)
+            throws AzureCmdException {
+        runWithRetry(storageAccount.getSubscriptionId(), new Func0<Void>() {
+            @Override
+            public Void run() throws AzureCmdException {
+                sdkManager.clearQueue(storageAccount, queue);
+                return null;
+            }
+        });
+    }
+
+    @Override
+    public void createQueueMessage(@NotNull final StorageAccount storageAccount,
+                                   @NotNull final QueueMessage queueMessage,
+                                   final int timeToLiveInSeconds)
+            throws AzureCmdException {
+        runWithRetry(storageAccount.getSubscriptionId(), new Func0<Void>() {
+            @Override
+            public Void run() throws AzureCmdException {
+                sdkManager.createQueueMessage(storageAccount, queueMessage, timeToLiveInSeconds);
+                return null;
+            }
+        });
+    }
+
+    @NotNull
+    @Override
+    public QueueMessage dequeueFirstQueueMessage(@NotNull final StorageAccount storageAccount,
+                                                 @NotNull final Queue queue)
+            throws AzureCmdException {
+        return runWithRetry(storageAccount.getSubscriptionId(), new Func0<QueueMessage>() {
+            @Override
+            public QueueMessage run() throws AzureCmdException {
+                return sdkManager.dequeueFirstQueueMessage(storageAccount, queue);
+            }
+        });
+    }
+
+    @NotNull
+    @Override
+    public List<Table> getTables(@NotNull final StorageAccount storageAccount)
+            throws AzureCmdException {
+        return runWithRetry(storageAccount.getSubscriptionId(), new Func0<List<Table>>() {
+            @Override
+            public List<Table> run() throws AzureCmdException {
+                return sdkManager.getTables(storageAccount);
+            }
+        });
+    }
+
+    @NotNull
+    @Override
+    public Table createTable(@NotNull final StorageAccount storageAccount, @NotNull final Table table)
+            throws AzureCmdException {
+        return runWithRetry(storageAccount.getSubscriptionId(), new Func0<Table>() {
+            @Override
+            public Table run() throws AzureCmdException {
+                return sdkManager.createTable(storageAccount, table);
+            }
+        });
+    }
+
+    @Override
+    public void deleteTable(@NotNull final StorageAccount storageAccount, @NotNull final Table table)
+            throws AzureCmdException {
+        runWithRetry(storageAccount.getSubscriptionId(), new Func0<Void>() {
+            @Override
+            public Void run() throws AzureCmdException {
+                sdkManager.deleteTable(storageAccount, table);
+                return null;
+            }
+        });
+    }
+
+    @NotNull
+    @Override
+    public List<TableEntity> getTableEntities(@NotNull final StorageAccount storageAccount,
+                                              @NotNull final Table table,
+                                              @NotNull final String filter)
+            throws AzureCmdException {
+        return runWithRetry(storageAccount.getSubscriptionId(), new Func0<List<TableEntity>>() {
+            @Override
+            public List<TableEntity> run() throws AzureCmdException {
+                return sdkManager.getTableEntities(storageAccount, table, filter);
+            }
+        });
+    }
+
+    @NotNull
+    @Override
+    public TableEntity createTableEntity(@NotNull final StorageAccount storageAccount, @NotNull final String tableName,
+                                         @NotNull final String partitionKey, @NotNull final String rowKey,
+                                         @NotNull final Map<String, Property> properties)
+            throws AzureCmdException {
+        return runWithRetry(storageAccount.getSubscriptionId(), new Func0<TableEntity>() {
+            @Override
+            public TableEntity run() throws AzureCmdException {
+                return sdkManager.createTableEntity(storageAccount, tableName, partitionKey, rowKey, properties);
+            }
+        });
+    }
+
+    @NotNull
+    @Override
+    public TableEntity updateTableEntity(@NotNull final StorageAccount storageAccount,
+                                         @NotNull final TableEntity tableEntity)
+            throws AzureCmdException {
+        return runWithRetry(storageAccount.getSubscriptionId(), new Func0<TableEntity>() {
+            @Override
+            public TableEntity run() throws AzureCmdException {
+                return sdkManager.updateTableEntity(storageAccount, tableEntity);
+            }
+        });
+    }
+
+    @Override
+    public void deleteTableEntity(@NotNull final StorageAccount storageAccount,
+                                  @NotNull final TableEntity tableEntity)
+            throws AzureCmdException {
+        runWithRetry(storageAccount.getSubscriptionId(), new Func0<Void>() {
+            @Override
+            public Void run() throws AzureCmdException {
+                sdkManager.deleteTableEntity(storageAccount, tableEntity);
                 return null;
             }
         });

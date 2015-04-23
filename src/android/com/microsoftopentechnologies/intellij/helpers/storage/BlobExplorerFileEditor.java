@@ -49,7 +49,6 @@ import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.*;
-import java.awt.geom.Arc2D;
 import java.beans.PropertyChangeListener;
 import java.io.*;
 import java.net.SocketTimeoutException;
@@ -508,6 +507,7 @@ public class BlobExplorerFileEditor implements FileEditor {
     private void saveAsSelectedFile() {
         BlobFile fileSelection = getFileSelection();
 
+        assert fileSelection != null;
         JFileChooser jFileChooser = new JFileChooser(new File(fileSelection.getName()));
         jFileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         int saveDialog = jFileChooser.showSaveDialog(this.mainPanel);

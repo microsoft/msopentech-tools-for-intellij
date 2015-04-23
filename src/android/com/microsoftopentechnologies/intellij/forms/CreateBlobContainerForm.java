@@ -16,6 +16,7 @@
 
 package com.microsoftopentechnologies.intellij.forms;
 
+import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
@@ -46,6 +47,10 @@ public class CreateBlobContainerForm extends JDialog {
     private Project project;
     private StorageAccount storageAccount;
     private Runnable onCreate;
+
+    private static final String NAME_REGEX = "^[a-z0-9](?!.*--)[a-z0-9-]+[a-z0-9]$";
+    private static final int NAME_MAX = 63;
+    private static final int NAME_MIN = 3;
 
     public CreateBlobContainerForm() {
         setContentPane(contentPane);
@@ -106,8 +111,9 @@ public class CreateBlobContainerForm extends JDialog {
     }
 
     private void onOK() {
+        final String name = nameTextField.getText();
 
-        if (!nameTextField.getText().matches("^[a-z0-9](?!.*--)[a-z0-9-]+[a-z0-9]$")) {
+        if (name.length() < NAME_MIN || name.length() > NAME_MAX ||!name.matches(NAME_REGEX)) {
             JOptionPane.showMessageDialog(this, "Container names must start with a letter or number, and can contain only letters, numbers, and the dash (-) character.\n" +
                     "Every dash (-) character must be immediately preceded and followed by a letter or number; consecutive dashes are not permitted in container names.\n" +
                     "All letters in a container name must be lowercase.\n" +
@@ -120,10 +126,10 @@ public class CreateBlobContainerForm extends JDialog {
         ProgressManager.getInstance().run(new Task.Backgroundable(project, "Creating blob container...", false) {
 
             @Override
-            public void run(ProgressIndicator progressIndicator) {
+            public void run(@NotNull ProgressIndicator progressIndicator) {
                 try {
                     progressIndicator.setIndeterminate(true);
-                    String name = nameTextField.getText();
+
 
                     for (BlobContainer blobContainer : AzureSDKManagerImpl.getManager().getBlobContainers(storageAccount)) {
 

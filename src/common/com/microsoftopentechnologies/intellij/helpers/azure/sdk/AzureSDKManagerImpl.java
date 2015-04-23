@@ -1,17 +1,17 @@
 /**
  * Copyright 2014 Microsoft Open Technologies Inc.
- *
+ * <p/>
  * Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p/>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p/>
  * Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.microsoftopentechnologies.intellij.helpers.azure.sdk;
 
@@ -19,8 +19,15 @@ import com.google.common.base.Strings;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
-import com.microsoft.azure.storage.*;
+import com.intellij.openapi.application.ApplicationManager;
+import com.microsoft.azure.storage.CloudStorageAccount;
+import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.blob.*;
+import com.microsoft.azure.storage.queue.CloudQueue;
+import com.microsoft.azure.storage.queue.CloudQueueClient;
+import com.microsoft.azure.storage.queue.CloudQueueMessage;
+import com.microsoft.azure.storage.queue.QueueListingDetails;
+import com.microsoft.azure.storage.table.*;
 import com.microsoft.windowsazure.core.OperationResponse;
 import com.microsoft.windowsazure.core.OperationStatus;
 import com.microsoft.windowsazure.core.OperationStatusResponse;
@@ -53,17 +60,24 @@ import com.microsoftopentechnologies.intellij.helpers.azure.AzureAuthenticationM
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManagerImpl;
 import com.microsoftopentechnologies.intellij.model.storage.*;
+import com.microsoftopentechnologies.intellij.model.storage.Queue;
 import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
+import com.microsoftopentechnologies.intellij.model.storage.TableEntity;
+import com.microsoftopentechnologies.intellij.model.storage.TableEntity.Property;
 import com.microsoftopentechnologies.intellij.model.vm.*;
 import com.microsoftopentechnologies.intellij.model.vm.CloudService.Deployment;
 import com.microsoftopentechnologies.intellij.model.vm.VirtualMachine.Status;
 
 import javax.security.cert.X509Certificate;
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.MessageDigest;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
 
 public class AzureSDKManagerImpl implements AzureSDKManager {
@@ -448,7 +462,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         }
     }
 
-
+    @NotNull
     @Override
     public List<VirtualMachineImage> getVirtualMachineImages(String subscriptionId) throws AzureCmdException {
         List<VirtualMachineImage> vmImageList = new ArrayList<VirtualMachineImage>();
@@ -1101,7 +1115,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
                     blockSize = length - uploadedBytes;
                 }
 
-                if(processBlock != null) {
+                if (processBlock != null) {
                     processBlock.call(uploadedBytes);
                 }
 
@@ -1138,8 +1152,338 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         }
     }
 
+    @NotNull
+    @Override
+    public List<Queue> getQueues(@NotNull StorageAccount storageAccount)
+            throws AzureCmdException {
+        List<Queue> qList = new ArrayList<Queue>();
 
-    private static ComputeManagementClient getComputeManagementClient(String subscriptionId) throws Exception {
+        try {
+            CloudQueueClient client = getCloudQueueClient(storageAccount);
+
+            for (CloudQueue cloudQueue : client.listQueues(null, QueueListingDetails.ALL, null, null)) {
+                String uri = cloudQueue.getUri() != null ? cloudQueue.getUri().toString() : "";
+
+                qList.add(new Queue(Strings.nullToEmpty(cloudQueue.getName()),
+                        uri,
+                        cloudQueue.getApproximateMessageCount(),
+                        storageAccount.getSubscriptionId()));
+            }
+
+            return qList;
+        } catch (Throwable t) {
+            throw new AzureCmdException("Error retrieving the Queue list", t);
+        }
+    }
+
+    @NotNull
+    @Override
+    public Queue createQueue(@NotNull StorageAccount storageAccount,
+                             @NotNull Queue queue)
+            throws AzureCmdException {
+        try {
+            CloudQueueClient client = getCloudQueueClient(storageAccount);
+
+            CloudQueue cloudQueue = client.getQueueReference(queue.getName());
+            cloudQueue.createIfNotExists();
+            cloudQueue.downloadAttributes();
+
+            String uri = cloudQueue.getUri() != null ? cloudQueue.getUri().toString() : "";
+            long approximateMessageCount = cloudQueue.getApproximateMessageCount();
+
+            queue.setUri(uri);
+            queue.setApproximateMessageCount(approximateMessageCount);
+
+            return queue;
+        } catch (Throwable t) {
+            throw new AzureCmdException("Error creating the Queue", t);
+        }
+    }
+
+    @Override
+    public void deleteQueue(@NotNull StorageAccount storageAccount, @NotNull Queue queue)
+            throws AzureCmdException {
+        try {
+            CloudQueueClient client = getCloudQueueClient(storageAccount);
+
+            CloudQueue cloudQueue = client.getQueueReference(queue.getName());
+            cloudQueue.deleteIfExists();
+        } catch (Throwable t) {
+            throw new AzureCmdException("Error deleting the Queue", t);
+        }
+    }
+
+    @NotNull
+    @Override
+    public List<QueueMessage> getQueueMessages(@NotNull StorageAccount storageAccount, @NotNull Queue queue)
+            throws AzureCmdException {
+        List<QueueMessage> qmList = new ArrayList<QueueMessage>();
+
+        try {
+            CloudQueueClient client = getCloudQueueClient(storageAccount);
+            String queueName = queue.getName();
+            String subscriptionId = storageAccount.getSubscriptionId();
+
+            CloudQueue cloudQueue = client.getQueueReference(queueName);
+
+            for (CloudQueueMessage cqm : cloudQueue.peekMessages(32)) {
+                String id = Strings.nullToEmpty(cqm.getId());
+                String content = Strings.nullToEmpty(cqm.getMessageContentAsString());
+
+                Calendar insertionTime = new GregorianCalendar();
+
+                if (cqm.getInsertionTime() != null) {
+                    insertionTime.setTime(cqm.getInsertionTime());
+                }
+
+                Calendar expirationTime = new GregorianCalendar();
+
+                if (cqm.getExpirationTime() != null) {
+                    expirationTime.setTime(cqm.getExpirationTime());
+                }
+
+                int dequeueCount = cqm.getDequeueCount();
+
+                qmList.add(new QueueMessage(id, queueName, content, insertionTime, expirationTime, dequeueCount, subscriptionId));
+            }
+
+            return qmList;
+        } catch (Throwable t) {
+            throw new AzureCmdException("Error retrieving the Queue Message list", t);
+        }
+    }
+
+    @Override
+    public void clearQueue(@NotNull StorageAccount storageAccount, @NotNull Queue queue)
+            throws AzureCmdException {
+        try {
+            CloudQueueClient client = getCloudQueueClient(storageAccount);
+
+            CloudQueue cloudQueue = client.getQueueReference(queue.getName());
+            cloudQueue.clear();
+        } catch (Throwable t) {
+            throw new AzureCmdException("Error clearing the Queue", t);
+        }
+    }
+
+    @Override
+    public void createQueueMessage(@NotNull StorageAccount storageAccount,
+                                   @NotNull QueueMessage queueMessage,
+                                   int timeToLiveInSeconds)
+            throws AzureCmdException {
+        try {
+            CloudQueueClient client = getCloudQueueClient(storageAccount);
+
+            CloudQueue cloudQueue = client.getQueueReference(queueMessage.getQueueName());
+            cloudQueue.addMessage(new CloudQueueMessage(queueMessage.getContent()), timeToLiveInSeconds, 0, null, null);
+        } catch (Throwable t) {
+            throw new AzureCmdException("Error creating the Queue Message", t);
+        }
+    }
+
+    @NotNull
+    @Override
+    public QueueMessage dequeueFirstQueueMessage(@NotNull StorageAccount storageAccount, @NotNull Queue queue)
+            throws AzureCmdException {
+        try {
+            CloudQueueClient client = getCloudQueueClient(storageAccount);
+            String queueName = queue.getName();
+            String subscriptionId = storageAccount.getSubscriptionId();
+
+            CloudQueue cloudQueue = client.getQueueReference(queueName);
+            CloudQueueMessage cqm = cloudQueue.retrieveMessage();
+
+            String id = "";
+            String content = "";
+            Calendar insertionTime = new GregorianCalendar();
+            Calendar expirationTime = new GregorianCalendar();
+            int dequeueCount = 0;
+
+            if (cqm != null) {
+                id = Strings.nullToEmpty(cqm.getId());
+                content = Strings.nullToEmpty(cqm.getMessageContentAsString());
+
+                if (cqm.getInsertionTime() != null) {
+                    insertionTime.setTime(cqm.getInsertionTime());
+                }
+
+                if (cqm.getExpirationTime() != null) {
+                    expirationTime.setTime(cqm.getExpirationTime());
+                }
+
+                dequeueCount = cqm.getDequeueCount();
+            }
+
+            QueueMessage queueMessage = new QueueMessage(id, queueName, content, insertionTime, expirationTime, dequeueCount, subscriptionId);
+
+            if (cqm != null) {
+                cloudQueue.deleteMessage(cqm);
+            }
+
+            return queueMessage;
+        } catch (Throwable t) {
+            throw new AzureCmdException("Error dequeuing the first Queue Message", t);
+        }
+    }
+
+    @NotNull
+    @Override
+    public List<Table> getTables(@NotNull StorageAccount storageAccount)
+            throws AzureCmdException {
+        List<Table> tList = new ArrayList<Table>();
+
+        try {
+            CloudTableClient client = getCloudTableClient(storageAccount);
+
+            for (String tableName : client.listTables()) {
+                CloudTable cloudTable = client.getTableReference(tableName);
+
+                String uri = cloudTable.getUri() != null ? cloudTable.getUri().toString() : "";
+
+                tList.add(new Table(tableName,
+                        uri,
+                        storageAccount.getSubscriptionId()));
+            }
+
+            return tList;
+        } catch (Throwable t) {
+            throw new AzureCmdException("Error retrieving the Table list", t);
+        }
+    }
+
+    @NotNull
+    @Override
+    public Table createTable(@NotNull StorageAccount storageAccount,
+                             @NotNull Table table)
+            throws AzureCmdException {
+        try {
+            CloudTableClient client = getCloudTableClient(storageAccount);
+
+            CloudTable cloudTable = client.getTableReference(table.getName());
+            cloudTable.createIfNotExists();
+
+            String uri = cloudTable.getUri() != null ? cloudTable.getUri().toString() : "";
+
+            table.setUri(uri);
+
+            return table;
+        } catch (Throwable t) {
+            throw new AzureCmdException("Error creating the Table", t);
+        }
+    }
+
+    @Override
+    public void deleteTable(@NotNull StorageAccount storageAccount, @NotNull Table table)
+            throws AzureCmdException {
+        try {
+            CloudTableClient client = getCloudTableClient(storageAccount);
+
+            CloudTable cloudTable = client.getTableReference(table.getName());
+            cloudTable.deleteIfExists();
+        } catch (Throwable t) {
+            throw new AzureCmdException("Error deleting the Table", t);
+        }
+    }
+
+    @NotNull
+    @Override
+    public List<TableEntity> getTableEntities(@NotNull StorageAccount storageAccount, @NotNull Table table,
+                                              @NotNull String filter)
+            throws AzureCmdException {
+        List<TableEntity> teList = new ArrayList<TableEntity>();
+
+        try {
+            CloudTableClient client = getCloudTableClient(storageAccount);
+            String tableName = table.getName();
+            String subscriptionId = storageAccount.getSubscriptionId();
+            CloudTable cloudTable = client.getTableReference(tableName);
+
+            TableQuery<DynamicTableEntity> tableQuery = TableQuery.from(DynamicTableEntity.class);
+
+            if (!filter.isEmpty()) {
+                tableQuery.where(filter);
+            }
+
+            TableRequestOptions tro = new TableRequestOptions();
+            tro.setTablePayloadFormat(TablePayloadFormat.JsonFullMetadata);
+
+            for (DynamicTableEntity dte : cloudTable.execute(tableQuery, tro, null)) {
+                teList.add(getTableEntity(tableName, dte, subscriptionId));
+            }
+
+            return teList;
+        } catch (Throwable t) {
+            throw new AzureCmdException("Error retrieving the Table Entity list", t);
+        }
+    }
+
+    @NotNull
+    @Override
+    public TableEntity createTableEntity(@NotNull StorageAccount storageAccount, @NotNull String tableName,
+                                         @NotNull String partitionKey, @NotNull String rowKey,
+                                         @NotNull Map<String, Property> properties)
+            throws AzureCmdException {
+        try {
+            CloudTableClient client = getCloudTableClient(storageAccount);
+            String subscriptionId = storageAccount.getSubscriptionId();
+            CloudTable cloudTable = client.getTableReference(tableName);
+
+            DynamicTableEntity entity = getDynamicTableEntity(partitionKey, rowKey, properties);
+
+            TableRequestOptions tro = new TableRequestOptions();
+            tro.setTablePayloadFormat(TablePayloadFormat.JsonFullMetadata);
+
+            TableResult result = cloudTable.execute(TableOperation.insert(entity, true), tro, null);
+            DynamicTableEntity resultEntity = result.getResultAsType();
+
+            return getTableEntity(tableName, resultEntity, subscriptionId);
+        } catch (Throwable t) {
+            throw new AzureCmdException("Error creating the Table Entity", t);
+        }
+    }
+
+    @NotNull
+    @Override
+    public TableEntity updateTableEntity(@NotNull StorageAccount storageAccount, @NotNull TableEntity tableEntity)
+            throws AzureCmdException {
+        try {
+            CloudTableClient client = getCloudTableClient(storageAccount);
+            CloudTable cloudTable = client.getTableReference(tableEntity.getTableName());
+
+            DynamicTableEntity entity = getDynamicTableEntity(tableEntity);
+
+            TableRequestOptions tro = new TableRequestOptions();
+            tro.setTablePayloadFormat(TablePayloadFormat.JsonFullMetadata);
+
+            TableResult result = cloudTable.execute(TableOperation.replace(entity), tro, null);
+            DynamicTableEntity resultEntity = result.getResultAsType();
+
+            return getTableEntity(tableEntity.getTableName(), resultEntity, tableEntity.getSubscriptionId());
+        } catch (Throwable t) {
+            throw new AzureCmdException("Error updating the Table Entity", t);
+        }
+    }
+
+    @Override
+    public void deleteTableEntity(@NotNull StorageAccount storageAccount, @NotNull TableEntity tableEntity)
+            throws AzureCmdException {
+        try {
+            CloudTableClient client = getCloudTableClient(storageAccount);
+            CloudTable cloudTable = client.getTableReference(tableEntity.getTableName());
+
+            DynamicTableEntity entity = getDynamicTableEntity(tableEntity);
+
+            TableRequestOptions tro = new TableRequestOptions();
+            tro.setTablePayloadFormat(TablePayloadFormat.JsonFullMetadata);
+
+            cloudTable.execute(TableOperation.delete(entity), tro, null);
+        } catch (Throwable t) {
+            throw new AzureCmdException("Error deleting the Table Entity", t);
+        }
+    }
+
+    @NotNull
+    private static ComputeManagementClient getComputeManagementClient(@NotNull String subscriptionId) throws Exception {
         ComputeManagementClient client = AzureSDKHelper.getComputeManagementClient(subscriptionId);
 
         if (client == null) {
@@ -1190,7 +1534,23 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         return csa.createCloudBlobClient();
     }
 
+    @NotNull
+    private static CloudQueueClient getCloudQueueClient(StorageAccount storageAccount)
+            throws Exception {
+        CloudStorageAccount csa = AzureSDKHelper.getCloudStorageAccount(storageAccount);
 
+        return csa.createCloudQueueClient();
+    }
+
+    @NotNull
+    private static CloudTableClient getCloudTableClient(StorageAccount storageAccount)
+            throws Exception {
+        CloudStorageAccount csa = AzureSDKHelper.getCloudStorageAccount(storageAccount);
+
+        return csa.createCloudTableClient();
+    }
+
+    @NotNull
     private static HostedServiceOperations getHostedServiceOperations(ComputeManagementClient client)
             throws Exception {
         HostedServiceOperations hso = client.getHostedServicesOperations();
@@ -2241,6 +2601,141 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
                 return parts[parts.length - 1];
             }
         }
+    }
+
+    @NotNull
+    private static TableEntity getTableEntity(@NotNull String tableName,
+                                              @NotNull DynamicTableEntity dte,
+                                              @NotNull String subscriptionId) {
+        String partitionKey = Strings.nullToEmpty(dte.getPartitionKey());
+        String rowKey = Strings.nullToEmpty(dte.getRowKey());
+        String eTag = Strings.nullToEmpty(dte.getEtag());
+
+        Calendar timestamp = new GregorianCalendar();
+
+        if (dte.getTimestamp() != null) {
+            timestamp.setTime(dte.getTimestamp());
+        }
+
+        Map<String, Property> properties = new HashMap<String, Property>();
+
+        if (dte.getProperties() != null) {
+            for (Entry<String, EntityProperty> entry : dte.getProperties().entrySet()) {
+                if (entry.getKey() != null && entry.getValue() != null) {
+                    String key = entry.getKey();
+                    Property property;
+
+                    switch (entry.getValue().getEdmType()) {
+                        case BOOLEAN:
+                            property = new Property(entry.getValue().getValueAsBooleanObject());
+                            break;
+                        case DATE_TIME:
+                            Calendar value = new GregorianCalendar();
+                            value.setTime(entry.getValue().getValueAsDate());
+                            property = new Property(value);
+                            break;
+                        case DOUBLE:
+                            property = new Property(entry.getValue().getValueAsDoubleObject());
+                            break;
+                        case GUID:
+                            property = new Property(entry.getValue().getValueAsUUID());
+                            break;
+                        case INT32:
+                            property = new Property(entry.getValue().getValueAsIntegerObject());
+                            break;
+                        case INT64:
+                            property = new Property(entry.getValue().getValueAsLongObject());
+                            break;
+                        case STRING:
+                            property = new Property(entry.getValue().getValueAsString());
+                            break;
+                        default:
+                            property = new Property(entry.getValue().getValueAsString());
+                            break;
+                    }
+
+                    properties.put(key, property);
+                }
+            }
+        }
+
+        return new TableEntity(partitionKey, rowKey, tableName, eTag, timestamp, properties, subscriptionId);
+    }
+
+    @NotNull
+    private static DynamicTableEntity getDynamicTableEntity(@NotNull TableEntity tableEntity)
+            throws AzureCmdException {
+        return getDynamicTableEntity(tableEntity.getPartitionKey(), tableEntity.getRowKey(),
+                tableEntity.getTimestamp(), tableEntity.getETag(), tableEntity.getProperties());
+
+    }
+
+    @NotNull
+    private static DynamicTableEntity getDynamicTableEntity(@NotNull String partitionKey,
+                                                            @NotNull String rowKey,
+                                                            @NotNull Map<String, Property> properties)
+            throws AzureCmdException {
+        return getDynamicTableEntity(partitionKey, rowKey, null, null, properties);
+    }
+
+    @NotNull
+    private static DynamicTableEntity getDynamicTableEntity(@NotNull String partitionKey,
+                                                            @NotNull String rowKey,
+                                                            @Nullable Calendar timestamp,
+                                                            @Nullable String eTag,
+                                                            @NotNull Map<String, Property> properties)
+            throws AzureCmdException {
+        Date ts = null;
+
+        if (timestamp != null) {
+            ts = timestamp.getTime();
+        }
+
+        HashMap<String, EntityProperty> entityProperties = getEntityProperties(properties);
+
+        return new DynamicTableEntity(partitionKey, rowKey, ts, eTag, entityProperties);
+    }
+
+    @NotNull
+    private static HashMap<String, EntityProperty> getEntityProperties(@NotNull Map<String, Property> properties) throws AzureCmdException {
+        HashMap<String, EntityProperty> entityProperties = new HashMap<String, EntityProperty>();
+
+        for (Entry<String, Property> entry : properties.entrySet()) {
+            String key = entry.getKey();
+            Property property = entry.getValue();
+
+            EntityProperty entityProperty;
+
+            switch (property.getType()) {
+                case Boolean:
+                    entityProperty = new EntityProperty(property.getValueAsBoolean());
+                    break;
+                case DateTime:
+                    entityProperty = new EntityProperty(property.getValueAsCalendar().getTime());
+                    break;
+                case Double:
+                    entityProperty = new EntityProperty(property.getValueAsDouble());
+                    break;
+                case Uuid:
+                    entityProperty = new EntityProperty(property.getValueAsUuid());
+                    break;
+                case Integer:
+                    entityProperty = new EntityProperty(property.getValueAsInteger());
+                    break;
+                case Long:
+                    entityProperty = new EntityProperty(property.getValueAsLong());
+                    break;
+                case String:
+                    entityProperty = new EntityProperty(property.getValueAsString());
+                    break;
+                default:
+                    entityProperty = new EntityProperty(property.getValueAsString());
+                    break;
+            }
+
+            entityProperties.put(key, entityProperty);
+        }
+        return entityProperties;
     }
 
 

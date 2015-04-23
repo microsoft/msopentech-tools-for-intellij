@@ -41,8 +41,8 @@ import static com.microsoftopentechnologies.intellij.ui.messages.AzureBundle.mes
 public class AzurePlugin extends AbstractProjectComponent {
     private static final Logger LOG = Logger.getInstance("#com.microsoftopentechnologies.intellij.AzurePlugin");
     public static final String PLUGIN_ID = "msopentech-tools-for-intellij";
-    private static final String COMPONENTSETS_VERSION = "2.5.2"; // todo: temporary fix!
-    private static final String PREFERENCESETS_VERSION = "2.5.1";
+    private static final String COMPONENTSETS_VERSION = "2.6.0"; // todo: temporary fix!
+    private static final String PREFERENCESETS_VERSION = "2.6.0";
     public final static int REST_SERVICE_MAX_RETRY_COUNT = 7;
 
     public static boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().indexOf("win") >= 0;
@@ -76,7 +76,7 @@ public class AzurePlugin extends AbstractProjectComponent {
      * other plugins only in this method.
      */
     public void initComponent() {
-        if (!IS_ANDROID_STUDIO && IS_WINDOWS) {
+        if (!IS_ANDROID_STUDIO) {
             LOG.info("Starting Azure Plugin");
             try {
                 azureSettings.loadStorage();

@@ -78,6 +78,7 @@ public class JdkServerPanel {
     private JCheckBox serverCheckBox;
     private TextFieldWithBrowseButton serverPath;
     private JComboBox serverType;
+    private JRadioButton thrdPrtSrvBtn;
     private JRadioButton uploadLocalServer;
     private JRadioButton customDownloadServer;
     private JTextField serverUrl;
@@ -95,6 +96,7 @@ public class JdkServerPanel {
     private JLabel lblKeySrv;
     private JPanel applicationsSettings;
     private JLabel lblNoteHomeDir;
+    private JComboBox thrdPrtSrvCmb;
 
     private ApplicationsTab applicationsTab;
 
@@ -205,7 +207,7 @@ public class JdkServerPanel {
                             thirdPartyJdk.setSelected(true);
                             enableThirdPartyJdkCombo(true);
                             thirdPartyJdkName.setSelectedItem(jdkName);
-							/*
+                            /*
 							 * License has already been accepted
 							 * on wizard or property page previously.
 							 */
@@ -578,7 +580,7 @@ public class JdkServerPanel {
                 return;
             }
             // Remove old server from approot
-            if (oldName != null &&  !fileToDel.contains("srv")) {
+            if (oldName != null && !fileToDel.contains("srv")) {
                 fileToDel.add("srv");
                 WindowsAzureRoleComponent cmp = getPrevCmpnt(message("typeSrvDply"));
                 if (cmp != null) {
@@ -882,17 +884,17 @@ public class JdkServerPanel {
     }
 
     public Map<String, String> getDeployPageValues() {
-        Map <String, String> values = new HashMap<String, String>();
+        Map<String, String> values = new HashMap<String, String>();
         // JDK
         values.put("jdkChecked", String.valueOf(jdkCheckBox.isSelected()));
-        values.put("jdkLoc" , jdkPath.getText());
+        values.put("jdkLoc", jdkPath.getText());
         // JDK download group
         values.put("jdkDwnldChecked", String.valueOf(customDownloadJdk.isSelected()));
         values.put("jdkAutoDwnldChecked", String.valueOf(uploadLocalJdk.isSelected()));
-        values.put("jdkThrdPartyChecked" , String.valueOf(thirdPartyJdk.isSelected()));
-        values.put("jdkName" , thirdPartyJdkName.getSelectedItem() == null ? "" : (String) thirdPartyJdkName.getSelectedItem());
-        values.put("jdkUrl" , jdkUrl.getText());
-        values.put("jdkKey" , AzureWizardModel.getAccessKey(storageAccountJdk));
+        values.put("jdkThrdPartyChecked", String.valueOf(thirdPartyJdk.isSelected()));
+        values.put("jdkName", thirdPartyJdkName.getSelectedItem() == null ? "" : (String) thirdPartyJdkName.getSelectedItem());
+        values.put("jdkUrl", jdkUrl.getText());
+        values.put("jdkKey", AzureWizardModel.getAccessKey(storageAccountJdk));
         values.put("javaHome", javaHome.getText());
         // Server
         values.put("serChecked", String.valueOf(serverCheckBox.isSelected()));
@@ -902,6 +904,9 @@ public class JdkServerPanel {
         // Server download group
         values.put("srvDwnldChecked", String.valueOf(customDownloadServer.isSelected()));
         values.put("srvAutoDwnldChecked", String.valueOf(uploadLocalServer.isSelected()));
+        values.put("srvThrdPartyChecked", String.valueOf(thrdPrtSrvBtn.isSelected()));
+        values.put("srvThrdPartyName", thrdPrtSrvCmb.getSelectedItem() == null ? "" : (String) thrdPrtSrvCmb.getSelectedItem());
+        values.put("srvThrdAltSrc", getServerCloudAltSource());
         values.put("srvUrl", serverUrl.getText());
         values.put("srvKey", AzureWizardModel.getAccessKey(storageAccountServer));
         values.put("srvHome", serverHomeDir.getText());
@@ -938,7 +943,7 @@ public class JdkServerPanel {
         return new AccountsAction(combo, tabName);
     }
 
-//    @Override
+    //    @Override
     public ValidationInfo doValidate() {
         boolean isJdkValid = false;
         // JDK emulator group
@@ -1488,8 +1493,8 @@ public class JdkServerPanel {
     }
 
     /**
-	 * Method used when JDK auto upload/no JDK deployment
-	 * radio button selected.
+     * Method used when JDK auto upload/no JDK deployment
+     * radio button selected.
      * @param label
      */
     public void configureAutoUploadJDKSettings(String label) {
@@ -1717,7 +1722,7 @@ public class JdkServerPanel {
      * @param tabControl
      * @return
      */
-    public  String cmbBoxListener(JComboBox combo, String urlTxt, String tabControl) {
+    public String cmbBoxListener(JComboBox combo, String urlTxt, String tabControl) {
         int index = combo.getSelectedIndex();
         String url = urlTxt.trim();
         // check value is not none and auto.
@@ -1939,6 +1944,37 @@ public class JdkServerPanel {
         } catch (Exception e) {
             PluginUtil.displayErrorDialog(message("genErrTitle"), message("srvHomeErr"));
         }
+    }
+
+    /**
+     * Gives server name selected by user.
+     *
+     * @return serverName
+     */
+    public String getServerName() {
+        String serverName = "";
+        if (thrdPrtSrvBtn.isSelected()) {
+            try {
+                serverName = WindowsAzureProjectManager.getServerNameUsingThirdPartyServerName((String) thrdPrtSrvCmb.getSelectedItem(), AzurePlugin.cmpntFile);
+            } catch (WindowsAzureInvalidProjectOperationException e) {
+                serverName = "";
+            }
+        } else {
+            serverName = (String) serverType.getSelectedItem();
+        }
+        return serverName;
+    }
+
+    public String getServerCloudAltSource() {
+        String url = "";
+        if (thrdPrtSrvBtn.isSelected()) {
+            try {
+                url = WindowsAzureProjectManager.getThirdPartyServerCloudAltSrc((String) thrdPrtSrvCmb.getSelectedItem(), AzurePlugin.cmpntFile);
+            } catch (WindowsAzureInvalidProjectOperationException e) {
+                url = "";
+            }
+        }
+        return url;
     }
 
     public void apply() throws ConfigurationException {

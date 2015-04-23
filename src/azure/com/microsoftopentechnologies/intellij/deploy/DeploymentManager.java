@@ -26,10 +26,12 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindowManager;
+import com.interopbridges.tools.windowsazure.*;
 import com.microsoft.windowsazure.Configuration;
 import com.microsoft.windowsazure.core.OperationStatus;
 import com.microsoft.windowsazure.core.OperationStatusResponse;
 import com.microsoft.windowsazure.management.compute.models.*;
+import com.microsoft.windowsazure.management.compute.models.DeploymentSlot;
 import com.microsoft.windowsazure.management.storage.models.StorageAccountCreateParameters;
 import com.microsoftopentechnologies.azurecommons.deploy.DeploymentEventArgs;
 import com.microsoftopentechnologies.azurecommons.storageregistry.StorageAccount;
@@ -53,9 +55,6 @@ import com.microsoftopentechnologies.intellij.util.PluginUtil;
 
 import com.microsoft.windowsazure.management.compute.models.HostedServiceListResponse.HostedService;
 import com.microsoftopentechnologies.intellij.wizards.WizardCacheManager;
-import com.interopbridges.tools.windowsazure.WindowsAzureInvalidProjectOperationException;
-import com.interopbridges.tools.windowsazure.WindowsAzurePackageType;
-import com.interopbridges.tools.windowsazure.WindowsAzureProjectManager;
 import com.microsoftopentechnologies.wacommon.utils.WACommonException;
 
 import static com.microsoftopentechnologies.intellij.ui.messages.AzureBundle.message;
@@ -108,7 +107,7 @@ public final class DeploymentManager {
 			openWindowsAzureActivityLogView(deploymentDesc, selectedModule.getProject());
 
 			if (deploymentDesc.getDeployMode() == WindowsAzurePackageType.LOCAL) {
-				deployToLocalEmulator(selectedModule, deploymentDesc);
+				deployToLocalEmulator(selectedModule);
 				notifyProgress(deploymentDesc.getDeploymentId(), startDate, null, 100, OperationStatus.Succeeded, message("deplCompleted"));
 				return;
 			}
@@ -199,16 +198,31 @@ public final class DeploymentManager {
 			DeploymentGetResponse deployment = waitForDeployment(
 					deploymentDesc.getConfiguration(),
 					hostedService.getServiceName(),
-					service,
-					deploymentName);
+					deployState);
 
 			boolean displayHttpsLink = deploymentDesc.getDisplayHttpsLink();
-			
-			final String url = displayHttpsLink ? deployment.getUri().toString().replaceAll("http://", "https://") : deployment.getUri().toString();
-			notifyProgress(deploymentDesc.getDeploymentId(), startDate,
-                    displayHttpsLink ? deployment.getUri().toString().replaceAll("http://", "https://") : deployment.getUri().toString(),
-                    20, status,
-                    deployment.getStatus().toString());
+			WindowsAzureProjectManager waProjManager = WindowsAzureProjectManager.load(new File(PluginUtil.getModulePath(selectedModule)));
+
+			String serverAppName = null;
+			for (WindowsAzureRole role : waProjManager.getRoles()) {
+				if (role.getJDKSourcePath() != null && role.getServerCloudName() != null) {
+					List<WindowsAzureRoleComponent> serverAppComponents = role.getServerApplications();
+					// Get first server app component
+					if (serverAppComponents != null && serverAppComponents.size() > 0) {
+						String deployName = serverAppComponents.get(0).getDeployName();
+						serverAppName = deployName.substring(0, deployName.lastIndexOf("."));
+						break;
+					}
+				}
+			}
+			String deploymentURL = displayHttpsLink ? deployment.getUri().toString().replaceAll("http://", "https://") : deployment.getUri().toString();
+			if (serverAppName != null) {
+				if (!deploymentURL.endsWith("/")) {
+					deploymentURL += "/";
+				}
+				deploymentURL += serverAppName + "/";
+			}
+			notifyProgress(deploymentDesc.getDeploymentId(), startDate, deploymentURL, 20, status, deployment.getStatus().toString());
             // RDP prompt will come only on windows
 			if (deploymentDesc.isStartRdpOnDeploy() && AzurePlugin.IS_WINDOWS) {
                 String pluginFolder = String.format("%s%s%s", PathManager.getPluginsPath(), File.separator, AzurePlugin.PLUGIN_ID);
@@ -273,14 +287,21 @@ public final class DeploymentManager {
         storageServices.createContainer(message("eclipseDeployContainer").toLowerCase());
 	}
 
-	private DeploymentGetResponse waitForDeployment(Configuration configuration,
-                                                    String serviceName, WindowsAzureServiceManagement service, String deploymentName)
+	private DeploymentGetResponse waitForDeployment(Configuration configuration, String serviceName, String deployState)
             throws Exception {
 		DeploymentGetResponse deployment = null;
 		String status = null;
+        DeploymentSlot deploymentSlot;
+        if (DeploymentSlot.Staging.toString().equalsIgnoreCase(deployState)) {
+            deploymentSlot = DeploymentSlot.Staging;
+        } else if (DeploymentSlot.Production.toString().equalsIgnoreCase(deployState)) {
+            deploymentSlot = DeploymentSlot.Production;
+        } else {
+            throw new Exception("Invalid deployment slot name");
+        }
 		do {
 			Thread.sleep(5000);
-			deployment = service.getDeployment(configuration, serviceName, deploymentName);
+			deployment = WindowsAzureRestUtils.getDeploymentBySlot(configuration, serviceName, deploymentSlot);
 
 			for (RoleInstance instance : deployment.getRoleInstances()) {
 				status = instance.getInstanceStatus();
@@ -299,6 +320,15 @@ public final class DeploymentManager {
 		if (!InstanceStatus.ReadyRole.getInstanceStatus().equals(status)) {
 			throw new DeploymentException(status);
 		}
+        // check deployment status. And let Transitioning phase to finish
+        DeploymentStatus deploymentStatus = null;
+        do {
+            Thread.sleep(10000);
+            deployment = WindowsAzureRestUtils.getDeploymentBySlot(configuration, serviceName, deploymentSlot);
+            deploymentStatus = deployment.getStatus();
+        } while(deploymentStatus != null
+                && (deploymentStatus.equals(DeploymentStatus.RunningTransitioning)
+                || deploymentStatus.equals(DeploymentStatus.SuspendedTransitioning)));
 		return deployment;
 	}
 
@@ -330,7 +360,7 @@ public final class DeploymentManager {
 		return cspkgName;
 	}
 
-	private void deployToLocalEmulator(Module selectedModule, DeployDescriptor deploymentDesc) throws DeploymentException {
+	private void deployToLocalEmulator(Module selectedModule) throws DeploymentException {
 		WindowsAzureProjectManager waProjManager;
 		try {
 			waProjManager = WindowsAzureProjectManager.load(new File(PluginUtil.getModulePath(selectedModule)));

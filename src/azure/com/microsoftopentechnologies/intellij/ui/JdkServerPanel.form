@@ -174,25 +174,17 @@
             <properties/>
             <border type="none"/>
             <children>
-              <grid id="58c54" layout-manager="GridLayoutManager" row-count="7" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+              <grid id="58c54" layout-manager="GridLayoutManager" row-count="9" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
                 <margin top="0" left="0" bottom="0" right="0"/>
                 <constraints>
-                  <grid row="3" column="0" row-span="1" col-span="2" vsize-policy="1" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                  <grid row="2" column="0" row-span="1" col-span="2" vsize-policy="1" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties/>
                 <border type="etched" title="Cloud deployment"/>
                 <children>
-                  <component id="ea1f9" class="javax.swing.JRadioButton" binding="uploadLocalServer">
-                    <constraints>
-                      <grid row="0" column="0" row-span="1" col-span="2" vsize-policy="1" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-                    </constraints>
-                    <properties>
-                      <text value="Deploy my local server (auto-upload to cloud storage)"/>
-                    </properties>
-                  </component>
                   <component id="5b08d" class="javax.swing.JRadioButton" binding="customDownloadServer">
                     <constraints>
-                      <grid row="1" column="0" row-span="1" col-span="2" vsize-policy="1" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                      <grid row="2" column="0" row-span="1" col-span="2" vsize-policy="1" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                     </constraints>
                     <properties>
                       <text value="Deploy from a custom download:"/>
@@ -200,7 +192,7 @@
                   </component>
                   <component id="6975b" class="javax.swing.JLabel" binding="lblUrlSrv">
                     <constraints>
-                      <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                      <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                     </constraints>
                     <properties>
                       <text value="URL:"/>
@@ -208,7 +200,7 @@
                   </component>
                   <component id="3effe" class="javax.swing.JTextField" binding="serverUrl">
                     <constraints>
-                      <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                      <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
                         <preferred-size width="150" height="-1"/>
                       </grid>
                     </constraints>
@@ -218,7 +210,7 @@
                   </component>
                   <component id="86324" class="javax.swing.JLabel" binding="lblDlNoteUrlSrv">
                     <constraints>
-                      <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                      <grid row="4" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                     </constraints>
                     <properties>
                       <text value="(must be a ZIP file)"/>
@@ -226,7 +218,7 @@
                   </component>
                   <component id="bdecb" class="javax.swing.JLabel" binding="lblKeySrv">
                     <constraints>
-                      <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                      <grid row="5" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                     </constraints>
                     <properties>
                       <text value="Storage account:"/>
@@ -234,13 +226,13 @@
                   </component>
                   <component id="ea6d0" class="javax.swing.JComboBox" binding="storageAccountServer">
                     <constraints>
-                      <grid row="4" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+                      <grid row="5" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
                     </constraints>
                     <properties/>
                   </component>
                   <component id="5dcfe" class="javax.swing.JLabel" binding="lblHomeDir">
                     <constraints>
-                      <grid row="5" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                      <grid row="6" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                     </constraints>
                     <properties>
                       <text value="Home dir:"/>
@@ -248,7 +240,7 @@
                   </component>
                   <component id="908b6" class="javax.swing.JTextField" binding="serverHomeDir">
                     <constraints>
-                      <grid row="5" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                      <grid row="6" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
                         <preferred-size width="150" height="-1"/>
                       </grid>
                     </constraints>
@@ -258,7 +250,7 @@
                   </component>
                   <component id="626e" class="org.jdesktop.swingx.JXHyperlink" binding="serverAccountsButton">
                     <constraints>
-                      <grid row="4" column="2" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
+                      <grid row="5" column="2" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
                     </constraints>
                     <properties>
                       <clickedColor color="-10969610"/>
@@ -267,11 +259,33 @@
                   </component>
                   <component id="3524d" class="javax.swing.JLabel" binding="lblNoteHomeDir">
                     <constraints>
-                      <grid row="6" column="1" row-span="1" col-span="2" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                      <grid row="7" column="1" row-span="1" col-span="2" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                     </constraints>
                     <properties>
                       <text resource-bundle="com/microsoftopentechnologies/intellij/ui/messages/messages" key="dlgNtLblHome"/>
                     </properties>
+                  </component>
+                  <component id="ea1f9" class="javax.swing.JRadioButton" binding="uploadLocalServer">
+                    <constraints>
+                      <grid row="8" column="0" row-span="1" col-span="2" vsize-policy="1" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <text value="Deploy my local server (auto-upload to cloud storage)"/>
+                    </properties>
+                  </component>
+                  <component id="db41a" class="javax.swing.JRadioButton" binding="thrdPrtSrvBtn">
+                    <constraints>
+                      <grid row="0" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <text resource-bundle="com/microsoftopentechnologies/intellij/ui/messages/messages" key="thrdPrtSrvLbl"/>
+                    </properties>
+                  </component>
+                  <component id="c9c5d" class="javax.swing.JComboBox" binding="thrdPrtSrvCmb">
+                    <constraints>
+                      <grid row="1" column="0" row-span="1" col-span="3" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties/>
                   </component>
                 </children>
               </grid>
@@ -283,30 +297,7 @@
                   <actionCommand resource-bundle="com/microsoftopentechnologies/intellij/ui/messages/messages" key="dplPageSerChkBtn"/>
                   <label resource-bundle="com/microsoftopentechnologies/intellij/ui/messages/messages" key="dplPageSerChkBtn"/>
                   <selected value="true"/>
-                  <text value="Use the server from this file path:"/>
-                </properties>
-              </component>
-              <component id="ddaf3" class="com.intellij.openapi.ui.TextFieldWithBrowseButton" binding="serverPath">
-                <constraints>
-                  <grid row="1" column="0" row-span="1" col-span="2" vsize-policy="1" hsize-policy="7" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-                </constraints>
-                <properties>
-                  <text value=""/>
-                  <toolTipText value="123"/>
-                </properties>
-              </component>
-              <component id="29988" class="javax.swing.JComboBox" binding="serverType">
-                <constraints>
-                  <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
-                </constraints>
-                <properties/>
-              </component>
-              <component id="68a61" class="javax.swing.JLabel" binding="lblSelect">
-                <constraints>
-                  <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-                </constraints>
-                <properties>
-                  <text value="Type:"/>
+                  <text value="Deploy a server of this type:"/>
                 </properties>
               </component>
               <vspacer id="2c3bd">
@@ -314,6 +305,37 @@
                   <grid row="4" column="0" row-span="1" col-span="2" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
                 </constraints>
               </vspacer>
+              <component id="68a61" class="javax.swing.JLabel" binding="lblSelect">
+                <constraints>
+                  <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <text value="Type:"/>
+                </properties>
+              </component>
+              <component id="29988" class="javax.swing.JComboBox" binding="serverType">
+                <constraints>
+                  <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+              </component>
+              <component id="ddaf3" class="com.intellij.openapi.ui.TextFieldWithBrowseButton" binding="serverPath">
+                <constraints>
+                  <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="1" hsize-policy="7" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <text value=""/>
+                  <toolTipText value="123"/>
+                </properties>
+              </component>
+              <component id="e6d17" class="javax.swing.JLabel">
+                <constraints>
+                  <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <text resource-bundle="com/microsoftopentechnologies/intellij/ui/messages/messages" key="srvPathTxt"/>
+                </properties>
+              </component>
             </children>
           </grid>
           <grid id="d6f3f" binding="applicationsSettings" custom-create="true" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
@@ -338,6 +360,7 @@
     <group name="serverButtons">
       <member id="ea1f9"/>
       <member id="5b08d"/>
+      <member id="db41a"/>
     </group>
   </buttonGroups>
 </form>
