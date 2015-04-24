@@ -134,11 +134,11 @@ public class BlobExplorerFileEditor implements FileEditor {
             @Override
             public int compare(String s, String t1) {
                 if(s == null || s.isEmpty()) {
-                    s = "0B";
+                    s = "0";
                 }
 
                 if(t1 == null || t1.isEmpty()) {
-                    t1 = "0B";
+                    t1 = "0";
                 }
 
                 return getValue(s).compareTo(getValue(t1));
@@ -158,7 +158,12 @@ public class BlobExplorerFileEditor implements FileEditor {
                     double l = Double.parseDouble(strValue.substring(0, strValue.length() - 2));
                     return (long)(l * 1024 * 1024 * 1024 * 1024);
                 } else {
-                    double l = Double.parseDouble(strValue.substring(0, strValue.length() - 1));
+                    String value = strValue.substring(0, strValue.length() - 1);
+                    if(value.isEmpty()) {
+                        return 0l;
+                    }
+
+                    double l = Double.parseDouble(value);
                     return (long) l;
                 }
             }
