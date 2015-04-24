@@ -20,7 +20,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.ui.wizard.WizardNavigationState;
 import com.intellij.ui.wizard.WizardStep;
-import com.microsoftopentechnologies.intellij.forms.CreateNewServiceForm;
+import com.microsoftopentechnologies.intellij.forms.CreateMobileServiceForm;
 import com.microsoftopentechnologies.intellij.forms.ManageSubscriptionForm;
 import com.microsoftopentechnologies.intellij.helpers.ReadOnlyCellTableModel;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
@@ -170,7 +170,7 @@ public class AzureMobileServiceStep extends WizardStep<AddServiceWizardModel> {
         buttonAddService.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                CreateNewServiceForm form = new CreateNewServiceForm();
+                CreateMobileServiceForm form = new CreateMobileServiceForm();
                 form.setServiceCreated(new Runnable() {
                     @Override
                     public void run() {
