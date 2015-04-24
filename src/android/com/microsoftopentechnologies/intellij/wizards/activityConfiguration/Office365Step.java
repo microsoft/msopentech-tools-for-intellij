@@ -29,9 +29,7 @@ import com.intellij.ui.wizard.WizardStep;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import com.microsoft.directoryservices.Application;
-import com.microsoft.directoryservices.OAuth2Permission;
-import com.microsoft.directoryservices.ServicePrincipal;
-import com.microsoftopentechnologies.intellij.forms.CreateNewOffice365AppForm;
+import com.microsoftopentechnologies.intellij.forms.CreateOffice365ApplicationForm;
 import com.microsoftopentechnologies.intellij.forms.PermissionsEditorForm;
 import com.microsoftopentechnologies.intellij.helpers.ReadOnlyCellTableModel;
 import com.microsoftopentechnologies.intellij.helpers.StringHelper;
@@ -257,12 +255,12 @@ public class Office365Step extends WizardStep<AddServiceWizardModel> {
         btnAddApp.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                CreateNewOffice365AppForm form = new CreateNewOffice365AppForm();
+                CreateOffice365ApplicationForm form = new CreateOffice365ApplicationForm();
                 form.setModal(true);
                 UIHelper.packAndCenterJDialog(form);
                 form.setVisible(true);
 
-                if(form.getDialogResult() == CreateNewOffice365AppForm.DialogResult.OK) {
+                if(form.getDialogResult() == CreateOffice365ApplicationForm.DialogResult.OK) {
                     refreshApps(form.getApplication().getappId());
                 }
             }

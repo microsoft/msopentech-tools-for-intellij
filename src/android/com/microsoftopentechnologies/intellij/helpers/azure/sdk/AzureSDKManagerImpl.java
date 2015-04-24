@@ -1033,7 +1033,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
 
             CloudBlobContainer container = client.getContainerReference(containerName);
             CloudBlobDirectory parentDirectory = container.getDirectoryReference(parentBlobDirectory.getPath());
-            CloudBlobDirectory directory = parentDirectory.getSubDirectoryReference(blobDirectory.getName());
+            CloudBlobDirectory directory = parentDirectory.getDirectoryReference(blobDirectory.getName());
 
             String uri = directory.getUri() != null ? directory.getUri().toString() : "";
             String path = Strings.nullToEmpty(directory.getPrefix());

@@ -17,7 +17,7 @@
 package com.microsoftopentechnologies.intellij.serviceexplorer.azure.mobileservice;
 
 import com.intellij.openapi.application.ApplicationManager;
-import com.microsoftopentechnologies.intellij.forms.CreateNewServiceForm;
+import com.microsoftopentechnologies.intellij.forms.CreateMobileServiceForm;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureAuthenticationMode;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
@@ -91,7 +91,7 @@ public class MobileServiceModule extends Node {
                 UIHelper.showException("An error occurred while creating the mobile service.", e1);
             }
 
-            CreateNewServiceForm form = new CreateNewServiceForm();
+            CreateMobileServiceForm form = new CreateMobileServiceForm();
             form.setServiceCreated(new Runnable() {
                 @Override
                 public void run() {

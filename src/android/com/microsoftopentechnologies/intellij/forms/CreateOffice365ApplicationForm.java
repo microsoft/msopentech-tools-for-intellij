@@ -1,17 +1,17 @@
 /**
  * Copyright 2014 Microsoft Open Technologies Inc.
- *
+ * <p/>
  * Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p/>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p/>
  * Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.microsoftopentechnologies.intellij.forms;
 
@@ -33,7 +33,7 @@ import java.awt.event.ActionListener;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-public class CreateNewOffice365AppForm extends JDialog {
+public class CreateOffice365ApplicationForm extends JDialog {
     private JPanel mainPanel;
     private JTextField nameTextField;
     private JButton btnCloseButton;
@@ -61,7 +61,7 @@ public class CreateNewOffice365AppForm extends JDialog {
         CANCEL
     }
 
-    public CreateNewOffice365AppForm() {
+    public CreateOffice365ApplicationForm() {
         final JDialog form = this;
 
         this.setContentPane(mainPanel);
@@ -116,7 +116,8 @@ public class CreateNewOffice365AppForm extends JDialog {
                             }
 
                             if (!error.isEmpty()) {
-                                JOptionPane.showMessageDialog(form, error, "Error creating the application", JOptionPane.ERROR_MESSAGE);
+                                JOptionPane.showMessageDialog(form, error, "Error creating the application",
+                                        JOptionPane.ERROR_MESSAGE);
                                 return;
                             }
 
@@ -129,36 +130,43 @@ public class CreateNewOffice365AppForm extends JDialog {
                             application.setavailableToOtherTenants(multiTenantCheckBox.isSelected());
                             application.setpublicClient(true);
 
-                            Futures.addCallback(Office365RestAPIManager.getManager().registerApplication(application), new FutureCallback<Application>() {
-                                @Override
-                                public void onSuccess(final Application application) {
-                                    ApplicationManager.getApplication().invokeAndWait(new Runnable() {
+                            Futures.addCallback(Office365RestAPIManager.getManager().registerApplication(application),
+                                    new FutureCallback<Application>() {
                                         @Override
-                                        public void run() {
-                                            setApplication(application);
-                                            dialogResult = DialogResult.OK;
-                                            form.setCursor(Cursor.getDefaultCursor());
-                                            form.dispose();
+                                        public void onSuccess(final Application application) {
+                                            ApplicationManager.getApplication().invokeAndWait(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    setApplication(application);
+                                                    dialogResult = DialogResult.OK;
+                                                    form.setCursor(Cursor.getDefaultCursor());
+                                                    form.dispose();
+                                                }
+                                            }, ModalityState.any());
                                         }
-                                    }, ModalityState.any());
-                                }
 
-                                @Override
-                                public void onFailure(final Throwable throwable) {
-                                    ApplicationManager.getApplication().invokeAndWait(new Runnable() {
                                         @Override
-                                        public void run() {
-                                            form.setCursor(Cursor.getDefaultCursor());
-                                            UIHelper.showException(
-                                                    "An error occurred while registering the application.",
-                                                    throwable, "Error registering the application");
+                                        public void onFailure(final Throwable throwable) {
+                                            ApplicationManager.getApplication().invokeAndWait(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    form.setCursor(Cursor.getDefaultCursor());
+                                                    UIHelper.showException("An error occurred while trying to register the Office 365 application.",
+                                                            throwable,
+                                                            "Error Registering Office 365 Application",
+                                                            false,
+                                                            true);
+                                                }
+                                            }, ModalityState.any());
                                         }
-                                    }, ModalityState.any());
-                                }
-                            });
+                                    });
                         } catch (Throwable e) {
                             form.setCursor(Cursor.getDefaultCursor());
-                            UIHelper.showException("An error occurred while creating the service.", e, "Error creating the service");
+                            UIHelper.showException("An error occurred while trying to register the Office 365 application.",
+                                    e,
+                                    "Error Registering Office 365 Application",
+                                    false,
+                                    true);
                         }
                     }
                 });
