@@ -94,6 +94,7 @@ public class TableEntityForm extends JDialog {
         propertiesTable.getColumn("Type").setCellRenderer(new ComboBoxTableRenderer<TableEntity.PropertyType>(TableEntity.PropertyType.values()));
         propertiesTable.getColumn("Type").setCellEditor(new ComboBoxTableCellEditor());
 
+        propertiesTable.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
         propertiesTable.getColumn("Value").setCellEditor(new DatePickerCellEditor() {
             @Override
             protected boolean isCellDate(JTable table, int row, int col) {
