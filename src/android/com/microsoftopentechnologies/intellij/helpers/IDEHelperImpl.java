@@ -12,17 +12,16 @@ import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.LightVirtualFile;
-import com.microsoftopentechnologies.intellij.components.AppSettingsNames;
 import com.microsoftopentechnologies.intellij.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.forms.OpenSSLFinderForm;
 import com.microsoftopentechnologies.intellij.helpers.aadauth.BrowserLauncher;
 import com.microsoftopentechnologies.intellij.helpers.aadauth.LauncherTask;
-import com.microsoftopentechnologies.intellij.helpers.storage.BlobExplorerFileEditorProvider;
-import com.microsoftopentechnologies.intellij.model.storage.BlobContainer;
 import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
+import com.microsoftopentechnologies.intellij.model.storage.StorageServiceTreeItem;
 import com.microsoftopentechnologies.intellij.serviceexplorer.BackgroundLoader;
 import com.microsoftopentechnologies.intellij.serviceexplorer.Node;
 import org.apache.commons.lang3.tuple.Pair;
@@ -40,6 +39,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 public class IDEHelperImpl implements IDEHelper {
+    public static Key<StorageAccount> STORAGE_KEY = new Key<StorageAccount>("storageAccount");
 
     @Override
     public void openFile(File file, final Node node) {
@@ -225,70 +225,69 @@ public class IDEHelperImpl implements IDEHelper {
         return fileIsEditing;
     }
 
-    public void openContainer(@NotNull Object projectObject, StorageAccount storageAccount, BlobContainer blobContainer) {
+    public <T extends StorageServiceTreeItem> void openItem(@NotNull Object projectObject, StorageAccount storageAccount, T item, String itemType, final String itemName,
+                                                     final String iconName) {
+        LightVirtualFile itemVirtualFile = new LightVirtualFile(item.getName() + itemType);
+        Key<T> itemKey = new Key<T>(item.getKey());
+        itemVirtualFile.putUserData(itemKey, item);
+        itemVirtualFile.putUserData(STORAGE_KEY, storageAccount);
 
-        if (getOpenedFile(projectObject, storageAccount, blobContainer) == null) {
+        itemVirtualFile.setFileType(new FileType() {
+            @NotNull
+            @Override
+            public String getName() {
+                return itemName;
+            }
 
-            LightVirtualFile containerVirtualFile = new LightVirtualFile(blobContainer.getName() + " [Container]");
-            containerVirtualFile.putUserData(BlobExplorerFileEditorProvider.CONTAINER_KEY, blobContainer);
-            containerVirtualFile.putUserData(BlobExplorerFileEditorProvider.STORAGE_KEY, storageAccount);
+            @NotNull
+            @Override
+            public String getDescription() {
+                return itemName;
+            }
 
-            containerVirtualFile.setFileType(new FileType() {
-                @NotNull
-                @Override
-                public String getName() {
-                    return "BlobContainer";
-                }
+            @NotNull
+            @Override
+            public String getDefaultExtension() {
+                return "";
+            }
 
-                @NotNull
-                @Override
-                public String getDescription() {
-                    return "BlobContainer";
-                }
+            @Nullable
+            @Override
+            public Icon getIcon() {
+                return DefaultLoader.getUIHelper().loadIcon(iconName);
+            }
 
-                @NotNull
-                @Override
-                public String getDefaultExtension() {
-                    return "";
-                }
+            @Override
+            public boolean isBinary() {
+                return true;
+            }
 
-                @Nullable
-                @Override
-                public Icon getIcon() {
-                    return DefaultLoader.getUIHelper().loadIcon("container.png");
-                }
+            @Override
+            public boolean isReadOnly() {
+                return false;
+            }
 
-                @Override
-                public boolean isBinary() {
-                    return true;
-                }
+            @Override
+            public String getCharset(@NotNull VirtualFile virtualFile, @NotNull byte[] bytes) {
+                return "UTF8";
+            }
+        });
 
-                @Override
-                public boolean isReadOnly() {
-                    return false;
-                }
-
-                @Override
-                public String getCharset(@NotNull VirtualFile virtualFile, @NotNull byte[] bytes) {
-                    return "UTF8";
-                }
-            });
-
-            FileEditorManager.getInstance((Project) projectObject).openFile(containerVirtualFile, true, true);
-        }
+        FileEditorManager.getInstance((Project) projectObject).openFile(itemVirtualFile, true, true);
     }
 
-    public Object getOpenedFile(Object projectObject, StorageAccount storageAccount, BlobContainer blobContainer) {
+    public <T extends StorageServiceTreeItem> Object getOpenedFile(Object projectObject, StorageAccount storageAccount, T item) {
         FileEditorManager fileEditorManager = FileEditorManager.getInstance((Project) projectObject);
+        Key<T> itemKey = new Key<T>(item.getKey());
 
         for (VirtualFile editedFile : fileEditorManager.getOpenFiles()) {
-            BlobContainer editedBlobContainer = editedFile.getUserData(BlobExplorerFileEditorProvider.CONTAINER_KEY);
-            StorageAccount editedStorageAccount = editedFile.getUserData(BlobExplorerFileEditorProvider.STORAGE_KEY);
+            T editedItem = editedFile.getUserData(itemKey);
+            StorageAccount editedStorageAccount = editedFile.getUserData(STORAGE_KEY);
 
             if(editedStorageAccount != null
-                    && editedBlobContainer != null
+                    && editedItem != null
                     && editedStorageAccount.getName().equals(storageAccount.getName())
-                    && editedBlobContainer.getName().equals(blobContainer.getName())) {
+                    && editedItem.getName().equals(item.getName())) {
                 return editedFile;
             }
         }

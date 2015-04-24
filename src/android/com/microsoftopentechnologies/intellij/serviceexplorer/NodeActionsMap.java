@@ -31,6 +31,5 @@ public class NodeActionsMap {
         node2Actions.put(ScheduledJobNode.class, new ImmutableList.Builder().add(UpdateJobAction.class, EditJobAction.class).build());
         node2Actions.put(BlobModule.class, new ImmutableList.Builder().add(CreateBlobContainer.class).build());
         node2Actions.put(StorageModule.class, new ImmutableList.Builder().add(CreateStorageAccountAction.class).build());
-        node2Actions.put(com.microsoftopentechnologies.intellij.serviceexplorer.azure.storage.TableNode.class, new ImmutableList.Builder().add(com.microsoftopentechnologies.intellij.serviceexplorer.azure.storage.TableNode.ViewTable.class, com.microsoftopentechnologies.intellij.serviceexplorer.azure.storage.TableNode.DeleteTable.class).build());
     }
 }

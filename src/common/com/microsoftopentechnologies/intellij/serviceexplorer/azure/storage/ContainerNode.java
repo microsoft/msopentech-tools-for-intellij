@@ -45,7 +45,9 @@ public class ContainerNode extends Node {
         addClickActionListener(new NodeActionListener() {
             @Override
             public void actionPerformed(NodeActionEvent e) {
-                DefaultLoader.getIdeHelper().openContainer(getProject(), storageAccount, blobContainer);
+                if (DefaultLoader.getIdeHelper().getOpenedFile(getProject(), storageAccount, blobContainer) == null) {
+                    DefaultLoader.getIdeHelper().openItem(getProject(), storageAccount, blobContainer, " [Container]", "BlobContainer", "container.png");
+                }
             }
         });
 
@@ -68,7 +70,9 @@ public class ContainerNode extends Node {
     public class ViewBlobContainer extends NodeActionListener {
         @Override
         public void actionPerformed(NodeActionEvent e) {
-            DefaultLoader.getIdeHelper().openContainer(getProject(), storageAccount, blobContainer);
+            if (DefaultLoader.getIdeHelper().getOpenedFile(getProject(), storageAccount, blobContainer) == null) {
+                DefaultLoader.getIdeHelper().openItem(getProject(), storageAccount, blobContainer, " [Container]", "BlobContainer", "container.png");
+            }
         }
     }
 

@@ -17,21 +17,14 @@
 package com.microsoftopentechnologies.intellij.serviceexplorer.azure.storage;
 
 import com.google.common.collect.ImmutableMap;
-import com.intellij.openapi.fileEditor.FileEditorManager;
-import com.intellij.openapi.fileTypes.FileType;
-import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.testFramework.LightVirtualFile;
 import com.microsoftopentechnologies.intellij.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerImpl;
-import com.microsoftopentechnologies.intellij.helpers.storage.QueueExplorerFileEditorProvider;
 import com.microsoftopentechnologies.intellij.model.storage.Queue;
 import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
 import com.microsoftopentechnologies.intellij.serviceexplorer.Node;
 import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionEvent;
 import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionListener;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.util.Map;
@@ -53,55 +46,8 @@ public class QueueNode extends Node {
 
     @Override
     protected void onNodeClick(NodeActionEvent ex) {
-        if(getOpenedFile() == null) {
-
-
-            LightVirtualFile queueVirtualFile = new LightVirtualFile(queue.getName() + " [Queue]");
-            queueVirtualFile.putUserData(QueueExplorerFileEditorProvider.QUEUE_KEY, queue);
-            queueVirtualFile.putUserData(QueueExplorerFileEditorProvider.STORAGE_KEY, storageAccount);
-
-            queueVirtualFile.setFileType(new FileType() {
-                @NotNull
-                @Override
-                public String getName() {
-                    return "Queue";
-                }
-
-                @NotNull
-                @Override
-                public String getDescription() {
-                    return "Queue";
-                }
-
-                @NotNull
-                @Override
-                public String getDefaultExtension() {
-                    return "";
-                }
-
-                @Nullable
-                @Override
-                public Icon getIcon() {
-                    return DefaultLoader.getUIHelper().loadIcon("container.png");
-                }
-
-                @Override
-                public boolean isBinary() {
-                    return true;
-                }
-
-                @Override
-                public boolean isReadOnly() {
-                    return false;
-                }
-
-                @Override
-                public String getCharset(@NotNull VirtualFile virtualFile, @NotNull byte[] bytes) {
-                    return "UTF8";
-                }
-            });
-
-            FileEditorManager.getInstance(getProject()).openFile(queueVirtualFile, true, true);
+        if(DefaultLoader.getIdeHelper().getOpenedFile(getProject(), storageAccount, queue) == null) {
+            DefaultLoader.getIdeHelper().openItem(getProject(), storageAccount, queue, " [Queue]", "Queue", "container.png");
         }
     }
 
@@ -112,24 +58,6 @@ public class QueueNode extends Node {
                 "Delete", DeleteQueue.class,
                 "Clear Queue", ClearQueue.class
         );
-    }
-
-    private VirtualFile getOpenedFile() {
-        FileEditorManager fileEditorManager = FileEditorManager.getInstance(getProject());
-
-        for (VirtualFile editedFile : fileEditorManager.getOpenFiles()) {
-            Queue editedQueue = editedFile.getUserData(QueueExplorerFileEditorProvider.QUEUE_KEY);
-            StorageAccount editedStorageAccount = editedFile.getUserData(QueueExplorerFileEditorProvider.STORAGE_KEY);
-
-            if(editedStorageAccount != null
-                    && editedQueue != null
-                    && editedStorageAccount.getName().equals(storageAccount.getName())
-                    && editedQueue.getName().equals(queue.getName())) {
-                return editedFile;
-            }
-        }
-
-        return null;
     }
 
     public class ViewQueue extends NodeActionListener {
@@ -154,10 +82,9 @@ public class QueueNode extends Node {
 
             if (optionDialog == JOptionPane.YES_OPTION) {
 
-                VirtualFile openedFile = getOpenedFile();
+                Object openedFile = DefaultLoader.getIdeHelper().getOpenedFile(getProject(), storageAccount, queue);
                 if(openedFile != null) {
                     DefaultLoader.getIdeHelper().closeFile(getProject(), openedFile);
-                    FileEditorManager.getInstance((Project) getProject()).closeFile(openedFile);
                 }
 
                 DefaultLoader.getIdeHelper().runInBackground(getProject(), "Deleting queue...", false, false, null, new Runnable() {

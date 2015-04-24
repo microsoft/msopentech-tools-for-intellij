@@ -2,8 +2,8 @@ package com.microsoftopentechnologies.intellij.helpers;
 
 import com.google.common.util.concurrent.SettableFuture;
 import com.microsoftopentechnologies.intellij.helpers.aadauth.BrowserLauncher;
-import com.microsoftopentechnologies.intellij.model.storage.BlobContainer;
 import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
+import com.microsoftopentechnologies.intellij.model.storage.StorageServiceTreeItem;
 import com.microsoftopentechnologies.intellij.serviceexplorer.Node;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -25,9 +25,10 @@ public interface IDEHelper {
 
     boolean isFileEditing(Object projectObject, File file);
 
-    void openContainer(Object projectObject, StorageAccount storageAccount, BlobContainer blobContainer);
+    <T extends StorageServiceTreeItem> void  openItem(Object projectObject, StorageAccount storageAccount, T blobContainer, String itemType, final String itemName,
+                                               final String iconName);
 
-    public Object getOpenedFile(Object projectObject, StorageAccount storageAccount, BlobContainer blobContainer);
+    public <T extends StorageServiceTreeItem> Object getOpenedFile(Object projectObject, StorageAccount storageAccount, T blobContainer);
 
     public void closeFile(Object projectObject, Object openedFile);
 

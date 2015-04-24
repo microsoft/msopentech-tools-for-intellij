@@ -18,7 +18,9 @@ package com.microsoftopentechnologies.intellij.model.storage;
 import com.microsoftopentechnologies.intellij.model.ServiceTreeItem;
 import org.jetbrains.annotations.NotNull;
 
-public class Table implements ServiceTreeItem {
+public class Table implements StorageServiceTreeItem {
+    public static String KEY = "table";
+
     private boolean loading;
     private String name;
     private String uri;
@@ -45,6 +47,11 @@ public class Table implements ServiceTreeItem {
     @NotNull
     public String getName() {
         return name;
+    }
+
+    @Override
+    public String getKey() {
+        return KEY;
     }
 
     @NotNull

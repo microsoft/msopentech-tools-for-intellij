@@ -22,6 +22,7 @@ import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBoxTableRenderer;
 import com.intellij.util.ui.table.ComboBoxTableCellEditor;
+import com.microsoftopentechnologies.intellij.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.helpers.DatePickerCellEditor;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
@@ -237,7 +238,7 @@ public class TableEntityForm extends JDialog {
                     onFinish.run();
 
                 } catch (AzureCmdException e) {
-                    UIHelper.showException("Error creating entity", e, "Service Explorer", false, true);
+                    DefaultLoader.getUIHelper().showException("Error creating entity", e, "Service Explorer", false, true);
                 }
             }
         });
@@ -316,7 +317,7 @@ public class TableEntityForm extends JDialog {
 
         public DeleteButtonRenderer() {
             deleteButton = new JButton();
-            deleteButton.setIcon(UIHelper.loadIcon("storagedelete.png"));
+            deleteButton.setIcon(DefaultLoader.getUIHelper().loadIcon("storagedelete.png"));
             deleteButton.setBorderPainted(false);
         }
 

@@ -18,21 +18,14 @@ package com.microsoftopentechnologies.intellij.serviceexplorer.azure.storage;
 
 
 import com.google.common.collect.ImmutableMap;
-import com.intellij.openapi.fileEditor.FileEditorManager;
-import com.intellij.openapi.fileTypes.FileType;
-import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.testFramework.LightVirtualFile;
 import com.microsoftopentechnologies.intellij.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerImpl;
-import com.microsoftopentechnologies.intellij.helpers.storage.TableExplorerFileEditorProvider;
 import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
 import com.microsoftopentechnologies.intellij.model.storage.Table;
 import com.microsoftopentechnologies.intellij.serviceexplorer.Node;
 import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionEvent;
 import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionListener;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.util.Map;
@@ -52,55 +45,8 @@ public class TableNode extends Node {
 
     @Override
     protected void onNodeClick(NodeActionEvent ex) {
-        if(getOpenedFile() == null) {
-
-
-            LightVirtualFile tableVirtualFile = new LightVirtualFile(table.getName() + " [Table]");
-            tableVirtualFile.putUserData(TableExplorerFileEditorProvider.TABLE_KEY, table);
-            tableVirtualFile.putUserData(TableExplorerFileEditorProvider.STORAGE_KEY, storageAccount);
-
-            tableVirtualFile.setFileType(new FileType() {
-                @NotNull
-                @Override
-                public String getName() {
-                    return "Table";
-                }
-
-                @NotNull
-                @Override
-                public String getDescription() {
-                    return "Table";
-                }
-
-                @NotNull
-                @Override
-                public String getDefaultExtension() {
-                    return "";
-                }
-
-                @Nullable
-                @Override
-                public Icon getIcon() {
-                    return DefaultLoader.getUIHelper().loadIcon("container.png");
-                }
-
-                @Override
-                public boolean isBinary() {
-                    return true;
-                }
-
-                @Override
-                public boolean isReadOnly() {
-                    return false;
-                }
-
-                @Override
-                public String getCharset(@NotNull VirtualFile virtualFile, @NotNull byte[] bytes) {
-                    return "UTF8";
-                }
-            });
-
-            FileEditorManager.getInstance(getProject()).openFile(tableVirtualFile, true, true);
+        if(DefaultLoader.getIdeHelper().getOpenedFile(getProject(), storageAccount, table) == null) {
+            DefaultLoader.getIdeHelper().openItem(getProject(), storageAccount, table, " [Table]", "Table", "container.png");
         }
     }
 
@@ -111,25 +57,6 @@ public class TableNode extends Node {
                 "Delete", DeleteTable.class
         );
     }
-
-    private VirtualFile getOpenedFile() {
-        FileEditorManager fileEditorManager = FileEditorManager.getInstance(getProject());
-
-        for (VirtualFile editedFile : fileEditorManager.getOpenFiles()) {
-            Table editedTable = editedFile.getUserData(TableExplorerFileEditorProvider.TABLE_KEY);
-            StorageAccount editedStorageAccount = editedFile.getUserData(TableExplorerFileEditorProvider.STORAGE_KEY);
-
-            if(editedStorageAccount != null
-                    && editedTable != null
-                    && editedStorageAccount.getName().equals(storageAccount.getName())
-                    && editedTable.getName().equals(table.getName())) {
-                return editedFile;
-            }
-        }
-
-        return null;
-    }
-
 
     public class ViewTable extends NodeActionListener {
         @Override
@@ -153,7 +80,7 @@ public class TableNode extends Node {
 
             if (optionDialog == JOptionPane.YES_OPTION) {
 
-                VirtualFile openedFile = getOpenedFile();
+                Object openedFile = DefaultLoader.getIdeHelper().getOpenedFile(getProject(), storageAccount, table);
                 if(openedFile != null) {
                     DefaultLoader.getIdeHelper().closeFile(getProject(), openedFile);
                 }

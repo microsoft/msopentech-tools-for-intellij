@@ -18,6 +18,7 @@ package com.microsoftopentechnologies.intellij.forms;
 
 import com.intellij.openapi.ui.ComboBoxTableRenderer;
 import com.intellij.util.ui.table.ComboBoxTableCellEditor;
+import com.microsoftopentechnologies.intellij.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.helpers.DatePickerCellEditor;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 
@@ -267,7 +268,7 @@ public class TablesQueryDesigner extends JDialog {
 
         public DeleteButtonRenderer() {
             deleteButton = new JButton();
-            deleteButton.setIcon(UIHelper.loadIcon("storagedelete.png"));
+            deleteButton.setIcon(DefaultLoader.getUIHelper().loadIcon("storagedelete.png"));
             deleteButton.setBorderPainted(false);
         }
 

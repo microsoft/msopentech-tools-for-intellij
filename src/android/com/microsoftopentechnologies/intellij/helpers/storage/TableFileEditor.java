@@ -28,6 +28,7 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
+import com.microsoftopentechnologies.intellij.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.forms.TableEntityForm;
 import com.microsoftopentechnologies.intellij.forms.TablesQueryDesigner;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
@@ -108,7 +109,7 @@ public class TableFileEditor implements FileEditor {
                     }
                 });
 
-                UIHelper.packAndCenterJDialog(form);
+                DefaultLoader.getUIHelper().packAndCenterJDialog(form);
 
                 form.setVisible(true);
             }
@@ -128,7 +129,7 @@ public class TableFileEditor implements FileEditor {
                 });
 
 
-                UIHelper.packAndCenterJDialog(form);
+                DefaultLoader.getUIHelper().packAndCenterJDialog(form);
                 form.setVisible(true);
             }
         });
@@ -221,7 +222,7 @@ public class TableFileEditor implements FileEditor {
             }
         });
 
-        UIHelper.packAndCenterJDialog(form);
+        DefaultLoader.getUIHelper().packAndCenterJDialog(form);
 
         form.setVisible(true);
     }
@@ -239,7 +240,7 @@ public class TableFileEditor implements FileEditor {
 
                     refreshGrid();
                 } catch (AzureCmdException e) {
-                    UIHelper.showException("Error querying entities", e, "Service Explorer", false, true);
+                    DefaultLoader.getUIHelper().showException("Error querying entities", e, "Service Explorer", false, true);
                 }
             }
         });
@@ -325,7 +326,7 @@ public class TableFileEditor implements FileEditor {
                         });
                     }
                 } catch(AzureCmdException ex) {
-                    UIHelper.showException("Error deleting entities", ex, "Service Explorer", false, true);
+                    DefaultLoader.getUIHelper().showException("Error deleting entities", ex, "Service Explorer", false, true);
                 }
             }
         });

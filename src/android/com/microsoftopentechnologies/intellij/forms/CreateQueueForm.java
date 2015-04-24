@@ -21,6 +21,7 @@ import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
+import com.microsoftopentechnologies.intellij.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.helpers.LinkListener;
 import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
@@ -148,7 +149,7 @@ public class CreateQueueForm extends JDialog {
                         ApplicationManager.getApplication().invokeLater(onCreate);
                     }
                 } catch(AzureCmdException e) {
-                    UIHelper.showException("Error creating queue", e, "Service explorer", false, true);
+                    DefaultLoader.getUIHelper().showException("Error creating queue", e, "Service explorer", false, true);
                 }
             }
         });
