@@ -230,6 +230,9 @@ public class QueueFileEditor implements FileEditor {
 
                                 model.addRow(values);
                             }
+
+                            clearQueueButton.setEnabled(queueMessages.size() != 0);
+                            dequeueMessageButton.setEnabled(queueMessages.size() != 0);
                         }
                     });
 

@@ -29,6 +29,7 @@ import com.intellij.ui.wizard.WizardStep;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import com.microsoft.directoryservices.Application;
+import com.microsoftopentechnologies.intellij.forms.CreateOffice365ApplicationForm;
 import com.microsoftopentechnologies.intellij.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.forms.CreateNewOffice365AppForm;
 import com.microsoftopentechnologies.intellij.forms.PermissionsEditorForm;
@@ -214,7 +215,7 @@ public class Office365Step extends WizardStep<AddServiceWizardModel> {
                 // this is not exactly intuitive but when you click the button on the table cell
                 // this is the method that gets called; so we pop up the permissions form here
                 PermissionsEditorForm permissionsEditorForm = new PermissionsEditorForm(service.getName(), permissionSet);
-                DefaultLoader.getUIHelper().packAndCenterJDialog(permissionsEditorForm);
+                UIHelper.packAndCenterJDialog(permissionsEditorForm);
                 permissionsEditorForm.setVisible(true);
 
                 if(permissionsEditorForm.getDialogResult() == PermissionsEditorForm.DialogResult.OK) {
@@ -256,12 +257,12 @@ public class Office365Step extends WizardStep<AddServiceWizardModel> {
         btnAddApp.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                CreateNewOffice365AppForm form = new CreateNewOffice365AppForm();
+                CreateOffice365ApplicationForm form = new CreateOffice365ApplicationForm();
                 form.setModal(true);
                 DefaultLoader.getUIHelper().packAndCenterJDialog(form);
                 form.setVisible(true);
 
-                if(form.getDialogResult() == CreateNewOffice365AppForm.DialogResult.OK) {
+                if(form.getDialogResult() == CreateOffice365ApplicationForm.DialogResult.OK) {
                     refreshApps(form.getApplication().getappId());
                 }
             }
@@ -312,7 +313,7 @@ public class Office365Step extends WizardStep<AddServiceWizardModel> {
                 try {
                     fillPermissions(app);
                 } catch (ParseException e) {
-                    DefaultLoader.getUIHelper().showException("An error occurred while fetching permissions for Office 365 services.", e);
+                    UIHelper.showException("An error occurred while fetching permissions for Office 365 services.", e);
                 }
             }
         });
@@ -411,14 +412,14 @@ public class Office365Step extends WizardStep<AddServiceWizardModel> {
                     ApplicationManager.getApplication().invokeAndWait(new Runnable() {
                         @Override
                         public void run() {
-                            DefaultLoader.getUIHelper().showException("An error occurred while fetching the list of applications.", throwable);
+                            UIHelper.showException("An error occurred while fetching the list of applications.", throwable);
                         }
                     }, ModalityState.any());
                 }
             });
         }
         catch (Throwable throwable) {
-            DefaultLoader.getUIHelper().showException("An error occurred while trying to authenticate with Office 365", throwable);
+            UIHelper.showException("An error occurred while trying to authenticate with Office 365", throwable);
             return;
         }
     }
@@ -466,7 +467,7 @@ public class Office365Step extends WizardStep<AddServiceWizardModel> {
 
             @Override
             public void onFailure(Throwable throwable) {
-                DefaultLoader.getUIHelper().showException("An error occurred while fetching permissions for Office 365 services.", throwable);
+                UIHelper.showException("An error occurred while fetching permissions for Office 365 services.", throwable);
             }
         });
     }

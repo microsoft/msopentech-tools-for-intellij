@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 -->
-<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.microsoftopentechnologies.intellij.forms.CreateNewOffice365AppForm">
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.microsoftopentechnologies.intellij.forms.CreateOffice365ApplicationForm">
   <grid id="27dc6" binding="mainPanel" layout-manager="FormLayout">
     <rowspec value="center:19px:noGrow"/>
     <rowspec value="center:18px:noGrow"/>

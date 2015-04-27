@@ -79,6 +79,8 @@ public class TablesQueryDesigner extends JDialog {
         queryTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         queryTable.setModel(model);
 
+        queryTable.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
+
         JTableHeader tableHeader = queryTable.getTableHeader();
         tableHeader.setReorderingAllowed(false);
         tableHeader.setResizingAllowed(false);

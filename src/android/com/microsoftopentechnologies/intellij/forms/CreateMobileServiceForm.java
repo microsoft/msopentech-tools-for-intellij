@@ -1,17 +1,17 @@
 /**
  * Copyright 2014 Microsoft Open Technologies Inc.
- *
+ * <p/>
  * Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p/>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p/>
  * Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.microsoftopentechnologies.intellij.forms;
 
@@ -35,7 +35,7 @@ import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
-public class CreateNewServiceForm extends JDialog {
+public class CreateMobileServiceForm extends JDialog {
 
     private JPanel mainPanel;
     private JTextField nameTextField;
@@ -53,7 +53,7 @@ public class CreateNewServiceForm extends JDialog {
     private Runnable serviceCreated;
 
 
-    public CreateNewServiceForm() {
+    public CreateMobileServiceForm() {
 
         final JDialog form = this;
 
@@ -134,7 +134,7 @@ public class CreateNewServiceForm extends JDialog {
                 } catch (Throwable e) {
 
                     form.setCursor(Cursor.getDefaultCursor());
-                    DefaultLoader.getUIHelper().showException("Error retrieving the subscription list: ", e, "Error retrieving the subscription list");
+                    UIHelper.showException("Error retrieving the subscription list: ", e, "Error retrieving the subscription list");
                 }
             }
         });
@@ -231,7 +231,11 @@ public class CreateNewServiceForm extends JDialog {
                         } catch (Throwable e) {
                             form.setCursor(Cursor.getDefaultCursor());
 
-                            DefaultLoader.getUIHelper().showException("An error occurred while creating the service.", e, "Error creating the service");
+                            UIHelper.showException("An error occurred while trying to create the mobile service.",
+                                    e,
+                                    "Error Creating Mobile Service",
+                                    false,
+                                    true);
                         }
                     }
                 });
@@ -313,7 +317,7 @@ public class CreateNewServiceForm extends JDialog {
                         }
                     }, ModalityState.any());
                 } catch (Exception e) {
-                    DefaultLoader.getUIHelper().showException("Error retrieving the server and database list: ", e, "Error retrieving the server and database list");
+                    UIHelper.showException("Error retrieving the server and database list: ", e, "Error retrieving the server and database list");
                 }
             }
         });

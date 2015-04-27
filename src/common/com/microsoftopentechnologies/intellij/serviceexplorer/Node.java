@@ -1,17 +1,17 @@
 /**
  * Copyright 2014 Microsoft Open Technologies Inc.
- *
+ * <p/>
  * Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p/>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p/>
  * Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.microsoftopentechnologies.intellij.serviceexplorer;
@@ -371,5 +371,57 @@ public class Node {
 
     public void setLoading(boolean loading) {
         this.loading = loading;
+    }
+
+    class BackgroundLoader extends Task.Backgroundable {
+        private SettableFuture<List<Node>> future;
+
+        public BackgroundLoader(SettableFuture<List<Node>> future, Project project, String title, boolean canBeCancelled) {
+            super(project, title, canBeCancelled);
+            this.future = future;
+        }
+
+        @Override
+        public void run(ProgressIndicator progressIndicator) {
+            progressIndicator.setIndeterminate(true);
+
+            final String nodeName = getName();
+            setName(nodeName + " (Refreshing...)");
+
+            Futures.addCallback(future, new FutureCallback<List<Node>>() {
+                @Override
+                public void onSuccess(List<Node> nodes) {
+                    updateName(null);
+                }
+
+                @Override
+                public void onFailure(Throwable throwable) {
+                    updateName(throwable);
+                }
+
+                private void updateName(final Throwable throwable) {
+                    ApplicationManager.getApplication().invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            setName(nodeName);
+
+                            if (throwable != null) {
+                                UIHelper.showException("An error occurred while loading " + getName() + ".",
+                                        throwable,
+                                        "Error Loading " + getName(),
+                                        false,
+                                        true);
+                            }
+                        }
+                    });
+                }
+            });
+
+            try {
+                refreshItems(future);
+            } catch (AzureCmdException e) {
+                future.setException(e);
+            }
+        }
     }
 }

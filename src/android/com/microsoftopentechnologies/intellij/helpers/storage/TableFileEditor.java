@@ -109,7 +109,7 @@ public class TableFileEditor implements FileEditor {
                     }
                 });
 
-                DefaultLoader.getUIHelper().packAndCenterJDialog(form);
+                UIHelper.packAndCenterJDialog(form);
 
                 form.setVisible(true);
             }
@@ -203,28 +203,31 @@ public class TableFileEditor implements FileEditor {
     }
 
     private void editEntity() {
-        final TableEntity selectedEntity = getSelectedEntities()[0];
+        TableEntity[] selectedEntities = getSelectedEntities();
+        if(selectedEntities.length > 0) {
+            final TableEntity selectedEntity = selectedEntities[0];
 
-        final TableEntityForm form = new TableEntityForm();
-        form.setProject(project);
-        form.setTableName(table.getName());
-        form.setStorageAccount(storageAccount);
-        form.setTableEntity(selectedEntity);
+            final TableEntityForm form = new TableEntityForm();
+            form.setProject(project);
+            form.setTableName(table.getName());
+            form.setStorageAccount(storageAccount);
+            form.setTableEntity(selectedEntity);
 
-        form.setTitle("Edit Entity");
+            form.setTitle("Edit Entity");
 
 
-        form.setOnFinish(new Runnable() {
-            @Override
-            public void run() {
-                tableEntities.set(entitiesTable.getSelectedRow(), form.getTableEntity());
-                refreshGrid();
-            }
-        });
+            form.setOnFinish(new Runnable() {
+                @Override
+                public void run() {
+                    tableEntities.set(entitiesTable.getSelectedRow(), form.getTableEntity());
+                    refreshGrid();
+                }
+            });
 
-        DefaultLoader.getUIHelper().packAndCenterJDialog(form);
+            DefaultLoader.getUIHelper().packAndCenterJDialog(form);
 
-        form.setVisible(true);
+            form.setVisible(true);
+        }
     }
 
     public void fillGrid() {
@@ -326,7 +329,7 @@ public class TableFileEditor implements FileEditor {
                         });
                     }
                 } catch(AzureCmdException ex) {
-                    DefaultLoader.getUIHelper().showException("Error deleting entities", ex, "Service Explorer", false, true);
+                    UIHelper.showException("Error deleting entities", ex, "Service Explorer", false, true);
                 }
             }
         });
