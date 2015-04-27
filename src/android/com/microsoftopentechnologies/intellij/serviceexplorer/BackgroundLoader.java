@@ -7,8 +7,9 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
-import com.microsoftopentechnologies.intellij.components.DefaultLoader;
-import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
+import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.Node;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;

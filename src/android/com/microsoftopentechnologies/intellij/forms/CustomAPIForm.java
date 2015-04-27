@@ -18,13 +18,12 @@ package com.microsoftopentechnologies.intellij.forms;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
-import com.microsoftopentechnologies.intellij.components.DefaultLoader;
-import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
-import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManagerImpl;
-import com.microsoftopentechnologies.intellij.model.ms.CustomAPI;
-import com.microsoftopentechnologies.intellij.model.ms.CustomAPIPermissions;
-import com.microsoftopentechnologies.intellij.model.ms.PermissionItem;
-import com.microsoftopentechnologies.intellij.model.ms.PermissionType;
+import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.rest.AzureRestAPIManagerImpl;
+import com.microsoftopentechnologies.tooling.msservices.model.ms.CustomAPI;
+import com.microsoftopentechnologies.tooling.msservices.model.ms.CustomAPIPermissions;
+import com.microsoftopentechnologies.tooling.msservices.model.ms.PermissionItem;
+import com.microsoftopentechnologies.tooling.msservices.model.ms.PermissionType;
 
 import javax.swing.*;
 import java.awt.*;

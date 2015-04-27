@@ -16,11 +16,12 @@
 package com.microsoftopentechnologies.intellij.serviceexplorer.azure.storage;
 
 import com.intellij.openapi.project.Project;
-import com.microsoftopentechnologies.intellij.components.DefaultLoader;
+import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.forms.CreateTableForm;
-import com.microsoftopentechnologies.intellij.helpers.Name;
-import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionEvent;
-import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionListener;
+import com.microsoftopentechnologies.tooling.msservices.helpers.Name;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.NodeActionEvent;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.NodeActionListener;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.storage.TableModule;
 
 @Name("Create new table")
 public class CreateTableAction extends NodeActionListener {
@@ -35,7 +36,7 @@ public class CreateTableAction extends NodeActionListener {
         CreateTableForm form = new CreateTableForm();
 
         form.setProject((Project) tableModule.getProject());
-        form.setStorageAccount(tableModule.storageAccount);
+        form.setStorageAccount(tableModule.getStorageAccount());
 
         form.setOnCreate(new Runnable() {
             @Override

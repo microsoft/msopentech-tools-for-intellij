@@ -9,14 +9,16 @@ import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.microsoftopentechnologies.intellij.components.DefaultLoader;
-import com.microsoftopentechnologies.intellij.helpers.Name;
-import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManagerImpl;
-import com.microsoftopentechnologies.intellij.model.ms.MobileService;
-import com.microsoftopentechnologies.intellij.model.ms.Script;
-import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionEvent;
-import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionListener;
+import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
+import com.microsoftopentechnologies.tooling.msservices.helpers.Name;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.rest.AzureRestAPIManagerImpl;
+import com.microsoftopentechnologies.tooling.msservices.model.ms.MobileService;
+import com.microsoftopentechnologies.tooling.msservices.model.ms.Script;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.NodeActionEvent;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.NodeActionListener;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.mobileservice.MobileServiceNode;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.mobileservice.TableScriptNode;
 
 import javax.swing.*;
 import java.io.File;
@@ -42,7 +44,7 @@ public class UpdateScriptAction extends NodeActionListener {
                 try {
                     saveScript(
                             (Project) tableScriptNode.getProject(),
-                            tableScriptNode.script,
+                            tableScriptNode.getScript(),
                             mobileService.getName(),
                             mobileService.getSubcriptionId());
                 } catch (AzureCmdException e) {

@@ -5,15 +5,17 @@ import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
-import com.microsoftopentechnologies.intellij.components.DefaultLoader;
+import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.forms.TableForm;
-import com.microsoftopentechnologies.intellij.helpers.Name;
-import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManagerImpl;
-import com.microsoftopentechnologies.intellij.model.ms.MobileService;
-import com.microsoftopentechnologies.intellij.model.ms.Table;
-import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionEvent;
-import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionListener;
+import com.microsoftopentechnologies.tooling.msservices.helpers.Name;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.rest.AzureRestAPIManagerImpl;
+import com.microsoftopentechnologies.tooling.msservices.model.ms.MobileService;
+import com.microsoftopentechnologies.tooling.msservices.model.ms.Table;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.NodeActionEvent;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.NodeActionListener;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.mobileservice.MobileServiceNode;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.mobileservice.TableNode;
 
 @Name("Edit table")
 public class EditTableAction extends NodeActionListener {
@@ -37,7 +39,7 @@ public class EditTableAction extends NodeActionListener {
                     selectedTable = AzureRestAPIManagerImpl.getManager().showTableDetails(
                             mobileService.getSubcriptionId(),
                             mobileService.getName(),
-                            tableNode.table.getName());
+                            tableNode.getTable().getName());
 
                     TableForm form = new TableForm();
                     form.setServiceName(mobileService.getName());

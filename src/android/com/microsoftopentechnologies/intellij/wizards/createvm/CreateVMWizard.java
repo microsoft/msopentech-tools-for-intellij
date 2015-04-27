@@ -16,9 +16,8 @@
 
 package com.microsoftopentechnologies.intellij.wizards.createvm;
 
-import com.intellij.openapi.project.Project;
 import com.intellij.ui.wizard.WizardDialog;
-import com.microsoftopentechnologies.intellij.serviceexplorer.azure.vm.VMServiceModule;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.vm.VMServiceModule;
 
 import javax.swing.*;
 import java.awt.*;

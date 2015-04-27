@@ -16,7 +16,7 @@
 
 package com.microsoftopentechnologies.intellij.helpers;
 
-import com.microsoftopentechnologies.intellij.components.DefaultLoader;
+import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;

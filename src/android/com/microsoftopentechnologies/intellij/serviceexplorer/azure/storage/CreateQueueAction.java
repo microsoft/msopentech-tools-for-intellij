@@ -16,12 +16,12 @@
 package com.microsoftopentechnologies.intellij.serviceexplorer.azure.storage;
 
 import com.intellij.openapi.project.Project;
-import com.microsoftopentechnologies.intellij.components.DefaultLoader;
+import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.forms.CreateQueueForm;
-import com.microsoftopentechnologies.intellij.helpers.Name;
-import com.microsoftopentechnologies.intellij.helpers.UIHelper;
-import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionEvent;
-import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionListener;
+import com.microsoftopentechnologies.tooling.msservices.helpers.Name;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.NodeActionEvent;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.NodeActionListener;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.storage.QueueModule;
 
 @Name("Create new queue")
 public class CreateQueueAction extends NodeActionListener {
@@ -36,7 +36,7 @@ public class CreateQueueAction extends NodeActionListener {
         CreateQueueForm form = new CreateQueueForm();
 
         form.setProject((Project) queueModule.getProject());
-        form.setStorageAccount(queueModule.storageAccount);
+        form.setStorageAccount(queueModule.getStorageAccount());
 
         form.setOnCreate(new Runnable() {
             @Override

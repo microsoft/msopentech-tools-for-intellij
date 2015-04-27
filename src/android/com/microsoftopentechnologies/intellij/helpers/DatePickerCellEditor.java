@@ -17,7 +17,7 @@
 package com.microsoftopentechnologies.intellij.helpers;
 
 import com.intellij.ui.JBColor;
-import com.microsoftopentechnologies.intellij.components.DefaultLoader;
+import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import org.jdesktop.swingx.JXMonthView;
 import org.jdesktop.swingx.calendar.DateSelectionModel;
 import sun.reflect.misc.ReflectUtil;

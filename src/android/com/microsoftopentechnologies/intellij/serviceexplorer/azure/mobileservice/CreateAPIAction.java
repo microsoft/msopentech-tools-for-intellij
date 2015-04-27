@@ -1,14 +1,16 @@
 package com.microsoftopentechnologies.intellij.serviceexplorer.azure.mobileservice;
 
 import com.intellij.openapi.project.Project;
-import com.microsoftopentechnologies.intellij.components.DefaultLoader;
+import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.forms.CustomAPIForm;
-import com.microsoftopentechnologies.intellij.helpers.Name;
-import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManagerImpl;
-import com.microsoftopentechnologies.intellij.model.ms.CustomAPI;
-import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionEvent;
-import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionListener;
+import com.microsoftopentechnologies.tooling.msservices.helpers.Name;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.rest.AzureRestAPIManagerImpl;
+import com.microsoftopentechnologies.tooling.msservices.model.ms.CustomAPI;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.NodeActionEvent;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.NodeActionListener;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.mobileservice.CustomAPINode;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.mobileservice.MobileServiceNode;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -23,23 +25,23 @@ public class CreateAPIAction extends NodeActionListener {
     @Override
     public void actionPerformed(NodeActionEvent e) {
         CustomAPIForm form = new CustomAPIForm();
-        form.setServiceName(mobileServiceNode.mobileService.getName());
-        form.setSubscriptionId(mobileServiceNode.mobileService.getSubcriptionId());
+        form.setServiceName(mobileServiceNode.getMobileService().getName());
+        form.setSubscriptionId(mobileServiceNode.getMobileService().getSubcriptionId());
         form.setProject((Project) mobileServiceNode.getProject());
 
         form.setAfterSave(new Runnable() {
             @Override
             public void run() {
                 // refresh the apis node
-                mobileServiceNode.customAPIsNode.removeAllChildNodes();
+                mobileServiceNode.getCustomAPIsNode().removeAllChildNodes();
                 try {
                     mobileServiceNode.loadServiceNode(
                             AzureRestAPIManagerImpl.getManager().getAPIList(
-                                    mobileServiceNode.mobileService.getSubcriptionId(),
-                                    mobileServiceNode.mobileService.getName()),
+                                    mobileServiceNode.getMobileService().getSubcriptionId(),
+                                    mobileServiceNode.getMobileService().getName()),
                             "_apis",
                             MobileServiceNode.CUSTOM_APIS,
-                            mobileServiceNode.customAPIsNode,
+                            mobileServiceNode.getCustomAPIsNode(),
                             CustomAPINode.class,
                             CustomAPI.class);
                 } catch (NoSuchMethodException e1) {

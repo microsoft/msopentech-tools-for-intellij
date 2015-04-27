@@ -1,16 +1,20 @@
 package com.microsoftopentechnologies.intellij.serviceexplorer;
 
 import com.google.common.collect.ImmutableList;
-import com.microsoftopentechnologies.intellij.serviceexplorer.Node;
-import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionListener;
-import com.microsoftopentechnologies.intellij.serviceexplorer.azure.AzureServiceModule;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.Node;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.NodeActionListener;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.AzureServiceModule;
 import com.microsoftopentechnologies.intellij.serviceexplorer.azure.ManageSubscriptionsAction;
 import com.microsoftopentechnologies.intellij.serviceexplorer.azure.mobileservice.*;
 import com.microsoftopentechnologies.intellij.serviceexplorer.azure.mobileservice.CreateTableAction;
-import com.microsoftopentechnologies.intellij.serviceexplorer.azure.mobileservice.TableNode;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.mobileservice.*;
 import com.microsoftopentechnologies.intellij.serviceexplorer.azure.storage.*;
 import com.microsoftopentechnologies.intellij.serviceexplorer.azure.vm.CreateVMAction;
-import com.microsoftopentechnologies.intellij.serviceexplorer.azure.vm.VMServiceModule;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.storage.BlobModule;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.storage.QueueModule;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.storage.StorageModule;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.storage.TableModule;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.vm.VMServiceModule;
 
 import java.util.HashMap;
 import java.util.Map;

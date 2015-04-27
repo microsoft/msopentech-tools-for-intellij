@@ -21,11 +21,10 @@ import com.google.common.util.concurrent.Futures;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.microsoft.directoryservices.Application;
-import com.microsoftopentechnologies.intellij.components.DefaultLoader;
+import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.helpers.LinkListener;
-import com.microsoftopentechnologies.intellij.helpers.StringHelper;
-import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
-import com.microsoftopentechnologies.intellij.helpers.o365.Office365RestAPIManager;
+import com.microsoftopentechnologies.tooling.msservices.helpers.StringHelper;
+import com.microsoftopentechnologies.tooling.msservices.helpers.o365.Office365RestAPIManager;
 
 import javax.swing.*;
 import java.awt.*;

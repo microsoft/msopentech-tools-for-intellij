@@ -16,9 +16,9 @@
 
 package com.microsoftopentechnologies.intellij.forms;
 
-import com.microsoftopentechnologies.intellij.components.DefaultLoader;
-import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManagerImpl;
-import com.microsoftopentechnologies.intellij.model.ms.Job;
+import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.rest.AzureRestAPIManagerImpl;
+import com.microsoftopentechnologies.tooling.msservices.model.ms.Job;
 
 import javax.swing.*;
 import java.awt.*;

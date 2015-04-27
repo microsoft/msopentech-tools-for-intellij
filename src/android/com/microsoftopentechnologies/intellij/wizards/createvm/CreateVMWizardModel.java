@@ -19,10 +19,10 @@ package com.microsoftopentechnologies.intellij.wizards.createvm;
 import com.intellij.openapi.application.ApplicationNamesInfo;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.wizard.WizardModel;
-import com.microsoftopentechnologies.intellij.model.ms.Subscription;
-import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
-import com.microsoftopentechnologies.intellij.model.vm.*;
-import com.microsoftopentechnologies.intellij.serviceexplorer.azure.vm.VMServiceModule;
+import com.microsoftopentechnologies.tooling.msservices.model.ms.Subscription;
+import com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount;
+import com.microsoftopentechnologies.tooling.msservices.model.vm.*;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.vm.VMServiceModule;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;

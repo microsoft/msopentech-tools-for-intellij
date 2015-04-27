@@ -1,10 +1,12 @@
 package com.microsoftopentechnologies.intellij.serviceexplorer.azure.mobileservice;
 
 import com.microsoftopentechnologies.intellij.forms.JobForm;
-import com.microsoftopentechnologies.intellij.helpers.Name;
-import com.microsoftopentechnologies.intellij.model.ms.MobileService;
-import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionEvent;
-import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionListener;
+import com.microsoftopentechnologies.tooling.msservices.helpers.Name;
+import com.microsoftopentechnologies.tooling.msservices.model.ms.MobileService;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.NodeActionEvent;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.NodeActionListener;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.mobileservice.MobileServiceNode;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.mobileservice.ScheduledJobNode;
 
 @Name("Edit job")
 public class EditJobAction extends NodeActionListener {
@@ -21,14 +23,14 @@ public class EditJobAction extends NodeActionListener {
         final MobileService mobileService = mobileServiceNode.getMobileService();
 
         final JobForm form = new JobForm();
-        form.setJob(scheduledJobNode.job);
+        form.setJob(scheduledJobNode.getJob());
         form.setServiceName(mobileService.getName());
         form.setTitle("Edit job");
         form.setSubscriptionId(mobileService.getSubcriptionId());
         form.setAfterSave(new Runnable() {
             @Override
             public void run() {
-                scheduledJobNode.job = form.getEditingJob();
+                scheduledJobNode.setJob(form.getEditingJob());
             }
         });
         form.pack();

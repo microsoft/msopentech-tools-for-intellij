@@ -9,13 +9,15 @@ import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.microsoftopentechnologies.intellij.components.DefaultLoader;
-import com.microsoftopentechnologies.intellij.helpers.Name;
-import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManagerImpl;
-import com.microsoftopentechnologies.intellij.model.ms.MobileService;
-import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionEvent;
-import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionListener;
+import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
+import com.microsoftopentechnologies.tooling.msservices.helpers.Name;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.rest.AzureRestAPIManagerImpl;
+import com.microsoftopentechnologies.tooling.msservices.model.ms.MobileService;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.NodeActionEvent;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.NodeActionListener;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.mobileservice.CustomAPINode;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.mobileservice.MobileServiceNode;
 
 import javax.swing.*;
 import java.io.File;
@@ -42,7 +44,7 @@ public class UpdateCustomAPIAction extends NodeActionListener {
     }
 
     public void saveCustomAPI(Project project, final String serviceName, final UUID subscriptionId) throws AzureCmdException {
-        VirtualFile editorFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(new File(customAPINode.customAPI.getLocalFilePath(serviceName)));
+        VirtualFile editorFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(new File(customAPINode.getCustomAPI().getLocalFilePath(serviceName)));
         if (editorFile != null) {
             FileEditor[] fe = FileEditorManager.getInstance(project).getAllEditors(editorFile);
 
@@ -63,7 +65,8 @@ public class UpdateCustomAPIAction extends NodeActionListener {
                 public void run(ProgressIndicator progressIndicator) {
                     try {
                         progressIndicator.setIndeterminate(true);
-                        AzureRestAPIManagerImpl.getManager().uploadAPIScript(subscriptionId, serviceName, customAPINode.customAPI.getName(), customAPINode.customAPI.getLocalFilePath(serviceName));
+                        AzureRestAPIManagerImpl.getManager().uploadAPIScript(subscriptionId, serviceName, customAPINode.getCustomAPI().getName(),
+                                customAPINode.getCustomAPI().getLocalFilePath(serviceName));
                     } catch (AzureCmdException e) {
                         DefaultLoader.getUIHelper().showException("Error uploading script", e);
                     }

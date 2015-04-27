@@ -9,13 +9,15 @@ import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.microsoftopentechnologies.intellij.components.DefaultLoader;
-import com.microsoftopentechnologies.intellij.helpers.Name;
-import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManagerImpl;
-import com.microsoftopentechnologies.intellij.model.ms.MobileService;
-import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionEvent;
-import com.microsoftopentechnologies.intellij.serviceexplorer.NodeActionListener;
+import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
+import com.microsoftopentechnologies.tooling.msservices.helpers.Name;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.rest.AzureRestAPIManagerImpl;
+import com.microsoftopentechnologies.tooling.msservices.model.ms.MobileService;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.NodeActionEvent;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.NodeActionListener;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.mobileservice.MobileServiceNode;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.mobileservice.ScheduledJobNode;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -35,7 +37,7 @@ public class UpdateJobAction extends NodeActionListener {
         MobileServiceNode mobileServiceNode = (MobileServiceNode) scheduledJobNode.findParentByType(MobileServiceNode.class);
         final MobileService mobileService = mobileServiceNode.getMobileService();
 
-        VirtualFile editorFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(new File(scheduledJobNode.job.getLocalFilePath(mobileService.getName())));
+        VirtualFile editorFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(new File(scheduledJobNode.getJob().getLocalFilePath(mobileService.getName())));
         if (editorFile != null) {
             FileEditor[] fe = FileEditorManager.getInstance((Project) scheduledJobNode.getProject()).getAllEditors(editorFile);
 
@@ -58,7 +60,7 @@ public class UpdateJobAction extends NodeActionListener {
                         progressIndicator.setIndeterminate(true);
                         AzureRestAPIManagerImpl.getManager().uploadJobScript(
                                 mobileService.getSubcriptionId(), mobileService.getName(),
-                                scheduledJobNode.job.getName(), scheduledJobNode.job.getLocalFilePath(mobileService.getName()));
+                                scheduledJobNode.getJob().getName(), scheduledJobNode.getJob().getLocalFilePath(mobileService.getName()));
                     } catch (AzureCmdException e) {
                         DefaultLoader.getUIHelper().showException("Error uploading script", e);
                     }

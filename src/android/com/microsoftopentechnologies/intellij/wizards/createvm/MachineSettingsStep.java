@@ -27,12 +27,11 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.wizard.WizardNavigationState;
 import com.intellij.ui.wizard.WizardStep;
 import com.intellij.util.Consumer;
-import com.microsoftopentechnologies.intellij.components.DefaultLoader;
-import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
-import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerImpl;
-import com.microsoftopentechnologies.intellij.model.vm.VirtualMachineImage;
-import com.microsoftopentechnologies.intellij.model.vm.VirtualMachineSize;
+import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk.AzureSDKManagerImpl;
+import com.microsoftopentechnologies.tooling.msservices.model.vm.VirtualMachineImage;
+import com.microsoftopentechnologies.tooling.msservices.model.vm.VirtualMachineSize;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;

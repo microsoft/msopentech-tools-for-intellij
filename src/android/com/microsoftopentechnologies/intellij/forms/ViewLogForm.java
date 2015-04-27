@@ -16,11 +16,10 @@
 
 package com.microsoftopentechnologies.intellij.forms;
 
-import com.microsoftopentechnologies.intellij.components.DefaultLoader;
-import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManagerImpl;
+import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.rest.AzureRestAPIManagerImpl;
 import com.microsoftopentechnologies.intellij.helpers.ReadOnlyCellTableModel;
-import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
-import com.microsoftopentechnologies.intellij.model.ms.LogEntry;
+import com.microsoftopentechnologies.tooling.msservices.model.ms.LogEntry;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;

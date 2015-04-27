@@ -16,10 +16,11 @@
 package com.microsoftopentechnologies.intellij.helpers;
 
 import com.intellij.openapi.application.ApplicationManager;
-import com.microsoftopentechnologies.intellij.components.DefaultLoader;
+import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.forms.ErrorMessageForm;
 import com.microsoftopentechnologies.intellij.forms.ImportSubscriptionForm;
-import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
+import com.microsoftopentechnologies.tooling.msservices.helpers.UIHelper;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
 
 import javax.swing.*;
 import java.awt.*;

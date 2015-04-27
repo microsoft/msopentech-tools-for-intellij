@@ -19,8 +19,9 @@ package com.microsoftopentechnologies.intellij.helpers;
 import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.microsoftopentechnologies.intellij.components.DefaultLoader;
-import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
+import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
+import com.microsoftopentechnologies.tooling.msservices.helpers.ServiceCodeReferenceHelper;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
 import sun.misc.IOUtils;
 
 import javax.swing.*;

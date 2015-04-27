@@ -18,9 +18,8 @@ package com.microsoftopentechnologies.intellij.forms;
 
 import com.intellij.openapi.ui.ComboBoxTableRenderer;
 import com.intellij.util.ui.table.ComboBoxTableCellEditor;
-import com.microsoftopentechnologies.intellij.components.DefaultLoader;
+import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.helpers.DatePickerCellEditor;
-import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 
 import javax.swing.*;
 import javax.swing.event.TableModelEvent;

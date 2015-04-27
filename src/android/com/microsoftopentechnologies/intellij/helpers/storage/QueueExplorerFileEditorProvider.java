@@ -26,8 +26,8 @@ import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoftopentechnologies.intellij.helpers.IDEHelperImpl;
-import com.microsoftopentechnologies.intellij.model.storage.Queue;
-import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
+import com.microsoftopentechnologies.tooling.msservices.model.storage.Queue;
+import com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 
