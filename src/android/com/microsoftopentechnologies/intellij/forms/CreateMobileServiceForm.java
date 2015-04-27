@@ -134,7 +134,7 @@ public class CreateMobileServiceForm extends JDialog {
                 } catch (Throwable e) {
 
                     form.setCursor(Cursor.getDefaultCursor());
-                    UIHelper.showException("Error retrieving the subscription list: ", e, "Error retrieving the subscription list");
+                    DefaultLoader.getUIHelper().showException("Error retrieving the subscription list: ", e, "Error retrieving the subscription list");
                 }
             }
         });
@@ -231,7 +231,7 @@ public class CreateMobileServiceForm extends JDialog {
                         } catch (Throwable e) {
                             form.setCursor(Cursor.getDefaultCursor());
 
-                            UIHelper.showException("An error occurred while trying to create the mobile service.",
+                            DefaultLoader.getUIHelper().showException("An error occurred while trying to create the mobile service.",
                                     e,
                                     "Error Creating Mobile Service",
                                     false,
@@ -317,7 +317,7 @@ public class CreateMobileServiceForm extends JDialog {
                         }
                     }, ModalityState.any());
                 } catch (Exception e) {
-                    UIHelper.showException("Error retrieving the server and database list: ", e, "Error retrieving the server and database list");
+                    DefaultLoader.getUIHelper().showException("Error retrieving the server and database list: ", e, "Error retrieving the server and database list");
                 }
             }
         });

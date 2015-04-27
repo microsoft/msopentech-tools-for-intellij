@@ -21,7 +21,6 @@ import com.intellij.openapi.application.ModalityState;
 import com.intellij.ui.wizard.WizardNavigationState;
 import com.intellij.ui.wizard.WizardStep;
 import com.microsoftopentechnologies.intellij.components.DefaultLoader;
-import com.microsoftopentechnologies.intellij.forms.CreateNewServiceForm;
 import com.microsoftopentechnologies.intellij.forms.CreateMobileServiceForm;
 import com.microsoftopentechnologies.intellij.forms.ManageSubscriptionForm;
 import com.microsoftopentechnologies.intellij.helpers.ReadOnlyCellTableModel;

@@ -31,7 +31,6 @@ import com.intellij.openapi.util.Key;
 import com.microsoftopentechnologies.intellij.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.forms.TableEntityForm;
 import com.microsoftopentechnologies.intellij.forms.TablesQueryDesigner;
-import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerImpl;
 import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
@@ -109,7 +108,7 @@ public class TableFileEditor implements FileEditor {
                     }
                 });
 
-                UIHelper.packAndCenterJDialog(form);
+                DefaultLoader.getUIHelper().packAndCenterJDialog(form);
 
                 form.setVisible(true);
             }
@@ -329,7 +328,7 @@ public class TableFileEditor implements FileEditor {
                         });
                     }
                 } catch(AzureCmdException ex) {
-                    UIHelper.showException("Error deleting entities", ex, "Service Explorer", false, true);
+                    DefaultLoader.getUIHelper().showException("Error deleting entities", ex, "Service Explorer", false, true);
                 }
             }
         });

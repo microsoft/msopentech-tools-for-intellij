@@ -145,19 +145,14 @@ public class CreateOffice365ApplicationForm extends JDialog {
                                                 }
                                             }, ModalityState.any());
                                         }
-                                    }, ModalityState.any());
-                                }
 
-                                @Override
-                                public void onFailure(final Throwable throwable) {
-                                    ApplicationManager.getApplication().invokeAndWait(new Runnable() {
                                         @Override
                                         public void onFailure(final Throwable throwable) {
                                             ApplicationManager.getApplication().invokeAndWait(new Runnable() {
                                                 @Override
                                                 public void run() {
                                                     form.setCursor(Cursor.getDefaultCursor());
-                                                    UIHelper.showException("An error occurred while trying to register the Office 365 application.",
+                                                    DefaultLoader.getUIHelper().showException("An error occurred while trying to register the Office 365 application.",
                                                             throwable,
                                                             "Error Registering Office 365 Application",
                                                             false,
@@ -168,7 +163,7 @@ public class CreateOffice365ApplicationForm extends JDialog {
                                     });
                         } catch (Throwable e) {
                             form.setCursor(Cursor.getDefaultCursor());
-                            UIHelper.showException("An error occurred while trying to register the Office 365 application.",
+                            DefaultLoader.getUIHelper().showException("An error occurred while trying to register the Office 365 application.",
                                     e,
                                     "Error Registering Office 365 Application",
                                     false,

@@ -23,8 +23,8 @@ import com.microsoftopentechnologies.intellij.helpers.aadauth.BrowserLauncher;
 import com.microsoftopentechnologies.intellij.helpers.aadauth.LauncherTask;
 import com.microsoftopentechnologies.intellij.helpers.storage.BlobExplorerFileEditorProvider;
 import com.microsoftopentechnologies.intellij.helpers.storage.QueueExplorerFileEditorProvider;
+import com.microsoftopentechnologies.intellij.helpers.storage.QueueFileEditor;
 import com.microsoftopentechnologies.intellij.helpers.storage.TableExplorerFileEditorProvider;
-import com.microsoftopentechnologies.intellij.model.ServiceTreeItem;
 import com.microsoftopentechnologies.intellij.model.storage.*;
 import com.microsoftopentechnologies.intellij.serviceexplorer.BackgroundLoader;
 import com.microsoftopentechnologies.intellij.serviceexplorer.Node;
@@ -302,6 +302,24 @@ public class IDEHelperImpl implements IDEHelper {
 
     public void closeFile(Object projectObject, Object openedFile) {
         FileEditorManager.getInstance((Project) projectObject).closeFile((VirtualFile) openedFile);
+    }
+
+    public void refreshQueue(final Object projectObject, final StorageAccount storageAccount, final Queue queue) {
+        ApplicationManager.getApplication().runReadAction(new Runnable() {
+            @Override
+            public void run() {
+                VirtualFile file = (VirtualFile) getOpenedFile(projectObject, storageAccount, queue);
+                if(file != null) {
+                    final QueueFileEditor queueFileEditor = (QueueFileEditor) FileEditorManager.getInstance((Project) projectObject).getEditors(file)[0];
+                    ApplicationManager.getApplication().invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            queueFileEditor.fillGrid();
+                        }
+                    });
+                }
+            }
+        });
     }
 
     public void invokeAuthLauncherTask(Object projectObject, BrowserLauncher browserLauncher, String windowTitle) {

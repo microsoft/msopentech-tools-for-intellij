@@ -2,6 +2,7 @@ package com.microsoftopentechnologies.intellij.helpers;
 
 import com.google.common.util.concurrent.SettableFuture;
 import com.microsoftopentechnologies.intellij.helpers.aadauth.BrowserLauncher;
+import com.microsoftopentechnologies.intellij.model.storage.Queue;
 import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
 import com.microsoftopentechnologies.intellij.model.storage.StorageServiceTreeItem;
 import com.microsoftopentechnologies.intellij.serviceexplorer.Node;
@@ -31,6 +32,8 @@ public interface IDEHelper {
     public <T extends StorageServiceTreeItem> Object getOpenedFile(Object projectObject, StorageAccount storageAccount, T blobContainer);
 
     public void closeFile(Object projectObject, Object openedFile);
+
+    public void refreshQueue(Object projectObject, StorageAccount storageAccount, Queue queue);
 
     void invokeAuthLauncherTask(Object projectObject, BrowserLauncher browserLauncher, String windowTitle);
 

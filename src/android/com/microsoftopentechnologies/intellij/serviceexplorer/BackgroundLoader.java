@@ -47,7 +47,11 @@ public class BackgroundLoader extends Task.Backgroundable {
                     public void run() {
                         node.setName(nodeName);
                         if (throwable != null) {
-                            DefaultLoader.getUIHelper().showException("An error occurred while loading " + node.getName() + ".", throwable);
+                            DefaultLoader.getUIHelper().showException("An error occurred while loading " + node.getName() + ".",
+                                    throwable,
+                                    "Error Loading " + node.getName(),
+                                    false,
+                                    true);
                         }
                     }
                 });
