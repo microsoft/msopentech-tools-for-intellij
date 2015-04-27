@@ -29,6 +29,7 @@ import com.intellij.openapi.wm.ex.ToolWindowEx;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.treeStructure.Tree;
 import com.microsoftopentechnologies.intellij.forms.ManageSubscriptionForm;
+import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.tooling.msservices.helpers.collections.ListChangeListener;
 import com.microsoftopentechnologies.tooling.msservices.helpers.collections.ListChangedEvent;
@@ -307,7 +308,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
             ToolWindowEx toolWindowEx = (ToolWindowEx) toolWindow;
 
             toolWindowEx.setTitleActions(
-                    new AnAction("Refresh", "Refresh Service List", DefaultLoader.getUIHelper().loadIcon("refresh.png")) {
+                    new AnAction("Refresh", "Refresh Service List", UIHelperImpl.loadIcon("refresh.png")) {
                         @Override
                         public void actionPerformed(AnActionEvent event) {
                             azureServiceModule.load();
@@ -317,7 +318,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
                         @Override
                         public void actionPerformed(AnActionEvent anActionEvent) {
                             ManageSubscriptionForm form = new ManageSubscriptionForm(anActionEvent.getProject());
-                            DefaultLoader.getUIHelper().packAndCenterJDialog(form);
+                            UIHelperImpl.packAndCenterJDialog(form);
                             form.setVisible(true);
                             azureServiceModule.load();
                         }

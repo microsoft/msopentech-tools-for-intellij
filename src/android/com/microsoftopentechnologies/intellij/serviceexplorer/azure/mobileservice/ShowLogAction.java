@@ -1,6 +1,7 @@
 package com.microsoftopentechnologies.intellij.serviceexplorer.azure.mobileservice;
 
 import com.intellij.openapi.application.ApplicationManager;
+import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.forms.ViewLogForm;
 import com.microsoftopentechnologies.tooling.msservices.helpers.Name;
@@ -28,7 +29,7 @@ public class ShowLogAction extends NodeActionListener {
             }
         });
 
-        DefaultLoader.getUIHelper().packAndCenterJDialog(form);
+        UIHelperImpl.packAndCenterJDialog(form);
         form.setVisible(true);
     }
 }

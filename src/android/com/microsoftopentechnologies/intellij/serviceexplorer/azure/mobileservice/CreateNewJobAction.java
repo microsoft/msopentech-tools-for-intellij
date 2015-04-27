@@ -1,5 +1,6 @@
 package com.microsoftopentechnologies.intellij.serviceexplorer.azure.mobileservice;
 
+import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.forms.JobForm;
 import com.microsoftopentechnologies.tooling.msservices.helpers.Name;
@@ -57,7 +58,7 @@ public class CreateNewJobAction extends NodeActionListener {
             }
         });
 
-        DefaultLoader.getUIHelper().packAndCenterJDialog(form);
+        UIHelperImpl.packAndCenterJDialog(form);
         form.setVisible(true);
     }
 }

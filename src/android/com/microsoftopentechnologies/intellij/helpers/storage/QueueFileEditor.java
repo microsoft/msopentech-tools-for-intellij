@@ -28,6 +28,7 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
+import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.forms.QueueMessageForm;
 import com.microsoftopentechnologies.intellij.forms.ViewMessageForm;
@@ -168,7 +169,7 @@ public class QueueFileEditor implements FileEditor {
                     }
                 });
 
-                DefaultLoader.getUIHelper().packAndCenterJDialog(queueMessageForm);
+                UIHelperImpl.packAndCenterJDialog(queueMessageForm);
 
                 queueMessageForm.setVisible(true);
             }
@@ -221,7 +222,7 @@ public class QueueFileEditor implements FileEditor {
                                 String[] values = {
                                         queueMessage.getId(),
                                         queueMessage.getContent(),
-                                        DefaultLoader.getUIHelper().readableFileSize(queueMessage.getContent().length()),
+                                        UIHelperImpl.readableFileSize(queueMessage.getContent().length()),
                                         new SimpleDateFormat().format(queueMessage.getInsertionTime().getTime()),
                                         new SimpleDateFormat().format(queueMessage.getExpirationTime().getTime()),
                                         String.valueOf(queueMessage.getDequeueCount()),
@@ -307,7 +308,7 @@ public class QueueFileEditor implements FileEditor {
         ViewMessageForm viewMessageForm = new ViewMessageForm();
         viewMessageForm.setMessage(queueMessages.get(queueTable.getSelectedRow()).getContent());
 
-        DefaultLoader.getUIHelper().packAndCenterJDialog(viewMessageForm);
+        UIHelperImpl.packAndCenterJDialog(viewMessageForm);
         viewMessageForm.setVisible(true);
 
     }

@@ -22,6 +22,7 @@ import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.project.Project;
+import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
 import com.microsoftopentechnologies.tooling.msservices.components.AppSettingsNames;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.components.MSOpenTechToolsApplication;
@@ -166,7 +167,7 @@ public class ManageSubscriptionForm extends JDialog {
                         loadList();
                     }
                 });
-                DefaultLoader.getUIHelper().packAndCenterJDialog(isf);
+                UIHelperImpl.packAndCenterJDialog(isf);
                 isf.setVisible(true);
             }
         });

@@ -16,6 +16,7 @@
 
 package com.microsoftopentechnologies.intellij.forms;
 
+import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.rest.AzureRestAPIManagerImpl;
 import com.microsoftopentechnologies.intellij.helpers.ReadOnlyCellTableModel;
@@ -30,9 +31,9 @@ import java.util.Vector;
 public class ViewLogForm extends JDialog {
     private JTable logTable;
     private JPanel mainPanel;
-    private Icon warningIcon = DefaultLoader.getUIHelper().loadIcon("logwarn.png");
-    private Icon errorIcon = DefaultLoader.getUIHelper().loadIcon("logerr.png");
-    private Icon infoIcon = DefaultLoader.getUIHelper().loadIcon("loginfo.png");
+    private Icon warningIcon = UIHelperImpl.loadIcon("logwarn.png");
+    private Icon errorIcon = UIHelperImpl.loadIcon("logerr.png");
+    private Icon infoIcon = UIHelperImpl.loadIcon("loginfo.png");
 
     public ViewLogForm() {
         this.setContentPane(mainPanel);
@@ -58,13 +59,13 @@ public class ViewLogForm extends JDialog {
                 public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 
                     if(value.toString().equals("information")) {
-                        setIcon(DefaultLoader.getUIHelper().loadIcon("loginfo.png"));
+                        setIcon(UIHelperImpl.loadIcon("loginfo.png"));
                         value = "Information";
                     } else if(value.toString().equals("error")) {
-                        setIcon(DefaultLoader.getUIHelper().loadIcon("logerr.png"));
+                        setIcon(UIHelperImpl.loadIcon("logerr.png"));
                         value = "Error";
                     } else if(value.toString().equals("warning")) {
-                        setIcon(DefaultLoader.getUIHelper().loadIcon("logwarn.png"));
+                        setIcon(UIHelperImpl.loadIcon("logwarn.png"));
                         value = "Warning";
                     }
 

@@ -109,7 +109,7 @@ public abstract class DatePickerCellEditor extends DefaultCellEditor {
                 frame.setModal(true);
                 frame.setAlwaysOnTop(true);
                 frame.setMinimumSize(monthView.getPreferredSize());
-                DefaultLoader.getUIHelper().packAndCenterJDialog(frame);
+                UIHelperImpl.packAndCenterJDialog(frame);
                 frame.setVisible(true);
             }
         });

@@ -22,6 +22,7 @@ import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBoxTableRenderer;
 import com.intellij.util.ui.table.ComboBoxTableCellEditor;
+import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.helpers.DatePickerCellEditor;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
@@ -317,7 +318,7 @@ public class TableEntityForm extends JDialog {
 
         public DeleteButtonRenderer() {
             deleteButton = new JButton();
-            deleteButton.setIcon(DefaultLoader.getUIHelper().loadIcon("storagedelete.png"));
+            deleteButton.setIcon(UIHelperImpl.loadIcon("storagedelete.png"));
             deleteButton.setBorderPainted(false);
         }
 

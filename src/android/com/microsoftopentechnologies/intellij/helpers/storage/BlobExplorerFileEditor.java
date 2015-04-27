@@ -28,6 +28,7 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
+import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.forms.UploadBlobFileForm;
 import com.microsoftopentechnologies.tooling.msservices.helpers.CallableSingleArg;
@@ -311,7 +312,7 @@ public class BlobExplorerFileEditor implements FileEditor {
                             for (BlobItem blobItem : blobItems) {
                                 if(blobItem instanceof BlobDirectory) {
                                     model.addRow(new Object[]{
-                                            DefaultLoader.getUIHelper().loadIcon("storagefolder.png"),
+                                            UIHelperImpl.loadIcon("storagefolder.png"),
                                             blobItem.getName(),
                                             "",
                                             "",
@@ -324,7 +325,7 @@ public class BlobExplorerFileEditor implements FileEditor {
                                     model.addRow(new String[]{
                                             "",
                                             blobFile.getName(),
-                                            DefaultLoader.getUIHelper().readableFileSize(blobFile.getSize()),
+                                            UIHelperImpl.readableFileSize(blobFile.getSize()),
                                             new SimpleDateFormat().format(blobFile.getLastModified().getTime()),
                                             blobFile.getContentType(),
                                             blobFile.getUri()
@@ -607,7 +608,7 @@ public class BlobExplorerFileEditor implements FileEditor {
     private void uploadFile() {
 
         final UploadBlobFileForm form = new UploadBlobFileForm();
-        DefaultLoader.getUIHelper().packAndCenterJDialog(form);
+        UIHelperImpl.packAndCenterJDialog(form);
         form.setUploadSelected(new Runnable() {
             @Override
             public void run() {

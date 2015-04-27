@@ -5,6 +5,7 @@ import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
+import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.forms.TableForm;
 import com.microsoftopentechnologies.tooling.msservices.helpers.Name;
@@ -46,7 +47,7 @@ public class EditTableAction extends NodeActionListener {
                     form.setSubscriptionId(mobileService.getSubcriptionId());
                     form.setEditingTable(selectedTable);
                     form.setProject((Project) tableNode.getProject());
-                    DefaultLoader.getUIHelper().packAndCenterJDialog(form);
+                    UIHelperImpl.packAndCenterJDialog(form);
                     form.setVisible(true);
                 } catch (AzureCmdException e1) {
                     DefaultLoader.getUIHelper().showException("Error editing table", e1);

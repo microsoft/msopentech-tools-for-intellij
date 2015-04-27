@@ -16,7 +16,6 @@
 package com.microsoftopentechnologies.intellij.helpers;
 
 import com.intellij.openapi.application.ApplicationManager;
-import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.forms.ErrorMessageForm;
 import com.microsoftopentechnologies.intellij.forms.ImportSubscriptionForm;
 import com.microsoftopentechnologies.tooling.msservices.helpers.UIHelper;
@@ -29,22 +28,25 @@ import java.io.StringWriter;
 import java.text.DecimalFormat;
 
 public class UIHelperImpl implements UIHelper {
-    public void packAndCenterJDialog(JDialog form) {
+    public static void packAndCenterJDialog(JDialog form) {
         form.pack();
         form.setLocation(
                 (Toolkit.getDefaultToolkit().getScreenSize().width) / 2 - form.getWidth() / 2,
                 (Toolkit.getDefaultToolkit().getScreenSize().height) / 2 - form.getHeight() / 2);
     }
 
+    @Override
     public void showException(final String message, final Throwable ex) {
         showException(message, ex, "Error");
     }
 
+    @Override
     public void showException(final String message, final Throwable ex, final String title) {
 
         showException(message, ex, title, !(ex instanceof AzureCmdException), false);
     }
 
+    @Override
     public void showException(final String message,
                                      final Throwable ex,
                                      final String title,
@@ -69,7 +71,7 @@ public class UIHelperImpl implements UIHelper {
                         // TODO: This should probably be showing the "Manage Subscriptions" form instead since
                         // we also support A/D auth now.
                         ImportSubscriptionForm isf = new ImportSubscriptionForm();
-                        DefaultLoader.getUIHelper().packAndCenterJDialog(isf);
+                        packAndCenterJDialog(isf);
                         isf.setVisible(true);
 
                         return;
@@ -82,13 +84,14 @@ public class UIHelperImpl implements UIHelper {
 
                 ErrorMessageForm em = new ErrorMessageForm(title);
                 em.setCursor(Cursor.getDefaultCursor());
-                DefaultLoader.getUIHelper().packAndCenterJDialog(em);
+                packAndCenterJDialog(em);
                 em.showErrorMessageForm(headerMessage, details);
                 em.setVisible(true);
             }
         });
     }
 
+    @Override
     public void showError(final String message, final String title) {
         ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
@@ -134,12 +137,12 @@ public class UIHelperImpl implements UIHelper {
         return details;
     }
 
-    public ImageIcon loadIcon(String name) {
+    public static ImageIcon loadIcon(String name) {
         java.net.URL url = UIHelperImpl.class.getResource("/com/microsoftopentechnologies/intellij/icons/" + name);
         return new ImageIcon(url);
     }
 
-    public String readableFileSize(long size) {
+    public static String readableFileSize(long size) {
         if (size <= 0) return "0";
         final String[] units = new String[]{"B", "kB", "MB", "GB", "TB"};
         int digitGroups = (int) (Math.log10(size) / Math.log10(1024));

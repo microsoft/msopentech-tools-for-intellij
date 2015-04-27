@@ -1,6 +1,7 @@
 package com.microsoftopentechnologies.intellij.serviceexplorer.azure.storage;
 
 import com.intellij.openapi.project.Project;
+import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.forms.CreateStorageAccountForm;
 import com.microsoftopentechnologies.tooling.msservices.helpers.Name;
@@ -51,7 +52,7 @@ public class CreateStorageAccountAction extends NodeActionListener {
 
         CreateStorageAccountForm createStorageAccountForm = new CreateStorageAccountForm();
         createStorageAccountForm.fillFields(null, (Project) storageModule.getProject());
-        DefaultLoader.getUIHelper().packAndCenterJDialog(createStorageAccountForm);
+        UIHelperImpl.packAndCenterJDialog(createStorageAccountForm);
 
             createStorageAccountForm.setOnCreate(new Runnable() {
                 @Override

@@ -1,6 +1,7 @@
 package com.microsoftopentechnologies.intellij.serviceexplorer.azure.mobileservice;
 
 import com.intellij.openapi.application.ApplicationManager;
+import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.forms.CreateMobileServiceForm;
 import com.microsoftopentechnologies.tooling.msservices.helpers.Name;
@@ -64,7 +65,7 @@ public class CreateServiceAction extends NodeActionListener {
         });
 
         form.setModal(true);
-        DefaultLoader.getUIHelper().packAndCenterJDialog(form);
+        UIHelperImpl.packAndCenterJDialog(form);
         form.setVisible(true);
     }
 }

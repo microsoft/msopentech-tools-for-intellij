@@ -17,6 +17,7 @@ package com.microsoftopentechnologies.intellij.wizards.createvm;
 
 import com.intellij.ui.wizard.WizardNavigationState;
 import com.intellij.ui.wizard.WizardStep;
+import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.forms.ManageSubscriptionForm;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureAuthenticationMode;
@@ -52,7 +53,7 @@ public class SubscriptionStep extends WizardStep<CreateVMWizardModel> {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 ManageSubscriptionForm form = new ManageSubscriptionForm(null);
-                DefaultLoader.getUIHelper().packAndCenterJDialog(form);
+                UIHelperImpl.packAndCenterJDialog(form);
                 form.setVisible(true);
 
                 loadSubscriptions();

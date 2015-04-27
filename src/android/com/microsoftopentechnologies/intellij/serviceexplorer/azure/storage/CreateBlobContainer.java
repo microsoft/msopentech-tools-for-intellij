@@ -1,6 +1,7 @@
 package com.microsoftopentechnologies.intellij.serviceexplorer.azure.storage;
 
 import com.intellij.openapi.project.Project;
+import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.forms.CreateBlobContainerForm;
 import com.microsoftopentechnologies.tooling.msservices.helpers.Name;
@@ -31,7 +32,7 @@ public class CreateBlobContainer extends NodeActionListener {
             }
         });
 
-        DefaultLoader.getUIHelper().packAndCenterJDialog(form);
+        UIHelperImpl.packAndCenterJDialog(form);
         form.setVisible(true);
 
     }

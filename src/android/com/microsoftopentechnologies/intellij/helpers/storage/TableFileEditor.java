@@ -28,6 +28,7 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
+import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.forms.TableEntityForm;
 import com.microsoftopentechnologies.intellij.forms.TablesQueryDesigner;
@@ -108,7 +109,7 @@ public class TableFileEditor implements FileEditor {
                     }
                 });
 
-                DefaultLoader.getUIHelper().packAndCenterJDialog(form);
+                UIHelperImpl.packAndCenterJDialog(form);
 
                 form.setVisible(true);
             }
@@ -128,7 +129,7 @@ public class TableFileEditor implements FileEditor {
                 });
 
 
-                DefaultLoader.getUIHelper().packAndCenterJDialog(form);
+                UIHelperImpl.packAndCenterJDialog(form);
                 form.setVisible(true);
             }
         });
@@ -223,7 +224,7 @@ public class TableFileEditor implements FileEditor {
                 }
             });
 
-            DefaultLoader.getUIHelper().packAndCenterJDialog(form);
+            UIHelperImpl.packAndCenterJDialog(form);
 
             form.setVisible(true);
         }

@@ -30,6 +30,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import com.microsoft.directoryservices.Application;
 import com.microsoftopentechnologies.intellij.forms.CreateOffice365ApplicationForm;
+import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.forms.PermissionsEditorForm;
 import com.microsoftopentechnologies.intellij.helpers.ReadOnlyCellTableModel;
@@ -213,7 +214,7 @@ public class Office365Step extends WizardStep<AddServiceWizardModel> {
                 // this is not exactly intuitive but when you click the button on the table cell
                 // this is the method that gets called; so we pop up the permissions form here
                 PermissionsEditorForm permissionsEditorForm = new PermissionsEditorForm(service.getName(), permissionSet);
-                DefaultLoader.getUIHelper().packAndCenterJDialog(permissionsEditorForm);
+                UIHelperImpl.packAndCenterJDialog(permissionsEditorForm);
                 permissionsEditorForm.setVisible(true);
 
                 if(permissionsEditorForm.getDialogResult() == PermissionsEditorForm.DialogResult.OK) {
@@ -257,7 +258,7 @@ public class Office365Step extends WizardStep<AddServiceWizardModel> {
             public void actionPerformed(ActionEvent actionEvent) {
                 CreateOffice365ApplicationForm form = new CreateOffice365ApplicationForm();
                 form.setModal(true);
-                DefaultLoader.getUIHelper().packAndCenterJDialog(form);
+                UIHelperImpl.packAndCenterJDialog(form);
                 form.setVisible(true);
 
                 if(form.getDialogResult() == CreateOffice365ApplicationForm.DialogResult.OK) {

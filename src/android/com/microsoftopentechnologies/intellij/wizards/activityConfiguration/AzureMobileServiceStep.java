@@ -20,6 +20,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.ui.wizard.WizardNavigationState;
 import com.intellij.ui.wizard.WizardStep;
+import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.forms.CreateMobileServiceForm;
 import com.microsoftopentechnologies.intellij.forms.ManageSubscriptionForm;
@@ -131,7 +132,7 @@ public class AzureMobileServiceStep extends WizardStep<AddServiceWizardModel> {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 ManageSubscriptionForm form = new ManageSubscriptionForm(null);
-                DefaultLoader.getUIHelper().packAndCenterJDialog(form);
+                UIHelperImpl.packAndCenterJDialog(form);
                 form.setVisible(true);
 
                 try {
@@ -184,7 +185,7 @@ public class AzureMobileServiceStep extends WizardStep<AddServiceWizardModel> {
                 });
 
                 form.setModal(true);
-                DefaultLoader.getUIHelper().packAndCenterJDialog(form);
+                UIHelperImpl.packAndCenterJDialog(form);
                 form.setVisible(true);
             }
         });

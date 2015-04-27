@@ -263,7 +263,7 @@ public class IDEHelperImpl implements IDEHelper {
             @Nullable
             @Override
             public Icon getIcon() {
-                return DefaultLoader.getUIHelper().loadIcon(iconName);
+                return UIHelperImpl.loadIcon(iconName);
             }
 
             @Override
@@ -376,7 +376,7 @@ public class IDEHelperImpl implements IDEHelper {
     public String promptForOpenSSLPath() {
         OpenSSLFinderForm openSSLFinderForm = new OpenSSLFinderForm();
         openSSLFinderForm.setModal(true);
-        DefaultLoader.getUIHelper().packAndCenterJDialog(openSSLFinderForm);
+        UIHelperImpl.packAndCenterJDialog(openSSLFinderForm);
         openSSLFinderForm.setVisible(true);
 
         return getProperty("MSOpenSSLPath", "");

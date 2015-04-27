@@ -24,6 +24,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.ui.ListCellRendererWrapper;
 import com.intellij.ui.wizard.WizardNavigationState;
 import com.intellij.ui.wizard.WizardStep;
+import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.forms.CreateCloudServiceForm;
 import com.microsoftopentechnologies.intellij.forms.CreateStorageAccountForm;
@@ -751,7 +752,7 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
     private void showNewCloudServiceForm(final VirtualNetwork selectedVN, final boolean cascade) {
         final CreateCloudServiceForm form = new CreateCloudServiceForm();
         form.fillFields(model.getSubscription(), project);
-        DefaultLoader.getUIHelper().packAndCenterJDialog(form);
+        UIHelperImpl.packAndCenterJDialog(form);
 
         form.setOnCreate(new Runnable() {
             @Override
@@ -775,7 +776,7 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
     private void showNewStorageForm(final CloudService selectedCS) {
         final CreateStorageAccountForm form = new CreateStorageAccountForm();
         form.fillFields(model.getSubscription(), project);
-        DefaultLoader.getUIHelper().packAndCenterJDialog(form);
+        UIHelperImpl.packAndCenterJDialog(form);
 
         form.setOnCreate(new Runnable() {
             @Override

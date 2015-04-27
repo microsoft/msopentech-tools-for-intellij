@@ -1,6 +1,7 @@
 package com.microsoftopentechnologies.intellij.serviceexplorer.azure;
 
 import com.intellij.openapi.project.Project;
+import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.forms.ManageSubscriptionForm;
 import com.microsoftopentechnologies.tooling.msservices.helpers.Name;
@@ -19,7 +20,7 @@ public class ManageSubscriptionsAction extends NodeActionListener {
     @Override
     public void actionPerformed(NodeActionEvent e) {
         ManageSubscriptionForm form = new ManageSubscriptionForm((Project) azureServiceModule.getProject());
-        DefaultLoader.getUIHelper().packAndCenterJDialog(form);
+        UIHelperImpl.packAndCenterJDialog(form);
         form.setVisible(true);
         azureServiceModule.load();
     }

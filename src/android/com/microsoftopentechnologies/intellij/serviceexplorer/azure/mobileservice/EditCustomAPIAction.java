@@ -1,6 +1,7 @@
 package com.microsoftopentechnologies.intellij.serviceexplorer.azure.mobileservice;
 
 import com.intellij.openapi.project.Project;
+import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.forms.CustomAPIForm;
 import com.microsoftopentechnologies.tooling.msservices.helpers.Name;
@@ -36,7 +37,7 @@ public class EditCustomAPIAction extends NodeActionListener {
                 customAPINode.setCustomAPI(form.getEditingCustomAPI());
             }
         });
-        DefaultLoader.getUIHelper().packAndCenterJDialog(form);
+        UIHelperImpl.packAndCenterJDialog(form);
         form.setVisible(true);
     }
 }
