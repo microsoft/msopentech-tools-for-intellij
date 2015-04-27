@@ -15,14 +15,9 @@
  */
 package com.microsoftopentechnologies.intellij.model.storage;
 
-import com.microsoftopentechnologies.intellij.model.ServiceTreeItem;
-
-
 import java.util.Calendar;
 
 public class BlobContainer implements StorageServiceTreeItem {
-    public static String KEY = "blobContainer";
-
     private boolean loading;
     private String name;
     private String uri;
@@ -59,12 +54,6 @@ public class BlobContainer implements StorageServiceTreeItem {
     public String getName() {
         return name;
     }
-
-    @Override
-    public String getKey() {
-        return KEY;
-    }
-
 
     public String getUri() {
         return uri;

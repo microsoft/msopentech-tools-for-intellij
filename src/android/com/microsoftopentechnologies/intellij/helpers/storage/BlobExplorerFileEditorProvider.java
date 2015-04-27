@@ -25,6 +25,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.microsoftopentechnologies.intellij.helpers.IDEHelperImpl;
 import com.microsoftopentechnologies.intellij.model.storage.BlobContainer;
 import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
 import org.jdom.Element;
@@ -32,13 +33,12 @@ import org.jetbrains.annotations.NotNull;
 
 public class BlobExplorerFileEditorProvider implements FileEditorProvider, DumbAware {
 
-    public static Key<StorageAccount> STORAGE_KEY = new Key<StorageAccount>("storageAccount");
     public static Key<BlobContainer> CONTAINER_KEY = new Key<BlobContainer>("blobContainer");
 
     @Override
     public boolean accept(@NotNull Project project, @NotNull VirtualFile virtualFile) {
 
-        StorageAccount storageAccount = virtualFile.getUserData(STORAGE_KEY);
+        StorageAccount storageAccount = virtualFile.getUserData(IDEHelperImpl.STORAGE_KEY);
         BlobContainer blobContainer = virtualFile.getUserData(CONTAINER_KEY);
 
         return (storageAccount != null && blobContainer != null);
@@ -49,7 +49,7 @@ public class BlobExplorerFileEditorProvider implements FileEditorProvider, DumbA
     public FileEditor createEditor(@NotNull Project project, @NotNull VirtualFile virtualFile) {
         BlobExplorerFileEditor blobExplorerFileEditor = new BlobExplorerFileEditor();
 
-        StorageAccount storageAccount = virtualFile.getUserData(STORAGE_KEY);
+        StorageAccount storageAccount = virtualFile.getUserData(IDEHelperImpl.STORAGE_KEY);
         BlobContainer blobContainer = virtualFile.getUserData(CONTAINER_KEY);
 
         blobExplorerFileEditor.setBlobContainer(blobContainer);

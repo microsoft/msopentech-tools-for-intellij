@@ -1,5 +1,6 @@
 package com.microsoftopentechnologies.intellij.helpers;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.SettableFuture;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.application.ApplicationManager;
@@ -20,8 +21,11 @@ import com.microsoftopentechnologies.intellij.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.forms.OpenSSLFinderForm;
 import com.microsoftopentechnologies.intellij.helpers.aadauth.BrowserLauncher;
 import com.microsoftopentechnologies.intellij.helpers.aadauth.LauncherTask;
-import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
-import com.microsoftopentechnologies.intellij.model.storage.StorageServiceTreeItem;
+import com.microsoftopentechnologies.intellij.helpers.storage.BlobExplorerFileEditorProvider;
+import com.microsoftopentechnologies.intellij.helpers.storage.QueueExplorerFileEditorProvider;
+import com.microsoftopentechnologies.intellij.helpers.storage.TableExplorerFileEditorProvider;
+import com.microsoftopentechnologies.intellij.model.ServiceTreeItem;
+import com.microsoftopentechnologies.intellij.model.storage.*;
 import com.microsoftopentechnologies.intellij.serviceexplorer.BackgroundLoader;
 import com.microsoftopentechnologies.intellij.serviceexplorer.Node;
 import org.apache.commons.lang3.tuple.Pair;
@@ -35,11 +39,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 public class IDEHelperImpl implements IDEHelper {
     public static Key<StorageAccount> STORAGE_KEY = new Key<StorageAccount>("storageAccount");
+    private Map<Class<? extends StorageServiceTreeItem>, Key<? extends StorageServiceTreeItem>> name2Key = ImmutableMap.of(BlobContainer.class, BlobExplorerFileEditorProvider.CONTAINER_KEY,
+            Queue.class, QueueExplorerFileEditorProvider.QUEUE_KEY,
+            Table.class, TableExplorerFileEditorProvider.TABLE_KEY);
 
     @Override
     public void openFile(File file, final Node node) {
@@ -228,8 +236,7 @@ public class IDEHelperImpl implements IDEHelper {
     public <T extends StorageServiceTreeItem> void openItem(@NotNull Object projectObject, StorageAccount storageAccount, T item, String itemType, final String itemName,
                                                      final String iconName) {
         LightVirtualFile itemVirtualFile = new LightVirtualFile(item.getName() + itemType);
-        Key<T> itemKey = new Key<T>(item.getKey());
-        itemVirtualFile.putUserData(itemKey, item);
+        itemVirtualFile.putUserData((Key<T>) name2Key.get(item.getClass()), item);
         itemVirtualFile.putUserData(STORAGE_KEY, storageAccount);
 
         itemVirtualFile.setFileType(new FileType() {
@@ -278,10 +285,9 @@ public class IDEHelperImpl implements IDEHelper {
 
     public <T extends StorageServiceTreeItem> Object getOpenedFile(Object projectObject, StorageAccount storageAccount, T item) {
         FileEditorManager fileEditorManager = FileEditorManager.getInstance((Project) projectObject);
-        Key<T> itemKey = new Key<T>(item.getKey());
 
         for (VirtualFile editedFile : fileEditorManager.getOpenFiles()) {
-            T editedItem = editedFile.getUserData(itemKey);
+            T editedItem = editedFile.getUserData((Key<T>) name2Key.get(item.getClass()));
             StorageAccount editedStorageAccount = editedFile.getUserData(STORAGE_KEY);
 
             if(editedStorageAccount != null

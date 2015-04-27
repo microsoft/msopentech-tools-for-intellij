@@ -19,8 +19,6 @@ import com.microsoftopentechnologies.intellij.model.ServiceTreeItem;
 import org.jetbrains.annotations.NotNull;
 
 public class Queue implements StorageServiceTreeItem {
-    public static String KEY = "queue";
-
     private boolean loading;
     private String name;
     private String uri;
@@ -50,11 +48,6 @@ public class Queue implements StorageServiceTreeItem {
     @NotNull
     public String getName() {
         return name;
-    }
-
-    @Override
-    public String getKey() {
-        return KEY;
     }
 
     @NotNull

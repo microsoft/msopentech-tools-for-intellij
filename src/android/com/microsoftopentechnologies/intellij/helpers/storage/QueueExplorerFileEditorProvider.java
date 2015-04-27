@@ -25,18 +25,18 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.microsoftopentechnologies.intellij.helpers.IDEHelperImpl;
 import com.microsoftopentechnologies.intellij.model.storage.Queue;
 import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 
 public class QueueExplorerFileEditorProvider implements FileEditorProvider, DumbAware {
-    public static Key<StorageAccount> STORAGE_KEY = new Key<StorageAccount>("storageAccount");
     public static Key<Queue> QUEUE_KEY = new Key<Queue>("queue");
 
     @Override
     public boolean accept(@NotNull Project project, @NotNull VirtualFile virtualFile) {
-        StorageAccount storageAccount = virtualFile.getUserData(STORAGE_KEY);
+        StorageAccount storageAccount = virtualFile.getUserData(IDEHelperImpl.STORAGE_KEY);
         Queue queue = virtualFile.getUserData(QUEUE_KEY);
 
         return (storageAccount != null && queue != null);
@@ -47,7 +47,7 @@ public class QueueExplorerFileEditorProvider implements FileEditorProvider, Dumb
     public FileEditor createEditor(@NotNull Project project, @NotNull VirtualFile virtualFile) {
         QueueFileEditor queueFileEditor = new QueueFileEditor();
 
-        StorageAccount storageAccount = virtualFile.getUserData(STORAGE_KEY);
+        StorageAccount storageAccount = virtualFile.getUserData(IDEHelperImpl.STORAGE_KEY);
         Queue queue = virtualFile.getUserData(QUEUE_KEY);
 
         queueFileEditor.setQueue(queue);

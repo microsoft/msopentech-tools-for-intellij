@@ -19,5 +19,4 @@ import com.microsoftopentechnologies.intellij.model.ServiceTreeItem;
 
 public interface StorageServiceTreeItem extends ServiceTreeItem {
     String getName();
-    String getKey();
 }
