@@ -370,6 +370,7 @@ public class JdkServerPanel {
         storageAccountJdk.addItemListener(createStorageAccountJdkListener());
         thirdPartyJdkName.addItemListener(createThirdPartyJdkNameListener());
 //        setEnableDlGrp(false, false);
+        thrdPrtSrvBtn.addActionListener(createThirdPartySrvListener());
         setEnableDlGrpSrv(false, false);
         storageAccountServer.addItemListener(createStorageAccountServerListener());
         serverUrl.getDocument().addDocumentListener(createServerUrlListener());
@@ -407,6 +408,7 @@ public class JdkServerPanel {
         });
         serverCheckBox.addItemListener(createServerListener());
         serverCheckBox.setSelected(false);
+        serverType.addItemListener(createServerTypeListener());
     }
 
     private void initForPreference() {
@@ -444,6 +446,34 @@ public class JdkServerPanel {
         serverCheckBox.setSelected(false);
     }
 
+    private ItemListener createServerTypeListener() {
+        return new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                if (isManualUpdate && serverType.getSelectedItem() != null) {
+                    enforceSameLocalCloudServer();
+                    if (uploadLocalServer.isSelected()) {
+                        updateServerHome(serverPath.getText());
+                    } else if (thrdPrtSrvBtn.isSelected()) {
+                        updateServerHomeForThirdParty();
+                        String currentName = (String) thrdPrtSrvCmb.getSelectedItem();
+                        if (!currentName.equalsIgnoreCase(srvPrevName)) {
+                            srvAccepted = false;
+                            srvPrevName = currentName;
+                        }
+                    } else if (customDownloadServer.isSelected()) {
+                        if (serverUrl.getText().isEmpty()) {
+                            updateServerHome(serverPath.getText());
+                        } else {
+                            modifySrvUrlText();
+                        }
+                    }
+                    modified = true;
+                }
+            }
+        };
+    }
+
     private ItemListener createServerTypePreferenceListener() {
         return new ItemListener() {
             @Override
@@ -457,7 +487,6 @@ public class JdkServerPanel {
                     }
                     modified = true;
                     enforceSameLocalCloudServer();
-//                handlePageComplete();
                 }
             }
         };
@@ -845,8 +874,11 @@ public class JdkServerPanel {
             public void itemStateChanged(ItemEvent e) {
                 if (e.getStateChange() == ItemEvent.SELECTED && isManualUpdate) {
                     updateServerDlURL();
-                    updateServerHome(waRole);
-//                    handlePageComplete()
+                    if (customDownloadServer.isSelected() || uploadLocalServer.isSelected()) {
+                        updateServerHome(waRole);
+                    } else if (thrdPrtSrvBtn.isSelected()) {
+                        updateServerHomeForThirdParty();
+                    }
                 }
             }
         };
@@ -910,6 +942,19 @@ public class JdkServerPanel {
                     jdkPrevName = (String) thirdPartyJdkName.getSelectedItem();
                     serverCheckBox.setEnabled(true);
                     accepted = false;
+                }
+            }
+        };
+    }
+
+    private ActionListener createThirdPartySrvListener() {
+        return new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                modified = true;
+                if (!thrdPrtSrvCmb.isEnabled()) {
+                    thirdPartySrvBtnSelected();
+                    srvPrevName = (String) thrdPrtSrvCmb.getSelectedItem();
                 }
             }
         };
@@ -1808,35 +1853,7 @@ public class JdkServerPanel {
      * @return
      */
     public void urlModifyListner(String url, String nameInUrl, JComboBox combo) {
-        String endpoint = StorageRegistryUtilMethods.getServiceEndpoint(url);
-        String accNameToSet = JdkSrvConfig.accNames[0];
-        if (nameInUrl != null && !nameInUrl.isEmpty() && endpoint != null) {
-            // check storage account name present in list
-            if (Arrays.asList(JdkSrvConfig.accNames).contains(nameInUrl)) {
-				/*
-				 * check endpoint of storage account from list
-				 * and from URL matches then
-				 * only select storage account otherwise select none.
-				 */
-                int index = Arrays.asList(JdkSrvConfig.accNames).indexOf(nameInUrl);
-                String endpointInReg = StorageRegistryUtilMethods.getServiceEndpoint(StorageAccountRegistry.getStrgList().get(index - 1).getStrgUrl());
-                if (endpoint.equalsIgnoreCase(endpointInReg)) {
-                    accNameToSet = nameInUrl;
-                }
-            } else if (StorageRegistryUtilMethods.isDuplicatePresent()) {
-				/*
-				 * If accounts with same name but
-				 * different service URL exists
-				 * then check concatenation of account name
-				 * and service endpoint exists in list.
-				 */
-                String accAndUrl = StorageRegistryUtilMethods.getAccNmSrvcUrlToDisplay(nameInUrl, endpoint);
-                if (Arrays.asList(JdkSrvConfig.accNames).contains(accAndUrl)) {
-                    accNameToSet = accAndUrl;
-                }
-            }
-        }
-        combo.setSelectedItem(accNameToSet);
+        combo.setSelectedItem(JdkSrvConfigUtilMethods.getNameToSet(url, nameInUrl, JdkSrvConfig.accNames));
     }
 
     /**
@@ -1935,6 +1952,27 @@ public class JdkServerPanel {
         thirdPartySrvComboListener();
         updateSrvDlNote();
         enableApplicationTab(true);
+    }
+
+    /**
+     * Method is used when server URL text is modified.
+     */
+    public void modifySrvUrlText() {
+		/*
+		 * Extract storage account name
+		 * and service endpoint from URL
+		 * entered by user.
+		 */
+        String url = serverUrl.getText().trim();
+        String nameInUrl = StorageRegistryUtilMethods.getAccNameFromUrl(url);
+        urlModifyListner(url, nameInUrl, storageAccountServer);
+		/*
+		 * update home directory for server accordingly
+		 */
+        if (WAEclipseHelperMethods.isBlobStorageUrl(url) && url.endsWith(".zip")) {
+            url = url.substring(0, url.indexOf(".zip"));
+            updateServerHome(url);
+        }
     }
 
     public boolean okToLeave() throws ConfigurationException {
