@@ -270,18 +270,13 @@ public class JdkServerPanel {
                 String srvSrcPath = waRole.getServerSourcePath();
                 String thirdServerName = waRole.getServerCloudName();
 
-                if (srvSrcPath.isEmpty()) {
-                    setEnableServer(false);
-                    showThirdPartySrvNames(true, "", thirdServerName);
-                } else {
-                    serverCheckBox.setSelected(true);
-                    setEnableServer(true);
-                    isManualUpdate = false;
-                    serverType.setSelectedItem(srvName);
-                    serverPath.setText(srvSrcPath);
-                    enableApplicationTab(true);
-                    showThirdPartySrvNames(true, srvName, thirdServerName);
-                }
+                serverCheckBox.setSelected(true);
+                setEnableServer(true);
+                isManualUpdate = false;
+                serverType.setSelectedItem(srvName);
+                serverPath.setText(srvSrcPath);
+                enableApplicationTab(true);
+                showThirdPartySrvNames(true, srvName, thirdServerName);
                 // Server download group
                 String srvUrl = waRole.getServerCloudURL();
                 if (srvUrl != null && !srvUrl.isEmpty()) {
@@ -290,9 +285,7 @@ public class JdkServerPanel {
                         if (thirdServerName.isEmpty()) {
                             uploadLocalServer.setSelected(true);
                         } else {
-                            uploadLocalServer.setSelected(false);
                             thrdPrtSrvBtn.setSelected(true);
-                            enableApplicationTab(true);
                             enableThirdPartySrvCombo(true);
                             srvAccepted = true;
                             srvPrevName = thirdServerName;
@@ -303,7 +296,6 @@ public class JdkServerPanel {
                         }
                     } else {
                         // server deploy option configured
-                        uploadLocalServer.setSelected(false);
                         customDownloadServer.setSelected(true);
                         setEnableDlGrpSrv(true, false);
                     }
@@ -328,6 +320,7 @@ public class JdkServerPanel {
                     UIUtils.populateStrgNameAsPerKey(srvKey, storageAccountServer);
                 }
             }
+            checkSDKPresenceAndEnableServer();
         } catch (WindowsAzureInvalidProjectOperationException e) {
             PluginUtil.displayErrorDialogAndLog(message("srvErrTtl"), message("getSrvBothErrMsg"), e);
         } finally {
@@ -335,6 +328,9 @@ public class JdkServerPanel {
         }
         if (jdkCheckBox.isSelected() || thirdPartyJdk.isSelected() || customDownloadJdk.isSelected()) {
             serverCheckBox.setEnabled(true);
+        }
+        if (!serverPath.getText().isEmpty()) {
+            enforceSameLocalCloudServer();
         }
     }
 
@@ -1028,9 +1024,9 @@ public class JdkServerPanel {
         if (isJdkValid && serverCheckBox.isSelected()) {
             if (serverType.getSelectedItem() == null) {
                 return createValidationInfo(message("dplEmtSerMsg"), serverType);
-            } else if (serverPath.getText().isEmpty()) {
+            } else if (uploadLocalServer.isSelected() && serverPath.getText().isEmpty()) {
                 return createValidationInfo(message("dplEmtSerPtMsg"), serverPath);
-            } else if (!(new File(serverPath.getText()).exists())) {
+            } else if (!serverPath.getText().isEmpty() && !(new File(serverPath.getText()).exists())) {
                 return createValidationInfo(message("dplWrngSerMsg"), serverPath);
             } else {
                 // Server download group
@@ -1468,7 +1464,10 @@ public class JdkServerPanel {
         setEnableServer(true);
         serverType.setModel(new DefaultComboBoxModel(JdkSrvConfigListener.getServerList()));
         serverType.setSelectedItem(null);
-        configureAutoUploadServerSettings(role);
+        // select third party server button.
+        thrdPrtSrvBtn.setSelected(true);
+        thirdPartySrvBtnSelected();
+        checkSDKPresenceAndEnableServer();
     }
 
     /**
@@ -1543,6 +1542,9 @@ public class JdkServerPanel {
         thrdPrtSrvBtn.setEnabled(status);
         customDownloadServer.setEnabled(status);
         uploadLocalServer.setEnabled(status);
+        if (!serverCheckBox.isSelected()) {
+            showThirdPartySrvNames(true, "", "");
+        }
         storageAccountServer.setEnabled(status);
         lblKeySrv.setEnabled(status);
         lblUrlSrv.setEnabled(status);
@@ -2151,8 +2153,13 @@ public class JdkServerPanel {
 					 * and then a local server that is different from cloud server.
 					 */
                     populateServerNames(srvName);
-                    uploadLocalServer.setSelected(true);
-                    configureAutoUploadServerSettings(waRole);
+                    if (thrdPrtSrvCmb.getItemCount() <= 0) {
+                        // if no third party servers available
+                        uploadLocalServer.setSelected(true);
+                        configureAutoUploadServerSettings(waRole);
+                    } else {
+                        thirdPartySrvBtnSelected();
+                    }
                 }
             }
         } catch (WindowsAzureInvalidProjectOperationException e) {
