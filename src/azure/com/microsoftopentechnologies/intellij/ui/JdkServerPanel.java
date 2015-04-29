@@ -211,7 +211,7 @@ public class JdkServerPanel {
                             enableThirdPartyJdkCombo(true);
                             thirdPartyJdkName.setSelectedItem(jdkName);
                             /*
-							 * License has already been accepted
+                             * License has already been accepted
 							 * on wizard or property page previously.
 							 */
                             accepted = true;
@@ -435,7 +435,7 @@ public class JdkServerPanel {
                 modifySrvText(waRole, message("dlNtLblDirSrv"));
                 modified = true;
                 /*
-		         * Check server configured previously
+                 * Check server configured previously
 		         * and now server name is changed.
 		         */
                 if (serverPath.getText() != null) {
@@ -1348,7 +1348,7 @@ public class JdkServerPanel {
     public void showThirdPartySrvNames(Boolean status, String localSrvName, String depSrvName) {
         if (status) {
             try {
-                String [] thrdPrtSrvArr;
+                String[] thrdPrtSrvArr;
                 if (localSrvName == null || localSrvName.isEmpty()) {
                     thrdPrtSrvArr = WindowsAzureProjectManager.getAllThirdPartySrvNames(AzurePlugin.cmpntFile, depSrvName);
                 } else {
@@ -1890,6 +1890,9 @@ public class JdkServerPanel {
             if (tabControl != null && JdkSrvConfig.SRV_TXT.equals(tabControl) && uploadLocalServer.isSelected()) {
                 urlTxt = JdkSrvConfigUtilMethods.prepareCloudBlobURL(serverPath.getText(), newUrl);
                 return urlTxt;
+            } else if (tabControl != null && JdkSrvConfig.SRV_TXT.equals(tabControl) && thrdPrtSrvBtn.isSelected()) {
+                urlTxt = prepareUrlForThirdPartySrv((String) thrdPrtSrvCmb.getSelectedItem(), newUrl);
+                return urlTxt;
             }
 			/*
 			 * If URL is blank and new storage account selected
@@ -1917,13 +1920,24 @@ public class JdkServerPanel {
                 return urlTxt;
             }
             // For Server and auto upload option selected
-            if (tabControl != null && JdkSrvConfig.SRV_TXT.equals(tabControl) && uploadLocalServer.isSelected()) {
+            if (tabControl != null && JdkSrvConfig.SRV_TXT.equals(tabControl) && (uploadLocalServer.isSelected() || thrdPrtSrvBtn.isSelected())) {
                 urlTxt = JdkSrvConfig.AUTO_TXT;
                 return urlTxt;
             }
         }
         return urlTxt;
     }
+
+    public static String prepareUrlForThirdPartySrv(String srvName, String url) {
+        String finalUrl = "";
+        try {
+            finalUrl = JdkSrvConfigUtilMethods.prepareUrlForThirdPartySrv(srvName, url, AzurePlugin.cmpntFile);
+        } catch (Exception ex) {
+            AzurePlugin.log(ex.getMessage());
+        }
+        return finalUrl;
+    }
+
 
     /**
      * Method is used when server's deploy from download
