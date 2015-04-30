@@ -2123,18 +2123,15 @@ public class JdkServerPanel {
     }
 
     /**
-     * Method updates server home,
-     * according to current package type.
-     * Method will get called when user click
-     * on OK button or tries to navigate to other page.
-     * @param srvHome
+     * Utility method to update server home value.
      */
-    private void updateServerHome(String srvHome) {
+    public void updateServerHome(String srvPath) {
+        // set server home directory text box value
         try {
-            WAServerConfUtilMethods.updateServerHome(srvHome, waRole, waProjManager, serverPath.getText().trim(), (String) serverType.getSelectedItem(),
-                    AzurePlugin.cmpntFile);
-        } catch (Exception e) {
-            PluginUtil.displayErrorDialog(message("genErrTitle"), message("srvHomeErr"));
+            String srvHome = WindowsAzureRole.constructServerHome((String) serverType.getSelectedItem(), srvPath, AzurePlugin.cmpntFile);
+            serverHomeDir.setText(srvHome);
+        } catch (WindowsAzureInvalidProjectOperationException e) {
+            AzurePlugin.log(e.getMessage());
         }
     }
 
