@@ -172,7 +172,8 @@ public class SummaryStep extends WizardStep<AddServiceWizardModel> {
                         progressIndicator.setFraction(steps / totalSteps);
                     }
 
-                    if (summaryStep.model.isOutlookServices() || summaryStep.model.isFileServices() || summaryStep.model.isListServices()) {
+                    if (summaryStep.model.isOutlookServices() || summaryStep.model.isFileServices()
+                            || summaryStep.model.isListServices() || summaryStep.model.isOneNoteServices()) {
                         progressIndicator.setText("Setting up Office 365 Services");
                         summaryStep.associateOffice365();
                         steps++;
@@ -287,8 +288,8 @@ public class SummaryStep extends WizardStep<AddServiceWizardModel> {
         final Project project = this.model.getProject();
         final Module module = this.model.getModule();
         final String activityName = this.model.getActivityName();
-        final String appId = this.model.getOfficeApp().getappId();
-        final String name = this.model.getOfficeApp().getdisplayName();
+        final String appId = this.model.getOfficeApp() == null ? "" : this.model.getOfficeApp().getappId();
+        final String name = this.model.getOfficeApp() == null ? "" : this.model.getOfficeApp().getdisplayName();
         final String clientId = this.model.getClientId();
 
         ApplicationManager.getApplication().invokeAndWait(new Runnable() {
@@ -308,7 +309,9 @@ public class SummaryStep extends WizardStep<AddServiceWizardModel> {
             }
         }, ModalityState.NON_MODAL);
 
-        updateO365Permission();
+        if(model.getOfficeApp() != null) {
+            updateO365Permission();
+        }
     }
 
     private void updateO365Permission() {
