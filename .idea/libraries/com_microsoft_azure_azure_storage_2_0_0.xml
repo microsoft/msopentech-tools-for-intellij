@@ -8,6 +8,8 @@
       <root url="jar://$MAVEN_REPOSITORY$/org/apache/commons/commons-lang3/3.3.2/commons-lang3-3.3.2.jar!/" />
     </CLASSES>
     <JAVADOC />
-    <SOURCES />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.ideaLibSources/azure-storage-2.0.0-sources.jar!/" />
+    </SOURCES>
   </library>
 </component>

@@ -6,7 +6,7 @@ import android.app.Activity;
 import android.content.Context;
 </#if>
 import android.os.Bundle;
-<#if includeOutlookServices || includeFileServices || includeListServices || includeOneNoteServices>
+<#if includeOutlookServices || includeFileServices || includeListService || includeOneNoteServices>
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;

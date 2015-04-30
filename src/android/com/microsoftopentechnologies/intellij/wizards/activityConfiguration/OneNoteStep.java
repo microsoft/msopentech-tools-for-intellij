@@ -78,7 +78,8 @@ public class OneNoteStep extends WizardStep<AddServiceWizardModel> {
             }
         };
         this.listServices.setSelectionModel(customListSelectionModel);
-        this.listServices.setListData(listServicesData.toArray(new String[listServicesData.size()]));
+
+        this.listServices.setListData(listServicesData.toArray(new String[1]));
 
         final OneNoteStep step = this;
 

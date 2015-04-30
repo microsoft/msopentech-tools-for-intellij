@@ -16,7 +16,7 @@
     <string name="ls_server_url_${activityToLayout(activityClass)}">https://mytenant.sharepoint.com/_api/v1.0</string>
     <string name="ls_site_relative_url_${activityToLayout(activityClass)}">/</string>
 </#if>
-<#if includeOneNoteServices>
+<#if includeFileServices>
     <string name="o365_clientId_${activityToLayout(activityClass)}">$O365_CLIENTID_${activityClass}</string>
 </#if>
 </resources>
