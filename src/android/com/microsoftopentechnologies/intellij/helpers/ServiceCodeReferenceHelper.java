@@ -99,7 +99,7 @@ public class ServiceCodeReferenceHelper {
         }
     }
 
-    public void fillOffice365Resource(String activityName, String appId, String name) {
+    public void fillOffice365Resource(String activityName, String appId, String name, String clientId) {
         if (module.getModuleFile() != null && module.getModuleFile().getParent() != null) {
             VirtualFile vf = module.getModuleFile().getParent().findFileByRelativePath(STRINGS_XML);
 
@@ -111,6 +111,7 @@ public class ServiceCodeReferenceHelper {
                     String content = document.getText();
                     content = content.replace(">$O365_APP_ID_" + activityName + "<", ">" + appId + "<");
                     content = content.replace(">$O365_NAME_" + activityName + "<", ">" + name + "<");
+                    content = content.replace(">$O365_CLIENTID_" + activityName + "<", ">" + clientId + "<");
                     document.setText(content);
                     fdm.saveDocument(document);
                 }

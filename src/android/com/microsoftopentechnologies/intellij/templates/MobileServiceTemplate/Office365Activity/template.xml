@@ -78,6 +78,14 @@ limitations under the License.
         default="false">
     </parameter>
 
+    <parameter
+        id="includeOneNoteServices"
+        name="OneNote"
+        type="boolean"
+        default="false">
+    </parameter>
+
+
     <!-- 128x128 thumbnails relative to template.xml -->
     <thumbs>
         <!-- default thumbnail is required -->

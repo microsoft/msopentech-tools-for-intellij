@@ -289,6 +289,7 @@ public class SummaryStep extends WizardStep<AddServiceWizardModel> {
         final String activityName = this.model.getActivityName();
         final String appId = this.model.getOfficeApp().getappId();
         final String name = this.model.getOfficeApp().getdisplayName();
+        final String clientId = this.model.getClientId();
 
         ApplicationManager.getApplication().invokeAndWait(new Runnable() {
             @Override
@@ -298,7 +299,7 @@ public class SummaryStep extends WizardStep<AddServiceWizardModel> {
                     public void run() {
                         try {
                             ServiceCodeReferenceHelper scrh = new ServiceCodeReferenceHelper(project, module);
-                            scrh.fillOffice365Resource(activityName, appId, name);
+                            scrh.fillOffice365Resource(activityName, appId, name, clientId);
                         } catch (Throwable ex) {
                             UIHelper.showException("Error:", ex);
                         }

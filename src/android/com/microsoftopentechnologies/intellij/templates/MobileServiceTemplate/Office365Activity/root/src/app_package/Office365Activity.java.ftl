@@ -1,4 +1,4 @@
-<#if includeOutlookServices && !includeFileServices && !includeListServices>//fa684d69-70b3-41ec-83ff-2f8fa77aeeba</#if><#if !includeOutlookServices && includeFileServices && !includeListServices>//1073bed4-78c3-4b4a-8a4d-ad874a286d86</#if><#if !includeOutlookServices && !includeFileServices && includeListServices>//6695fd94-10cc-4274-b5df-46a3bc63a33d</#if><#if includeOutlookServices && includeFileServices && !includeListServices>//c4c2fd13-4abf-4785-a410-1887c5a1f1fc</#if><#if includeOutlookServices && !includeFileServices && includeListServices>//322e22fa-c249-4805-b057-c7b282acb605</#if><#if !includeOutlookServices && includeFileServices && includeListServices>//7193e8e2-dcec-4eb9-a3d6-02d86f88eaed</#if><#if includeOutlookServices && includeFileServices && includeListServices>//25fdea0c-8a15-457f-9b15-dacb4e7dc2b2</#if>
+//376d91c0-5633-4523-b012-f2d9ecfbe6c7<#if includeOutlookServices>^//fa684d69-70b3-41ec-83ff-2f8fa77aeeba</#if><#if includeFileServices>^//1073bed4-78c3-4b4a-8a4d-ad874a286d86</#if><#if includeListServices>^//6695fd94-10cc-4274-b5df-46a3bc63a33d</#if><#if includeOneNoteServices>^//657555dc-6167-466a-9536-071307770d46</#if>
 package ${packageName};
 
 import android.app.Activity;
@@ -6,7 +6,7 @@ import android.app.Activity;
 import android.content.Context;
 </#if>
 import android.os.Bundle;
-<#if includeOutlookServices || includeFileServices || includeListServices>
+<#if includeOutlookServices || includeFileServices || includeListService || includeOneNoteServices>
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -31,6 +31,21 @@ import com.microsoft.sharepointservices.http.Request;
 <#if includeFileServices>
 import com.microsoft.sharepointservices.odata.SharePointClient;
 </#if>
+<#if includeOneNoteServices>
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.microsoft.live.LiveAuthClient;
+import com.microsoft.onenote.api.Notebook;
+import com.microsoft.onenote.api.odata.OneNoteApiClient;
+import com.microsoft.services.odata.impl.LiveAuthDependencyResolver;
+import com.microsoft.services.odata.interfaces.LogLevel;
+
+import java.util.Arrays;
+import java.util.List;
+import android.util.Log;
+</#if>
+
+
 <#if includeOutlookServices || includeFileServices || includeListServices>
 
 import java.util.List;
@@ -42,6 +57,24 @@ public class ${activityClass} extends Activity {
     private final String o365Name = this.getString(R.string.o365_name_${activityToLayout(activityClass)});
 
 </#if>
+
+<#if includeOneNoteServices>
+    private final String CLIENT_ID = this.getString(R.string.o365_clientId_${activityToLayout(activityClass)});
+    final static public String[] SCOPES = {
+            "wl.signin",
+            "wl.basic",
+            "wl.offline_access",
+            "wl.skydrive_update",
+            "wl.contacts_create",
+            "office.onenote_create"
+    };
+    final static public String ONENOTE_API_ROOT = "https://www.onenote.com/api/v1.0";
+
+    private LiveAuthDependencyResolver dependencyResolver;
+    private List<Notebook> notebookList;
+    private OneNoteApiClient oneNoteClient;
+</#if>
+
     /**
      * Initializes the activity
      */
@@ -105,6 +138,36 @@ public class ${activityClass} extends Activity {
             }
         });
 </#if>
+
+<#if includeOneNoteServices>
+        try {
+            Futures.addCallback(this.getDependencyResolver().interactiveInitialize(this), new FutureCallback<Boolean>() {
+                @Override
+                public void onSuccess(Boolean result) {
+                    Futures.addCallback(getOneNoteClient().getnotebooks().read(), new FutureCallback<List<Notebook>>() {
+                        @Override
+                        public void onSuccess(List<Notebook> notebooks) {
+                            notebookList = notebooks;
+
+
+                        }
+
+                        @Override
+                        public void onFailure(Throwable t) {
+                            Log.e("OneNoteSampleActivity", t.getMessage());
+                        }
+                    });
+                }
+
+                @Override
+                public void onFailure(Throwable t) {
+                    getDependencyResolver().getLogger().log(t.getMessage(), LogLevel.ERROR);
+                }
+            });
+        } catch (Exception e) {
+            Log.e("OneNoteSampleActivity", e.getMessage());
+        }
+</#if>
 	}
 <#if includeOutlookServices>
 
@@ -154,6 +217,29 @@ public class ${activityClass} extends Activity {
 
     private static ListenableFuture<List<SPList>> getMyLists(ListClient client) {
         return client.getLists(new Query());
+    }
+</#if>
+<#if includeOneNoteServices>
+    protected OneNoteApiClient getOneNoteClient() {
+        if (oneNoteClient == null) {
+            oneNoteClient = new OneNoteApiClient(ONENOTE_API_ROOT, getDependencyResolver());
+        }
+        return oneNoteClient;
+    }
+
+    protected LiveAuthDependencyResolver getDependencyResolver() {
+
+        if (dependencyResolver == null) {
+            LiveAuthClient theAuthClient = new LiveAuthClient(getApplicationContext(), CLIENT_ID,
+                    Arrays.asList(SCOPES));
+
+            dependencyResolver = new LiveAuthDependencyResolver(theAuthClient);
+
+            dependencyResolver.getLogger().setEnabled(true);
+            dependencyResolver.getLogger().setLogLevel(LogLevel.VERBOSE);
+        }
+
+        return dependencyResolver;
     }
 </#if>
 }
