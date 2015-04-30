@@ -24,7 +24,7 @@ limitations under the License.
 	<dependency mavenUrl="com.microsoft.services:file-services:(,1.0)" />
 	
 </#if>
-<#if includeOutlookServices || includeFileServices>
+<#if includeOutlookServices || includeFileServices || includeOneNoteServices>
 	<dependency mavenUrl="com.microsoft.services:odata-engine-android-impl:(,1.0)@aar" />
 	
 </#if>
@@ -33,9 +33,8 @@ limitations under the License.
 	
 </#if>
 <#if includeOneNoteServices>
-	<dependency mavenUrl="com.microsoft.services:onenote-services:(,1.0)@aar" />
-    <dependency mavenUrl="com.microsoft.services:odata-engine-android-impl:0.13.0@aar" />
-    <dependency mavenUrl="com.microsoft.services:live-auth:0.13.0@aar" />
+	<dependency mavenUrl="com.microsoft.services:onenote-services:(,1.0)" />
+    <dependency mavenUrl="com.microsoft.services:live-auth:(,1.0)@aar" />
 </#if>
     <merge from="AndroidManifest.xml.ftl"
             to="${escapeXmlAttribute(manifestOut)}/AndroidManifest.xml" />
