@@ -6,13 +6,24 @@ import android.app.Activity;
 import android.content.Context;
 </#if>
 import android.os.Bundle;
-<#if includeOutlookServices || includeFileServices || includeListServices>
+<#if includeOneNoteServices>
+import android.util.Log;
+</#if>
+<#if includeOutlookServices || includeFileServices || includeListServices || includeOneNoteServices>
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
+</#if>
+<#if includeOutlookServices || includeFileServices || includeListServices>
 import com.google.common.util.concurrent.ListenableFuture;
 </#if>
 <#if includeFileServices>
 import com.microsoft.fileservices.Item;
+import com.microsoft.fileservices.odata.SharePointClient;
+</#if>
+<#if includeOneNoteServices>
+import com.microsoft.live.LiveAuthClient;
+import com.microsoft.onenote.api.Notebook;
+import com.microsoft.onenote.api.odata.OneNoteApiClient;
 </#if>
 <#if includeOutlookServices>
 import com.microsoft.outlookservices.Message;
@@ -21,6 +32,10 @@ import com.microsoft.outlookservices.odata.OutlookClient;
 <#if includeOutlookServices || includeFileServices>
 import com.microsoft.services.odata.impl.DefaultDependencyResolver;
 </#if>
+<#if includeOneNoteServices>
+import com.microsoft.services.odata.impl.LiveAuthDependencyResolver;
+import com.microsoft.services.odata.interfaces.LogLevel;
+</#if>
 <#if includeListServices>
 import com.microsoft.sharepointservices.Credentials;
 import com.microsoft.sharepointservices.ListClient;
@@ -28,26 +43,11 @@ import com.microsoft.sharepointservices.Query;
 import com.microsoft.sharepointservices.SPList;
 import com.microsoft.sharepointservices.http.Request;
 </#if>
-<#if includeFileServices>
-import com.microsoft.sharepointservices.odata.SharePointClient;
-</#if>
+
 <#if includeOneNoteServices>
-import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.Futures;
-import com.microsoft.live.LiveAuthClient;
-import com.microsoft.onenote.api.Notebook;
-import com.microsoft.onenote.api.odata.OneNoteApiClient;
-import com.microsoft.services.odata.impl.LiveAuthDependencyResolver;
-import com.microsoft.services.odata.interfaces.LogLevel;
-
 import java.util.Arrays;
-import java.util.List;
-import android.util.Log;
 </#if>
-
-
-<#if includeOutlookServices || includeFileServices || includeListServices>
-
+<#if includeOutlookServices || includeFileServices || includeListServices || includeOneNoteServices>
 import java.util.List;
 </#if>
 
@@ -55,9 +55,7 @@ public class ${activityClass} extends Activity {
 <#if includeOutlookServices || includeFileServices || includeListServices>
     private final String o365AppId = this.getString(R.string.o365_app_id_${activityToLayout(activityClass)});
     private final String o365Name = this.getString(R.string.o365_name_${activityToLayout(activityClass)});
-
 </#if>
-
 <#if includeOneNoteServices>
     private final String CLIENT_ID = this.getString(R.string.o365_clientId_${activityToLayout(activityClass)});
     final static public String[] SCOPES = {
