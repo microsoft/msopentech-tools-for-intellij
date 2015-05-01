@@ -378,13 +378,22 @@ public class JdkServerPanel {
         settingsPane.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
-                if (isManualUpdate && createAccLicenseAggDlg(true) && (waProjManager == null || configureJdkCloudDeployment())) {
-                } else {
-                    try {
-                        isManualUpdate = false;
-                        settingsPane.setSelectedIndex(0);
-                    } finally {
-                        isManualUpdate = true;
+                if (isManualUpdate) {
+                    if (!createAccLicenseAggDlg(true) && !((waProjManager == null || configureJdkCloudDeployment()))) {
+                        try {
+                            isManualUpdate = false;
+                            settingsPane.setSelectedIndex(0);
+                        } finally {
+                            isManualUpdate = true;
+                        }
+                    }
+                    if (!createAccLicenseAggDlg(false) && !((waProjManager == null || configureSrvCloudDeployment()))) {
+                        try {
+                            isManualUpdate = false;
+                            settingsPane.setSelectedIndex(1);
+                        } finally {
+                            isManualUpdate = true;
+                        }
                     }
                 }
             }
