@@ -1,4 +1,4 @@
-<#if includeMobileServices && !includeNotificationHub>//010fa0c4-5af1-4f81-95c1-720d9fab8d96</#if><#if !includeMobileServices && includeNotificationHub>//46cca6b7-ff7d-4e05-9ef2-d7eb4798222e</#if><#if includeMobileServices && includeNotificationHub>//657555dc-6167-466a-9536-071307770d46</#if>
+//376d91c0-5633-4523-b012-f2d9ecfbe6c7<#if includeMobileServices>^//010fa0c4-5af1-4f81-95c1-720d9fab8d96</#if><#if includeNotificationHub>^//46cca6b7-ff7d-4e05-9ef2-d7eb4798222e</#if>
 package ${packageName};
 
 import android.app.Activity;

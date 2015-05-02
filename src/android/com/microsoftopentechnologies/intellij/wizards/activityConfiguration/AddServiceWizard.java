@@ -26,16 +26,16 @@ import java.awt.*;
 public class AddServiceWizard extends WizardDialog<AddServiceWizardModel> {
     public AddServiceWizard(Project project, Module module, String activityName, boolean isMobileServiceSelected,
                             boolean isNotificationHubSelected, boolean isOutlookServices, boolean isFileServices,
-                            boolean isListServices) {
+                            boolean isListServices, boolean isOneNoteService) {
         super(true, true, new AddServiceWizardModel(project, module, activityName, isMobileServiceSelected,
-                isNotificationHubSelected, isOutlookServices, isFileServices, isListServices));
+                isNotificationHubSelected, isOutlookServices, isFileServices, isListServices, isOneNoteService));
     }
 
     public static void run(Project project, Module module, String activityName, boolean isMobileServiceSelected,
                            boolean isNotificationHubSelected, boolean isOutlookServices, boolean isFileServices,
-                           boolean isListServices) {
+                           boolean isListServices, boolean isOneNoteService) {
         new AddServiceWizard(project, module, activityName, isMobileServiceSelected, isNotificationHubSelected,
-                isOutlookServices, isFileServices, isListServices).show();
+                isOutlookServices, isFileServices, isListServices, isOneNoteService).show();
     }
 
     @Override
