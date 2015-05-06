@@ -22,7 +22,7 @@ public interface IDEHelper {
 
     void replaceInFile(Object module, Pair<String, String>... replace);
 
-    void copyJarFiles2Module(Object moduleObject, File zipFile) throws IOException;
+    void copyJarFiles2Module(Object moduleObject, File zipFile, String zipPath) throws IOException;
 
     boolean isFileEditing(Object projectObject, File file);
 

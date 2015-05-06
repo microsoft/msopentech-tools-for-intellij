@@ -1,5 +1,5 @@
 /**
- * Copyright 2014 Microsoft Open Technologies Inc.
+ * Copyright 2015 Microsoft Open Technologies Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ import java.util.Scanner;
 public class ServiceCodeReferenceHelper {
     private static final String AZURESDK_URL = "http://zumo.blob.core.windows.net/sdk/azuresdk-android-1.1.5.zip";
     private static final String TEMPLATES_URL = "/com/microsoftopentechnologies/intellij/templates/";
-    public static final String NOTIFICATIONHUBS_PATH = "notificationhubs/";
+    private static final String NOTIFICATIONHUBS_PATH = "notificationhubs/";
     public static final String STRINGS_XML = "src/main/res/values/strings.xml";
 
     public ServiceCodeReferenceHelper() {
@@ -42,6 +42,28 @@ public class ServiceCodeReferenceHelper {
 
     public void addNotificationHubsLibs(Object module)
             throws ParserConfigurationException, TransformerException, SAXException, XPathExpressionException, IOException {
+        addReferences(NOTIFICATIONHUBS_PATH, module);
+    }
+
+    public void fillMobileServiceResource(String activityName, String appUrl, String appKey, Object module) throws IOException {
+        DefaultLoader.getIdeHelper().replaceInFile(module, new ImmutablePair<String, String>(">$APPURL_" + activityName + "<", ">" + appUrl + "<"),
+                new ImmutablePair<String, String>(">$APPKEY_" + activityName + "<", ">" + appKey + "<"));
+    }
+
+    public void fillNotificationHubResource(String activityName, String senderId, String connStr, String hubName, Object module) {
+        DefaultLoader.getIdeHelper().replaceInFile(module, new ImmutablePair<String, String>(">$SENDERID_" + activityName + "<", ">" + senderId + "<"),
+                new ImmutablePair<String, String>(">$CONNSTR_" + activityName + "<", ">" + connStr + "<"),
+                new ImmutablePair<String, String>(">$HUBNAME_" + activityName + "<", ">" + hubName + "<"));
+    }
+
+    public void fillOffice365Resource(String activityName, String appId, String name, String clientId, Object module) {
+        DefaultLoader.getIdeHelper().replaceInFile(module, new ImmutablePair<String, String>(">$O365_APP_ID_" + activityName + "<", ">" + appId + "<"),
+                new ImmutablePair<String, String>(">$O365_NAME_" + activityName + "<", ">" + name + "<"),
+                new ImmutablePair<String, String>(">$O365_CLIENTID_" + activityName + "<", ">" + clientId + "<"));
+    }
+
+     private void addReferences(String zipPath, Object module)
+            throws IOException, ParserConfigurationException, SAXException, XPathExpressionException, TransformerException {
         //Downloads libraries
         String path = System.getProperty("java.io.tmpdir");
 
@@ -61,24 +83,8 @@ public class ServiceCodeReferenceHelper {
             if (!zipFile.exists()) {
                 saveUrl(path, AZURESDK_URL);
             }
-            DefaultLoader.getIdeHelper().copyJarFiles2Module(module, zipFile);
+            DefaultLoader.getIdeHelper().copyJarFiles2Module(module, zipFile, zipPath);
         }
-    }
-
-    public void fillMobileServiceResource(String activityName, String appUrl, String appKey, Object module) throws IOException {
-        DefaultLoader.getIdeHelper().replaceInFile(module, new ImmutablePair<String, String>(">$APPURL_" + activityName + "<", ">" + appUrl + "<"),
-                new ImmutablePair<String, String>(">$APPKEY_" + activityName + "<", ">" + appKey + "<"));
-    }
-
-    public void fillNotificationHubResource(String activityName, String senderId, String connStr, String hubName, Object module) {
-        DefaultLoader.getIdeHelper().replaceInFile(module,new ImmutablePair<String, String>(">$SENDERID_" + activityName + "<", ">" + senderId + "<"),
-                new ImmutablePair<String, String>(">$CONNSTR_" + activityName + "<", ">" + connStr + "<"),
-                new ImmutablePair<String, String>(">$HUBNAME_" + activityName + "<", ">" + hubName + "<"));
-    }
-
-    public void fillOffice365Resource(String activityName, String appId, String name, Object module) {
-        DefaultLoader.getIdeHelper().replaceInFile(module, new ImmutablePair<String, String>(">$O365_APP_ID_" + activityName + "<", ">" + appId + "<"),
-                new ImmutablePair<String, String>(">$O365_NAME_" + activityName + "<", ">" + name + "<"));
     }
 
     private static void saveUrl(String filename, String urlString)
@@ -119,8 +125,8 @@ public class ServiceCodeReferenceHelper {
         }
     }
 
-
-    public static String getStringAndCloseStream(InputStream is, String charsetName) throws IOException {
+    @NotNull
+    public static String getStringAndCloseStream(@NotNull InputStream is, @NotNull String charsetName) throws IOException {
         //Using the trick described in this link to read whole streams in one operation:
         //http://stackoverflow.com/a/5445161
         try {

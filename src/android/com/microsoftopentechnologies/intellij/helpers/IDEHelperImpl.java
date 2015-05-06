@@ -148,7 +148,8 @@ public class IDEHelperImpl implements IDEHelper {
         }
     }
 
-    public void copyJarFiles2Module(Object moduleObject, File zipFile) throws IOException {
+    @Override
+    public void copyJarFiles2Module(Object moduleObject, File zipFile, String zipPath) throws IOException {
         Module module = (Module) moduleObject;
         final VirtualFile moduleFile = module.getModuleFile();
 
@@ -160,7 +161,7 @@ public class IDEHelperImpl implements IDEHelper {
             if (moduleDir != null) {
                 moduleDir.refresh(false, false);
 
-                copyJarFiles(module, moduleDir, zipFile, ServiceCodeReferenceHelper.NOTIFICATIONHUBS_PATH);
+                copyJarFiles(module, moduleDir, zipFile, zipPath);
             }
         }
     }
