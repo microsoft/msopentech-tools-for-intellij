@@ -198,6 +198,11 @@ public class ApplicationsTab extends JPanel {
         }
     }
 
+    void setEnable(boolean enable) {
+        appTable.setEnabled(enable);
+        addButton.setEnabled(enable);
+    }
+
     /**
      * @return added application Asnames which is to be set in table.
      */

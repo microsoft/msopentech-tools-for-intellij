@@ -19,7 +19,7 @@ package com.microsoftopentechnologies.intellij.wizards.activityConfiguration;
 public enum ServiceType {
     AzureMobileServices,
     NotificationHub,
-    Office365;
+    Office365, OneNote;
 
     public String getDisplayName() {
         String displayName = "";
@@ -34,6 +34,10 @@ public enum ServiceType {
             case Office365:
                 displayName = "Office 365";
                 break;
+            case OneNote:
+                displayName = "OneNote";
+                break;
+
         }
 
         return displayName;

@@ -74,7 +74,7 @@ public class AzureWizardModel extends WizardModel {
     }
 
     public boolean isLicenseAccepted() {
-        return publishSettingsStep.getJdkServerPanel().createAccLicenseAggDlg();
+        return publishSettingsStep.getJdkServerPanel().createAccLicenseAggDlg(true) && publishSettingsStep.getJdkServerPanel().createAccLicenseAggDlg(false);
     }
 
     /**

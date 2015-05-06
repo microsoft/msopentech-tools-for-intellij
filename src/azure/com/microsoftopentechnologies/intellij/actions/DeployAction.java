@@ -34,6 +34,7 @@ import com.microsoftopentechnologies.azurecommons.wacommonutil.EncUtilHelper;
 import com.microsoftopentechnologies.azurecommons.wacommonutil.PreferenceSetUtil;
 import com.microsoftopentechnologies.azuremanagementutil.model.StorageService;
 import com.microsoftopentechnologies.intellij.deploy.*;
+import com.microsoftopentechnologies.intellij.ui.JdkServerPanel;
 import com.microsoftopentechnologies.intellij.util.AntHelper;
 import com.microsoftopentechnologies.intellij.wizards.WizardCacheManager;
 import com.intellij.notification.Notification;
@@ -660,7 +661,12 @@ public class DeployAction extends AnAction {
                                     component.setCloudDownloadURL(JdkSrvConfigUtilMethods.prepareUrlForThirdPartyJdk(jdkName, accUrl, AzurePlugin.cmpntFile));
                                 }
                             } else if (cmpntType.equals(message("typeSrvDply"))) {
-                                component.setCloudDownloadURL(JdkSrvConfigUtilMethods.prepareCloudBlobURL(component.getImportPath(), accUrl));
+                                String srvName = role.getServerCloudName();
+                                if (srvName == null || srvName.isEmpty()) {
+                                    component.setCloudDownloadURL(JdkSrvConfigUtilMethods.prepareCloudBlobURL(component.getImportPath(), accUrl));
+                                } else {
+                                    component.setCloudDownloadURL(JdkServerPanel.prepareUrlForThirdPartySrv(srvName, accUrl));
+                                }
                             } else {
                                 component.setCloudDownloadURL(JdkSrvConfigUtilMethods.prepareUrlForApp(component.getDeployName(), accUrl));
                             }

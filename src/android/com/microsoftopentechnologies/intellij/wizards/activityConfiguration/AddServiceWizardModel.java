@@ -32,20 +32,22 @@ public class AddServiceWizardModel extends WizardModel {
     private final Module module;
     private final String activityName;
     private final List<ServiceType> serviceTypes;
-    private MobileService mobileService;
     private String senderId;
     private String connectionString;
     private String hubName;
     private boolean isOutlookServices;
     private boolean isFileServices;
     private boolean isListServices;
+    private final boolean isOneNoteServices;
+    private MobileService mobileService;
 
     private Application officeApp;
     private List<ServicePermissionEntry> officePermissions;
+    private String clientId;
 
     public AddServiceWizardModel(Project project, Module module, String activityName, boolean isMobileServiceSelected,
                                  boolean isNotificationHubSelected, boolean isOutlookServices, boolean isFileServices,
-                                 boolean isListServices) {
+                                 boolean isListServices, boolean isOneNoteServices) {
         super(ApplicationNamesInfo.getInstance().getFullProductName() + " - Add Microsoft Service Wizard");
         this.project = project;
         this.module = module;
@@ -54,6 +56,7 @@ public class AddServiceWizardModel extends WizardModel {
         this.isOutlookServices = isOutlookServices;
         this.isFileServices = isFileServices;
         this.isListServices = isListServices;
+        this.isOneNoteServices = isOneNoteServices;
 
         if (isMobileServiceSelected) {
             this.serviceTypes.add(ServiceType.AzureMobileServices);
@@ -67,7 +70,11 @@ public class AddServiceWizardModel extends WizardModel {
             this.serviceTypes.add(ServiceType.Office365);
         }
 
-        initSteps(isMobileServiceSelected, isNotificationHubSelected, isOutlookServices, isFileServices, isListServices);
+        if(isOneNoteServices) {
+            this.serviceTypes.add(ServiceType.OneNote);
+        }
+
+        initSteps(isMobileServiceSelected, isNotificationHubSelected, isOutlookServices, isFileServices, isListServices, isOneNoteServices);
     }
 
     public Project getProject() {
@@ -130,6 +137,19 @@ public class AddServiceWizardModel extends WizardModel {
         return isListServices;
     }
 
+    public boolean isOneNoteServices() {
+        return isOneNoteServices;
+    }
+
+    public String getClientId() {
+        return clientId;
+    }
+
+    public void setClientId(String clientId) {
+        this.clientId = clientId;
+    }
+
+
     public List<ServicePermissionEntry> getOfficePermissions() {
         return officePermissions;
     }
@@ -147,7 +167,8 @@ public class AddServiceWizardModel extends WizardModel {
     }
 
     private void initSteps(boolean isMobileServiceSelected, boolean isNotificationHubSelected,
-                           boolean isOutlookServices, boolean isFileServices, boolean isListServices) {
+                           boolean isOutlookServices, boolean isFileServices, boolean isListServices,
+                           boolean isOneNoteServices) {
         String title = "";
         if (isMobileServiceSelected) {
             title = "Azure Services";
@@ -164,6 +185,11 @@ public class AddServiceWizardModel extends WizardModel {
             add(new Office365Step(title, this));
         }
 
+        if(isOneNoteServices) {
+            title = "OneNote";
+            add(new OneNoteStep(title, this));
+        }
         add(new SummaryStep(title, this));
     }
+
 }

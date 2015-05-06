@@ -27,6 +27,10 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectLocator;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.*;
+import com.intellij.util.ArrayUtil;
+import com.microsoftopentechnologies.intellij.helpers.AndroidStudioHelper;
+import com.microsoftopentechnologies.intellij.helpers.StringHelper;
+import com.microsoftopentechnologies.intellij.helpers.UIHelper;
 import com.microsoftopentechnologies.intellij.helpers.IDEHelperImpl;
 import com.microsoftopentechnologies.tooling.msservices.components.AppSettingsNames;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
@@ -41,20 +45,33 @@ import org.jetbrains.annotations.NotNull;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
+import java.util.regex.Pattern;
 
-public class MSOpenTechToolsApplication extends ApplicationComponent.Adapter implements PluginComponent {
-
+public class MSOpenTechToolsApplication extends ApplicationComponent.Adapter {
+    // NOTE: If you add new setting names to this list, evaluate whether it should be cleared
+    // when the plugin is upgraded/uninstalled and add the setting to the array "settings" in
+    // the "cleanTempData" function below. Otherwise your setting will get retained across
+    // upgrades which can potentially cause issues.
+    public static class AppSettingsNames {
+        public static final String O365_AUTHENTICATION_TOKEN = "com.microsoftopentechnologies.intellij.O365AuthenticationToken";
+        public static final String SUBSCRIPTION_FILE = "com.microsoftopentechnologies.intellij.SubscriptionFile";
+        public static final String SELECTED_SUBSCRIPTIONS = "com.microsoftopentechnologies.intellij.SelectedSubscriptions";
+        public static final String AZURE_AUTHENTICATION_MODE = "com.microsoftopentechnologies.intellij.AzureAuthenticationMode";
+        public static final String AZURE_AUTHENTICATION_TOKEN = "com.microsoftopentechnologies.intellij.AzureAuthenticationToken";
+        public static final String CURRENT_PLUGIN_VERSION = "com.microsoftopentechnologies.intellij.PluginVersion";
+    }
+    private static final String PLUGIN_FILE_CODE = "//376d91c0-5633-4523-b012-f2d9ecfbe6c7";
     private static final String MOBILE_SERVICE_CODE = "//010fa0c4-5af1-4f81-95c1-720d9fab8d96";
-    private static final String NOTIFICATION_HUBS_CODE = "//46cca6b7-ff7d-4e05-9ef2-d7eb4798222e";
-    private static final String NOTIFICATION_HUBS_MOBILE_SERVICE_CODE = "//657555dc-6167-466a-9536-071307770d46";
+    private static final String NOTIFICATION_HUBS_CODE = "//46cca6b7-ff7d-4e05-9ef2-d7eb4798222e";;
     private static final String OUTLOOK_SERVICES_CODE = "//fa684d69-70b3-41ec-83ff-2f8fa77aeeba";
     private static final String FILE_SERVICES_CODE = "//1073bed4-78c3-4b4a-8a4d-ad874a286d86";
     private static final String LIST_SERVICES_CODE = "//6695fd94-10cc-4274-b5df-46a3bc63a33d";
-    private static final String OUTLOOK_FILE_SERVICES_CODE = "//c4c2fd13-4abf-4785-a410-1887c5a1f1fc";
-    private static final String OUTLOOK_LIST_SERVICES_CODE = "//322e22fa-c249-4805-b057-c7b282acb605";
-    private static final String FILE_LIST_SERVICES_CODE = "//7193e8e2-dcec-4eb9-a3d6-02d86f88eaed";
-    private static final String OUTLOOK_FILE_LIST_SERVICES_CODE = "//25fdea0c-8a15-457f-9b15-dacb4e7dc2b2";
+    private static final String ONENOTE_SERVICES_CODE = "//657555dc-6167-466a-9536-071307770d46";
+
+
     private static final VirtualFileListener vfl = getVirtualFileListener();
 
     private static MSOpenTechToolsApplication current = null;
@@ -214,13 +231,17 @@ public class MSOpenTechToolsApplication extends ApplicationComponent.Adapter imp
                             int codeLineEnd = document.getLineEndOffset(0);
                             TextRange codeLineRange = new TextRange(codeLineStart, codeLineEnd);
                             String codeLine = document.getText(codeLineRange);
-                            final boolean isMobileService = codeLine.equals(MOBILE_SERVICE_CODE) || codeLine.equals(NOTIFICATION_HUBS_MOBILE_SERVICE_CODE);
-                            final boolean isNotificationHub = codeLine.equals(NOTIFICATION_HUBS_CODE) || codeLine.equals(NOTIFICATION_HUBS_MOBILE_SERVICE_CODE);
-                            final boolean isOutlookServices = codeLine.equals(OUTLOOK_SERVICES_CODE) || codeLine.equals(OUTLOOK_FILE_SERVICES_CODE) || codeLine.equals(OUTLOOK_LIST_SERVICES_CODE) || codeLine.equals(OUTLOOK_FILE_LIST_SERVICES_CODE);
-                            final boolean isFileServices = codeLine.equals(FILE_SERVICES_CODE) || codeLine.equals(OUTLOOK_FILE_SERVICES_CODE) || codeLine.equals(FILE_LIST_SERVICES_CODE) || codeLine.equals(OUTLOOK_FILE_LIST_SERVICES_CODE);
-                            final boolean isListServices = codeLine.equals(LIST_SERVICES_CODE) || codeLine.equals(OUTLOOK_LIST_SERVICES_CODE) || codeLine.equals(FILE_LIST_SERVICES_CODE) || codeLine.equals(OUTLOOK_FILE_LIST_SERVICES_CODE);
 
-                            if (isMobileService || isNotificationHub || isOutlookServices || isFileServices || isListServices) {
+                            String[] codeList = codeLine.split(Pattern.quote("^"));
+
+                            final boolean isMobileService = ArrayUtil.contains(MOBILE_SERVICE_CODE, codeList);
+                            final boolean isNotificationHub = ArrayUtil.contains(NOTIFICATION_HUBS_CODE, codeList);
+                            final boolean isOutlookServices = ArrayUtil.contains(OUTLOOK_SERVICES_CODE, codeList);
+                            final boolean isFileServices = ArrayUtil.contains(FILE_SERVICES_CODE, codeList);
+                            final boolean isListServices = ArrayUtil.contains(LIST_SERVICES_CODE, codeList);
+                            final boolean isOneNoteServices = ArrayUtil.contains(ONENOTE_SERVICES_CODE, codeList);
+
+                            if(ArrayUtil.contains(PLUGIN_FILE_CODE, codeList)) {
                                 final int packageLineStart = document.getLineStartOffset(1);
 
                                 CommandProcessor.getInstance().runUndoTransparentAction(new Runnable() {
@@ -232,24 +253,28 @@ public class MSOpenTechToolsApplication extends ApplicationComponent.Adapter imp
 
                                 fdm.saveDocument(document);
 
-                                ApplicationManager.getApplication().invokeLater(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        Collection<Project> projects = ProjectLocator.getInstance().getProjectsForFile(vf);
+                                if (isMobileService || isNotificationHub || isOutlookServices || isFileServices || isListServices || isOneNoteServices) {
 
-                                        if (projects.size() == 1) {
-                                            AddServiceWizard.run(
-                                                    (Project) projects.toArray()[0],
-                                                    ModuleUtil.findModuleForFile(vf, (Project) projects.toArray()[0]),
-                                                    vf.getNameWithoutExtension(),
-                                                    isMobileService,
-                                                    isNotificationHub,
-                                                    isOutlookServices,
-                                                    isFileServices,
-                                                    isListServices);
+                                    ApplicationManager.getApplication().invokeLater(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            Collection<Project> projects = ProjectLocator.getInstance().getProjectsForFile(vf);
+
+                                            if (projects.size() == 1) {
+                                                AddServiceWizard.run(
+                                                        (Project) projects.toArray()[0],
+                                                        ModuleUtil.findModuleForFile(vf, (Project) projects.toArray()[0]),
+                                                        vf.getNameWithoutExtension(),
+                                                        isMobileService,
+                                                        isNotificationHub,
+                                                        isOutlookServices,
+                                                        isFileServices,
+                                                        isListServices,
+                                                        isOneNoteServices);
+                                            }
                                         }
-                                    }
-                                });
+                                    });
+                                }
                             }
                         }
                     }

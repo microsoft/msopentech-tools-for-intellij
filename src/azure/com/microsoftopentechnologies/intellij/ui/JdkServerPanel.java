@@ -97,6 +97,7 @@ public class JdkServerPanel {
     private JPanel applicationsSettings;
     private JLabel lblNoteHomeDir;
     private JComboBox thrdPrtSrvCmb;
+    private JLabel lblSrvPath;
 
     private ApplicationsTab applicationsTab;
 
@@ -104,6 +105,7 @@ public class JdkServerPanel {
     private final WindowsAzureRole waRole;
     private final WindowsAzureProjectManager waProjManager;
     private boolean accepted = false;
+    private boolean srvAccepted = false;
     private String jdkPrevName;
     private final ArrayList<String> fileToDel = new ArrayList<String>();
     private String finalSrvPath;
@@ -112,6 +114,7 @@ public class JdkServerPanel {
     private String finalJdkPath;
     private boolean isManualUpdate = true;
     private boolean modified;
+    private String srvPrevName;
 
     public JdkServerPanel(Project project, WindowsAzureRole waRole, WindowsAzureProjectManager waProjManager) {
         this.project = project;
@@ -208,7 +211,7 @@ public class JdkServerPanel {
                             enableThirdPartyJdkCombo(true);
                             thirdPartyJdkName.setSelectedItem(jdkName);
                             /*
-							 * License has already been accepted
+                             * License has already been accepted
 							 * on wizard or property page previously.
 							 */
                             accepted = true;
@@ -258,25 +261,39 @@ public class JdkServerPanel {
         // Check Server is already enabled or not
         // and if enabled show appropriate values on property page
         try {
-            String srvSrcPath = null;
-            String srvName = null;
+            String srvName = waRole.getServerName();
+            if (srvName == null) {
+                setEnableServer(false);
+                setEnableDlGrpSrv(false, false);
+                enableApplicationTab(false);
+            } else {
+                String srvSrcPath = waRole.getServerSourcePath();
+                String thirdServerName = waRole.getServerCloudName();
 
-            srvSrcPath = waRole.getServerSourcePath();
-            srvName = waRole.getServerName();
-
-            if (srvSrcPath != null && srvName != null) {
                 serverCheckBox.setSelected(true);
                 setEnableServer(true);
                 isManualUpdate = false;
                 serverType.setSelectedItem(srvName);
                 serverPath.setText(srvSrcPath);
+                enableApplicationTab(true);
+                showThirdPartySrvNames(true, srvName, thirdServerName);
                 // Server download group
                 String srvUrl = waRole.getServerCloudURL();
                 if (srvUrl != null && !srvUrl.isEmpty()) {
                     // server auto upload option configured
                     if (JdkSrvConfigUtilMethods.isServerAutoUploadPrevSelected(waRole)) {
-                        uploadLocalServer.setSelected(true);
+                        if (thirdServerName.isEmpty()) {
+                            uploadLocalServer.setSelected(true);
+                        } else {
+                            thrdPrtSrvBtn.setSelected(true);
+                            enableThirdPartySrvCombo(true);
+                            srvAccepted = true;
+                            srvPrevName = thirdServerName;
+                        }
                         setEnableDlGrpSrv(true, true);
+                        if (!thirdServerName.isEmpty()) {
+                            thrdPrtSrvCmb.setSelectedItem(thirdServerName);
+                        }
                     } else {
                         // server deploy option configured
                         customDownloadServer.setSelected(true);
@@ -293,15 +310,17 @@ public class JdkServerPanel {
                         serverHomeDir.setText(waRole.getRuntimeEnv(waRole.getRuntimeEnvName(message("typeSrvHm"))));
                     }
                     // Update note below Server URL text box
-                    String dirName = new File(srvSrcPath).getName();
-                    lblDlNoteUrlSrv.setText(String.format(message("dlNtLblDir"), dirName));
+                    if (srvSrcPath.isEmpty()) {
+                        lblDlNoteUrlSrv.setText(message("dlgDlNtLblUrl"));
+                    } else {
+                        String dirName = new File(srvSrcPath).getName();
+                        lblDlNoteUrlSrv.setText(String.format(message("dlNtLblDir"), dirName));
+                    }
                     String srvKey = waRole.getServerCloudKey();
                     UIUtils.populateStrgNameAsPerKey(srvKey, storageAccountServer);
                 }
-            } else {
-                setEnableServer(false);
-                setEnableDlGrpSrv(false, false);
             }
+            checkSDKPresenceAndEnableServer();
         } catch (WindowsAzureInvalidProjectOperationException e) {
             PluginUtil.displayErrorDialogAndLog(message("srvErrTtl"), message("getSrvBothErrMsg"), e);
         } finally {
@@ -310,6 +329,9 @@ public class JdkServerPanel {
         if (jdkCheckBox.isSelected() || thirdPartyJdk.isSelected() || customDownloadJdk.isSelected()) {
             serverCheckBox.setEnabled(true);
         }
+        if (!serverPath.getText().isEmpty()) {
+            enforceSameLocalCloudServer();
+        }
     }
 
     public void checkSDKPresenceAndEnable() {
@@ -317,6 +339,13 @@ public class JdkServerPanel {
         if (sdkVersion == null || sdkVersion.isEmpty()) {
             jdkCheckBox.setEnabled(false);
             setEnableJDK(false);
+        }
+    }
+
+    public void checkSDKPresenceAndEnableServer() {
+        String sdkVersion = WindowsAzureProjectManager.getLatestAzureVersionForSA();
+        if ((sdkVersion == null || sdkVersion.isEmpty()) && !uploadLocalServer.isSelected()) {
+            enableLocalServerPathCmpnts(false);
         }
     }
 
@@ -341,6 +370,7 @@ public class JdkServerPanel {
         storageAccountJdk.addItemListener(createStorageAccountJdkListener());
         thirdPartyJdkName.addItemListener(createThirdPartyJdkNameListener());
 //        setEnableDlGrp(false, false);
+        thrdPrtSrvBtn.addActionListener(createThirdPartySrvListener());
         setEnableDlGrpSrv(false, false);
         storageAccountServer.addItemListener(createStorageAccountServerListener());
         serverUrl.getDocument().addDocumentListener(createServerUrlListener());
@@ -348,13 +378,22 @@ public class JdkServerPanel {
         settingsPane.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
-                if (isManualUpdate && createAccLicenseAggDlg() && (waProjManager == null || configureJdkCloudDeployment())) {
-                } else {
-                    try {
-                        isManualUpdate = false;
-                        settingsPane.setSelectedIndex(0);
-                    } finally {
-                        isManualUpdate = true;
+                if (isManualUpdate) {
+                    if (!createAccLicenseAggDlg(true) && !((waProjManager == null || configureJdkCloudDeployment()))) {
+                        try {
+                            isManualUpdate = false;
+                            settingsPane.setSelectedIndex(0);
+                        } finally {
+                            isManualUpdate = true;
+                        }
+                    }
+                    if (!createAccLicenseAggDlg(false) && !((waProjManager == null || configureSrvCloudDeployment()))) {
+                        try {
+                            isManualUpdate = false;
+                            settingsPane.setSelectedIndex(1);
+                        } finally {
+                            isManualUpdate = true;
+                        }
                     }
                 }
             }
@@ -378,6 +417,7 @@ public class JdkServerPanel {
         });
         serverCheckBox.addItemListener(createServerListener());
         serverCheckBox.setSelected(false);
+        serverType.addItemListener(createServerTypeListener());
     }
 
     private void initForPreference() {
@@ -404,7 +444,7 @@ public class JdkServerPanel {
                 modifySrvText(waRole, message("dlNtLblDirSrv"));
                 modified = true;
                 /*
-		         * Check server configured previously
+                 * Check server configured previously
 		         * and now server name is changed.
 		         */
                 if (serverPath.getText() != null) {
@@ -415,17 +455,57 @@ public class JdkServerPanel {
         serverCheckBox.setSelected(false);
     }
 
+    private ItemListener createServerTypeListener() {
+        return new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                if (isManualUpdate && serverType.getSelectedItem() != null) {
+                    enforceSameLocalCloudServer();
+                    if (uploadLocalServer.isSelected()) {
+                        updateServerHome(serverPath.getText());
+                    } else if (thrdPrtSrvBtn.isSelected()) {
+                        updateServerHomeForThirdParty();
+                        String currentName = (String) thrdPrtSrvCmb.getSelectedItem();
+                        if (!currentName.equalsIgnoreCase(srvPrevName)) {
+                            srvAccepted = false;
+                            srvPrevName = currentName;
+                        }
+                    } else if (customDownloadServer.isSelected()) {
+                        if (serverUrl.getText().isEmpty()) {
+                            updateServerHome(serverPath.getText());
+                        } else {
+                            modifySrvUrlText();
+                        }
+                    }
+                    modified = true;
+                }
+            }
+        };
+    }
+
     private ItemListener createServerTypePreferenceListener() {
         return new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
                 if (isManualUpdate && serverType.getSelectedItem() != null) {
-                    updateServer((String) serverType.getSelectedItem(), serverPath.getText(), AzurePlugin.cmpntFile);
-                    if (customDownloadServer.isSelected() || uploadLocalServer.isSelected()) {
+                    enforceSameLocalCloudServer();
+                    if (uploadLocalServer.isSelected()) {
                         updateServerHome(serverPath.getText());
+                    } else if (thrdPrtSrvBtn.isSelected()) {
+                        updateServerHomeForThirdParty();
+                        String currentName = (String) thrdPrtSrvCmb.getSelectedItem();
+                        if (!currentName.equalsIgnoreCase(srvPrevName)) {
+                            srvAccepted = false;
+                            srvPrevName = currentName;
+                        }
+                    } else if (customDownloadServer.isSelected()) {
+                        if (serverUrl.getText().isEmpty()) {
+                            updateServerHome(serverPath.getText());
+                        } else {
+                            modifySrvUrlText();
+                        }
                     }
                     modified = true;
-//                handlePageComplete();
                 }
             }
         };
@@ -436,7 +516,7 @@ public class JdkServerPanel {
             @Override
             public void itemStateChanged(ItemEvent e) {
                 if (serverCheckBox.isSelected()) {
-                    srvChkBoxChecked(waRole, message("dlNtLblDir"));
+                    srvChkBoxChecked();
                 } else {
                     if (serverType.getSelectedItem() != null) {
                         // Remove server home settings
@@ -446,7 +526,7 @@ public class JdkServerPanel {
                         srvChkBoxUnChecked();
                     }
                 }
-//                handlePageComplete();
+                modified = true;
             }
         };
     }
@@ -530,6 +610,21 @@ public class JdkServerPanel {
         }
     }
 
+    private void handleServerDirRemoval() throws WindowsAzureInvalidProjectOperationException {
+        String oldName = waRole.getServerName();
+        String oldPath = waRole.getServerSourcePath();
+        // Remove old server from approot
+        if (oldName != null && oldPath != null && !oldPath.isEmpty() &&  !fileToDel.contains("srv")) {
+            fileToDel.add("srv");
+            WindowsAzureRoleComponent cmp = getPrevCmpnt(message("typeSrvDply"));
+            if (cmp != null) {
+                finalSrvPath = cmp.getImportPath();
+                finalImpMethod = cmp.getImportMethod();
+                finalAsName = cmp.getDeployName();
+            }
+        }
+    }
+
     /**
      * Method removes server home settings,
      * according to current package type.
@@ -558,6 +653,21 @@ public class JdkServerPanel {
             PluginUtil.displayErrorDialogAndLog(message("cmpntSetErrTtl"), message("cmpntgetErrMsg"), e);
         }
         return cmp;
+    }
+
+    /**
+     * Method updates server home,
+     * according to current package type.
+     * Method will get called when user click
+     * on OK button or tries to navigate to other page.
+     * @param srvHome
+     */
+    private void updateServerHomeAsPerPackageType(String srvHome) {
+        try {
+            WAServerConfUtilMethods.updateServerHome(srvHome, waRole, waProjManager, serverPath.getText().trim(), getServerName(), AzurePlugin.cmpntFile);
+        } catch (Exception e) {
+            PluginUtil.displayErrorDialog(message("genErrTitle"), message("srvHomeErr"));
+        }
     }
 
     /**
@@ -732,7 +842,6 @@ public class JdkServerPanel {
             private void handleUpdate() {
                 modified = true;
                 if (uploadLocalJdk.isSelected()) {
-//                    handlePageComplete();
                     // no need to do any checks if auto upload is selected
                     return;
                 }
@@ -744,7 +853,6 @@ public class JdkServerPanel {
                 }
                 updateJDKHome(jdkPath);
                 isManualUpdate = true;
-//                handlePageComplete();
             }
         };
     }
@@ -785,7 +893,6 @@ public class JdkServerPanel {
                 String srvDirName = new File(url).getName();
                 serverHomeDir.setText("%DEPLOYROOT%\\" + srvDirName);
                 isManualUpdate = true;
-//                handlePageComplete();
             }
         };
     }
@@ -801,7 +908,6 @@ public class JdkServerPanel {
                     serverCheckBox.setEnabled(true);
                     setEnableServer(true);
                 }
-//                handlePageComplete();
                 accepted = false;
             }
         };
@@ -813,8 +919,11 @@ public class JdkServerPanel {
             public void itemStateChanged(ItemEvent e) {
                 if (e.getStateChange() == ItemEvent.SELECTED && isManualUpdate) {
                     updateServerDlURL();
-                    updateServerHome(waRole);
-//                    handlePageComplete()
+                    if (customDownloadServer.isSelected() || uploadLocalServer.isSelected()) {
+                        updateServerHome(waRole);
+                    } else if (thrdPrtSrvBtn.isSelected()) {
+                        updateServerHomeForThirdParty();
+                    }
                 }
             }
         };
@@ -878,6 +987,19 @@ public class JdkServerPanel {
                     jdkPrevName = (String) thirdPartyJdkName.getSelectedItem();
                     serverCheckBox.setEnabled(true);
                     accepted = false;
+                }
+            }
+        };
+    }
+
+    private ActionListener createThirdPartySrvListener() {
+        return new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                modified = true;
+                if (!thrdPrtSrvCmb.isEnabled()) {
+                    thirdPartySrvBtnSelected();
+                    srvPrevName = (String) thrdPrtSrvCmb.getSelectedItem();
                 }
             }
         };
@@ -992,9 +1114,9 @@ public class JdkServerPanel {
         if (isJdkValid && serverCheckBox.isSelected()) {
             if (serverType.getSelectedItem() == null) {
                 return createValidationInfo(message("dplEmtSerMsg"), serverType);
-            } else if (serverPath.getText().isEmpty()) {
+            } else if (uploadLocalServer.isSelected() && serverPath.getText().isEmpty()) {
                 return createValidationInfo(message("dplEmtSerPtMsg"), serverPath);
-            } else if (!(new File(serverPath.getText()).exists())) {
+            } else if (!serverPath.getText().isEmpty() && !(new File(serverPath.getText()).exists())) {
                 return createValidationInfo(message("dplWrngSerMsg"), serverPath);
             } else {
                 // Server download group
@@ -1139,7 +1261,7 @@ public class JdkServerPanel {
             @Override
             public void itemStateChanged(ItemEvent e) {
                 if (serverCheckBox.isSelected()) {
-                    srvChkBoxChecked(waRole, message("dlNtLblDirSrv"));
+                    srvChkBoxChecked();
                 } else {
                     srvChkBoxUnChecked();
                 }
@@ -1154,7 +1276,7 @@ public class JdkServerPanel {
             public void actionPerformed(ActionEvent e) {
                 if (uploadLocalServer.isSelected()) {
                     // server auto upload radio button selected
-                    configureAutoUploadServerSettings(waRole, message("dlNtLblDirSrv"));
+                    configureAutoUploadServerSettings();
                 }
 //                handlePageComplete();
             }
@@ -1166,7 +1288,7 @@ public class JdkServerPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (customDownloadServer.isSelected()) {
-                    srvDeployBtnSelected(waRole, message("dlNtLblDirSrv"));
+                    srvDeployBtnSelected();
                     /*
 					 * server auto upload radio button unselected
 					 * and deploy button selected.
@@ -1247,6 +1369,11 @@ public class JdkServerPanel {
         }
     }
 
+    public void enableThirdPartySrvCombo(Boolean status) {
+        thrdPrtSrvCmb.setEnabled(status);
+        thrdPrtSrvBtn.setSelected(status);
+    }
+
     /**
      * Method decides whether to
      * show third party JDK names or not.
@@ -1263,6 +1390,38 @@ public class JdkServerPanel {
         }
     }
 
+    public void showThirdPartySrvNames(Boolean status, String localSrvName, String depSrvName) {
+        if (status) {
+            try {
+                String[] thrdPrtSrvArr;
+                if (localSrvName == null || localSrvName.isEmpty()) {
+                    thrdPrtSrvArr = WindowsAzureProjectManager.getAllThirdPartySrvNames(AzurePlugin.cmpntFile, depSrvName);
+                } else {
+                    thrdPrtSrvArr = WindowsAzureProjectManager.getThirdPartySrvNames(AzurePlugin.cmpntFile, localSrvName, depSrvName);
+                }
+                // check at least one element is present else disable
+                if (thrdPrtSrvArr.length >= 1) {
+                    thrdPrtSrvCmb.setModel(new DefaultComboBoxModel(thrdPrtSrvArr));
+                    String valueToSet = "";
+                    if (localSrvName == null || localSrvName.isEmpty()) {
+                        valueToSet = WindowsAzureProjectManager.getFirstDefaultThirdPartySrvName(AzurePlugin.cmpntFile);
+                    } else {
+                        valueToSet = WindowsAzureProjectManager.getDefaultThirdPartySrvName(AzurePlugin.cmpntFile, localSrvName);
+                    }
+                    if (valueToSet.isEmpty()) {
+                        valueToSet = thrdPrtSrvArr[0];
+                    }
+                    thrdPrtSrvCmb.setSelectedItem(valueToSet);
+                }
+            } catch (WindowsAzureInvalidProjectOperationException e) {
+                AzurePlugin.log(e.getMessage());
+            }
+        } else {
+            thrdPrtSrvCmb.removeAllItems();
+//            getThrdPrtSrvCmb().setText("");
+        }
+    }
+
     /**
      * Listener for third party JDK name combo box.
      * Updates URL and java home.
@@ -1273,6 +1432,19 @@ public class JdkServerPanel {
             javaHome.setText(WindowsAzureProjectManager.getCloudValue((String) thirdPartyJdkName.getSelectedItem(), AzurePlugin.cmpntFile));
         } catch (WindowsAzureInvalidProjectOperationException e) {
             log(e.getMessage());
+        }
+    }
+
+    /**
+     * Listener for third party JDK name combo box.
+     * Updates URL and java home.
+     */
+    public void thirdPartySrvComboListener() {
+        updateServerDlURL();
+        try {
+            serverHomeDir.setText(WindowsAzureProjectManager.getThirdPartyServerHome((String) thrdPrtSrvCmb.getSelectedItem(), AzurePlugin.cmpntFile));
+        } catch (WindowsAzureInvalidProjectOperationException e) {
+            AzurePlugin.log(e.getMessage());
         }
     }
 
@@ -1377,12 +1549,25 @@ public class JdkServerPanel {
     /**
      * Method is used when Server check box is checked.
      */
-    public void srvChkBoxChecked(WindowsAzureRole role, String label) {
-        enableSrvRdButtons();
+    public void srvChkBoxChecked() {
         setEnableServer(true);
-        serverType.setModel(new DefaultComboBoxModel(JdkSrvConfigListener.getServerList()));
-        serverType.setSelectedItem(null);
-        configureAutoUploadServerSettings(role, label);
+        try {
+            String[] servList = WindowsAzureProjectManager.getServerTemplateNames(AzurePlugin.cmpntFile);
+            Arrays.sort(servList);
+            serverType.setModel(new DefaultComboBoxModel(servList));
+            // select third party server button.
+            thrdPrtSrvBtn.setSelected(true);
+            if (uploadLocalServer.isSelected()) {
+                configureAutoUploadServerSettings();
+            } else if (thrdPrtSrvBtn.isSelected()) {
+                thirdPartySrvBtnSelected();
+            } else {
+                srvDeployBtnSelected();
+            }
+            checkSDKPresenceAndEnableServer();
+        } catch (WindowsAzureInvalidProjectOperationException e) {
+            AzurePlugin.log(e.getMessage());
+        }
     }
 
     /**
@@ -1411,7 +1596,7 @@ public class JdkServerPanel {
     public void modifySrvText(WindowsAzureRole role, String label) {
         if (uploadLocalServer.isSelected()) {
             serverUrl.setText(cmbBoxListener(storageAccountServer, serverUrl.getText(), JdkSrvConfig.SRV_TXT));
-            updateSrvDlNote(label);
+            updateSrvDlNote();
             updateServerHome(role);
         }
     }
@@ -1443,14 +1628,23 @@ public class JdkServerPanel {
         }
     }
 
+    public void enableLocalServerPathCmpnts(boolean status) {
+        lblSrvPath.setEnabled(status);
+        serverPath.setEnabled(status);
+    }
+
     /**
      * Enable or disable components of
      * Server download group according to status.
      * @param status
      */
     public void setEnableDlGrpSrv(boolean status, boolean applyAutoUlParams) {
+        thrdPrtSrvBtn.setEnabled(status);
         customDownloadServer.setEnabled(status);
         uploadLocalServer.setEnabled(status);
+        if (!serverCheckBox.isSelected()) {
+            showThirdPartySrvNames(true, "", "");
+        }
         storageAccountServer.setEnabled(status);
         lblKeySrv.setEnabled(status);
         lblUrlSrv.setEnabled(status);
@@ -1466,30 +1660,37 @@ public class JdkServerPanel {
             serverHomeDir.setEnabled(status);
         }
         if (!status) {
+            thrdPrtSrvBtn.setSelected(false);
             customDownloadServer.setSelected(false);
             uploadLocalServer.setSelected(false);
             serverUrl.setText("");
             storageAccountServer.removeAllItems();
             serverHomeDir.setText("");
             lblDlNoteUrlSrv.setText(message("dlNtLblUrlSrv"));
+            enableThirdPartySrvCombo(false);
         } else {
             JdkSrvConfig.populateStrgAccComboBox((String) storageAccountServer.getSelectedItem(), storageAccountServer, JdkSrvConfig.SRV_TXT, false);
         }
     }
 
+    public void enableApplicationTab(boolean status) {
+        applicationsTab.setEnable(status);
+    }
+
     /**
      * Method used when server auto upload radio
      * button selected.
-     * @param role
-     * @param label
      */
-    public void configureAutoUploadServerSettings(
-            WindowsAzureRole role, String label) {
+    public void configureAutoUploadServerSettings() {
         setEnableDlGrpSrv(true, true);
+        enableLocalServerPathCmpnts(true);
         populateDefaultStrgAccForSrvAuto();
         updateServerDlURL();
-        updateSrvDlNote(label);
-        updateServerHome(role);
+        updateSrvDlNote();
+        updateServerHome(serverPath.getText());
+        enableThirdPartySrvCombo(false);
+        enableApplicationTab(true);
+        enforceSameLocalCloudServer();
     }
 
     /**
@@ -1561,13 +1762,15 @@ public class JdkServerPanel {
     /**
      * Utility method to update note below text box for Server.
      */
-    public void updateSrvDlNote(String label) {
+    public void updateSrvDlNote() {
         // Update note below server URL text box
         String srvPath = serverPath.getText();
         File file = new File(srvPath);
         if (!srvPath.isEmpty() && file.exists()) {
             String dirName = file.getName();
-            lblDlNoteUrlSrv.setText(String.format(label, dirName));
+            lblDlNoteUrlSrv.setText(String.format(message("dlNtLblDir"), dirName));
+        } else {
+            lblDlNoteUrlSrv.setText(message("dlgDlNtLblUrl"));
         }
     }
 
@@ -1605,19 +1808,39 @@ public class JdkServerPanel {
     public void utilSerBrowseBtnListener(String label) {
         try {
             File serverDir = new File(serverPath.getText());
+            String oldServerType = (String) serverType.getSelectedItem();
             // Update note below server URL text box
             if (customDownloadServer.isSelected()) {
                 String dirName = serverDir.getName();
                 lblDlNoteUrlSrv.setText(String.format(label, dirName));
             }
             // Auto detect server family
-            String serverName = WAEclipseHelperMethods.detectServer(serverDir, WAHelper.getTemplateFile(AzureBundle.message("cmpntFileName")));
+            String newServerType = WAEclipseHelperMethods.detectServer(serverDir, WAHelper.getTemplateFile(AzureBundle.message("cmpntFileName")));
             isManualUpdate = false;
-            if (serverName != null && !serverName.isEmpty()) {
-                this.serverType.setSelectedItem(serverName);
+            if (oldServerType == null || oldServerType.isEmpty()) {
+                // if server family is not selected already
+                if (newServerType != null && !newServerType.isEmpty()) {
+                    serverType.setSelectedItem(newServerType);
+                } else {
+                    PluginUtil.displayInfoDialog(message("srvTtl"), message("srvNoDetectionMsg"));
+                }
             } else {
-                serverType.setSelectedItem(null);
+                if (newServerType != null && !newServerType.isEmpty()) {
+                    if (!oldServerType.equalsIgnoreCase(newServerType)) {
+                        PluginUtil.displayInfoDialog(message("srvTtl"), String.format(message("srvWrngDetectionMsg"), newServerType));
+                        serverType.setSelectedItem(newServerType);
+                    }
+                } else {
+                    PluginUtil.displayInfoDialog(message("srvTtl"), message("srvNoDetectionMsg"));
+                }
             }
+//            String serverName = WAEclipseHelperMethods.detectServer(serverDir, WAHelper.getTemplateFile(AzureBundle.message("cmpntFileName")));
+//            isManualUpdate = false;
+//            if (serverName != null && !serverName.isEmpty()) {
+//                this.serverType.setSelectedItem(serverName);
+//            } else {
+//                serverType.setSelectedItem(null);
+//            }
         } catch (Exception e) {
             log(e.getMessage(), e);
         } finally {
@@ -1684,35 +1907,7 @@ public class JdkServerPanel {
      * @return
      */
     public void urlModifyListner(String url, String nameInUrl, JComboBox combo) {
-        String endpoint = StorageRegistryUtilMethods.getServiceEndpoint(url);
-        String accNameToSet = JdkSrvConfig.accNames[0];
-        if (nameInUrl != null && !nameInUrl.isEmpty() && endpoint != null) {
-            // check storage account name present in list
-            if (Arrays.asList(JdkSrvConfig.accNames).contains(nameInUrl)) {
-				/*
-				 * check endpoint of storage account from list
-				 * and from URL matches then
-				 * only select storage account otherwise select none.
-				 */
-                int index = Arrays.asList(JdkSrvConfig.accNames).indexOf(nameInUrl);
-                String endpointInReg = StorageRegistryUtilMethods.getServiceEndpoint(StorageAccountRegistry.getStrgList().get(index - 1).getStrgUrl());
-                if (endpoint.equalsIgnoreCase(endpointInReg)) {
-                    accNameToSet = nameInUrl;
-                }
-            } else if (StorageRegistryUtilMethods.isDuplicatePresent()) {
-				/*
-				 * If accounts with same name but
-				 * different service URL exists
-				 * then check concatenation of account name
-				 * and service endpoint exists in list.
-				 */
-                String accAndUrl = StorageRegistryUtilMethods.getAccNmSrvcUrlToDisplay(nameInUrl, endpoint);
-                if (Arrays.asList(JdkSrvConfig.accNames).contains(accAndUrl)) {
-                    accNameToSet = accAndUrl;
-                }
-            }
-        }
-        combo.setSelectedItem(accNameToSet);
+        combo.setSelectedItem(JdkSrvConfigUtilMethods.getNameToSet(url, nameInUrl, JdkSrvConfig.accNames));
     }
 
     /**
@@ -1749,6 +1944,9 @@ public class JdkServerPanel {
             if (tabControl != null && JdkSrvConfig.SRV_TXT.equals(tabControl) && uploadLocalServer.isSelected()) {
                 urlTxt = JdkSrvConfigUtilMethods.prepareCloudBlobURL(serverPath.getText(), newUrl);
                 return urlTxt;
+            } else if (tabControl != null && JdkSrvConfig.SRV_TXT.equals(tabControl) && thrdPrtSrvBtn.isSelected()) {
+                urlTxt = prepareUrlForThirdPartySrv((String) thrdPrtSrvCmb.getSelectedItem(), newUrl);
+                return urlTxt;
             }
 			/*
 			 * If URL is blank and new storage account selected
@@ -1776,7 +1974,7 @@ public class JdkServerPanel {
                 return urlTxt;
             }
             // For Server and auto upload option selected
-            if (tabControl != null && JdkSrvConfig.SRV_TXT.equals(tabControl) && uploadLocalServer.isSelected()) {
+            if (tabControl != null && JdkSrvConfig.SRV_TXT.equals(tabControl) && (uploadLocalServer.isSelected() || thrdPrtSrvBtn.isSelected())) {
                 urlTxt = JdkSrvConfig.AUTO_TXT;
                 return urlTxt;
             }
@@ -1784,17 +1982,64 @@ public class JdkServerPanel {
         return urlTxt;
     }
 
+    public static String prepareUrlForThirdPartySrv(String srvName, String url) {
+        String finalUrl = "";
+        try {
+            finalUrl = JdkSrvConfigUtilMethods.prepareUrlForThirdPartySrv(srvName, url, AzurePlugin.cmpntFile);
+        } catch (Exception ex) {
+            AzurePlugin.log(ex.getMessage());
+        }
+        return finalUrl;
+    }
+
+
     /**
      * Method is used when server's deploy from download
      * radio button is selected.
-     * @param role
-     * @param label
      */
-    public void srvDeployBtnSelected(WindowsAzureRole role, String label) {
+    public void srvDeployBtnSelected() {
         // server deploy radio button selected
         setEnableDlGrpSrv(true, false);
-        updateSrvDlNote(label);
-        updateServerHome(role);
+        checkSDKPresenceAndEnableServer();
+        updateSrvDlNote();
+        updateServerHome(serverPath.getText());
+        enableThirdPartySrvCombo(false);
+        enableApplicationTab(true);
+        enforceSameLocalCloudServer();
+    }
+
+    /**
+     * Method is used when third party JDK
+     * radio button is selected.
+     */
+    public void thirdPartySrvBtnSelected() {
+        setEnableDlGrpSrv(true, true);
+        checkSDKPresenceAndEnableServer();
+        enableThirdPartySrvCombo(true);
+        thirdPartySrvComboListener();
+        updateSrvDlNote();
+        enableApplicationTab(true);
+    }
+
+    /**
+     * Method is used when server URL text is modified.
+     */
+    public void modifySrvUrlText() {
+		/*
+		 * Extract storage account name
+		 * and service endpoint from URL
+		 * entered by user.
+		 */
+        String url = serverUrl.getText().trim();
+        String nameInUrl = StorageRegistryUtilMethods.getAccNameFromUrl(url);
+        urlModifyListner(url, nameInUrl, storageAccountServer);
+		/*
+		 * update home directory for server accordingly
+		 */
+        if (WAEclipseHelperMethods.isBlobStorageUrl(url) && url.endsWith(".zip")) {
+            url = url.substring(0, url.indexOf(".zip"));
+            updateServerHome(url);
+        }
     }
 
     public boolean okToLeave() throws ConfigurationException {
@@ -1808,40 +2053,53 @@ public class JdkServerPanel {
 			 * Check if third party JDK is selected
 			 * then license is accepted or not.
 			 */
-            if (createAccLicenseAggDlg()) {
+            if (createAccLicenseAggDlg(true)) {
                 okToProceed = configureJdkCloudDeployment();
             } else {
                 okToProceed = false;
             }
         }
-
-        if (okToProceed && serverCheckBox.isSelected()) {
-            String srvUrl = serverUrl.getText().trim();
-            if (uploadLocalServer.isSelected() && srvUrl.equalsIgnoreCase(JdkSrvConfig.AUTO_TXT)) {
-                srvUrl = AUTO;
+        if (okToProceed) {
+            boolean tempAccepted = true;
+            if (thrdPrtSrvBtn.isSelected() && !srvAccepted) {
+                tempAccepted = createAccLicenseAggDlg(false);
             }
-            okToProceed = configureSrvCloudDeployment(srvUrl, serverHomeDir.getText().trim());
+            if (tempAccepted) {
+                okToProceed = configureSrvCloudDeployment();
+            } else {
+                okToProceed = false;
+            }
         }
         return okToProceed;
     }
 
-    public boolean createAccLicenseAggDlg() {
-        if (!accepted && thirdPartyJdk.isSelected()) {
-            String jdkName = (String) thirdPartyJdkName.getSelectedItem();
-            StringBuilder sb = new StringBuilder("<html>").append(String.format(message("aggMsg"), jdkName));
-            String url = "";
-            try {
-                url = WindowsAzureProjectManager.getLicenseUrl(jdkName, AzurePlugin.cmpntFile);
-            } catch (WindowsAzureInvalidProjectOperationException e) {
-                log(e.getMessage(), e);
+    public boolean createAccLicenseAggDlg(boolean isForJdk) {
+        String name = "";
+        String url = "";
+        try {
+            if (isForJdk && !accepted && thirdPartyJdk.isSelected()) {
+                name = (String) thirdPartyJdkName.getSelectedItem();
+                url = WindowsAzureProjectManager.getLicenseUrl(name, AzurePlugin.cmpntFile);
+                accepted = showAcceptDialog(name, url);
+                return accepted;
+            } else if (!isForJdk && !srvAccepted && thrdPrtSrvBtn.isSelected()) {
+                name = (String) thrdPrtSrvCmb.getSelectedItem();
+                url = WindowsAzureProjectManager.getThirdPartyServerLicenseUrl(name, AzurePlugin.cmpntFile);
+                srvAccepted = showAcceptDialog(name, url);
+                return srvAccepted;
+            } else {
+                return true;
             }
-            sb.append(String.format(message("aggLnk"), url, url)).append("</html>");
-            boolean result = Messages.showYesNoDialog(project, sb.toString(), message("aggTtl"), message("acptBtn"), "Cancel", null) == Messages.YES;
-            accepted = result;
-            return result;
-        } else {
-            return true;
+        } catch (WindowsAzureInvalidProjectOperationException e) {
+            log(e.getMessage(), e);
+            return showAcceptDialog(name, url);
         }
+    }
+
+    private boolean showAcceptDialog(String name, String url) {
+        StringBuilder sb = new StringBuilder("<html>").append(String.format(message("aggMsg"), name));
+        sb.append(String.format(message("aggLnk"), url, url)).append("</html>");
+        return Messages.showYesNoDialog(project, sb.toString(), message("aggTtl"), message("acptBtn"), "Cancel", null) == Messages.YES;
     }
 
     /**
@@ -1857,6 +2115,7 @@ public class JdkServerPanel {
         String jdkName = (String) thirdPartyJdkName.getSelectedItem();
         try {
             handleJdkDirRemoval();
+            handleServerDirRemoval();
 
             WAServerConfUtilMethods.removeJavaHomeSettings(waRole, waProjManager);
             waRole.setJDKCloudName(null);
@@ -1881,7 +2140,7 @@ public class JdkServerPanel {
                 }
                 waRole.setJDKCloudURL(jdkUrl);
                 waRole.setJDKCloudKey(AzureWizardModel.getAccessKey(storageAccountJdk));
-                updateJavaHome(javaHome);
+                updateJavaHomeAsPerPackageType(javaHome);
             }
         } catch (WindowsAzureInvalidProjectOperationException e) {
             isValid = false;
@@ -1893,20 +2152,39 @@ public class JdkServerPanel {
     /**
      * Method configures cloud deployment for server
      * by saving URL, key and cloud method.
-     * @param srvUrl
-     * @param srvHome
      * @return
      */
-    private boolean configureSrvCloudDeployment(String srvUrl, String srvHome) {
+    private boolean configureSrvCloudDeployment() {
         boolean isValid = true;
+        String srvPath = serverPath.getText();
+        String srvUrl = serverUrl.getText();
+        String srvHome = serverHomeDir.getText();
+        String srvName = getServerName();
         try {
-            waRole.setServerCloudURL(srvUrl);
-            updateServerHome(srvHome);
-            waRole.setServerCloudKey(AzureWizardModel.getAccessKey(storageAccountServer));
-            if (uploadLocalServer.isSelected()) {
-                waRole.setServerCloudUploadMode(WARoleComponentCloudUploadMode.auto);
-            } else {
-                waRole.setServerCloudUploadMode(null);
+            WAServerConfUtilMethods.removeServerHomeSettings(waRole, waProjManager);
+            waRole.setServerCloudName(null);
+            waRole.setServer(null, "", AzurePlugin.cmpntFile);
+
+            if (serverCheckBox.isSelected()) {
+                if (!srvName.isEmpty()) {
+                    handleEndpointSettings(srvName);
+                    waRole.setServer(srvName, srvPath, AzurePlugin.cmpntFile);
+                    // JDK download group
+                    // By default auto upload will be selected.
+                    if (uploadLocalServer.isSelected() || thrdPrtSrvBtn.isSelected()) {
+                        if (srvUrl.equalsIgnoreCase(JdkSrvConfig.AUTO_TXT)) {
+                            srvUrl = AUTO;
+                        }
+                        if (thrdPrtSrvBtn.isSelected()) {
+                            waRole.setServerCldAltSrc(getServerCloudAltSource());
+                            waRole.setServerCloudName((String) thrdPrtSrvCmb.getSelectedItem());
+                        }
+                        waRole.setServerCloudUploadMode(WARoleComponentCloudUploadMode.auto);
+                    }
+                    waRole.setServerCloudURL(srvUrl);
+                    waRole.setServerCloudKey(AzureWizardModel.getAccessKey(storageAccountServer));
+                    updateServerHomeAsPerPackageType(srvHome);
+                }
             }
         } catch (WindowsAzureInvalidProjectOperationException e) {
             isValid = false;
@@ -1922,7 +2200,7 @@ public class JdkServerPanel {
      * on OK button or tries to navigate to other page.
      * @param javaHome
      */
-    private void updateJavaHome(String javaHome) {
+    private void updateJavaHomeAsPerPackageType(String javaHome) {
         try {
             WAServerConfUtilMethods.updateJavaHome(javaHome, waRole, waProjManager, jdkPath.getText().trim(), AzurePlugin.cmpntFile);
         } catch (Exception e) {
@@ -1931,18 +2209,24 @@ public class JdkServerPanel {
     }
 
     /**
-     * Method updates server home,
-     * according to current package type.
-     * Method will get called when user click
-     * on OK button or tries to navigate to other page.
-     * @param srvHome
+     * Utility method to update server home value.
      */
-    private void updateServerHome(String srvHome) {
+    public void updateServerHome(String srvPath) {
+        // set server home directory text box value
         try {
-            WAServerConfUtilMethods.updateServerHome(srvHome, waRole, waProjManager, serverPath.getText().trim(), (String) serverType.getSelectedItem(),
-                    AzurePlugin.cmpntFile);
-        } catch (Exception e) {
-            PluginUtil.displayErrorDialog(message("genErrTitle"), message("srvHomeErr"));
+            String srvHome = WindowsAzureRole.constructServerHome((String) serverType.getSelectedItem(), srvPath, AzurePlugin.cmpntFile);
+            serverHomeDir.setText(srvHome);
+        } catch (WindowsAzureInvalidProjectOperationException e) {
+            AzurePlugin.log(e.getMessage());
+        }
+    }
+
+    public void updateServerHomeForThirdParty() {
+        // set server home directory text box value
+        try {
+            serverHomeDir.setText(WindowsAzureProjectManager.getThirdPartyServerHome((String) thrdPrtSrvCmb.getSelectedItem(), AzurePlugin.cmpntFile));
+        } catch (WindowsAzureInvalidProjectOperationException e) {
+            AzurePlugin.log(e.getMessage());
         }
     }
 
@@ -1977,13 +2261,64 @@ public class JdkServerPanel {
         return url;
     }
 
+    public void enforceSameLocalCloudServer() {
+        try {
+            String srvName = (String) serverType.getSelectedItem();
+            String cloudSrv = "";
+            if (thrdPrtSrvBtn.isSelected()) {
+                cloudSrv = (String) thrdPrtSrvCmb.getSelectedItem();
+            }
+            if (cloudSrv.isEmpty()) {
+				/*
+				 * user first selects a local server and
+				 * third party radio button is not selected.
+				 */
+                populateServerNames(srvName);
+            } else {
+                if (WindowsAzureProjectManager.checkCloudAndLocalFamilyAreEqual(AzurePlugin.cmpntFile, srvName, cloudSrv)) {
+					/*
+					 * user first selects the cloud server
+					 * and then a local server that is compatible with cloud server.
+					 */
+                    showThirdPartySrvNames(true, srvName, "");
+                    thrdPrtSrvCmb.setSelectedItem(cloudSrv);
+                } else {
+					/*
+					 * user first selects the cloud server
+					 * and then a local server that is different from cloud server.
+					 */
+                    populateServerNames(srvName);
+                    if (thrdPrtSrvCmb.getItemCount() <= 0) {
+                        // if no third party servers available
+                        uploadLocalServer.setSelected(true);
+                        configureAutoUploadServerSettings();
+                    } else {
+                        thirdPartySrvBtnSelected();
+                    }
+                }
+            }
+        } catch (WindowsAzureInvalidProjectOperationException e) {
+            AzurePlugin.log(e.getMessage());
+        }
+    }
+
+    private void populateServerNames(String srvName) {
+        showThirdPartySrvNames(false, "", "");
+        showThirdPartySrvNames(true, srvName, "");
+        if (thrdPrtSrvCmb.getItemCount() <= 0) {
+            // if no third party servers available
+            enableThirdPartySrvCombo(false);
+            thrdPrtSrvBtn.setEnabled(false);
+        } else {
+            thrdPrtSrvBtn.setEnabled(true);
+        }
+    }
+
     public void apply() throws ConfigurationException {
         if (!okToLeave()) {
             throw new ConfigurationException(message("error"));
         }
-        boolean okToProceed = false;
         boolean isJdkValid = true;
-        boolean isSrvValid = true;
         // Validation for JDK
         if (jdkCheckBox.isSelected()) {
             if (jdkPath.getText().isEmpty()) {
@@ -2029,12 +2364,6 @@ public class JdkServerPanel {
                     if (javaHome.isEmpty()) {
                         isJdkValid = false;
                         throw new ConfigurationException(message("jvHomeErMsg"), message("genErrTitle"));
-                    } else {
-                        if (createAccLicenseAggDlg()) {
-                            isJdkValid = configureJdkCloudDeployment();
-                        } else {
-                            isJdkValid = false;
-                        }
                     }
                 } else {
                     isJdkValid = false;
@@ -2047,58 +2376,36 @@ public class JdkServerPanel {
         // Validation for Server
         if (isJdkValid && serverCheckBox.isSelected()) {
             if (serverType.getSelectedItem() == null || ((String) serverType.getSelectedItem()).isEmpty()) {
-                isSrvValid = false;
-                PluginUtil.displayErrorDialogAndLog(message("srvErrTtl"), message("dplEmtSerMsg"), null);
-            } else if (serverPath.getText().isEmpty()) {
-                isSrvValid = false;
-                PluginUtil.displayErrorDialogAndLog(message("srvErrTtl"), message("dplWrngSerMsg"), null);
-            } else if ((new File(serverPath.getText()).exists()) && (new File(serverPath.getText()).isAbsolute())) {
+                throw new ConfigurationException(message("dplEmtSerMsg"), message("srvErrTtl"));
+            } else if (uploadLocalServer.isSelected() && serverPath.getText().isEmpty()) {
+                throw new ConfigurationException(message("dplWrngSerMsg"), message("srvErrTtl"));
+            } else if (!serverPath.getText().isEmpty() && !(new File(serverPath.getText()).exists())) {
+                throw new ConfigurationException(message("dplWrngSerMsg"), message("srvErrTtl"));
+            } else {
                 // Server download group
-                if (customDownloadServer.isSelected() || uploadLocalServer.isSelected()) {
+                if (customDownloadServer.isSelected()) {
                     // Validate Server URL
                     String srvUrl = this.serverUrl.getText().trim();
                     if (srvUrl.isEmpty()) {
-                        isSrvValid = false;
-                        PluginUtil.displayErrorDialog(message("dlgDlUrlErrTtl"), message("dlgDlUrlErrMsg"));
+                        throw new ConfigurationException(message("dlgDlUrlErrMsg"), message("dlgDlUrlErrTtl"));
                     } else {
-                        Boolean isSrvUrlValid = false;
-                        // Server auto upload option selected.
-                        if (uploadLocalServer.isSelected()) {
-                            if (srvUrl.equalsIgnoreCase(JdkSrvConfig.AUTO_TXT)) {
-                                srvUrl = AUTO;
-                            }
-                            isSrvUrlValid = true;
-                        } else {
-                            // Server cloud option selected
-                            try {
-                                new URL(srvUrl);
-                                if (WAEclipseHelperMethods.isBlobStorageUrl(srvUrl)) {
-                                    isSrvUrlValid = true;
-                                } else {
-                                    PluginUtil.displayErrorDialog(message("dlgDlUrlErrTtl"), message("dlgDlUrlErrMsg"));
+                        // Server cloud option selected
+                        try {
+                            new URL(srvUrl);
+                            if (WAEclipseHelperMethods.isBlobStorageUrl(srvUrl)) {
+                                String srvHome = serverHomeDir.getText().trim();
+                                if (srvHome.isEmpty()) {
+                                    throw new ConfigurationException(message("srvHomeErMsg"), message("srvErrTtl"));
                                 }
-                            } catch (MalformedURLException e) {
-                                PluginUtil.displayErrorDialog(message("dlgDlUrlErrTtl"), message("dlgDlUrlErrMsg"));
-                            }
-                        }
-                        if (isSrvUrlValid) {
-                            String srvHome = serverHomeDir.getText().trim();
-                            if (srvHome.isEmpty()) {
-                                isSrvValid = false;
-                                PluginUtil.displayErrorDialog(message("genErrTitle"), message("srvHomeErMsg"));
                             } else {
-                                isSrvValid = configureSrvCloudDeployment(srvUrl, srvHome);
+                                throw new ConfigurationException(message("dlgDlUrlErrMsg"), message("dlgDlUrlErrTtl"));
                             }
-                        } else {
-                            isSrvValid = false;
+                        } catch (MalformedURLException e) {
+                            throw new ConfigurationException(message("dlgDlUrlErrMsg"), message("dlgDlUrlErrTtl"));
                         }
                     }
-                } else {
-                    isSrvValid = true;
+
                 }
-            } else {
-                isSrvValid = false;
-                PluginUtil.displayErrorDialogAndLog(message("srvErrTtl"), message("dplWrngSerMsg"), null);
             }
         }
     }
