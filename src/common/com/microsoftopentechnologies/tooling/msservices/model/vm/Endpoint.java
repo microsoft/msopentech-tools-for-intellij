@@ -15,6 +15,7 @@
  */
 package com.microsoftopentechnologies.tooling.msservices.model.vm;
 
+import com.microsoftopentechnologies.tooling.msservices.helpers.NotNull;
 import com.microsoftopentechnologies.tooling.msservices.model.ServiceTreeItem;
 
 
@@ -25,7 +26,7 @@ public class Endpoint implements ServiceTreeItem {
     private int privatePort;
     private int publicPort;
 
-    public Endpoint(String name, String protocol, int privatePort, int publicPort) {
+    public Endpoint(@NotNull String name, @NotNull String protocol, int privatePort, int publicPort) {
         this.name = name;
         this.protocol = protocol;
         this.privatePort = privatePort;
@@ -42,12 +43,12 @@ public class Endpoint implements ServiceTreeItem {
         this.loading = loading;
     }
 
-
+    @NotNull
     public String getName() {
         return name;
     }
 
-
+    @NotNull
     public String getProtocol() {
         return protocol;
     }

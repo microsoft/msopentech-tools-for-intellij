@@ -16,6 +16,7 @@
 package com.microsoftopentechnologies.tooling.msservices.model.storage;
 
 
+import com.microsoftopentechnologies.tooling.msservices.helpers.NotNull;
 
 public interface BlobItem {
     public static enum BlobItemType {
@@ -23,18 +24,18 @@ public interface BlobItem {
         BlobDirectory
     }
 
-
+    @NotNull
     String getName();
 
-
+    @NotNull
     String getUri();
 
-
+    @NotNull
     String getContainerName();
 
-
+    @NotNull
     String getPath();
 
-
+    @NotNull
     BlobItemType getItemType();
 }

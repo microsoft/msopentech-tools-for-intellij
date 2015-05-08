@@ -17,6 +17,7 @@ package com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.v
 
 import com.google.common.collect.ImmutableMap;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
+import com.microsoftopentechnologies.tooling.msservices.helpers.NotNull;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk.AzureSDKManagerImpl;
 import com.microsoftopentechnologies.tooling.msservices.model.vm.Endpoint;
@@ -128,6 +129,7 @@ public class VMNode extends Node {
             super("Deleting VM");
         }
 
+        @NotNull
         @Override
         protected Callable<Boolean> beforeAsyncActionPerfomed() {
 
@@ -199,6 +201,7 @@ public class VMNode extends Node {
             this.progressMessage = progressMessage;
         }
 
+        @NotNull
         @Override
         protected Callable<Boolean> beforeAsyncActionPerfomed() {
             return new Callable<Boolean>() {

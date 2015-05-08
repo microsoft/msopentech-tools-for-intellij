@@ -16,6 +16,7 @@
 package com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk;
 
 import com.microsoftopentechnologies.tooling.msservices.helpers.CallableSingleArg;
+import com.microsoftopentechnologies.tooling.msservices.helpers.NotNull;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.*;
 import com.microsoftopentechnologies.tooling.msservices.model.vm.*;
@@ -24,173 +25,174 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
+import static com.microsoftopentechnologies.tooling.msservices.model.storage.TableEntity.Property;
 
 public interface AzureSDKManager {
+    @NotNull
+    List<CloudService> getCloudServices(@NotNull String subscriptionId) throws AzureCmdException;
 
-    List<CloudService> getCloudServices(String subscriptionId) throws AzureCmdException;
+    @NotNull
+    List<VirtualMachine> getVirtualMachines(@NotNull String subscriptionId) throws AzureCmdException;
 
+    @NotNull
+    VirtualMachine refreshVirtualMachineInformation(@NotNull VirtualMachine vm) throws AzureCmdException;
 
-    List<VirtualMachine> getVirtualMachines(String subscriptionId) throws AzureCmdException;
+    void startVirtualMachine(@NotNull VirtualMachine vm) throws AzureCmdException;
 
+    void shutdownVirtualMachine(@NotNull VirtualMachine vm, boolean deallocate) throws AzureCmdException;
 
-    VirtualMachine refreshVirtualMachineInformation(VirtualMachine vm) throws AzureCmdException;
+    void restartVirtualMachine(@NotNull VirtualMachine vm) throws AzureCmdException;
 
-    void startVirtualMachine(VirtualMachine vm) throws AzureCmdException;
+    void deleteVirtualMachine(@NotNull VirtualMachine vm, boolean deleteFromStorage) throws AzureCmdException;
 
-    void shutdownVirtualMachine(VirtualMachine vm, boolean deallocate) throws AzureCmdException;
+    @NotNull
+    byte[] downloadRDP(@NotNull VirtualMachine vm) throws AzureCmdException;
 
-    void restartVirtualMachine(VirtualMachine vm) throws AzureCmdException;
+    @NotNull
+    List<StorageAccount> getStorageAccounts(@NotNull String subscriptionId) throws AzureCmdException;
 
-    void deleteVirtualMachine(VirtualMachine vm, boolean deleteFromStorage) throws AzureCmdException;
+    @NotNull
+    List<VirtualMachineImage> getVirtualMachineImages(@NotNull String subscriptionId) throws AzureCmdException;
 
+    @NotNull
+    List<VirtualMachineSize> getVirtualMachineSizes(@NotNull String subscriptionId) throws AzureCmdException;
 
-    byte[] downloadRDP(VirtualMachine vm) throws AzureCmdException;
+    @NotNull
+    List<Location> getLocations(@NotNull String subscriptionId) throws AzureCmdException;
 
+    @NotNull
+    List<AffinityGroup> getAffinityGroups(@NotNull String subscriptionId) throws AzureCmdException;
 
-    List<StorageAccount> getStorageAccounts(String subscriptionId) throws AzureCmdException;
+    @NotNull
+    List<VirtualNetwork> getVirtualNetworks(@NotNull String subscriptionId) throws AzureCmdException;
 
+    void createStorageAccount(@NotNull StorageAccount storageAccount) throws AzureCmdException;
 
-    List<VirtualMachineImage> getVirtualMachineImages(String subscriptionId) throws AzureCmdException;
+    void createCloudService(@NotNull CloudService cloudService) throws AzureCmdException;
 
-
-    List<VirtualMachineSize> getVirtualMachineSizes(String subscriptionId) throws AzureCmdException;
-
-
-    List<Location> getLocations(String subscriptionId) throws AzureCmdException;
-
-
-    List<AffinityGroup> getAffinityGroups(String subscriptionId) throws AzureCmdException;
-
-
-    List<VirtualNetwork> getVirtualNetworks(String subscriptionId) throws AzureCmdException;
-
-    void createStorageAccount(StorageAccount storageAccount) throws AzureCmdException;
-
-    void createCloudService(CloudService cloudService) throws AzureCmdException;
-
-    void createVirtualMachine(VirtualMachine virtualMachine, VirtualMachineImage vmImage,
-                              StorageAccount storageAccount, String virtualNetwork,
-                              String username, String password, byte[] certificate)
+    void createVirtualMachine(@NotNull VirtualMachine virtualMachine, @NotNull VirtualMachineImage vmImage,
+                              @NotNull StorageAccount storageAccount, @NotNull String virtualNetwork,
+                              @NotNull String username, @NotNull String password, @NotNull byte[] certificate)
             throws AzureCmdException;
 
-    void createVirtualMachine(VirtualMachine virtualMachine, VirtualMachineImage vmImage,
-                              String mediaLocation, String virtualNetwork,
-                              String username, String password, byte[] certificate)
+    void createVirtualMachine(@NotNull VirtualMachine virtualMachine, @NotNull VirtualMachineImage vmImage,
+                              @NotNull String mediaLocation, @NotNull String virtualNetwork,
+                              @NotNull String username, @NotNull String password, @NotNull byte[] certificate)
+            throws AzureCmdException;
+
+    @NotNull
+    StorageAccount refreshStorageAccountInformation(@NotNull StorageAccount storageAccount) throws AzureCmdException;
+
+    String createServiceCertificate(@NotNull String subscriptionId, @NotNull String serviceName,
+                                    @NotNull byte[] data, @NotNull String password)
+            throws AzureCmdException;
+
+    void deleteStorageAccount(@NotNull StorageAccount storageAccount) throws AzureCmdException;
+
+    @NotNull
+    List<BlobContainer> getBlobContainers(@NotNull StorageAccount storageAccount) throws AzureCmdException;
+
+    @NotNull
+    BlobContainer createBlobContainer(@NotNull StorageAccount storageAccount, @NotNull BlobContainer blobContainer)
+            throws AzureCmdException;
+
+    void deleteBlobContainer(@NotNull StorageAccount storageAccount, @NotNull BlobContainer blobContainer)
+            throws AzureCmdException;
+
+    @NotNull
+    BlobDirectory getRootDirectory(@NotNull StorageAccount storageAccount, @NotNull BlobContainer blobContainer)
+            throws AzureCmdException;
+
+    @NotNull
+    List<BlobItem> getBlobItems(@NotNull StorageAccount storageAccount, @NotNull BlobDirectory blobDirectory)
+            throws AzureCmdException;
+
+    @NotNull
+    BlobDirectory createBlobDirectory(@NotNull StorageAccount storageAccount,
+                                      @NotNull BlobDirectory parentBlobDirectory,
+                                      @NotNull BlobDirectory blobDirectory)
+            throws AzureCmdException;
+
+    @NotNull
+    BlobFile createBlobFile(@NotNull StorageAccount storageAccount,
+                            @NotNull BlobDirectory parentBlobDirectory,
+                            @NotNull BlobFile blobFile)
+            throws AzureCmdException;
+
+    void deleteBlobFile(@NotNull StorageAccount storageAccount,
+                        @NotNull BlobFile blobFile)
             throws AzureCmdException;
 
 
-    StorageAccount refreshStorageAccountInformation(StorageAccount storageAccount) throws AzureCmdException;
-
-    String createServiceCertificate(String subscriptionId, String serviceName,
-                                    byte[] data, String password)
-            throws AzureCmdException;
-
-    void deleteStorageAccount(StorageAccount storageAccount) throws AzureCmdException;
-
-
-    List<BlobContainer> getBlobContainers(StorageAccount storageAccount) throws AzureCmdException;
-
-
-    BlobContainer createBlobContainer(StorageAccount storageAccount, BlobContainer blobContainer)
-            throws AzureCmdException;
-
-    void deleteBlobContainer(StorageAccount storageAccount, BlobContainer blobContainer)
-            throws AzureCmdException;
-
-
-    BlobDirectory getRootDirectory(StorageAccount storageAccount, BlobContainer blobContainer)
-            throws AzureCmdException;
-
-
-    List<BlobItem> getBlobItems(StorageAccount storageAccount, BlobDirectory blobDirectory)
-            throws AzureCmdException;
-
-
-    BlobDirectory createBlobDirectory(StorageAccount storageAccount,
-                                      BlobDirectory parentBlobDirectory,
-                                      BlobDirectory blobDirectory)
-            throws AzureCmdException;
-
-
-    BlobFile createBlobFile(StorageAccount storageAccount,
-                            BlobDirectory parentBlobDirectory,
-                            BlobFile blobFile)
-            throws AzureCmdException;
-
-    void deleteBlobFile(StorageAccount storageAccount,
-                        BlobFile blobFile)
-            throws AzureCmdException;
-
-
-    void uploadBlobFileContent(StorageAccount storageAccount,
-                               BlobContainer blobContainer,
-                               String filePath,
-                               InputStream content,
+    void uploadBlobFileContent(@NotNull StorageAccount storageAccount,
+                               @NotNull BlobContainer blobContainer,
+                               @NotNull String filePath,
+                               @NotNull InputStream content,
                                CallableSingleArg<Void, Long> processBlockEvent,
                                long maxBlockSize,
                                long length)
             throws AzureCmdException;
 
-    void downloadBlobFileContent(StorageAccount storageAccount,
-                                 BlobFile blobFile,
-                                 OutputStream content)
+    void downloadBlobFileContent(@NotNull StorageAccount storageAccount,
+                                 @NotNull BlobFile blobFile,
+                                 @NotNull OutputStream content)
             throws AzureCmdException;
 
-
-    List<Queue> getQueues(StorageAccount storageAccount)
+    @NotNull
+    List<Queue> getQueues(@NotNull StorageAccount storageAccount)
             throws AzureCmdException;
 
-
-    Queue createQueue(StorageAccount storageAccount,
-                      Queue queue)
+    @NotNull
+    Queue createQueue(@NotNull StorageAccount storageAccount,
+                      @NotNull Queue queue)
             throws AzureCmdException;
 
-    void deleteQueue(StorageAccount storageAccount, Queue queue)
+    void deleteQueue(@NotNull StorageAccount storageAccount, @NotNull Queue queue)
             throws AzureCmdException;
 
-
-    List<QueueMessage> getQueueMessages(StorageAccount storageAccount, Queue queue)
+    @NotNull
+    List<QueueMessage> getQueueMessages(@NotNull StorageAccount storageAccount, @NotNull Queue queue)
             throws AzureCmdException;
 
-    void clearQueue(StorageAccount storageAccount, Queue queue)
+    void clearQueue(@NotNull StorageAccount storageAccount, @NotNull Queue queue)
             throws AzureCmdException;
 
-    void createQueueMessage(StorageAccount storageAccount,
-                            QueueMessage queueMessage,
+    void createQueueMessage(@NotNull StorageAccount storageAccount,
+                            @NotNull QueueMessage queueMessage,
                             int timeToLiveInSeconds)
             throws AzureCmdException;
 
-
-    QueueMessage dequeueFirstQueueMessage(StorageAccount storageAccount, Queue queue)
+    @NotNull
+    QueueMessage dequeueFirstQueueMessage(@NotNull StorageAccount storageAccount, @NotNull Queue queue)
             throws AzureCmdException;
 
-
-    List<Table> getTables(StorageAccount storageAccount)
+    @NotNull
+    List<Table> getTables(@NotNull StorageAccount storageAccount)
             throws AzureCmdException;
 
-
-    Table createTable(StorageAccount storageAccount,
-                      Table table)
+    @NotNull
+    Table createTable(@NotNull StorageAccount storageAccount,
+                      @NotNull Table table)
             throws AzureCmdException;
 
-    void deleteTable(StorageAccount storageAccount, Table table)
+    void deleteTable(@NotNull StorageAccount storageAccount, @NotNull Table table)
             throws AzureCmdException;
 
-
-    List<TableEntity> getTableEntities(StorageAccount storageAccount, Table table,
-                                       String filter)
+    @NotNull
+    List<TableEntity> getTableEntities(@NotNull StorageAccount storageAccount, @NotNull Table table,
+                                       @NotNull String filter)
             throws AzureCmdException;
 
-
-    TableEntity createTableEntity(StorageAccount storageAccount, String tableName,
-                                  String partitionKey, String rowKey,
-                                  Map<String, TableEntity.Property> properties)
+    @NotNull
+    TableEntity createTableEntity(@NotNull StorageAccount storageAccount, @NotNull String tableName,
+                                  @NotNull String partitionKey, @NotNull String rowKey,
+                                  @NotNull Map<String, Property> properties)
             throws AzureCmdException;
 
-
-    TableEntity updateTableEntity(StorageAccount storageAccount, TableEntity tableEntity)
+    @NotNull
+    TableEntity updateTableEntity(@NotNull StorageAccount storageAccount, @NotNull TableEntity tableEntity)
             throws AzureCmdException;
 
-    void deleteTableEntity(StorageAccount storageAccount, TableEntity tableEntity)
+    void deleteTableEntity(@NotNull StorageAccount storageAccount, @NotNull TableEntity tableEntity)
             throws AzureCmdException;
 }

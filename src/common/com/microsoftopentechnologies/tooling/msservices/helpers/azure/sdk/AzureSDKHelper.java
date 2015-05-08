@@ -31,6 +31,8 @@ import com.microsoft.windowsazure.management.storage.StorageManagementClient;
 import com.microsoft.windowsazure.management.storage.StorageManagementService;
 import com.microsoftopentechnologies.tooling.msservices.components.AppSettingsNames;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
+import com.microsoftopentechnologies.tooling.msservices.helpers.NotNull;
+import com.microsoftopentechnologies.tooling.msservices.helpers.Nullable;
 import com.microsoftopentechnologies.tooling.msservices.helpers.OpenSSLHelper;
 import com.microsoftopentechnologies.tooling.msservices.helpers.XmlHelper;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureAuthenticationMode;
@@ -59,7 +61,8 @@ public class AzureSDKHelper {
         public String managementURI;
     }
 
-    public static ComputeManagementClient getComputeManagementClient(String subscriptionId)
+    @Nullable
+    public static ComputeManagementClient getComputeManagementClient(@NotNull String subscriptionId)
             throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException, XPathExpressionException, ParserConfigurationException, SAXException {
         Configuration configuration = getConfiguration(subscriptionId);
 
@@ -78,7 +81,8 @@ public class AzureSDKHelper {
         return client;
     }
 
-    public static StorageManagementClient getStorageManagementClient(String subscriptionId)
+    @Nullable
+    public static StorageManagementClient getStorageManagementClient(@NotNull String subscriptionId)
             throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException, XPathExpressionException, ParserConfigurationException, SAXException {
         Configuration configuration = getConfiguration(subscriptionId);
 
@@ -97,7 +101,8 @@ public class AzureSDKHelper {
         return client;
     }
 
-    public static NetworkManagementClient getNetworkManagementClient(String subscriptionId)
+    @Nullable
+    public static NetworkManagementClient getNetworkManagementClient(@NotNull String subscriptionId)
             throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException, XPathExpressionException, ParserConfigurationException, SAXException {
         Configuration configuration = getConfiguration(subscriptionId);
 
@@ -116,7 +121,8 @@ public class AzureSDKHelper {
         return client;
     }
 
-    public static ManagementClient getManagementClient(String subscriptionId)
+    @Nullable
+    public static ManagementClient getManagementClient(@NotNull String subscriptionId)
             throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException, XPathExpressionException, ParserConfigurationException, SAXException {
         Configuration configuration = getConfiguration(subscriptionId);
 
@@ -135,15 +141,16 @@ public class AzureSDKHelper {
         return client;
     }
 
-
-    public static CloudStorageAccount getCloudStorageAccount(StorageAccount storageAccount)
+    @NotNull
+    public static CloudStorageAccount getCloudStorageAccount(@NotNull StorageAccount storageAccount)
             throws URISyntaxException, InvalidKeyException {
         return CloudStorageAccount.parse(String.format(StorageAccount.CONN_STR_TEMPLATE,
                 storageAccount.getName(),
                 storageAccount.getPrimaryKey()));
     }
 
-    private static Configuration getConfiguration(String subscriptionId)
+    @Nullable
+    private static Configuration getConfiguration(@NotNull String subscriptionId)
             throws CertificateException, NoSuchAlgorithmException, KeyStoreException, XPathExpressionException,
             SAXException, ParserConfigurationException, IOException {
         switch (AzureRestAPIManagerImpl.getManager().getAuthenticationMode()) {
@@ -156,7 +163,8 @@ public class AzureSDKHelper {
         return null;
     }
 
-    private static Configuration getConfigurationFromAuthToken(String subscriptionId)
+    @Nullable
+    private static Configuration getConfigurationFromAuthToken(@NotNull String subscriptionId)
             throws SAXException, ParserConfigurationException, XPathExpressionException, IOException {
         // NOTE: This implementation has to be considered as somewhat hacky. It relies on certain
         // internal implementation details of the Azure SDK for Java. For example we supply null
@@ -199,7 +207,8 @@ public class AzureSDKHelper {
         }
     }
 
-    private static Configuration getConfigurationFromPublishSettings(String subscriptionId)
+    @Nullable
+    private static Configuration getConfigurationFromPublishSettings(@NotNull String subscriptionId)
             throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException, ParserConfigurationException, XPathExpressionException, SAXException {
         SubscriptionInfo subscriptionInfo = getSubscriptionInfoFromPublishSettings(subscriptionId);
 
@@ -225,7 +234,8 @@ public class AzureSDKHelper {
         }
     }
 
-    private static SubscriptionInfo getSubscriptionInfoFromPublishSettings(String subscriptionId)
+    @Nullable
+    private static SubscriptionInfo getSubscriptionInfoFromPublishSettings(@NotNull String subscriptionId)
             throws SAXException, ParserConfigurationException, XPathExpressionException, IOException {
         String publishSettings = DefaultLoader.getIdeHelper().getProperty(AppSettingsNames.SUBSCRIPTION_FILE, "");
 
@@ -257,7 +267,7 @@ public class AzureSDKHelper {
         return subscriptionInfo;
     }
 
-    private static void initKeyStore(String base64Certificate, String certificatePwd, String keyStorePath, String keyStorePwd)
+    private static void initKeyStore(@NotNull String base64Certificate, @NotNull String certificatePwd, @NotNull String keyStorePath, @NotNull String keyStorePwd)
             throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException {
         FileOutputStream keyStoreOutputStream = new FileOutputStream(keyStorePath);
 

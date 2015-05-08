@@ -34,6 +34,7 @@ import com.microsoft.services.odata.ODataOperations;
 import com.microsoftopentechnologies.tooling.msservices.components.AppSettingsNames;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.tooling.msservices.components.PluginSettings;
+import com.microsoftopentechnologies.tooling.msservices.helpers.NotNull;
 import com.microsoftopentechnologies.tooling.msservices.helpers.StringHelper;
 import com.microsoftopentechnologies.tooling.msservices.helpers.aadauth.AuthenticationContext;
 import com.microsoftopentechnologies.tooling.msservices.helpers.aadauth.AuthenticationResult;
@@ -43,7 +44,6 @@ import com.microsoftopentechnologies.tooling.msservices.helpers.graph.ServicePer
 import com.microsoftopentechnologies.tooling.msservices.model.Office365Permission;
 import com.microsoftopentechnologies.tooling.msservices.model.Office365PermissionList;
 import com.microsoftopentechnologies.tooling.msservices.model.Office365Service;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.text.ParseException;

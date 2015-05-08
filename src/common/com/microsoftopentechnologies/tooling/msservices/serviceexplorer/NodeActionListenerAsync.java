@@ -19,8 +19,8 @@ package com.microsoftopentechnologies.tooling.msservices.serviceexplorer;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
+import com.microsoftopentechnologies.tooling.msservices.helpers.NotNull;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.Callable;
 

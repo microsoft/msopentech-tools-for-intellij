@@ -19,6 +19,7 @@ import com.microsoft.windowsazure.exception.ServiceException;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.tooling.msservices.components.PluginSettings;
 import com.microsoftopentechnologies.tooling.msservices.helpers.CallableSingleArg;
+import com.microsoftopentechnologies.tooling.msservices.helpers.NotNull;
 import com.microsoftopentechnologies.tooling.msservices.helpers.StringHelper;
 import com.microsoftopentechnologies.tooling.msservices.helpers.aadauth.AuthenticationContext;
 import com.microsoftopentechnologies.tooling.msservices.helpers.aadauth.AuthenticationResult;
@@ -35,6 +36,7 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.util.List;
 import java.util.Map;
+import static com.microsoftopentechnologies.tooling.msservices.model.storage.TableEntity.Property;
 
 public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
     protected AzureSDKManager sdkManager;
@@ -112,9 +114,9 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
         return false;
     }
 
-
+    @NotNull
     @Override
-    public List<CloudService> getCloudServices(final String subscriptionId) throws AzureCmdException {
+    public List<CloudService> getCloudServices(@NotNull final String subscriptionId) throws AzureCmdException {
         return runWithRetry(subscriptionId, new Func0<List<CloudService>>() {
             @Override
             public List<CloudService> run() throws AzureCmdException {
@@ -123,9 +125,9 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
         });
     }
 
-
+    @NotNull
     @Override
-    public List<VirtualMachine> getVirtualMachines(final String subscriptionId) throws AzureCmdException {
+    public List<VirtualMachine> getVirtualMachines(@NotNull final String subscriptionId) throws AzureCmdException {
         return runWithRetry(subscriptionId, new Func0<List<VirtualMachine>>() {
             @Override
             public List<VirtualMachine> run() throws AzureCmdException {
@@ -134,9 +136,9 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
         });
     }
 
-
+    @NotNull
     @Override
-    public VirtualMachine refreshVirtualMachineInformation(final VirtualMachine vm) throws AzureCmdException {
+    public VirtualMachine refreshVirtualMachineInformation(@NotNull final VirtualMachine vm) throws AzureCmdException {
         return runWithRetry(vm.getSubscriptionId(), new Func0<VirtualMachine>() {
             @Override
             public VirtualMachine run() throws AzureCmdException {
@@ -146,7 +148,7 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
     }
 
     @Override
-    public void startVirtualMachine(final VirtualMachine vm) throws AzureCmdException {
+    public void startVirtualMachine(@NotNull final VirtualMachine vm) throws AzureCmdException {
         runWithRetry(vm.getSubscriptionId(), new Func0<Void>() {
             @Override
             public Void run() throws AzureCmdException {
@@ -157,7 +159,7 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
     }
 
     @Override
-    public void shutdownVirtualMachine(final VirtualMachine vm, final boolean deallocate) throws AzureCmdException {
+    public void shutdownVirtualMachine(@NotNull final VirtualMachine vm, final boolean deallocate) throws AzureCmdException {
         runWithRetry(vm.getSubscriptionId(), new Func0<Void>() {
             @Override
             public Void run() throws AzureCmdException {
@@ -168,7 +170,7 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
     }
 
     @Override
-    public void restartVirtualMachine(final VirtualMachine vm) throws AzureCmdException {
+    public void restartVirtualMachine(@NotNull final VirtualMachine vm) throws AzureCmdException {
         runWithRetry(vm.getSubscriptionId(), new Func0<Void>() {
             @Override
             public Void run() throws AzureCmdException {
@@ -179,7 +181,7 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
     }
 
     @Override
-    public void deleteVirtualMachine(final VirtualMachine vm, final boolean deleteFromStorage) throws AzureCmdException {
+    public void deleteVirtualMachine(@NotNull final VirtualMachine vm, final boolean deleteFromStorage) throws AzureCmdException {
         runWithRetry(vm.getSubscriptionId(), new Func0<Void>() {
             @Override
             public Void run() throws AzureCmdException {
@@ -189,9 +191,9 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
         });
     }
 
-
+    @NotNull
     @Override
-    public byte[] downloadRDP(final VirtualMachine vm) throws AzureCmdException {
+    public byte[] downloadRDP(@NotNull final VirtualMachine vm) throws AzureCmdException {
         return runWithRetry(vm.getSubscriptionId(), new Func0<byte[]>() {
             @Override
             public byte[] run() throws AzureCmdException {
@@ -200,9 +202,9 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
         });
     }
 
-
+    @NotNull
     @Override
-    public List<StorageAccount> getStorageAccounts(final String subscriptionId) throws AzureCmdException {
+    public List<StorageAccount> getStorageAccounts(@NotNull final String subscriptionId) throws AzureCmdException {
         return runWithRetry(subscriptionId, new Func0<List<StorageAccount>>() {
             @Override
             public List<StorageAccount> run() throws AzureCmdException {
@@ -211,9 +213,9 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
         });
     }
 
-
+    @NotNull
     @Override
-    public List<VirtualMachineImage> getVirtualMachineImages(final String subscriptionId) throws AzureCmdException {
+    public List<VirtualMachineImage> getVirtualMachineImages(@NotNull final String subscriptionId) throws AzureCmdException {
         return runWithRetry(subscriptionId, new Func0<List<VirtualMachineImage>>() {
             @Override
             public List<VirtualMachineImage> run() throws AzureCmdException {
@@ -222,9 +224,9 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
         });
     }
 
-
+    @NotNull
     @Override
-    public List<VirtualMachineSize> getVirtualMachineSizes(final String subscriptionId) throws AzureCmdException {
+    public List<VirtualMachineSize> getVirtualMachineSizes(@NotNull final String subscriptionId) throws AzureCmdException {
         return runWithRetry(subscriptionId, new Func0<List<VirtualMachineSize>>() {
             @Override
             public List<VirtualMachineSize> run() throws AzureCmdException {
@@ -233,9 +235,9 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
         });
     }
 
-
+    @NotNull
     @Override
-    public List<Location> getLocations(final String subscriptionId) throws AzureCmdException {
+    public List<Location> getLocations(@NotNull final String subscriptionId) throws AzureCmdException {
         return runWithRetry(subscriptionId, new Func0<List<Location>>() {
             @Override
             public List<Location> run() throws AzureCmdException {
@@ -244,9 +246,9 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
         });
     }
 
-
+    @NotNull
     @Override
-    public List<AffinityGroup> getAffinityGroups(final String subscriptionId) throws AzureCmdException {
+    public List<AffinityGroup> getAffinityGroups(@NotNull final String subscriptionId) throws AzureCmdException {
         return runWithRetry(subscriptionId, new Func0<List<AffinityGroup>>() {
             @Override
             public List<AffinityGroup> run() throws AzureCmdException {
@@ -255,9 +257,9 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
         });
     }
 
-
+    @NotNull
     @Override
-    public List<VirtualNetwork> getVirtualNetworks(final String subscriptionId) throws AzureCmdException {
+    public List<VirtualNetwork> getVirtualNetworks(@NotNull final String subscriptionId) throws AzureCmdException {
         return runWithRetry(subscriptionId, new Func0<List<VirtualNetwork>>() {
             @Override
             public List<VirtualNetwork> run() throws AzureCmdException {
@@ -267,7 +269,7 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
     }
 
     @Override
-    public void createStorageAccount(final StorageAccount storageAccount) throws AzureCmdException {
+    public void createStorageAccount(@NotNull final StorageAccount storageAccount) throws AzureCmdException {
         runWithRetry(storageAccount.getSubscriptionId(), new Func0<Void>() {
             @Override
             public Void run() throws AzureCmdException {
@@ -278,7 +280,7 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
     }
 
     @Override
-    public void createCloudService(final CloudService cloudService) throws AzureCmdException {
+    public void createCloudService(@NotNull final CloudService cloudService) throws AzureCmdException {
         runWithRetry(cloudService.getSubscriptionId(), new Func0<Void>() {
             @Override
             public Void run() throws AzureCmdException {
@@ -289,13 +291,13 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
     }
 
     @Override
-    public void createVirtualMachine(final VirtualMachine virtualMachine,
-                                     final VirtualMachineImage vmImage,
-                                     final StorageAccount storageAccount,
-                                     final String virtualNetwork,
-                                     final String username,
-                                     final String password,
-                                     final byte[] certificate)
+    public void createVirtualMachine(@NotNull final VirtualMachine virtualMachine,
+                                     @NotNull final VirtualMachineImage vmImage,
+                                     @NotNull final StorageAccount storageAccount,
+                                     @NotNull final String virtualNetwork,
+                                     @NotNull final String username,
+                                     @NotNull final String password,
+                                     @NotNull final byte[] certificate)
             throws AzureCmdException {
         runWithRetry(virtualMachine.getSubscriptionId(), new Func0<Void>() {
             @Override
@@ -308,13 +310,13 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
     }
 
     @Override
-    public void createVirtualMachine(final VirtualMachine virtualMachine,
-                                     final VirtualMachineImage vmImage,
-                                     final String mediaLocation,
-                                     final String virtualNetwork,
-                                     final String username,
-                                     final String password,
-                                     final byte[] certificate)
+    public void createVirtualMachine(@NotNull final VirtualMachine virtualMachine,
+                                     @NotNull final VirtualMachineImage vmImage,
+                                     @NotNull final String mediaLocation,
+                                     @NotNull final String virtualNetwork,
+                                     @NotNull final String username,
+                                     @NotNull final String password,
+                                     @NotNull final byte[] certificate)
             throws AzureCmdException {
         runWithRetry(virtualMachine.getSubscriptionId(), new Func0<Void>() {
             @Override
@@ -326,9 +328,9 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
         });
     }
 
-
+    @NotNull
     @Override
-    public StorageAccount refreshStorageAccountInformation(final StorageAccount storageAccount)
+    public StorageAccount refreshStorageAccountInformation(@NotNull final StorageAccount storageAccount)
             throws AzureCmdException {
         return runWithRetry(storageAccount.getSubscriptionId(), new Func0<StorageAccount>() {
             @Override
@@ -339,8 +341,8 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
     }
 
     @Override
-    public String createServiceCertificate(final String subscriptionId, final String serviceName,
-                                           final byte[] data, final String password)
+    public String createServiceCertificate(@NotNull final String subscriptionId, @NotNull final String serviceName,
+                                           @NotNull final byte[] data, @NotNull final String password)
             throws AzureCmdException {
         return runWithRetry(subscriptionId, new Func0<String>() {
             @Override
@@ -351,7 +353,7 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
     }
 
     @Override
-    public void deleteStorageAccount(final StorageAccount storageAccount) throws AzureCmdException {
+    public void deleteStorageAccount(@NotNull final StorageAccount storageAccount) throws AzureCmdException {
         runWithRetry(storageAccount.getSubscriptionId(), new Func0<Void>() {
             @Override
             public Void run() throws AzureCmdException {
@@ -361,9 +363,9 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
         });
     }
 
-
+    @NotNull
     @Override
-    public List<BlobContainer> getBlobContainers(final StorageAccount storageAccount)
+    public List<BlobContainer> getBlobContainers(@NotNull final StorageAccount storageAccount)
             throws AzureCmdException {
         return runWithRetry(storageAccount.getSubscriptionId(), new Func0<List<BlobContainer>>() {
             @Override
@@ -373,10 +375,10 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
         });
     }
 
-
+    @NotNull
     @Override
-    public BlobContainer createBlobContainer(final StorageAccount storageAccount,
-                                             final BlobContainer blobContainer)
+    public BlobContainer createBlobContainer(@NotNull final StorageAccount storageAccount,
+                                             @NotNull final BlobContainer blobContainer)
             throws AzureCmdException {
         return runWithRetry(storageAccount.getSubscriptionId(), new Func0<BlobContainer>() {
             @Override
@@ -387,8 +389,8 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
     }
 
     @Override
-    public void deleteBlobContainer(final StorageAccount storageAccount,
-                                    final BlobContainer blobContainer)
+    public void deleteBlobContainer(@NotNull final StorageAccount storageAccount,
+                                    @NotNull final BlobContainer blobContainer)
             throws AzureCmdException {
         runWithRetry(storageAccount.getSubscriptionId(), new Func0<Void>() {
             @Override
@@ -399,10 +401,10 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
         });
     }
 
-
+    @NotNull
     @Override
-    public BlobDirectory getRootDirectory(final StorageAccount storageAccount,
-                                          final BlobContainer blobContainer)
+    public BlobDirectory getRootDirectory(@NotNull final StorageAccount storageAccount,
+                                          @NotNull final BlobContainer blobContainer)
             throws AzureCmdException {
         return runWithRetry(storageAccount.getSubscriptionId(), new Func0<BlobDirectory>() {
             @Override
@@ -412,10 +414,10 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
         });
     }
 
-
+    @NotNull
     @Override
-    public List<BlobItem> getBlobItems(final StorageAccount storageAccount,
-                                       final BlobDirectory blobDirectory)
+    public List<BlobItem> getBlobItems(@NotNull final StorageAccount storageAccount,
+                                       @NotNull final BlobDirectory blobDirectory)
             throws AzureCmdException {
         return runWithRetry(storageAccount.getSubscriptionId(), new Func0<List<BlobItem>>() {
             @Override
@@ -425,11 +427,11 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
         });
     }
 
-
+    @NotNull
     @Override
-    public BlobDirectory createBlobDirectory(final StorageAccount storageAccount,
-                                             final BlobDirectory parentBlobDirectory,
-                                             final BlobDirectory blobDirectory)
+    public BlobDirectory createBlobDirectory(@NotNull final StorageAccount storageAccount,
+                                             @NotNull final BlobDirectory parentBlobDirectory,
+                                             @NotNull final BlobDirectory blobDirectory)
             throws AzureCmdException {
         return runWithRetry(storageAccount.getSubscriptionId(), new Func0<BlobDirectory>() {
             @Override
@@ -439,11 +441,11 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
         });
     }
 
-
+    @NotNull
     @Override
-    public BlobFile createBlobFile(final StorageAccount storageAccount,
-                                   final BlobDirectory parentBlobDirectory,
-                                   final BlobFile blobFile)
+    public BlobFile createBlobFile(@NotNull final StorageAccount storageAccount,
+                                   @NotNull final BlobDirectory parentBlobDirectory,
+                                   @NotNull final BlobFile blobFile)
             throws AzureCmdException {
         return runWithRetry(storageAccount.getSubscriptionId(), new Func0<BlobFile>() {
             @Override
@@ -454,8 +456,8 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
     }
 
     @Override
-    public void deleteBlobFile(final StorageAccount storageAccount,
-                               final BlobFile blobFile)
+    public void deleteBlobFile(@NotNull final StorageAccount storageAccount,
+                               @NotNull final BlobFile blobFile)
             throws AzureCmdException {
         runWithRetry(storageAccount.getSubscriptionId(), new Func0<Void>() {
             @Override
@@ -468,10 +470,10 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
 
 
     @Override
-    public void uploadBlobFileContent(final StorageAccount storageAccount,
-                                      final BlobContainer blobContainer,
-                                      final String filePath,
-                                      final InputStream content,
+    public void uploadBlobFileContent(final @NotNull StorageAccount storageAccount,
+                                      final @NotNull BlobContainer blobContainer,
+                                      final @NotNull String filePath,
+                                      final @NotNull InputStream content,
                                       final CallableSingleArg<Void, Long> processBlock,
                                       final long maxBlockSize,
                                       final long length) throws AzureCmdException {
@@ -485,9 +487,9 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
     }
 
     @Override
-    public void downloadBlobFileContent(final StorageAccount storageAccount,
-                                        final BlobFile blobFile,
-                                        final OutputStream content)
+    public void downloadBlobFileContent(@NotNull final StorageAccount storageAccount,
+                                        @NotNull final BlobFile blobFile,
+                                        @NotNull final OutputStream content)
             throws AzureCmdException {
         runWithRetry(storageAccount.getSubscriptionId(), new Func0<Void>() {
             @Override
@@ -498,9 +500,9 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
         });
     }
 
-
+    @NotNull
     @Override
-    public List<Queue> getQueues(final StorageAccount storageAccount)
+    public List<Queue> getQueues(@NotNull final StorageAccount storageAccount)
             throws AzureCmdException {
         return runWithRetry(storageAccount.getSubscriptionId(), new Func0<List<Queue>>() {
             @Override
@@ -510,9 +512,9 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
         });
     }
 
-
+    @NotNull
     @Override
-    public Queue createQueue(final StorageAccount storageAccount, final Queue queue)
+    public Queue createQueue(@NotNull final StorageAccount storageAccount, @NotNull final Queue queue)
             throws AzureCmdException {
         return runWithRetry(storageAccount.getSubscriptionId(), new Func0<Queue>() {
             @Override
@@ -523,7 +525,7 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
     }
 
     @Override
-    public void deleteQueue(final StorageAccount storageAccount, final Queue queue)
+    public void deleteQueue(@NotNull final StorageAccount storageAccount, @NotNull final Queue queue)
             throws AzureCmdException {
         runWithRetry(storageAccount.getSubscriptionId(), new Func0<Void>() {
             @Override
@@ -534,9 +536,9 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
         });
     }
 
-
+    @NotNull
     @Override
-    public List<QueueMessage> getQueueMessages(final StorageAccount storageAccount, final Queue queue)
+    public List<QueueMessage> getQueueMessages(@NotNull final StorageAccount storageAccount, @NotNull final Queue queue)
             throws AzureCmdException {
         return runWithRetry(storageAccount.getSubscriptionId(), new Func0<List<QueueMessage>>() {
             @Override
@@ -547,7 +549,7 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
     }
 
     @Override
-    public void clearQueue(final StorageAccount storageAccount, final Queue queue)
+    public void clearQueue(@NotNull final StorageAccount storageAccount, @NotNull final Queue queue)
             throws AzureCmdException {
         runWithRetry(storageAccount.getSubscriptionId(), new Func0<Void>() {
             @Override
@@ -559,8 +561,8 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
     }
 
     @Override
-    public void createQueueMessage(final StorageAccount storageAccount,
-                                   final QueueMessage queueMessage,
+    public void createQueueMessage(@NotNull final StorageAccount storageAccount,
+                                   @NotNull final QueueMessage queueMessage,
                                    final int timeToLiveInSeconds)
             throws AzureCmdException {
         runWithRetry(storageAccount.getSubscriptionId(), new Func0<Void>() {
@@ -572,10 +574,10 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
         });
     }
 
-
+    @NotNull
     @Override
-    public QueueMessage dequeueFirstQueueMessage(final StorageAccount storageAccount,
-                                                 final Queue queue)
+    public QueueMessage dequeueFirstQueueMessage(@NotNull final StorageAccount storageAccount,
+                                                 @NotNull final Queue queue)
             throws AzureCmdException {
         return runWithRetry(storageAccount.getSubscriptionId(), new Func0<QueueMessage>() {
             @Override
@@ -585,9 +587,9 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
         });
     }
 
-
+    @NotNull
     @Override
-    public List<Table> getTables(final StorageAccount storageAccount)
+    public List<Table> getTables(@NotNull final StorageAccount storageAccount)
             throws AzureCmdException {
         return runWithRetry(storageAccount.getSubscriptionId(), new Func0<List<Table>>() {
             @Override
@@ -597,9 +599,9 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
         });
     }
 
-
+    @NotNull
     @Override
-    public Table createTable(final StorageAccount storageAccount, final Table table)
+    public Table createTable(@NotNull final StorageAccount storageAccount, @NotNull final Table table)
             throws AzureCmdException {
         return runWithRetry(storageAccount.getSubscriptionId(), new Func0<Table>() {
             @Override
@@ -610,7 +612,7 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
     }
 
     @Override
-    public void deleteTable(final StorageAccount storageAccount, final Table table)
+    public void deleteTable(@NotNull final StorageAccount storageAccount, @NotNull final Table table)
             throws AzureCmdException {
         runWithRetry(storageAccount.getSubscriptionId(), new Func0<Void>() {
             @Override
@@ -621,11 +623,11 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
         });
     }
 
-
+    @NotNull
     @Override
-    public List<TableEntity> getTableEntities(final StorageAccount storageAccount,
-                                              final Table table,
-                                              final String filter)
+    public List<TableEntity> getTableEntities(@NotNull final StorageAccount storageAccount,
+                                              @NotNull final Table table,
+                                              @NotNull final String filter)
             throws AzureCmdException {
         return runWithRetry(storageAccount.getSubscriptionId(), new Func0<List<TableEntity>>() {
             @Override
@@ -635,11 +637,11 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
         });
     }
 
-
+    @NotNull
     @Override
-    public TableEntity createTableEntity(final StorageAccount storageAccount, final String tableName,
-                                         final String partitionKey, final String rowKey,
-                                         final Map<String, TableEntity.Property> properties)
+    public TableEntity createTableEntity(@NotNull final StorageAccount storageAccount, @NotNull final String tableName,
+                                         @NotNull final String partitionKey, @NotNull final String rowKey,
+                                         @NotNull final Map<String, Property> properties)
             throws AzureCmdException {
         return runWithRetry(storageAccount.getSubscriptionId(), new Func0<TableEntity>() {
             @Override
@@ -649,10 +651,10 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
         });
     }
 
-
+    @NotNull
     @Override
-    public TableEntity updateTableEntity(final StorageAccount storageAccount,
-                                         final TableEntity tableEntity)
+    public TableEntity updateTableEntity(@NotNull final StorageAccount storageAccount,
+                                         @NotNull final TableEntity tableEntity)
             throws AzureCmdException {
         return runWithRetry(storageAccount.getSubscriptionId(), new Func0<TableEntity>() {
             @Override
@@ -663,8 +665,8 @@ public class AzureSDKManagerADAuthDecorator implements AzureSDKManager {
     }
 
     @Override
-    public void deleteTableEntity(final StorageAccount storageAccount,
-                                  final TableEntity tableEntity)
+    public void deleteTableEntity(@NotNull final StorageAccount storageAccount,
+                                  @NotNull final TableEntity tableEntity)
             throws AzureCmdException {
         runWithRetry(storageAccount.getSubscriptionId(), new Func0<Void>() {
             @Override

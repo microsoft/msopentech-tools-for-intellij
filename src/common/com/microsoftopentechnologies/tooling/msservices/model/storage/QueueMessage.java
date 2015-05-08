@@ -15,8 +15,8 @@
  */
 package com.microsoftopentechnologies.tooling.msservices.model.storage;
 
+import com.microsoftopentechnologies.tooling.msservices.helpers.NotNull;
 import com.microsoftopentechnologies.tooling.msservices.model.ServiceTreeItem;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Calendar;
 

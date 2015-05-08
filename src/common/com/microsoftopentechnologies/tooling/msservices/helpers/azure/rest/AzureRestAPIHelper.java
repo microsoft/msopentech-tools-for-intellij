@@ -22,10 +22,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.microsoftopentechnologies.tooling.msservices.components.AppSettingsNames;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.tooling.msservices.components.PluginSettings;
-import com.microsoftopentechnologies.tooling.msservices.helpers.NoSubscriptionException;
-import com.microsoftopentechnologies.tooling.msservices.helpers.OpenSSLHelper;
-import com.microsoftopentechnologies.tooling.msservices.helpers.StringHelper;
-import com.microsoftopentechnologies.tooling.msservices.helpers.XmlHelper;
+import com.microsoftopentechnologies.tooling.msservices.helpers.*;
 import com.microsoftopentechnologies.tooling.msservices.helpers.aadauth.AuthenticationContext;
 import com.microsoftopentechnologies.tooling.msservices.helpers.aadauth.AuthenticationResult;
 import com.microsoftopentechnologies.tooling.msservices.helpers.aadauth.PromptValue;
@@ -299,6 +296,7 @@ public class AzureRestAPIHelper {
     }
 
     interface AzureRestCallback<T> {
+        @Nullable
         int apply(HttpsURLConnection sslConnection) throws IOException;
 
         T getResult();
@@ -312,7 +310,7 @@ public class AzureRestAPIHelper {
         boolean isOk();
 
         @Override
-        boolean equals(java.lang.Object o);
+        boolean equals(@Nullable java.lang.Object o);
     }
 
     abstract static class AzureRestCallbackAdapter<T> implements AzureRestCallback<T> {

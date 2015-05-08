@@ -15,6 +15,7 @@
  */
 package com.microsoftopentechnologies.tooling.msservices.model.vm;
 
+import com.microsoftopentechnologies.tooling.msservices.helpers.NotNull;
 import com.microsoftopentechnologies.tooling.msservices.model.ServiceTreeItem;
 
 
@@ -50,9 +51,9 @@ public class VirtualMachine implements ServiceTreeItem {
     private String subscriptionId;
     private List<Endpoint> endpoints;
 
-    public VirtualMachine(String name, String serviceName, String deploymentName,
-                          String availabilitySet, String subnet, String size,
-                          Status status, String subscriptionId) {
+    public VirtualMachine(@NotNull String name, @NotNull String serviceName, @NotNull String deploymentName,
+                          @NotNull String availabilitySet, @NotNull String subnet, @NotNull String size,
+                          @NotNull Status status, @NotNull String subscriptionId) {
         this.name = name;
         this.serviceName = serviceName;
         this.deploymentName = deploymentName;
@@ -74,67 +75,67 @@ public class VirtualMachine implements ServiceTreeItem {
         this.loading = loading;
     }
 
-
+    @NotNull
     public String getName() {
         return name;
     }
 
-
+    @NotNull
     public String getServiceName() {
         return serviceName;
     }
 
-
+    @NotNull
     public String getDeploymentName() {
         return deploymentName;
     }
 
-    public void setDeploymentName(String deploymentName) {
+    public void setDeploymentName(@NotNull String deploymentName) {
         this.deploymentName = deploymentName;
     }
 
-
+    @NotNull
     public String getAvailabilitySet() {
         return availabilitySet;
     }
 
-    public void setAvailabilitySet(String availabilitySet) {
+    public void setAvailabilitySet(@NotNull String availabilitySet) {
         this.availabilitySet = availabilitySet;
     }
 
-
+    @NotNull
     public String getSubnet() {
         return subnet;
     }
 
-    public void setSubnet(String subnet) {
+    public void setSubnet(@NotNull String subnet) {
         this.subnet = subnet;
     }
 
-
+    @NotNull
     public String getSize() {
         return size;
     }
 
-    public void setSize(String size) {
+    public void setSize(@NotNull String size) {
         this.size = size;
     }
 
-
+    @NotNull
     public Status getStatus() {
         return status;
     }
 
-    public void setStatus(Status status) {
+    public void setStatus(@NotNull Status status) {
         this.status = status;
     }
 
-
+    @NotNull
     public String getSubscriptionId() {
         return subscriptionId;
     }
 
-
+    @NotNull
     public List<Endpoint> getEndpoints() {
         return endpoints;
     }

@@ -3,6 +3,7 @@ package com.microsoftopentechnologies.intellij.helpers.aadauth;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
+import com.microsoftopentechnologies.tooling.msservices.helpers.Nullable;
 import com.microsoftopentechnologies.tooling.msservices.helpers.aadauth.ADJarLoader;
 import com.microsoftopentechnologies.tooling.msservices.helpers.aadauth.BrowserLauncher;
 import org.jetbrains.annotations.NotNull;
@@ -16,7 +17,7 @@ import java.util.concurrent.ExecutionException;
 public class LauncherTask extends Task.Modal {
     private BrowserLauncher browserLauncher;
 
-    public LauncherTask(BrowserLauncher browserLauncher, Project project, String title, boolean canBeCancelled) {
+    public LauncherTask(BrowserLauncher browserLauncher, @Nullable Project project, @NotNull String title, boolean canBeCancelled) {
         super(project, title, canBeCancelled);
         this.browserLauncher = browserLauncher;
     }

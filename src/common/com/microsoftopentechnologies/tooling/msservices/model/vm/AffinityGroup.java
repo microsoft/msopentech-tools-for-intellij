@@ -15,6 +15,7 @@
  */
 package com.microsoftopentechnologies.tooling.msservices.model.vm;
 
+import com.microsoftopentechnologies.tooling.msservices.helpers.NotNull;
 import com.microsoftopentechnologies.tooling.msservices.model.ServiceTreeItem;
 
 
@@ -24,7 +25,7 @@ public class AffinityGroup implements ServiceTreeItem {
     private String label;
     private String location;
 
-    public AffinityGroup(String name, String label, String location) {
+    public AffinityGroup(@NotNull String name, @NotNull String label, @NotNull String location) {
         this.name = name;
         this.label = label;
         this.location = location;
@@ -40,17 +41,17 @@ public class AffinityGroup implements ServiceTreeItem {
         this.loading = loading;
     }
 
-
+    @NotNull
     public String getName() {
         return name;
     }
 
-
+    @NotNull
     public String getLabel() {
         return label;
     }
 
-
+    @NotNull
     public String getLocation() {
         return location;
     }

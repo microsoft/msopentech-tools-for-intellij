@@ -15,6 +15,7 @@
  */
 package com.microsoftopentechnologies.tooling.msservices.model.vm;
 
+import com.microsoftopentechnologies.tooling.msservices.helpers.NotNull;
 import com.microsoftopentechnologies.tooling.msservices.model.ServiceTreeItem;
 
 
@@ -30,7 +31,7 @@ public class CloudService implements ServiceTreeItem {
         private String virtualNetwork;
         private Set<String> availabilitySets;
 
-        private Deployment(String slot) {
+        private Deployment(@NotNull String slot) {
             this.slot = slot;
             this.name = "";
             this.virtualNetwork = "";
@@ -39,40 +40,40 @@ public class CloudService implements ServiceTreeItem {
             this.availabilitySets = new TreeSet<String>();
         }
 
-
+        @NotNull
         public String getSlot() {
             return slot;
         }
 
-
+        @NotNull
         public String getName() {
             return name;
         }
 
-        public void setName(String name) {
+        public void setName(@NotNull String name) {
             this.name = name;
         }
 
-
+        @NotNull
         public Set<String> getVirtualMachines() {
             return virtualMachines;
         }
 
-
+        @NotNull
         public Set<String> getComputeRoles() {
             return computeRoles;
         }
 
-
+        @NotNull
         public String getVirtualNetwork() {
             return virtualNetwork;
         }
 
-        public void setVirtualNetwork(String virtualNetwork) {
+        public void setVirtualNetwork(@NotNull String virtualNetwork) {
             this.virtualNetwork = virtualNetwork;
         }
 
-
+        @NotNull
         public Set<String> getAvailabilitySets() {
             return availabilitySets;
         }
@@ -86,10 +87,10 @@ public class CloudService implements ServiceTreeItem {
     private Deployment stagingDeployment;
     private String subscriptionId;
 
-    public CloudService(String name,
-                        String location,
-                        String affinityGroup,
-                        String subscriptionId) {
+    public CloudService(@NotNull String name,
+                        @NotNull String location,
+                        @NotNull String affinityGroup,
+                        @NotNull String subscriptionId) {
         this.name = name;
         this.location = location;
         this.affinityGroup = affinityGroup;
@@ -108,32 +109,32 @@ public class CloudService implements ServiceTreeItem {
         this.loading = loading;
     }
 
-
+    @NotNull
     public String getName() {
         return name;
     }
 
-
+    @NotNull
     public String getLocation() {
         return location;
     }
 
-
+    @NotNull
     public String getAffinityGroup() {
         return affinityGroup;
     }
 
-
+    @NotNull
     public Deployment getProductionDeployment() {
         return productionDeployment;
     }
 
-
+    @NotNull
     public Deployment getStagingDeployment() {
         return stagingDeployment;
     }
 
-
+    @NotNull
     public String getSubscriptionId() {
         return subscriptionId;
     }

@@ -15,6 +15,7 @@
  */
 package com.microsoftopentechnologies.tooling.msservices.model.vm;
 
+import com.microsoftopentechnologies.tooling.msservices.helpers.NotNull;
 import com.microsoftopentechnologies.tooling.msservices.model.ServiceTreeItem;
 
 
@@ -30,11 +31,11 @@ public class VirtualNetwork implements ServiceTreeItem {
     private Set<String> subnets;
     private String subscriptionId;
 
-    public VirtualNetwork(String name,
-                          String id,
-                          String location,
-                          String affinityGroup,
-                          String subscriptionId) {
+    public VirtualNetwork(@NotNull String name,
+                          @NotNull String id,
+                          @NotNull String location,
+                          @NotNull String affinityGroup,
+                          @NotNull String subscriptionId) {
         this.name = name;
         this.id = id;
         this.location = location;
@@ -53,40 +54,40 @@ public class VirtualNetwork implements ServiceTreeItem {
         this.loading = loading;
     }
 
-
+    @NotNull
     public String getName() {
         return name;
     }
 
-
+    @NotNull
     public String getId() {
         return id;
     }
 
-
+    @NotNull
     public String getLocation() {
         return location;
     }
 
-    public void setLocation(String location) {
+    public void setLocation(@NotNull String location) {
         this.location = location;
     }
 
-
+    @NotNull
     public String getAffinityGroup() {
         return affinityGroup;
     }
 
-    public void setAffinityGroup(String affinityGroup) {
+    public void setAffinityGroup(@NotNull String affinityGroup) {
         this.affinityGroup = affinityGroup;
     }
 
-
+    @NotNull
     public Set<String> getSubnets() {
         return subnets;
     }
 
-
+    @NotNull
     public String getSubscriptionId() {
         return subscriptionId;
     }

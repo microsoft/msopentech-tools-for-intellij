@@ -15,6 +15,7 @@
  */
 package com.microsoftopentechnologies.tooling.msservices.model.vm;
 
+import com.microsoftopentechnologies.tooling.msservices.helpers.NotNull;
 import com.microsoftopentechnologies.tooling.msservices.model.ServiceTreeItem;
 
 
@@ -25,7 +26,7 @@ public class VirtualMachineSize implements ServiceTreeItem {
     private int cores;
     private int memoryInMB;
 
-    public VirtualMachineSize(String name, String label, int cores, int memoryInMB) {
+    public VirtualMachineSize(@NotNull String name, @NotNull String label, int cores, int memoryInMB) {
         this.name = name;
         this.label = label;
         this.cores = cores;
@@ -42,12 +43,12 @@ public class VirtualMachineSize implements ServiceTreeItem {
         this.loading = loading;
     }
 
-
+    @NotNull
     public String getName() {
         return name;
     }
 
-
+    @NotNull
     public String getLabel() {
         return label;
     }

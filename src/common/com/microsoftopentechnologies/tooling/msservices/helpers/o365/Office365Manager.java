@@ -21,9 +21,9 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.directoryservices.Application;
 import com.microsoft.directoryservices.OAuth2PermissionGrant;
 import com.microsoft.directoryservices.ServicePrincipal;
+import com.microsoftopentechnologies.tooling.msservices.helpers.NotNull;
 import com.microsoftopentechnologies.tooling.msservices.helpers.aadauth.AuthenticationResult;
 import com.microsoftopentechnologies.tooling.msservices.helpers.graph.ServicePermissionEntry;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.text.ParseException;

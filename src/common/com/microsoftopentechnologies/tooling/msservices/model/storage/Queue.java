@@ -15,7 +15,8 @@
  */
 package com.microsoftopentechnologies.tooling.msservices.model.storage;
 
-import org.jetbrains.annotations.NotNull;
+
+import com.microsoftopentechnologies.tooling.msservices.helpers.NotNull;
 
 public class Queue implements StorageServiceTreeItem {
     private boolean loading;

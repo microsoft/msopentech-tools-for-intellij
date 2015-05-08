@@ -15,6 +15,7 @@
  */
 package com.microsoftopentechnologies.tooling.msservices.model.vm;
 
+import com.microsoftopentechnologies.tooling.msservices.helpers.NotNull;
 import com.microsoftopentechnologies.tooling.msservices.model.ServiceTreeItem;
 
 
@@ -37,11 +38,11 @@ public class VirtualMachineImage implements ServiceTreeItem {
     private String recommendedVMSize;
     private boolean showInGui;
 
-    public VirtualMachineImage(String name, String type, String category,
-                               String publisherName, Calendar publishedDate, String label,
-                               String description, String operatingSystemType, String location,
-                               String eulaUri, String privacyUri, String pricingUri,
-                               String recommendedVMSize, boolean showInGui) {
+    public VirtualMachineImage(@NotNull String name, @NotNull String type, @NotNull String category,
+                               @NotNull String publisherName, @NotNull Calendar publishedDate, @NotNull String label,
+                               @NotNull String description, @NotNull String operatingSystemType, @NotNull String location,
+                               @NotNull String eulaUri, @NotNull String privacyUri, @NotNull String pricingUri,
+                               @NotNull String recommendedVMSize, boolean showInGui) {
         this.name = name;
         this.type = type;
         this.category = category;
@@ -68,67 +69,67 @@ public class VirtualMachineImage implements ServiceTreeItem {
         this.loading = loading;
     }
 
-
+    @NotNull
     public String getName() {
         return name;
     }
 
-
+    @NotNull
     public String getType() {
         return type;
     }
 
-
+    @NotNull
     public String getCategory() {
         return category;
     }
 
-
+    @NotNull
     public String getPublisherName() {
         return publisherName;
     }
 
-
+    @NotNull
     public Calendar getPublishedDate() {
         return publishedDate;
     }
 
-
+    @NotNull
     public String getLabel() {
         return label;
     }
 
-
+    @NotNull
     public String getDescription() {
         return description;
     }
 
-
+    @NotNull
     public String getOperatingSystemType() {
         return operatingSystemType;
     }
 
-
+    @NotNull
     public String getLocation() {
         return location;
     }
 
-
+    @NotNull
     public String getEulaUri() {
         return eulaUri;
     }
 
-
+    @NotNull
     public String getPrivacyUri() {
         return privacyUri;
     }
 
-
+    @NotNull
     public String getPricingUri() {
         return pricingUri;
     }
 
-
+    @NotNull
     public String getRecommendedVMSize() {
         return recommendedVMSize;
     }

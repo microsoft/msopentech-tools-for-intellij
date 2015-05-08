@@ -15,6 +15,7 @@
  */
 package com.microsoftopentechnologies.tooling.msservices.model.storage;
 
+import com.microsoftopentechnologies.tooling.msservices.helpers.NotNull;
 import com.microsoftopentechnologies.tooling.msservices.model.ServiceTreeItem;
 
 
@@ -37,20 +38,20 @@ public class BlobFile implements ServiceTreeItem, BlobItem {
     private long size;
     private String subscriptionId;
 
-    public BlobFile(String name,
-                    String uri,
-                    String containerName,
-                    String path,
-                    String type,
-                    String cacheControlHeader,
-                    String contentEncoding,
-                    String contentLanguage,
-                    String contentType,
-                    String contentMD5Header,
-                    String eTag,
-                    Calendar lastModified,
-                    long size,
-                    String subscriptionId) {
+    public BlobFile(@NotNull String name,
+                    @NotNull String uri,
+                    @NotNull String containerName,
+                    @NotNull String path,
+                    @NotNull String type,
+                    @NotNull String cacheControlHeader,
+                    @NotNull String contentEncoding,
+                    @NotNull String contentLanguage,
+                    @NotNull String contentType,
+                    @NotNull String contentMD5Header,
+                    @NotNull String eTag,
+                    @NotNull Calendar lastModified,
+                    @NotNull long size,
+                    @NotNull String subscriptionId) {
         this.name = name;
         this.uri = uri;
         this.containerName = containerName;
@@ -77,115 +78,115 @@ public class BlobFile implements ServiceTreeItem, BlobItem {
         this.loading = loading;
     }
 
-
+    @NotNull
     public String getName() {
         return name;
     }
 
-
+    @NotNull
     public String getUri() {
         return uri;
     }
 
-    public void setUri(String uri) {
+    public void setUri(@NotNull String uri) {
         this.uri = uri;
     }
 
-
+    @NotNull
     @Override
     public String getContainerName() {
         return containerName;
     }
 
-    public void setContainerName(String containerName) {
+    public void setContainerName(@NotNull String containerName) {
         this.containerName = containerName;
     }
 
-
+    @NotNull
     @Override
     public String getPath() {
         return path;
     }
 
-    public void setPath(String path) {
+    public void setPath(@NotNull String path) {
         this.path = path;
     }
 
-
+    @NotNull
     @Override
     public BlobItemType getItemType() {
         return BlobItemType.BlobFile;
     }
 
-
+    @NotNull
     public String getType() {
         return type;
     }
 
-    public void setType(String type) {
+    public void setType(@NotNull String type) {
         this.type = type;
     }
 
-
+    @NotNull
     public String getCacheControlHeader() {
         return cacheControlHeader;
     }
 
-    public void setCacheControlHeader(String cacheControlHeader) {
+    public void setCacheControlHeader(@NotNull String cacheControlHeader) {
         this.cacheControlHeader = cacheControlHeader;
     }
 
-
+    @NotNull
     public String getContentEncoding() {
         return contentEncoding;
     }
 
-    public void setContentEncoding(String contentEncoding) {
+    public void setContentEncoding(@NotNull String contentEncoding) {
         this.contentEncoding = contentEncoding;
     }
 
-
+    @NotNull
     public String getContentLanguage() {
         return contentLanguage;
     }
 
-    public void setContentLanguage(String contentLanguage) {
+    public void setContentLanguage(@NotNull String contentLanguage) {
         this.contentLanguage = contentLanguage;
     }
 
-
+    @NotNull
     public String getContentType() {
         return contentType;
     }
 
-    public void setContentType(String contentType) {
+    public void setContentType(@NotNull String contentType) {
         this.contentType = contentType;
     }
 
-
+    @NotNull
     public String getContentMD5Header() {
         return contentMD5Header;
     }
 
-    public void setContentMD5Header(String contentMD5Header) {
+    public void setContentMD5Header(@NotNull String contentMD5Header) {
         this.contentMD5Header = contentMD5Header;
     }
 
-
+    @NotNull
     public String getETag() {
         return eTag;
     }
 
-    public void setETag(String eTag) {
+    public void setETag(@NotNull String eTag) {
         this.eTag = eTag;
     }
 
-
+    @NotNull
     public Calendar getLastModified() {
         return lastModified;
     }
 
-    public void setLastModified(Calendar lastModified) {
+    public void setLastModified(@NotNull Calendar lastModified) {
         this.lastModified = lastModified;
     }
 
@@ -197,7 +198,7 @@ public class BlobFile implements ServiceTreeItem, BlobItem {
         this.size = size;
     }
 
-
+    @NotNull
     public String getSubscriptionId() {
         return subscriptionId;
     }

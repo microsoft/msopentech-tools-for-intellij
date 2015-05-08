@@ -15,6 +15,7 @@
  */
 package com.microsoftopentechnologies.tooling.msservices.model.vm;
 
+import com.microsoftopentechnologies.tooling.msservices.helpers.NotNull;
 import com.microsoftopentechnologies.tooling.msservices.model.ServiceTreeItem;
 
 
@@ -23,7 +24,7 @@ public class Location implements ServiceTreeItem {
     private String name;
     private String displayName;
 
-    public Location(String name, String displayName) {
+    public Location(@NotNull String name, @NotNull String displayName) {
         this.name = name;
         this.displayName = displayName;
     }
@@ -38,12 +39,12 @@ public class Location implements ServiceTreeItem {
         this.loading = loading;
     }
 
-
+    @NotNull
     public String getName() {
         return name;
     }
 
-
+    @NotNull
     public String getDisplayName() {
         return displayName;
     }

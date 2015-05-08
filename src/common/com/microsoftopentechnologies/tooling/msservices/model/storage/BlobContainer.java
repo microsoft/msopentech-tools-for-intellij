@@ -15,6 +15,8 @@
  */
 package com.microsoftopentechnologies.tooling.msservices.model.storage;
 
+import com.microsoftopentechnologies.tooling.msservices.helpers.NotNull;
+
 import java.util.Calendar;
 
 public class BlobContainer implements StorageServiceTreeItem {
@@ -26,12 +28,12 @@ public class BlobContainer implements StorageServiceTreeItem {
     private String publicReadAccessType;
     private String subscriptionId;
 
-    public BlobContainer(String name,
-                         String uri,
-                         String eTag,
-                         Calendar lastModified,
-                         String publicReadAccessType,
-                         String subscriptionId) {
+    public BlobContainer(@NotNull String name,
+                         @NotNull String uri,
+                         @NotNull String eTag,
+                         @NotNull Calendar lastModified,
+                         @NotNull String publicReadAccessType,
+                         @NotNull String subscriptionId) {
         this.name = name;
         this.uri = uri;
         this.eTag = eTag;
@@ -50,47 +52,48 @@ public class BlobContainer implements StorageServiceTreeItem {
         this.loading = loading;
     }
 
-
+    @NotNull
     public String getName() {
         return name;
     }
 
+    @NotNull
     public String getUri() {
         return uri;
     }
 
-    public void setUri(String uri) {
+    public void setUri(@NotNull String uri) {
         this.uri = uri;
     }
 
-
+    @NotNull
     public String getETag() {
         return eTag;
     }
 
-    public void setETag(String eTag) {
+    public void setETag(@NotNull String eTag) {
         this.eTag = eTag;
     }
 
-
+    @NotNull
     public Calendar getLastModified() {
         return lastModified;
     }
 
-    public void setLastModified(Calendar lastModified) {
+    public void setLastModified(@NotNull Calendar lastModified) {
         this.lastModified = lastModified;
     }
 
-
+    @NotNull
     public String getPublicReadAccessType() {
         return publicReadAccessType;
     }
 
-    public void setPublicReadAccessType(String publicReadAccessType) {
+    public void setPublicReadAccessType(@NotNull String publicReadAccessType) {
         this.publicReadAccessType = publicReadAccessType;
     }
 
-
+    @NotNull
     public String getSubscriptionId() {
         return subscriptionId;
     }

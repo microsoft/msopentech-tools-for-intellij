@@ -15,6 +15,7 @@
  */
 package com.microsoftopentechnologies.tooling.msservices.model.storage;
 
+import com.microsoftopentechnologies.tooling.msservices.helpers.NotNull;
 import com.microsoftopentechnologies.tooling.msservices.model.ServiceTreeItem;
 
 
@@ -26,11 +27,11 @@ public class BlobDirectory implements ServiceTreeItem, BlobItem {
     private String path;
     private String subscriptionId;
 
-    public BlobDirectory(String name,
-                         String uri,
-                         String containerName,
-                         String path,
-                         String subscriptionId) {
+    public BlobDirectory(@NotNull String name,
+                         @NotNull String uri,
+                         @NotNull String containerName,
+                         @NotNull String path,
+                         @NotNull String subscriptionId) {
         this.name = name;
         this.uri = uri;
         this.containerName = containerName;
@@ -48,47 +49,47 @@ public class BlobDirectory implements ServiceTreeItem, BlobItem {
         this.loading = loading;
     }
 
-
+    @NotNull
     public String getName() {
         return name;
     }
 
-
+    @NotNull
     public String getUri() {
         return uri;
     }
 
-    public void setUri(String uri) {
+    public void setUri(@NotNull String uri) {
         this.uri = uri;
     }
 
-
+    @NotNull
     @Override
     public String getContainerName() {
         return containerName;
     }
 
-    public void setContainerName(String containerName) {
+    public void setContainerName(@NotNull String containerName) {
         this.containerName = containerName;
     }
 
-
+    @NotNull
     @Override
     public String getPath() {
         return path;
     }
 
-    public void setPath(String path) {
+    public void setPath(@NotNull String path) {
         this.path = path;
     }
 
-
+    @NotNull
     @Override
     public BlobItemType getItemType() {
         return BlobItemType.BlobDirectory;
     }
 
-
+    @NotNull
     public String getSubscriptionId() {
         return subscriptionId;
     }

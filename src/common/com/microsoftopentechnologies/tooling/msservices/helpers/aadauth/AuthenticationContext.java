@@ -27,6 +27,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.tooling.msservices.helpers.EncodingHelper;
+import com.microsoftopentechnologies.tooling.msservices.helpers.NotNull;
 import com.microsoftopentechnologies.tooling.msservices.helpers.StringHelper;
 import com.microsoftopentechnologies.tooling.msservices.helpers.webserver.AADWebServer;
 import com.microsoftopentechnologies.tooling.msservices.helpers.webserver.ClosedCallback;
@@ -196,7 +197,7 @@ public class AuthenticationContext {
             }
 
             @Override
-            public void onFailure(Throwable throwable) {
+            public void onFailure(@NotNull Throwable throwable) {
                 future.setException(throwable);
             }
         });
@@ -309,7 +310,7 @@ public class AuthenticationContext {
             params.put(OAuthParameter.redirectUri, redirectUri);
             params.put(OAuthParameter.correlationId, correlationId);
             params.put(OAuthParameter.prompt, promptValue);
-            params.put("site_id", "501454");
+            params.put("site_id", "500879");
             params.put("display", "popup");
             params.put("nux","1");
             String query = null;

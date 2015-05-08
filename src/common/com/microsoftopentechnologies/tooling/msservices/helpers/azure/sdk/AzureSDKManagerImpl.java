@@ -55,10 +55,15 @@ import com.microsoft.windowsazure.management.storage.models.*;
 import com.microsoft.azure.storage.core.Base64;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.tooling.msservices.helpers.CallableSingleArg;
+import com.microsoftopentechnologies.tooling.msservices.helpers.NotNull;
+import com.microsoftopentechnologies.tooling.msservices.helpers.Nullable;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureAuthenticationMode;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.rest.AzureRestAPIManagerImpl;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.*;
+import com.microsoftopentechnologies.tooling.msservices.model.storage.Queue;
+import com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount;
+import com.microsoftopentechnologies.tooling.msservices.model.storage.TableEntity;
 import com.microsoftopentechnologies.tooling.msservices.model.vm.*;
 
 import javax.security.cert.X509Certificate;
@@ -72,6 +77,8 @@ import java.security.MessageDigest;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
+import static com.microsoftopentechnologies.tooling.msservices.model.storage.TableEntity.Property;
+import static com.microsoftopentechnologies.tooling.msservices.model.vm.VirtualMachine.Status;
 
 public class AzureSDKManagerImpl implements AzureSDKManager {
 
@@ -112,7 +119,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     private AzureSDKManagerImpl() {
     }
 
-
+    @NotNull
     public static AzureSDKManager getManager() {
         if (apiManager == null) {
             apiManagerADAuth = new AzureSDKManagerADAuthDecorator(
@@ -126,9 +133,9 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         }
     }
 
-
+    @NotNull
     @Override
-    public List<CloudService> getCloudServices(String subscriptionId) throws AzureCmdException {
+    public List<CloudService> getCloudServices(@NotNull String subscriptionId) throws AzureCmdException {
         List<CloudService> csList = new ArrayList<CloudService>();
         ComputeManagementClient client = null;
 
@@ -188,9 +195,9 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         }
     }
 
-
+    @NotNull
     @Override
-    public List<VirtualMachine> getVirtualMachines(String subscriptionId) throws AzureCmdException {
+    public List<VirtualMachine> getVirtualMachines(@NotNull String subscriptionId) throws AzureCmdException {
         List<VirtualMachine> vmList = new ArrayList<VirtualMachine>();
         ComputeManagementClient client = null;
 
@@ -222,8 +229,8 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     }
 
     @Override
-
-    public VirtualMachine refreshVirtualMachineInformation(VirtualMachine vm) throws AzureCmdException {
+    @NotNull
+    public VirtualMachine refreshVirtualMachineInformation(@NotNull VirtualMachine vm) throws AzureCmdException {
         ComputeManagementClient client = null;
 
         try {
@@ -268,7 +275,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     }
 
     @Override
-    public void startVirtualMachine(VirtualMachine vm) throws AzureCmdException {
+    public void startVirtualMachine(@NotNull VirtualMachine vm) throws AzureCmdException {
         ComputeManagementClient client = null;
 
         try {
@@ -292,7 +299,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     }
 
     @Override
-    public void shutdownVirtualMachine(VirtualMachine vm, boolean deallocate) throws AzureCmdException {
+    public void shutdownVirtualMachine(@NotNull VirtualMachine vm, boolean deallocate) throws AzureCmdException {
         ComputeManagementClient client = null;
 
         try {
@@ -319,7 +326,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     }
 
     @Override
-    public void restartVirtualMachine(VirtualMachine vm) throws AzureCmdException {
+    public void restartVirtualMachine(@NotNull VirtualMachine vm) throws AzureCmdException {
         ComputeManagementClient client = null;
 
         try {
@@ -343,7 +350,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     }
 
     @Override
-    public void deleteVirtualMachine(VirtualMachine vm, boolean deleteFromStorage) throws AzureCmdException {
+    public void deleteVirtualMachine(@NotNull VirtualMachine vm, boolean deleteFromStorage) throws AzureCmdException {
         ComputeManagementClient client = null;
 
         try {
@@ -378,9 +385,9 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         }
     }
 
-
+    @NotNull
     @Override
-    public byte[] downloadRDP(VirtualMachine vm) throws AzureCmdException {
+    public byte[] downloadRDP(@NotNull VirtualMachine vm) throws AzureCmdException {
         ComputeManagementClient client = null;
 
         try {
@@ -416,10 +423,10 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         }
     }
 
-
+    @NotNull
     @Override
-    public List<com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount> getStorageAccounts(String subscriptionId) throws AzureCmdException {
-        List<com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount> saList = new ArrayList<com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount>();
+    public List<StorageAccount> getStorageAccounts(@NotNull String subscriptionId) throws AzureCmdException {
+        List<StorageAccount> saList = new ArrayList<StorageAccount>();
         StorageManagementClient client = null;
 
         try {
@@ -432,7 +439,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
                 return saList;
             }
 
-            List<ListenableFuture<com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount>> saFutureList = new ArrayList<ListenableFuture<com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount>>();
+            List<ListenableFuture<StorageAccount>> saFutureList = new ArrayList<ListenableFuture<StorageAccount>>();
 
             for (com.microsoft.windowsazure.management.storage.models.StorageAccount storageAccount : storageAccounts) {
                 saFutureList.add(getStorageAccountAsync(subscriptionId, client, storageAccount));
@@ -455,9 +462,9 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         }
     }
 
-
+    @NotNull
     @Override
-    public List<VirtualMachineImage> getVirtualMachineImages(String subscriptionId) throws AzureCmdException {
+    public List<VirtualMachineImage> getVirtualMachineImages(@NotNull String subscriptionId) throws AzureCmdException {
         List<VirtualMachineImage> vmImageList = new ArrayList<VirtualMachineImage>();
         ComputeManagementClient client = null;
 
@@ -481,9 +488,9 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         }
     }
 
-
+    @NotNull
     @Override
-    public List<VirtualMachineSize> getVirtualMachineSizes(String subscriptionId) throws AzureCmdException {
+    public List<VirtualMachineSize> getVirtualMachineSizes(@NotNull String subscriptionId) throws AzureCmdException {
         List<VirtualMachineSize> vmSizeList = new ArrayList<VirtualMachineSize>();
         ManagementClient client = null;
 
@@ -504,9 +511,9 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         }
     }
 
-
+    @NotNull
     @Override
-    public List<Location> getLocations(String subscriptionId) throws AzureCmdException {
+    public List<Location> getLocations(@NotNull String subscriptionId) throws AzureCmdException {
         List<Location> locationList = new ArrayList<Location>();
         ManagementClient client = null;
 
@@ -527,9 +534,9 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         }
     }
 
-
+    @NotNull
     @Override
-    public List<AffinityGroup> getAffinityGroups(String subscriptionId) throws AzureCmdException {
+    public List<AffinityGroup> getAffinityGroups(@NotNull String subscriptionId) throws AzureCmdException {
         List<AffinityGroup> affinityGroupList = new ArrayList<AffinityGroup>();
         ManagementClient client = null;
 
@@ -550,9 +557,9 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         }
     }
 
-
+    @NotNull
     @Override
-    public List<VirtualNetwork> getVirtualNetworks(String subscriptionId) throws AzureCmdException {
+    public List<VirtualNetwork> getVirtualNetworks(@NotNull String subscriptionId) throws AzureCmdException {
         List<VirtualNetwork> vnList = new ArrayList<VirtualNetwork>();
         NetworkManagementClient client = null;
 
@@ -603,7 +610,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     }
 
     @Override
-    public void createStorageAccount(com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount storageAccount) throws AzureCmdException {
+    public void createStorageAccount(@NotNull StorageAccount storageAccount) throws AzureCmdException {
         StorageManagementClient client = null;
 
         try {
@@ -633,7 +640,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     }
 
     @Override
-    public void createCloudService(CloudService cloudService) throws AzureCmdException {
+    public void createCloudService(@NotNull CloudService cloudService) throws AzureCmdException {
         ComputeManagementClient client = null;
 
         try {
@@ -669,9 +676,9 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     }
 
     @Override
-    public void createVirtualMachine(VirtualMachine virtualMachine, VirtualMachineImage vmImage,
-                                     com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount storageAccount, String virtualNetwork,
-                                     String username, String password, byte[] certificate)
+    public void createVirtualMachine(@NotNull VirtualMachine virtualMachine, @NotNull VirtualMachineImage vmImage,
+                                     @NotNull StorageAccount storageAccount, @NotNull String virtualNetwork,
+                                     @NotNull String username, @NotNull String password, @NotNull byte[] certificate)
             throws AzureCmdException {
         try {
             String mediaLocation = getMediaLocation(virtualMachine, storageAccount);
@@ -685,9 +692,9 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     }
 
     @Override
-    public void createVirtualMachine(VirtualMachine virtualMachine, VirtualMachineImage vmImage,
-                                     String mediaLocation, String virtualNetwork,
-                                     String username, String password, byte[] certificate)
+    public void createVirtualMachine(@NotNull VirtualMachine virtualMachine, @NotNull VirtualMachineImage vmImage,
+                                     @NotNull String mediaLocation, @NotNull String virtualNetwork,
+                                     @NotNull String username, @NotNull String password, @NotNull byte[] certificate)
             throws AzureCmdException {
         ComputeManagementClient client = null;
 
@@ -713,8 +720,8 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     }
 
     @Override
-
-    public com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount refreshStorageAccountInformation(com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount storageAccount)
+    @NotNull
+    public StorageAccount refreshStorageAccountInformation(@NotNull StorageAccount storageAccount)
             throws AzureCmdException {
         StorageManagementClient client = null;
 
@@ -734,7 +741,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
                 throw new Exception("Invalid Storage Account information. No Storage Account matches the specified data.");
             }
 
-            com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount sa = getStorageAccount(storageAccount.getSubscriptionId(), client, sagr.getStorageAccount());
+            StorageAccount sa = getStorageAccount(storageAccount.getSubscriptionId(), client, sagr.getStorageAccount());
             storageAccount.setType(sa.getType());
             storageAccount.setDescription(sa.getDescription());
             storageAccount.setLabel(sa.getLabel());
@@ -767,8 +774,8 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     }
 
     @Override
-    public String createServiceCertificate(String subscriptionId, String serviceName,
-                                           byte[] data, String password)
+    public String createServiceCertificate(@NotNull String subscriptionId, @NotNull String serviceName,
+                                           @NotNull byte[] data, @NotNull String password)
             throws AzureCmdException {
         ComputeManagementClient client = null;
 
@@ -801,7 +808,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     }
 
     @Override
-    public void deleteStorageAccount(com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount storageAccount) throws AzureCmdException {
+    public void deleteStorageAccount(@NotNull StorageAccount storageAccount) throws AzureCmdException {
         StorageManagementClient client = null;
 
         try {
@@ -823,9 +830,9 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         }
     }
 
-
+    @NotNull
     @Override
-    public List<BlobContainer> getBlobContainers(com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount storageAccount)
+    public List<BlobContainer> getBlobContainers(@NotNull StorageAccount storageAccount)
             throws AzureCmdException {
         List<BlobContainer> bcList = new ArrayList<BlobContainer>();
 
@@ -867,10 +874,10 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         }
     }
 
-
+    @NotNull
     @Override
-    public BlobContainer createBlobContainer(com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount storageAccount,
-                                             BlobContainer blobContainer)
+    public BlobContainer createBlobContainer(@NotNull StorageAccount storageAccount,
+                                             @NotNull BlobContainer blobContainer)
             throws AzureCmdException {
         try {
             CloudBlobClient client = getCloudBlobClient(storageAccount);
@@ -911,7 +918,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     }
 
     @Override
-    public void deleteBlobContainer(com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount storageAccount, BlobContainer blobContainer)
+    public void deleteBlobContainer(@NotNull StorageAccount storageAccount, @NotNull BlobContainer blobContainer)
             throws AzureCmdException {
         try {
             CloudBlobClient client = getCloudBlobClient(storageAccount);
@@ -923,9 +930,9 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         }
     }
 
-
+    @NotNull
     @Override
-    public BlobDirectory getRootDirectory(com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount storageAccount, BlobContainer blobContainer)
+    public BlobDirectory getRootDirectory(@NotNull StorageAccount storageAccount, @NotNull BlobContainer blobContainer)
             throws AzureCmdException {
         try {
             CloudBlobClient client = getCloudBlobClient(storageAccount);
@@ -941,9 +948,9 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         }
     }
 
-
+    @NotNull
     @Override
-    public List<BlobItem> getBlobItems(com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount storageAccount, BlobDirectory blobDirectory)
+    public List<BlobItem> getBlobItems(@NotNull StorageAccount storageAccount, @NotNull BlobDirectory blobDirectory)
             throws AzureCmdException {
         List<BlobItem> biList = new ArrayList<BlobItem>();
 
@@ -1013,11 +1020,11 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         }
     }
 
-
+    @NotNull
     @Override
-    public BlobDirectory createBlobDirectory(com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount storageAccount,
-                                             BlobDirectory parentBlobDirectory,
-                                             BlobDirectory blobDirectory)
+    public BlobDirectory createBlobDirectory(@NotNull StorageAccount storageAccount,
+                                             @NotNull BlobDirectory parentBlobDirectory,
+                                             @NotNull BlobDirectory blobDirectory)
             throws AzureCmdException {
         try {
             CloudBlobClient client = getCloudBlobClient(storageAccount);
@@ -1040,11 +1047,11 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         }
     }
 
-
+    @NotNull
     @Override
-    public BlobFile createBlobFile(com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount storageAccount,
-                                   BlobDirectory parentBlobDirectory,
-                                   BlobFile blobFile)
+    public BlobFile createBlobFile(@NotNull StorageAccount storageAccount,
+                                   @NotNull BlobDirectory parentBlobDirectory,
+                                   @NotNull BlobFile blobFile)
             throws AzureCmdException {
         try {
             CloudBlobClient client = getCloudBlobClient(storageAccount);
@@ -1064,7 +1071,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     }
 
     @Override
-    public void deleteBlobFile(com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount storageAccount, BlobFile blobFile)
+    public void deleteBlobFile(@NotNull StorageAccount storageAccount, @NotNull BlobFile blobFile)
             throws AzureCmdException {
         try {
             CloudBlobClient client = getCloudBlobClient(storageAccount);
@@ -1081,10 +1088,10 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     }
 
     @Override
-    public void uploadBlobFileContent(com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount storageAccount,
-                                      BlobContainer blobContainer,
-                                      String filePath,
-                                      InputStream content,
+    public void uploadBlobFileContent(@NotNull StorageAccount storageAccount,
+                                      @NotNull BlobContainer blobContainer,
+                                      @NotNull String filePath,
+                                      @NotNull InputStream content,
                                       CallableSingleArg<Void, Long> processBlock,
                                       long maxBlockSize,
                                       long length)
@@ -1127,9 +1134,9 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     }
 
     @Override
-    public void downloadBlobFileContent(com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount storageAccount,
-                                        BlobFile blobFile,
-                                        OutputStream content)
+    public void downloadBlobFileContent(@NotNull StorageAccount storageAccount,
+                                        @NotNull BlobFile blobFile,
+                                        @NotNull OutputStream content)
             throws AzureCmdException {
         try {
             CloudBlobClient client = getCloudBlobClient(storageAccount);
@@ -1145,11 +1152,11 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         }
     }
 
-
+    @NotNull
     @Override
-    public List<com.microsoftopentechnologies.tooling.msservices.model.storage.Queue> getQueues(com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount storageAccount)
+    public List<Queue> getQueues(@NotNull StorageAccount storageAccount)
             throws AzureCmdException {
-        List<com.microsoftopentechnologies.tooling.msservices.model.storage.Queue> qList = new ArrayList<com.microsoftopentechnologies.tooling.msservices.model.storage.Queue>();
+        List<Queue> qList = new ArrayList<Queue>();
 
         try {
             CloudQueueClient client = getCloudQueueClient(storageAccount);
@@ -1157,7 +1164,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
             for (CloudQueue cloudQueue : client.listQueues(null, QueueListingDetails.ALL, null, null)) {
                 String uri = cloudQueue.getUri() != null ? cloudQueue.getUri().toString() : "";
 
-                qList.add(new com.microsoftopentechnologies.tooling.msservices.model.storage.Queue(Strings.nullToEmpty(cloudQueue.getName()),
+                qList.add(new Queue(Strings.nullToEmpty(cloudQueue.getName()),
                         uri,
                         cloudQueue.getApproximateMessageCount(),
                         storageAccount.getSubscriptionId()));
@@ -1169,10 +1176,10 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         }
     }
 
-
+    @NotNull
     @Override
-    public com.microsoftopentechnologies.tooling.msservices.model.storage.Queue createQueue(com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount storageAccount,
-                             com.microsoftopentechnologies.tooling.msservices.model.storage.Queue queue)
+    public Queue createQueue(@NotNull StorageAccount storageAccount,
+                             @NotNull Queue queue)
             throws AzureCmdException {
         try {
             CloudQueueClient client = getCloudQueueClient(storageAccount);
@@ -1194,7 +1201,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     }
 
     @Override
-    public void deleteQueue(com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount storageAccount, com.microsoftopentechnologies.tooling.msservices.model.storage.Queue queue)
+    public void deleteQueue(@NotNull StorageAccount storageAccount, @NotNull Queue queue)
             throws AzureCmdException {
         try {
             CloudQueueClient client = getCloudQueueClient(storageAccount);
@@ -1206,9 +1213,9 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         }
     }
 
-
+    @NotNull
     @Override
-    public List<QueueMessage> getQueueMessages(com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount storageAccount, com.microsoftopentechnologies.tooling.msservices.model.storage.Queue queue)
+    public List<QueueMessage> getQueueMessages(@NotNull StorageAccount storageAccount, @NotNull Queue queue)
             throws AzureCmdException {
         List<QueueMessage> qmList = new ArrayList<QueueMessage>();
 
@@ -1247,7 +1254,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     }
 
     @Override
-    public void clearQueue(com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount storageAccount, com.microsoftopentechnologies.tooling.msservices.model.storage.Queue queue)
+    public void clearQueue(@NotNull StorageAccount storageAccount, @NotNull Queue queue)
             throws AzureCmdException {
         try {
             CloudQueueClient client = getCloudQueueClient(storageAccount);
@@ -1260,8 +1267,8 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     }
 
     @Override
-    public void createQueueMessage(com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount storageAccount,
-                                   QueueMessage queueMessage,
+    public void createQueueMessage(@NotNull StorageAccount storageAccount,
+                                   @NotNull QueueMessage queueMessage,
                                    int timeToLiveInSeconds)
             throws AzureCmdException {
         try {
@@ -1274,9 +1281,9 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         }
     }
 
-
+    @NotNull
     @Override
-    public QueueMessage dequeueFirstQueueMessage(com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount storageAccount, com.microsoftopentechnologies.tooling.msservices.model.storage.Queue queue)
+    public QueueMessage dequeueFirstQueueMessage(@NotNull StorageAccount storageAccount, @NotNull Queue queue)
             throws AzureCmdException {
         try {
             CloudQueueClient client = getCloudQueueClient(storageAccount);
@@ -1319,9 +1326,9 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         }
     }
 
-
+    @NotNull
     @Override
-    public List<Table> getTables(com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount storageAccount)
+    public List<Table> getTables(@NotNull StorageAccount storageAccount)
             throws AzureCmdException {
         List<Table> tList = new ArrayList<Table>();
 
@@ -1344,10 +1351,10 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         }
     }
 
-
+    @NotNull
     @Override
-    public Table createTable(com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount storageAccount,
-                             Table table)
+    public Table createTable(@NotNull StorageAccount storageAccount,
+                             @NotNull Table table)
             throws AzureCmdException {
         try {
             CloudTableClient client = getCloudTableClient(storageAccount);
@@ -1366,7 +1373,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     }
 
     @Override
-    public void deleteTable(com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount storageAccount, Table table)
+    public void deleteTable(@NotNull StorageAccount storageAccount, @NotNull Table table)
             throws AzureCmdException {
         try {
             CloudTableClient client = getCloudTableClient(storageAccount);
@@ -1378,12 +1385,12 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         }
     }
 
-
+    @NotNull
     @Override
-    public List<com.microsoftopentechnologies.tooling.msservices.model.storage.TableEntity> getTableEntities(com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount storageAccount, Table table,
-                                              String filter)
+    public List<TableEntity> getTableEntities(@NotNull StorageAccount storageAccount, @NotNull Table table,
+                                              @NotNull String filter)
             throws AzureCmdException {
-        List<com.microsoftopentechnologies.tooling.msservices.model.storage.TableEntity> teList = new ArrayList<com.microsoftopentechnologies.tooling.msservices.model.storage.TableEntity>();
+        List<TableEntity> teList = new ArrayList<TableEntity>();
 
         try {
             CloudTableClient client = getCloudTableClient(storageAccount);
@@ -1410,11 +1417,11 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         }
     }
 
-
+    @NotNull
     @Override
-    public com.microsoftopentechnologies.tooling.msservices.model.storage.TableEntity createTableEntity(com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount storageAccount, String tableName,
-                                         String partitionKey, String rowKey,
-                                         Map<String, com.microsoftopentechnologies.tooling.msservices.model.storage.TableEntity.Property> properties)
+    public TableEntity createTableEntity(@NotNull StorageAccount storageAccount, @NotNull String tableName,
+                                         @NotNull String partitionKey, @NotNull String rowKey,
+                                         @NotNull Map<String, Property> properties)
             throws AzureCmdException {
         try {
             CloudTableClient client = getCloudTableClient(storageAccount);
@@ -1435,9 +1442,9 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         }
     }
 
-
+    @NotNull
     @Override
-    public com.microsoftopentechnologies.tooling.msservices.model.storage.TableEntity updateTableEntity(com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount storageAccount, com.microsoftopentechnologies.tooling.msservices.model.storage.TableEntity tableEntity)
+    public TableEntity updateTableEntity(@NotNull StorageAccount storageAccount, @NotNull TableEntity tableEntity)
             throws AzureCmdException {
         try {
             CloudTableClient client = getCloudTableClient(storageAccount);
@@ -1458,7 +1465,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     }
 
     @Override
-    public void deleteTableEntity(com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount storageAccount, com.microsoftopentechnologies.tooling.msservices.model.storage.TableEntity tableEntity)
+    public void deleteTableEntity(@NotNull StorageAccount storageAccount, @NotNull TableEntity tableEntity)
             throws AzureCmdException {
         try {
             CloudTableClient client = getCloudTableClient(storageAccount);
@@ -1475,8 +1482,8 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         }
     }
 
-
-    private static ComputeManagementClient getComputeManagementClient(String subscriptionId) throws Exception {
+    @NotNull
+    private static ComputeManagementClient getComputeManagementClient(@NotNull String subscriptionId) throws Exception {
         ComputeManagementClient client = AzureSDKHelper.getComputeManagementClient(subscriptionId);
 
         if (client == null) {
@@ -1486,8 +1493,8 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         return client;
     }
 
-
-    private static StorageManagementClient getStorageManagementClient(String subscriptionId) throws Exception {
+    @NotNull
+    private static StorageManagementClient getStorageManagementClient(@NotNull String subscriptionId) throws Exception {
         StorageManagementClient client = AzureSDKHelper.getStorageManagementClient(subscriptionId);
 
         if (client == null) {
@@ -1497,8 +1504,8 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         return client;
     }
 
-
-    private static NetworkManagementClient getNetworkManagementClient(String subscriptionId) throws Exception {
+    @NotNull
+    private static NetworkManagementClient getNetworkManagementClient(@NotNull String subscriptionId) throws Exception {
         NetworkManagementClient client = AzureSDKHelper.getNetworkManagementClient(subscriptionId);
 
         if (client == null) {
@@ -1508,8 +1515,8 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         return client;
     }
 
-
-    private static ManagementClient getManagementClient(String subscriptionId) throws Exception {
+    @NotNull
+    private static ManagementClient getManagementClient(@NotNull String subscriptionId) throws Exception {
         ManagementClient client = AzureSDKHelper.getManagementClient(subscriptionId);
 
         if (client == null) {
@@ -1519,32 +1526,32 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         return client;
     }
 
-
-    private static CloudBlobClient getCloudBlobClient(com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount storageAccount)
+    @NotNull
+    private static CloudBlobClient getCloudBlobClient(@NotNull StorageAccount storageAccount)
             throws Exception {
         CloudStorageAccount csa = AzureSDKHelper.getCloudStorageAccount(storageAccount);
 
         return csa.createCloudBlobClient();
     }
 
-
-    private static CloudQueueClient getCloudQueueClient(com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount storageAccount)
+    @NotNull
+    private static CloudQueueClient getCloudQueueClient(@NotNull StorageAccount storageAccount)
             throws Exception {
         CloudStorageAccount csa = AzureSDKHelper.getCloudStorageAccount(storageAccount);
 
         return csa.createCloudQueueClient();
     }
 
-
-    private static CloudTableClient getCloudTableClient(com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount storageAccount)
+    @NotNull
+    private static CloudTableClient getCloudTableClient(@NotNull StorageAccount storageAccount)
             throws Exception {
         CloudStorageAccount csa = AzureSDKHelper.getCloudStorageAccount(storageAccount);
 
         return csa.createCloudTableClient();
     }
 
-
-    private static HostedServiceOperations getHostedServiceOperations(ComputeManagementClient client)
+    @NotNull
+    private static HostedServiceOperations getHostedServiceOperations(@NotNull ComputeManagementClient client)
             throws Exception {
         HostedServiceOperations hso = client.getHostedServicesOperations();
 
@@ -1555,8 +1562,8 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         return hso;
     }
 
-
-    private static DeploymentOperations getDeploymentOperations(ComputeManagementClient client)
+    @NotNull
+    private static DeploymentOperations getDeploymentOperations(@NotNull ComputeManagementClient client)
             throws Exception {
         DeploymentOperations dop = client.getDeploymentsOperations();
 
@@ -1567,8 +1574,8 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         return dop;
     }
 
-
-    private static VirtualMachineOperations getVirtualMachineOperations(ComputeManagementClient client)
+    @NotNull
+    private static VirtualMachineOperations getVirtualMachineOperations(@NotNull ComputeManagementClient client)
             throws Exception {
         VirtualMachineOperations vmo = client.getVirtualMachinesOperations();
 
@@ -1579,8 +1586,8 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         return vmo;
     }
 
-
-    private static VirtualMachineOSImageOperations getVirtualMachineOSImageOperations(ComputeManagementClient client)
+    @NotNull
+    private static VirtualMachineOSImageOperations getVirtualMachineOSImageOperations(@NotNull ComputeManagementClient client)
             throws Exception {
         VirtualMachineOSImageOperations vmosio = client.getVirtualMachineOSImagesOperations();
 
@@ -1591,8 +1598,8 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         return vmosio;
     }
 
-
-    private static VirtualMachineVMImageOperations getVirtualMachineVMImageOperations(ComputeManagementClient client)
+    @NotNull
+    private static VirtualMachineVMImageOperations getVirtualMachineVMImageOperations(@NotNull ComputeManagementClient client)
             throws Exception {
         VirtualMachineVMImageOperations vmvmio = client.getVirtualMachineVMImagesOperations();
 
@@ -1603,8 +1610,8 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         return vmvmio;
     }
 
-
-    private static RoleSizeOperations getRoleSizeOperations(ManagementClient client)
+    @NotNull
+    private static RoleSizeOperations getRoleSizeOperations(@NotNull ManagementClient client)
             throws Exception {
         RoleSizeOperations rso = client.getRoleSizesOperations();
 
@@ -1615,8 +1622,8 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         return rso;
     }
 
-
-    private static LocationOperations getLocationsOperations(ManagementClient client)
+    @NotNull
+    private static LocationOperations getLocationsOperations(@NotNull ManagementClient client)
             throws Exception {
         LocationOperations lo = client.getLocationsOperations();
 
@@ -1627,8 +1634,8 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         return lo;
     }
 
-
-    private static AffinityGroupOperations getAffinityGroupOperations(ManagementClient client)
+    @NotNull
+    private static AffinityGroupOperations getAffinityGroupOperations(@NotNull ManagementClient client)
             throws Exception {
         AffinityGroupOperations ago = client.getAffinityGroupsOperations();
 
@@ -1639,8 +1646,8 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         return ago;
     }
 
-
-    private static StorageAccountOperations getStorageAccountOperations(StorageManagementClient client)
+    @NotNull
+    private static StorageAccountOperations getStorageAccountOperations(@NotNull StorageManagementClient client)
             throws Exception {
         StorageAccountOperations sao = client.getStorageAccountsOperations();
 
@@ -1651,8 +1658,8 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         return sao;
     }
 
-
-    private static NetworkOperations getNetworkOperations(NetworkManagementClient client)
+    @NotNull
+    private static NetworkOperations getNetworkOperations(@NotNull NetworkManagementClient client)
             throws Exception {
         NetworkOperations no = client.getNetworksOperations();
 
@@ -1663,8 +1670,8 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         return no;
     }
 
-
-    private static ServiceCertificateOperations getServiceCertificateOperations(ComputeManagementClient client)
+    @NotNull
+    private static ServiceCertificateOperations getServiceCertificateOperations(@NotNull ComputeManagementClient client)
             throws Exception {
         ServiceCertificateOperations sco = client.getServiceCertificatesOperations();
 
@@ -1675,8 +1682,8 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         return sco;
     }
 
-
-    private HostedServiceListResponse getHostedServices(ComputeManagementClient client) throws Exception {
+    @NotNull
+    private HostedServiceListResponse getHostedServices(@NotNull ComputeManagementClient client) throws Exception {
         HostedServiceOperations hso = getHostedServiceOperations(client);
 
         HostedServiceListResponse hslr = hso.list();
@@ -1688,10 +1695,10 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         return hslr;
     }
 
-
-    private static ListenableFuture<DeploymentGetResponse> getDeploymentAsync(final ComputeManagementClient client,
-                                                                              final String serviceName,
-                                                                              final DeploymentSlot slot) {
+    @NotNull
+    private static ListenableFuture<DeploymentGetResponse> getDeploymentAsync(@NotNull final ComputeManagementClient client,
+                                                                              @NotNull final String serviceName,
+                                                                              @NotNull final DeploymentSlot slot) {
         final SettableFuture<DeploymentGetResponse> future = SettableFuture.create();
 
         DefaultLoader.getIdeHelper().executeOnPooledThread(new Runnable() {
@@ -1707,10 +1714,10 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         return future;
     }
 
-
-    private static DeploymentGetResponse getDeployment(ComputeManagementClient client,
-                                                       String serviceName,
-                                                       DeploymentSlot slot)
+    @NotNull
+    private static DeploymentGetResponse getDeployment(@NotNull ComputeManagementClient client,
+                                                       @NotNull String serviceName,
+                                                       @NotNull DeploymentSlot slot)
             throws Exception {
         try {
             DeploymentGetResponse dgr = getDeploymentOperations(client).getBySlot(serviceName, slot);
@@ -1729,15 +1736,15 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         }
     }
 
-
-    private static DeploymentGetResponse getDeployment(ComputeManagementClient client,
-                                                       VirtualMachine vm)
+    @NotNull
+    private static DeploymentGetResponse getDeployment(@NotNull ComputeManagementClient client,
+                                                       @NotNull VirtualMachine vm)
             throws Exception {
         return getDeployment(client, vm.getServiceName(), DeploymentSlot.Production);
     }
 
-
-    private StorageAccountListResponse getStorageAccounts(StorageManagementClient client) throws Exception {
+    @NotNull
+    private StorageAccountListResponse getStorageAccounts(@NotNull StorageManagementClient client) throws Exception {
         StorageAccountListResponse salr = getStorageAccountOperations(client).list();
 
         if (salr == null) {
@@ -1747,12 +1754,12 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         return salr;
     }
 
-
-    private static ListenableFuture<com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount> getStorageAccountAsync(final String subscriptionId,
-                                                                           final StorageManagementClient client,
-                                                                           final com.microsoft.windowsazure.management.storage.models.StorageAccount storageAccount)
+    @NotNull
+    private static ListenableFuture<StorageAccount> getStorageAccountAsync(@NotNull final String subscriptionId,
+                                                                           @NotNull final StorageManagementClient client,
+                                                                           @NotNull final com.microsoft.windowsazure.management.storage.models.StorageAccount storageAccount)
             throws Exception {
-        final SettableFuture<com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount> future = SettableFuture.create();
+        final SettableFuture<StorageAccount> future = SettableFuture.create();
         DefaultLoader.getIdeHelper().executeOnPooledThread(new Runnable() {
             @Override
             public void run() {
@@ -1766,10 +1773,10 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         return future;
     }
 
-
-    private static com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount getStorageAccount(String subscriptionId,
-                                                    StorageManagementClient client,
-                                                    com.microsoft.windowsazure.management.storage.models.StorageAccount storageAccount) throws Exception {
+    @NotNull
+    private static StorageAccount getStorageAccount(@NotNull String subscriptionId,
+                                                    @NotNull StorageManagementClient client,
+                                                    @NotNull com.microsoft.windowsazure.management.storage.models.StorageAccount storageAccount) throws Exception {
         String primaryKey = "";
         String secondaryKey = "";
 
@@ -1801,7 +1808,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
             }
         }
 
-        return new com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount(
+        return new StorageAccount(
                 Strings.nullToEmpty(storageAccount.getName()),
                 Strings.nullToEmpty(sap.getAccountType()),
                 Strings.nullToEmpty(sap.getDescription()),
@@ -1823,9 +1830,9 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
                 subscriptionId);
     }
 
-
-    private static StorageAccountGetKeysResponse getStorageAccountKeys(StorageManagementClient client,
-                                                                       String storageName)
+    @NotNull
+    private static StorageAccountGetKeysResponse getStorageAccountKeys(@NotNull StorageManagementClient client,
+                                                                       @NotNull String storageName)
             throws Exception {
         StorageAccountGetKeysResponse sagkr = getStorageAccountOperations(client).getKeys(storageName);
 
@@ -1836,8 +1843,8 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         return sagkr;
     }
 
-
-    private static List<Role> getVMDeploymentRoles(DeploymentGetResponse deployment) throws Exception {
+    @NotNull
+    private static List<Role> getVMDeploymentRoles(@NotNull DeploymentGetResponse deployment) throws Exception {
         ArrayList<Role> roles = deployment.getRoles();
 
         if (roles == null) {
@@ -1847,8 +1854,8 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         return roles;
     }
 
-
-    private NetworkListResponse getNetworks(NetworkManagementClient client) throws Exception {
+    @NotNull
+    private NetworkListResponse getNetworks(@NotNull NetworkManagementClient client) throws Exception {
         NetworkListResponse nlr = getNetworkOperations(client).list();
 
         if (nlr == null) {
@@ -1858,7 +1865,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         return nlr;
     }
 
-    private static void validateOperationStatus(OperationStatusResponse osr) throws Exception {
+    private static void validateOperationStatus(@Nullable OperationStatusResponse osr) throws Exception {
         if (osr == null) {
             throw new Exception("Unable to retrieve Operation Status");
         }
@@ -1868,8 +1875,9 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         }
     }
 
-    private static OperationStatusResponse getOperationStatusResponse(ComputeManagementClient client,
-                                                                      OperationResponse or)
+    @Nullable
+    private static OperationStatusResponse getOperationStatusResponse(@NotNull ComputeManagementClient client,
+                                                                      @NotNull OperationResponse or)
             throws InterruptedException, java.util.concurrent.ExecutionException, ServiceException {
         OperationStatusResponse osr = client.getOperationStatusAsync(or.getRequestId()).get();
         int delayInSeconds = 30;
@@ -1902,8 +1910,9 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         return osr;
     }
 
-    private static OperationStatusResponse getOperationStatusResponse(StorageManagementClient client,
-                                                                      OperationResponse or)
+    @Nullable
+    private static OperationStatusResponse getOperationStatusResponse(@NotNull StorageManagementClient client,
+                                                                      @NotNull OperationResponse or)
             throws InterruptedException, java.util.concurrent.ExecutionException, ServiceException {
         OperationStatusResponse osr = client.getOperationStatusAsync(or.getRequestId()).get();
         int delayInSeconds = 30;
@@ -1936,9 +1945,9 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         return osr;
     }
 
-
-    private static CloudService loadDeployment(DeploymentGetResponse deployment,
-                                               CloudService cloudService)
+    @NotNull
+    private static CloudService loadDeployment(@NotNull DeploymentGetResponse deployment,
+                                               @NotNull CloudService cloudService)
             throws Exception {
         if (deployment.getDeploymentSlot() != null) {
             CloudService.Deployment dep;
@@ -1984,11 +1993,11 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     }
 
 
-
-    private static List<VirtualMachine> loadVirtualMachines(ComputeManagementClient client,
-                                                            String subscriptionId,
-                                                            String serviceName,
-                                                            List<VirtualMachine> vmList)
+    @NotNull
+    private static List<VirtualMachine> loadVirtualMachines(@NotNull ComputeManagementClient client,
+                                                            @NotNull String subscriptionId,
+                                                            @NotNull String serviceName,
+                                                            @NotNull List<VirtualMachine> vmList)
             throws Exception {
         DeploymentGetResponse deployment = getDeployment(client, serviceName, DeploymentSlot.Production);
 
@@ -2018,8 +2027,8 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         return vmList;
     }
 
-
-    private static VirtualMachine loadNetworkConfiguration(Role role, VirtualMachine vm) {
+    @NotNull
+    private static VirtualMachine loadNetworkConfiguration(@NotNull Role role, @NotNull VirtualMachine vm) {
         if (role.getConfigurationSets() == null) {
             return vm;
         }
@@ -2050,8 +2059,8 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         return vm;
     }
 
-    private static void deleteVMRole(ComputeManagementClient client, String serviceName,
-                                     String deploymentName, String virtualMachineName,
+    private static void deleteVMRole(@NotNull ComputeManagementClient client, @NotNull String serviceName,
+                                     @NotNull String deploymentName, @NotNull String virtualMachineName,
                                      boolean deleteFromStorage)
             throws Exception {
         VirtualMachineOperations vmo = getVirtualMachineOperations(client);
@@ -2061,8 +2070,8 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         validateOperationStatus(osr);
     }
 
-    private static void deleteDeployment(ComputeManagementClient client, String serviceName,
-                                         String deploymentName, boolean deleteFromStorage)
+    private static void deleteDeployment(@NotNull ComputeManagementClient client, @NotNull String serviceName,
+                                         @NotNull String deploymentName, boolean deleteFromStorage)
             throws Exception {
         DeploymentOperations dop = getDeploymentOperations(client);
 
@@ -2072,9 +2081,9 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     }
 
 
-
-    private static String getMediaLocation(VirtualMachine virtualMachine,
-                                           com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount storageAccount)
+    @NotNull
+    private static String getMediaLocation(@NotNull VirtualMachine virtualMachine,
+                                           @NotNull StorageAccount storageAccount)
             throws Exception {
         Calendar calendar = GregorianCalendar.getInstance();
         String blobName = String.format("%s-%s-0-%04d%02d%02d%02d%02d%02d%04d.vhd",
@@ -2096,9 +2105,9 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         return container.getUri().toString() + "/" + blobName;
     }
 
-
+    @NotNull
     private static ListenableFuture<List<VirtualMachineImage>> getOSImagesAsync(
-            final ComputeManagementClient client) {
+            @NotNull final ComputeManagementClient client) {
         final SettableFuture<List<VirtualMachineImage>> future = SettableFuture.create();
         DefaultLoader.getIdeHelper().executeOnPooledThread(new Runnable() {
             @Override
@@ -2113,8 +2122,8 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         return future;
     }
 
-
-    private static List<VirtualMachineImage> getOSImages(ComputeManagementClient client)
+    @NotNull
+    private static List<VirtualMachineImage> getOSImages(@NotNull ComputeManagementClient client)
             throws Exception {
         List<VirtualMachineImage> vmImageList = new ArrayList<VirtualMachineImage>();
 
@@ -2146,9 +2155,9 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         return vmImageList;
     }
 
-
+    @NotNull
     private static ListenableFuture<List<VirtualMachineImage>> getVMImagesAsync(
-            final ComputeManagementClient client) {
+            @NotNull final ComputeManagementClient client) {
         final SettableFuture<List<VirtualMachineImage>> future = SettableFuture.create();
 
         DefaultLoader.getIdeHelper().executeOnPooledThread(new Runnable() {
@@ -2164,8 +2173,8 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         return future;
     }
 
-
-    private static List<VirtualMachineImage> getVMImages(ComputeManagementClient client)
+    @NotNull
+    private static List<VirtualMachineImage> getVMImages(@NotNull ComputeManagementClient client)
             throws Exception {
         List<VirtualMachineImage> vmImageList = new ArrayList<VirtualMachineImage>();
 
@@ -2200,9 +2209,9 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         return vmImageList;
     }
 
-
-    private static List<VirtualMachineSize> loadVMSizes(ManagementClient client,
-                                                        List<VirtualMachineSize> vmSizeList)
+    @NotNull
+    private static List<VirtualMachineSize> loadVMSizes(@NotNull ManagementClient client,
+                                                        @NotNull List<VirtualMachineSize> vmSizeList)
             throws Exception {
         RoleSizeListResponse rslr = getRoleSizeOperations(client).list();
 
@@ -2227,9 +2236,9 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         return vmSizeList;
     }
 
-
-    private static List<Location> loadLocations(ManagementClient client,
-                                                List<Location> locationList)
+    @NotNull
+    private static List<Location> loadLocations(@NotNull ManagementClient client,
+                                                @NotNull List<Location> locationList)
             throws Exception {
         LocationsListResponse llr = getLocationsOperations(client).list();
 
@@ -2250,9 +2259,9 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         return locationList;
     }
 
-
-    private static List<AffinityGroup> loadAffinityGroups(ManagementClient client,
-                                                          List<AffinityGroup> affinityGroupList)
+    @NotNull
+    private static List<AffinityGroup> loadAffinityGroups(@NotNull ManagementClient client,
+                                                          @NotNull List<AffinityGroup> affinityGroupList)
             throws Exception {
         AffinityGroupListResponse aglr = getAffinityGroupOperations(client).list();
 
@@ -2274,13 +2283,13 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         return affinityGroupList;
     }
 
-    private static void createVM(VirtualMachineOperations vmo,
-                                 VirtualMachine virtualMachine,
-                                 VirtualMachineImage vmImage,
-                                 String mediaLocation,
-                                 String username,
-                                 String password,
-                                 byte[] certificate)
+    private static void createVM(@NotNull VirtualMachineOperations vmo,
+                                 @NotNull VirtualMachine virtualMachine,
+                                 @NotNull VirtualMachineImage vmImage,
+                                 @NotNull String mediaLocation,
+                                 @NotNull String username,
+                                 @NotNull String password,
+                                 @NotNull byte[] certificate)
             throws Exception {
         VirtualMachineCreateParameters vmcp = new VirtualMachineCreateParameters(virtualMachine.getName());
 
@@ -2312,14 +2321,14 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         validateOperationStatus(osr);
     }
 
-    private static void createVMDeployment(VirtualMachineOperations vmo,
-                                           VirtualMachine virtualMachine,
-                                           VirtualMachineImage vmImage,
-                                           String mediaLocation,
-                                           String virtualNetwork,
-                                           String username,
-                                           String password,
-                                           byte[] certificate)
+    private static void createVMDeployment(@NotNull VirtualMachineOperations vmo,
+                                           @NotNull VirtualMachine virtualMachine,
+                                           @NotNull VirtualMachineImage vmImage,
+                                           @NotNull String mediaLocation,
+                                           @NotNull String virtualNetwork,
+                                           @NotNull String username,
+                                           @NotNull String password,
+                                           @NotNull byte[] certificate)
             throws Exception {
         VirtualMachineCreateDeploymentParameters vmcdp = new VirtualMachineCreateDeploymentParameters();
         vmcdp.setName(virtualMachine.getName());
@@ -2364,12 +2373,12 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         validateOperationStatus(osr);
     }
 
-
-    private static ConfigurationSet getProvisioningConfigurationSet(VirtualMachine virtualMachine,
-                                                                    VirtualMachineImage vmImage,
-                                                                    String username,
-                                                                    String password,
-                                                                    byte[] certificate) throws AzureCmdException {
+    @NotNull
+    private static ConfigurationSet getProvisioningConfigurationSet(@NotNull VirtualMachine virtualMachine,
+                                                                    @NotNull VirtualMachineImage vmImage,
+                                                                    @NotNull String username,
+                                                                    @NotNull String password,
+                                                                    @NotNull byte[] certificate) throws AzureCmdException {
         ConfigurationSet provConfSet = new ConfigurationSet();
 
         if (vmImage.getOperatingSystemType().equals(WINDOWS_OS_TYPE)) {
@@ -2410,8 +2419,8 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         return provConfSet;
     }
 
-
-    private static ConfigurationSet getNetworkConfigurationSet(VirtualMachine virtualMachine) {
+    @NotNull
+    private static ConfigurationSet getNetworkConfigurationSet(@NotNull VirtualMachine virtualMachine) {
         ConfigurationSet netConfSet = new ConfigurationSet();
         netConfSet.setConfigurationSetType(NETWORK_CONFIGURATION);
         ArrayList<InputEndpoint> inputEndpoints = netConfSet.getInputEndpoints();
@@ -2433,9 +2442,9 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         return netConfSet;
     }
 
-
-    private static VirtualMachine.Status getVMStatus(DeploymentGetResponse deployment, Role role) {
-        VirtualMachine.Status result = VirtualMachine.Status.Unknown;
+    @NotNull
+    private static Status getVMStatus(@NotNull DeploymentGetResponse deployment, @NotNull Role role) {
+        Status result = Status.Unknown;
 
         if (deployment.getRoleInstances() != null) {
             RoleInstance vmRoleInstance = null;
@@ -2455,50 +2464,50 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         return result;
     }
 
-
-    private static VirtualMachine.Status getRoleStatus(String instanceStatus) {
-        VirtualMachine.Status result = VirtualMachine.Status.Unknown;
+    @NotNull
+    private static Status getRoleStatus(@NotNull String instanceStatus) {
+        Status result = Status.Unknown;
 
         if (instanceStatus.equals(StatusLiterals.UNKNOWN)) {
-            result = VirtualMachine.Status.Unknown;
+            result = Status.Unknown;
         } else if (instanceStatus.equals(StatusLiterals.READY_ROLE)) {
-            result = VirtualMachine.Status.Ready;
+            result = Status.Ready;
         } else if (instanceStatus.equals(StatusLiterals.STOPPED_VM)) {
-            result = VirtualMachine.Status.Stopped;
+            result = Status.Stopped;
         } else if (instanceStatus.equals(StatusLiterals.STOPPED_DEALLOCATED)) {
-            result = VirtualMachine.Status.StoppedDeallocated;
+            result = Status.StoppedDeallocated;
         } else if (instanceStatus.equals(StatusLiterals.BUSY_ROLE)) {
-            result = VirtualMachine.Status.Busy;
+            result = Status.Busy;
         } else if (instanceStatus.equals(StatusLiterals.CREATING_VM) ||
                 instanceStatus.equals(StatusLiterals.CREATING_ROLE)) {
-            result = VirtualMachine.Status.Creating;
+            result = Status.Creating;
         } else if (instanceStatus.equals(StatusLiterals.STARTING_VM) ||
                 instanceStatus.equals(StatusLiterals.STARTING_ROLE)) {
-            result = VirtualMachine.Status.Starting;
+            result = Status.Starting;
         } else if (instanceStatus.equals(StatusLiterals.STOPPING_VM) ||
                 instanceStatus.equals(StatusLiterals.STOPPING_ROLE)) {
-            result = VirtualMachine.Status.Stopping;
+            result = Status.Stopping;
         } else if (instanceStatus.equals(StatusLiterals.DELETING_VM)) {
-            result = VirtualMachine.Status.Deleting;
+            result = Status.Deleting;
         } else if (instanceStatus.equals(StatusLiterals.RESTARTING_ROLE)) {
-            result = VirtualMachine.Status.Restarting;
+            result = Status.Restarting;
         } else if (instanceStatus.equals(StatusLiterals.CYCLING_ROLE)) {
-            result = VirtualMachine.Status.Cycling;
+            result = Status.Cycling;
         } else if (instanceStatus.equals(StatusLiterals.FAILED_STARTING_VM) ||
                 instanceStatus.equals(StatusLiterals.FAILED_STARTING_ROLE)) {
-            result = VirtualMachine.Status.FailedStarting;
+            result = Status.FailedStarting;
         } else if (instanceStatus.equals(StatusLiterals.UNRESPONSIVE_ROLE)) {
-            result = VirtualMachine.Status.Unresponsive;
+            result = Status.Unresponsive;
         } else if (instanceStatus.equals(StatusLiterals.PREPARING)) {
-            result = VirtualMachine.Status.Preparing;
+            result = Status.Preparing;
         }
 
         return result;
     }
 
-
-    private static CloudBlob getCloudBlob(CloudBlobContainer container,
-                                          BlobFile blobFile)
+    @NotNull
+    private static CloudBlob getCloudBlob(@NotNull CloudBlobContainer container,
+                                          @NotNull BlobFile blobFile)
             throws URISyntaxException, StorageException {
         CloudBlob blob;
 
@@ -2511,9 +2520,9 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         return blob;
     }
 
-
-    private static CloudBlob getCloudBlob(CloudBlobDirectory parentDirectory,
-                                          BlobFile blobFile)
+    @NotNull
+    private static CloudBlob getCloudBlob(@NotNull CloudBlobDirectory parentDirectory,
+                                          @NotNull BlobFile blobFile)
             throws URISyntaxException, StorageException {
         CloudBlob blob;
 
@@ -2525,8 +2534,8 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         return blob;
     }
 
-
-    private static BlobFile reloadBlob(CloudBlob blob, String containerName, BlobFile blobFile)
+    @NotNull
+    private static BlobFile reloadBlob(@NotNull CloudBlob blob, @NotNull String containerName, @NotNull BlobFile blobFile)
             throws StorageException, URISyntaxException {
         blob.downloadAttributes();
 
@@ -2579,8 +2588,8 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         return blobFile;
     }
 
-
-    private static String extractBlobItemName(String path, String delimiter) {
+    @NotNull
+    private static String extractBlobItemName(@Nullable String path, @Nullable String delimiter) {
         if (path == null) {
             return "";
         } else if (delimiter == null || delimiter.isEmpty()) {
@@ -2596,10 +2605,10 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         }
     }
 
-
-    private static com.microsoftopentechnologies.tooling.msservices.model.storage.TableEntity getTableEntity(String tableName,
-                                              DynamicTableEntity dte,
-                                              String subscriptionId) {
+    @NotNull
+    private static TableEntity getTableEntity(@NotNull String tableName,
+                                              @NotNull DynamicTableEntity dte,
+                                              @NotNull String subscriptionId) {
         String partitionKey = Strings.nullToEmpty(dte.getPartitionKey());
         String rowKey = Strings.nullToEmpty(dte.getRowKey());
         String eTag = Strings.nullToEmpty(dte.getEtag());
@@ -2610,40 +2619,40 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
             timestamp.setTime(dte.getTimestamp());
         }
 
-        Map<String, com.microsoftopentechnologies.tooling.msservices.model.storage.TableEntity.Property> properties = new HashMap<String, com.microsoftopentechnologies.tooling.msservices.model.storage.TableEntity.Property>();
+        Map<String, Property> properties = new HashMap<String, Property>();
 
         if (dte.getProperties() != null) {
             for (Entry<String, EntityProperty> entry : dte.getProperties().entrySet()) {
                 if (entry.getKey() != null && entry.getValue() != null) {
                     String key = entry.getKey();
-                    com.microsoftopentechnologies.tooling.msservices.model.storage.TableEntity.Property property;
+                    Property property;
 
                     switch (entry.getValue().getEdmType()) {
                         case BOOLEAN:
-                            property = new com.microsoftopentechnologies.tooling.msservices.model.storage.TableEntity.Property(entry.getValue().getValueAsBooleanObject());
+                            property = new Property(entry.getValue().getValueAsBooleanObject());
                             break;
                         case DATE_TIME:
                             Calendar value = new GregorianCalendar();
                             value.setTime(entry.getValue().getValueAsDate());
-                            property = new com.microsoftopentechnologies.tooling.msservices.model.storage.TableEntity.Property(value);
+                            property = new Property(value);
                             break;
                         case DOUBLE:
-                            property = new com.microsoftopentechnologies.tooling.msservices.model.storage.TableEntity.Property(entry.getValue().getValueAsDoubleObject());
+                            property = new Property(entry.getValue().getValueAsDoubleObject());
                             break;
                         case GUID:
-                            property = new com.microsoftopentechnologies.tooling.msservices.model.storage.TableEntity.Property(entry.getValue().getValueAsUUID());
+                            property = new Property(entry.getValue().getValueAsUUID());
                             break;
                         case INT32:
-                            property = new com.microsoftopentechnologies.tooling.msservices.model.storage.TableEntity.Property(entry.getValue().getValueAsIntegerObject());
+                            property = new Property(entry.getValue().getValueAsIntegerObject());
                             break;
                         case INT64:
-                            property = new com.microsoftopentechnologies.tooling.msservices.model.storage.TableEntity.Property(entry.getValue().getValueAsLongObject());
+                            property = new Property(entry.getValue().getValueAsLongObject());
                             break;
                         case STRING:
-                            property = new com.microsoftopentechnologies.tooling.msservices.model.storage.TableEntity.Property(entry.getValue().getValueAsString());
+                            property = new Property(entry.getValue().getValueAsString());
                             break;
                         default:
-                            property = new com.microsoftopentechnologies.tooling.msservices.model.storage.TableEntity.Property(entry.getValue().getValueAsString());
+                            property = new Property(entry.getValue().getValueAsString());
                             break;
                     }
 
@@ -2652,31 +2661,31 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
             }
         }
 
-        return new com.microsoftopentechnologies.tooling.msservices.model.storage.TableEntity(partitionKey, rowKey, tableName, eTag, timestamp, properties, subscriptionId);
+        return new TableEntity(partitionKey, rowKey, tableName, eTag, timestamp, properties, subscriptionId);
     }
 
-
-    private static DynamicTableEntity getDynamicTableEntity(com.microsoftopentechnologies.tooling.msservices.model.storage.TableEntity tableEntity)
+    @NotNull
+    private static DynamicTableEntity getDynamicTableEntity(@NotNull TableEntity tableEntity)
             throws AzureCmdException {
         return getDynamicTableEntity(tableEntity.getPartitionKey(), tableEntity.getRowKey(),
                 tableEntity.getTimestamp(), tableEntity.getETag(), tableEntity.getProperties());
 
     }
 
-
-    private static DynamicTableEntity getDynamicTableEntity(String partitionKey,
-                                                            String rowKey,
-                                                            Map<String, com.microsoftopentechnologies.tooling.msservices.model.storage.TableEntity.Property> properties)
+    @NotNull
+    private static DynamicTableEntity getDynamicTableEntity(@NotNull String partitionKey,
+                                                            @NotNull String rowKey,
+                                                            @NotNull Map<String, Property> properties)
             throws AzureCmdException {
         return getDynamicTableEntity(partitionKey, rowKey, null, null, properties);
     }
 
-
-    private static DynamicTableEntity getDynamicTableEntity(String partitionKey,
-                                                            String rowKey,
-                                                            Calendar timestamp,
-                                                            String eTag,
-                                                            Map<String, com.microsoftopentechnologies.tooling.msservices.model.storage.TableEntity.Property> properties)
+    @NotNull
+    private static DynamicTableEntity getDynamicTableEntity(@NotNull String partitionKey,
+                                                            @NotNull String rowKey,
+                                                            @Nullable Calendar timestamp,
+                                                            @Nullable String eTag,
+                                                            @NotNull Map<String, Property> properties)
             throws AzureCmdException {
         Date ts = null;
 
@@ -2689,13 +2698,13 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         return new DynamicTableEntity(partitionKey, rowKey, ts, eTag, entityProperties);
     }
 
-
-    private static HashMap<String, EntityProperty> getEntityProperties(Map<String, com.microsoftopentechnologies.tooling.msservices.model.storage.TableEntity.Property> properties) throws AzureCmdException {
+    @NotNull
+    private static HashMap<String, EntityProperty> getEntityProperties(@NotNull Map<String, Property> properties) throws AzureCmdException {
         HashMap<String, EntityProperty> entityProperties = new HashMap<String, EntityProperty>();
 
-        for (Entry<String, com.microsoftopentechnologies.tooling.msservices.model.storage.TableEntity.Property> entry : properties.entrySet()) {
+        for (Entry<String, Property> entry : properties.entrySet()) {
             String key = entry.getKey();
-            com.microsoftopentechnologies.tooling.msservices.model.storage.TableEntity.Property property = entry.getValue();
+            Property property = entry.getValue();
 
             EntityProperty entityProperty;
 
@@ -2731,8 +2740,8 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         return entityProperties;
     }
 
-
-    private static String bytesToHex(byte[] bytes) {
+    @NotNull
+    private static String bytesToHex(@NotNull byte[] bytes) {
         char[] hexChars = new char[bytes.length * 2];
 
         for (int j = 0; j < bytes.length; j++) {
