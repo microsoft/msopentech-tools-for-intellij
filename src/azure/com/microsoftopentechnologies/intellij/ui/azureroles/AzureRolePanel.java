@@ -50,12 +50,14 @@ public class AzureRolePanel extends BaseConfigurable {
     private Module module;
     private WindowsAzureProjectManager waProjManager;
     private WindowsAzureRole windowsAzureRole;
+    private boolean isNew;
 
     public AzureRolePanel(Module module, WindowsAzureProjectManager waProjManager, WindowsAzureRole windowsAzureRole, boolean isNew) {
         this.module = module;
         this.waProjManager = waProjManager;
         this.windowsAzureRole = windowsAzureRole;
         setModified(isNew);
+        this.isNew = isNew;
         init();
     }
 
@@ -311,7 +313,9 @@ public class AzureRolePanel extends BaseConfigurable {
 
     @Override
     public void reset() {
-        setModified(false);
+        if (!isNew) {
+            setModified(false);
+        }
     }
 
     @Override

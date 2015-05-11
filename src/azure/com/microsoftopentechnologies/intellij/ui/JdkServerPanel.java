@@ -1575,6 +1575,7 @@ public class JdkServerPanel {
      */
     public void srvChkBoxUnChecked() {
         setEnableServer(false);
+        applicationsTab.setEnable(false);
         setEnableDlGrpSrv(false, false);
         serverCheckBox.setEnabled(true);
     }
@@ -1617,6 +1618,7 @@ public class JdkServerPanel {
         lblSelect.setEnabled(status);
         serverUrl.setEnabled(status);
         uploadLocalServer.setEnabled(status);
+        lblSrvPath.setEnabled(status);
         serverPath.setEnabled(status);
 //        tblApp.setEnabled(status);
 //        btnAdd.setEnabled(status);
@@ -1653,10 +1655,11 @@ public class JdkServerPanel {
         serverUrl.setEnabled(status);
         lblNoteHomeDir.setEnabled(status);
         if (status && applyAutoUlParams) {
-            serverUrl.setEditable(false);
-            serverHomeDir.setEnabled(!status);
+            serverUrl.setEnabled(false);
+            serverHomeDir.setEnabled(false);
+            storageAccountServer.setEnabled(false);
         } else {
-            serverUrl.setEditable(true);
+            serverUrl.setEnabled(true);
             serverHomeDir.setEnabled(status);
         }
         if (!status) {
