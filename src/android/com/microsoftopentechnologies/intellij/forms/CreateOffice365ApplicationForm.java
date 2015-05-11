@@ -21,10 +21,10 @@ import com.google.common.util.concurrent.Futures;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.microsoft.directoryservices.Application;
+import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.helpers.LinkListener;
-import com.microsoftopentechnologies.intellij.helpers.StringHelper;
-import com.microsoftopentechnologies.intellij.helpers.UIHelper;
-import com.microsoftopentechnologies.intellij.helpers.o365.Office365RestAPIManager;
+import com.microsoftopentechnologies.tooling.msservices.helpers.StringHelper;
+import com.microsoftopentechnologies.tooling.msservices.helpers.o365.Office365RestAPIManager;
 
 import javax.swing.*;
 import java.awt.*;
@@ -151,7 +151,7 @@ public class CreateOffice365ApplicationForm extends JDialog {
                                                 @Override
                                                 public void run() {
                                                     form.setCursor(Cursor.getDefaultCursor());
-                                                    UIHelper.showException("An error occurred while trying to register the Office 365 application.",
+                                                    DefaultLoader.getUIHelper().showException("An error occurred while trying to register the Office 365 application.",
                                                             throwable,
                                                             "Error Registering Office 365 Application",
                                                             false,
@@ -162,7 +162,7 @@ public class CreateOffice365ApplicationForm extends JDialog {
                                     });
                         } catch (Throwable e) {
                             form.setCursor(Cursor.getDefaultCursor());
-                            UIHelper.showException("An error occurred while trying to register the Office 365 application.",
+                            DefaultLoader.getUIHelper().showException("An error occurred while trying to register the Office 365 application.",
                                     e,
                                     "Error Registering Office 365 Application",
                                     false,

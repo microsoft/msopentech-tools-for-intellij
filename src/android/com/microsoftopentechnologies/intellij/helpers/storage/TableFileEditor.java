@@ -28,14 +28,15 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
+import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
+import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.forms.TableEntityForm;
 import com.microsoftopentechnologies.intellij.forms.TablesQueryDesigner;
-import com.microsoftopentechnologies.intellij.helpers.UIHelper;
-import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerImpl;
-import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
-import com.microsoftopentechnologies.intellij.model.storage.Table;
-import com.microsoftopentechnologies.intellij.model.storage.TableEntity;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk.AzureSDKManagerImpl;
+import com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount;
+import com.microsoftopentechnologies.tooling.msservices.model.storage.Table;
+import com.microsoftopentechnologies.tooling.msservices.model.storage.TableEntity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -108,7 +109,7 @@ public class TableFileEditor implements FileEditor {
                     }
                 });
 
-                UIHelper.packAndCenterJDialog(form);
+                UIHelperImpl.packAndCenterJDialog(form);
 
                 form.setVisible(true);
             }
@@ -128,7 +129,7 @@ public class TableFileEditor implements FileEditor {
                 });
 
 
-                UIHelper.packAndCenterJDialog(form);
+                UIHelperImpl.packAndCenterJDialog(form);
                 form.setVisible(true);
             }
         });
@@ -223,7 +224,7 @@ public class TableFileEditor implements FileEditor {
                 }
             });
 
-            UIHelper.packAndCenterJDialog(form);
+            UIHelperImpl.packAndCenterJDialog(form);
 
             form.setVisible(true);
         }
@@ -242,7 +243,7 @@ public class TableFileEditor implements FileEditor {
 
                     refreshGrid();
                 } catch (AzureCmdException e) {
-                    UIHelper.showException("Error querying entities", e, "Service Explorer", false, true);
+                    DefaultLoader.getUIHelper().showException("Error querying entities", e, "Service Explorer", false, true);
                 }
             }
         });
@@ -328,7 +329,7 @@ public class TableFileEditor implements FileEditor {
                         });
                     }
                 } catch(AzureCmdException ex) {
-                    UIHelper.showException("Error deleting entities", ex, "Service Explorer", false, true);
+                    DefaultLoader.getUIHelper().showException("Error deleting entities", ex, "Service Explorer", false, true);
                 }
             }
         });

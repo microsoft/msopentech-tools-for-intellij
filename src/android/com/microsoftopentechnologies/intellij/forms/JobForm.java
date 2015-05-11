@@ -16,9 +16,9 @@
 
 package com.microsoftopentechnologies.intellij.forms;
 
-import com.microsoftopentechnologies.intellij.helpers.UIHelper;
-import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManagerImpl;
-import com.microsoftopentechnologies.intellij.model.ms.Job;
+import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.rest.AzureRestAPIManagerImpl;
+import com.microsoftopentechnologies.tooling.msservices.model.ms.Job;
 
 import javax.swing.*;
 import java.awt.*;
@@ -167,7 +167,7 @@ public class JobForm extends JDialog {
 
                 } catch (Throwable ex) {
                     form.setCursor(Cursor.getDefaultCursor());
-                    UIHelper.showException("Error trying to save job", ex, "Create job", false, true);
+                    DefaultLoader.getUIHelper().showException("Error trying to save job", ex, "Create job", false, true);
                 }
 
             }

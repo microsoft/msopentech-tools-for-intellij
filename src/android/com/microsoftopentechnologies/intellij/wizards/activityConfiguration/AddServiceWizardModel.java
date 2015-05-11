@@ -21,8 +21,8 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.wizard.WizardModel;
 import com.microsoft.directoryservices.Application;
-import com.microsoftopentechnologies.intellij.helpers.graph.ServicePermissionEntry;
-import com.microsoftopentechnologies.intellij.model.ms.MobileService;
+import com.microsoftopentechnologies.tooling.msservices.helpers.graph.ServicePermissionEntry;
+import com.microsoftopentechnologies.tooling.msservices.model.ms.MobileService;
 
 import java.util.ArrayList;
 import java.util.List;

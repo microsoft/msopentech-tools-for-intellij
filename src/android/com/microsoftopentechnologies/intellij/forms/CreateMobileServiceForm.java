@@ -17,14 +17,14 @@ package com.microsoftopentechnologies.intellij.forms;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
+import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.helpers.LinkListener;
-import com.microsoftopentechnologies.intellij.helpers.UIHelper;
-import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIHelper;
-import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManagerImpl;
-import com.microsoftopentechnologies.intellij.model.ms.SqlDb;
-import com.microsoftopentechnologies.intellij.model.ms.SqlServer;
-import com.microsoftopentechnologies.intellij.model.ms.Subscription;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.rest.AzureRestAPIHelper;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.rest.AzureRestAPIManagerImpl;
+import com.microsoftopentechnologies.tooling.msservices.model.ms.SqlDb;
+import com.microsoftopentechnologies.tooling.msservices.model.ms.SqlServer;
+import com.microsoftopentechnologies.tooling.msservices.model.ms.Subscription;
 
 import javax.swing.*;
 import java.awt.*;
@@ -134,7 +134,7 @@ public class CreateMobileServiceForm extends JDialog {
                 } catch (Throwable e) {
 
                     form.setCursor(Cursor.getDefaultCursor());
-                    UIHelper.showException("Error retrieving the subscription list: ", e, "Error retrieving the subscription list");
+                    DefaultLoader.getUIHelper().showException("Error retrieving the subscription list: ", e, "Error retrieving the subscription list");
                 }
             }
         });
@@ -231,7 +231,7 @@ public class CreateMobileServiceForm extends JDialog {
                         } catch (Throwable e) {
                             form.setCursor(Cursor.getDefaultCursor());
 
-                            UIHelper.showException("An error occurred while trying to create the mobile service.",
+                            DefaultLoader.getUIHelper().showException("An error occurred while trying to create the mobile service.",
                                     e,
                                     "Error Creating Mobile Service",
                                     false,
@@ -273,7 +273,7 @@ public class CreateMobileServiceForm extends JDialog {
                         }
                     }, ModalityState.any());
                 } catch (AzureCmdException e) {
-                    UIHelper.showException("Error retrieving the location list: ", e, "Error retrieving the location list");
+                    DefaultLoader.getUIHelper().showException("Error retrieving the location list: ", e, "Error retrieving the location list");
                 }
             }
         });
@@ -317,7 +317,7 @@ public class CreateMobileServiceForm extends JDialog {
                         }
                     }, ModalityState.any());
                 } catch (Exception e) {
-                    UIHelper.showException("Error retrieving the server and database list: ", e, "Error retrieving the server and database list");
+                    DefaultLoader.getUIHelper().showException("Error retrieving the server and database list: ", e, "Error retrieving the server and database list");
                 }
             }
         });

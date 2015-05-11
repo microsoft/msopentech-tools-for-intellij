@@ -218,6 +218,10 @@ limitations under the License.
         <pathelement location="${basedir}/lib/.cspack.jar"/>
     </path>
 
+    <path id="library.serviceexplorer.classpath">
+        <pathelement location="${basedir}/lib/serviceexplorer-common.jar"/>
+    </path>
+
     <path id="library.com.microsoft.azure:azure-core:0.7.0.classpath">
         <pathelement location="${basedir}/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/azure-core-0.7.0.jar" />
         <pathelement location="${basedir}/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/dependencies/jersey-client-1.13.jar" />
@@ -401,6 +405,7 @@ limitations under the License.
     <property name="compiler.args.msopentech-tools-for-intellij" value="-encoding ISO-8859-1 -source 1.6 ${compiler.args}"/>
 
     <property name="msopentech-tools-for-intellij.output.dir" value="${module.msopentech-tools-for-intellij.basedir}/out/production/msopentech-tools-for-intellij"/>
+    <property name="library.output.dir" value="${module.msopentech-tools-for-intellij.basedir}/out/production/servicexplorer-lib"/>
 
     <path id="msopentech-tools-for-intellij.module.bootclasspath">
         <pathelement location="${jdk.home}/jre/lib/rt.jar"/>
@@ -410,6 +415,7 @@ limitations under the License.
     <path id="msopentech-tools-for-intellij.module.production.classpath">
         <path refid="${module.jdk.classpath.msopentech-tools-for-intellij}"/>
         <path refid="library.azurecommons.classpath"/>
+        <path refid="library.serviceexplorer.classpath"/>
         <path refid="library.cspack.classpath"/>
         <path refid="library.projectmanagerlibrary.classpath"/>
         <path refid="library.com.microsoft.azure:azure-core:0.7.0.classpath"/>
@@ -430,6 +436,7 @@ limitations under the License.
     <path id="msopentech-tools-for-intellij.runtime.production.module.classpath">
         <pathelement location="${msopentech-tools-for-intellij.output.dir}"/>
         <path refid="library.azurecommons.classpath"/>
+        <path refid="library.serviceexplorer.classpath"/>
         <path refid="library.cspack.classpath"/>
         <path refid="library.projectmanagerlibrary.classpath"/>
         <path refid="library.com.microsoft.azure:azure-core:0.7.0.classpath"/>
@@ -451,6 +458,7 @@ limitations under the License.
         <path refid="${module.jdk.classpath.msopentech-tools-for-intellij}"/>
         <pathelement location="${msopentech-tools-for-intellij.output.dir}"/>
         <path refid="library.azurecommons.classpath"/>
+        <path refid="library.serviceexplorer.classpath"/>
         <path refid="library.cspack.classpath"/>
         <path refid="library.projectmanagerlibrary.classpath"/>
         <path refid="library.com.microsoft.azure:azure-core:0.7.0.classpath"/>
@@ -471,6 +479,7 @@ limitations under the License.
     <path id="msopentech-tools-for-intellij.runtime.module.classpath">
         <pathelement location="${msopentech-tools-for-intellij.output.dir}"/>
         <path refid="library.azurecommons.classpath"/>
+        <path refid="library.serviceexplorer.classpath"/>
         <path refid="library.cspack.classpath"/>
         <path refid="library.projectmanagerlibrary.classpath"/>
         <path refid="library.com.microsoft.azure:azure-core:0.7.0.classpath"/>
@@ -505,6 +514,11 @@ limitations under the License.
         </dirset>
     </path>
 
+    <path id="serviceexplorer.lib.sourcepath">
+        <dirset dir="${module.msopentech-tools-for-intellij.basedir}">
+            <include name="src/common"/>
+        </dirset>
+    </path>
 
     <!-- Module msopentech-tools-for-androidstudio -->
 
@@ -580,7 +594,32 @@ limitations under the License.
         </dirset>
     </path>
 
-    <target name="compile.msopentech-tools-for-intellij" depends="register.custom.compilers" description="Compile module msopentech-tools-for-intellij">
+    <target name="clean.serviceexplorer.lib" description="cleanup output">
+        <delete dir="${library.output.dir}"/>
+    </target>
+
+    <target name="serviceexplorer.lib" depends="clean.serviceexplorer.lib,register.custom.compilers">
+        <mkdir dir="${library.output.dir}"/>
+        <javac2 destdir="${library.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.msopentech-tools-for-intellij}/javac">
+            <compilerarg line="${compiler.args.msopentech-tools-for-intellij}"/>
+            <bootclasspath refid="msopentech-tools-for-intellij.module.bootclasspath"/>
+            <classpath refid="msopentech-tools-for-intellij.module.production.classpath"/>
+            <src refid="serviceexplorer.lib.sourcepath"/>
+            <!--<src refid="msopentech-tools-for-intellij.sourcepath"/>-->
+            <patternset refid="excluded.from.compilation.msopentech-tools-for-intellij"/>
+        </javac2>
+
+        <jar destfile="${basedir}/lib/serviceexplorer-common.jar" duplicate="preserve">
+            <zipfileset dir="${library.output.dir}"/>
+            <!--<zipfileset file="${module.msopentech-tools-for-intellij.basedir}/META-INF/plugin.xml" prefix="META-INF"/>-->
+            <manifest>
+                <attribute name="Created-By" value="IntelliJ IDEA"/>
+                <attribute name="Manifest-Version" value="1.0"/>
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="compile.msopentech-tools-for-intellij" depends="serviceexplorer.lib" description="Compile module msopentech-tools-for-intellij">
         <mkdir dir="${msopentech-tools-for-intellij.output.dir}"/>
         <javac2 destdir="${msopentech-tools-for-intellij.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.msopentech-tools-for-intellij}/javac">
             <compilerarg line="${compiler.args.msopentech-tools-for-intellij}"/>
@@ -657,6 +696,7 @@ limitations under the License.
         <copy file="${module.msopentech-tools-for-intellij.basedir}/lib/.cspack.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/.cspack.jar"/>
         <copy file="${module.msopentech-tools-for-intellij.basedir}/lib/AzureCommons.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/AzureCommons.jar"/>
         <copy file="${path.variable.maven_repository}/com/microsoft/azure/azure-storage/2.0.0/azure-storage-2.0.0.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/azure-storage-2.0.0.jar"/>
+        <copy file="${module.msopentech-tools-for-intellij.basedir}/lib/serviceexplorer-common.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/serviceexplorer-common.jar"/>
         <copy file="${path.variable.maven_repository}/com/fasterxml/jackson/core/jackson-core/2.2.3/jackson-core-2.2.3.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/jackson-core-2.2.3.jar"/>
         <copy file="${path.variable.maven_repository}/org/slf4j/slf4j-api/1.7.5/slf4j-api-1.7.5.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/slf4j-api-1.7.5.jar"/>
         <copy file="${path.variable.maven_repository}/org/apache/commons/commons-lang3/3.3.2/commons-lang3-3.3.2.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/msopentech-tools-for-intellij/lib/commons-lang3-3.3.2.jar"/>

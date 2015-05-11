@@ -29,13 +29,14 @@ import com.intellij.openapi.wm.ex.ToolWindowEx;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.treeStructure.Tree;
 import com.microsoftopentechnologies.intellij.forms.ManageSubscriptionForm;
-import com.microsoftopentechnologies.intellij.helpers.UIHelper;
-import com.microsoftopentechnologies.intellij.helpers.collections.ListChangeListener;
-import com.microsoftopentechnologies.intellij.helpers.collections.ListChangedEvent;
-import com.microsoftopentechnologies.intellij.helpers.collections.ObservableList;
-import com.microsoftopentechnologies.intellij.serviceexplorer.azure.AzureServiceModule;
-import com.microsoftopentechnologies.intellij.serviceexplorer.Node;
-import com.microsoftopentechnologies.intellij.serviceexplorer.NodeAction;
+import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
+import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
+import com.microsoftopentechnologies.tooling.msservices.helpers.collections.ListChangeListener;
+import com.microsoftopentechnologies.tooling.msservices.helpers.collections.ListChangedEvent;
+import com.microsoftopentechnologies.tooling.msservices.helpers.collections.ObservableList;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.AzureServiceModule;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.Node;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.NodeAction;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -49,7 +50,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.util.Collection;
-import java.util.concurrent.ExecutionException;
 
 public class ServerExplorerToolWindowFactory implements ToolWindowFactory, PropertyChangeListener {
     private JTree tree;
@@ -308,7 +308,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
             ToolWindowEx toolWindowEx = (ToolWindowEx) toolWindow;
 
             toolWindowEx.setTitleActions(
-                    new AnAction("Refresh", "Refresh Service List", UIHelper.loadIcon("refresh.png")) {
+                    new AnAction("Refresh", "Refresh Service List", UIHelperImpl.loadIcon("refresh.png")) {
                         @Override
                         public void actionPerformed(AnActionEvent event) {
                             azureServiceModule.load();
@@ -318,7 +318,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
                         @Override
                         public void actionPerformed(AnActionEvent anActionEvent) {
                             ManageSubscriptionForm form = new ManageSubscriptionForm(anActionEvent.getProject());
-                            UIHelper.packAndCenterJDialog(form);
+                            UIHelperImpl.packAndCenterJDialog(form);
                             form.setVisible(true);
                             azureServiceModule.load();
                         }

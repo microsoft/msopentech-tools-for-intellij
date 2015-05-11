@@ -28,14 +28,15 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
+import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
+import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.forms.QueueMessageForm;
 import com.microsoftopentechnologies.intellij.forms.ViewMessageForm;
-import com.microsoftopentechnologies.intellij.helpers.UIHelper;
-import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerImpl;
-import com.microsoftopentechnologies.intellij.model.storage.Queue;
-import com.microsoftopentechnologies.intellij.model.storage.QueueMessage;
-import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk.AzureSDKManagerImpl;
+import com.microsoftopentechnologies.tooling.msservices.model.storage.Queue;
+import com.microsoftopentechnologies.tooling.msservices.model.storage.QueueMessage;
+import com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -168,7 +169,7 @@ public class QueueFileEditor implements FileEditor {
                     }
                 });
 
-                UIHelper.packAndCenterJDialog(queueMessageForm);
+                UIHelperImpl.packAndCenterJDialog(queueMessageForm);
 
                 queueMessageForm.setVisible(true);
             }
@@ -193,7 +194,7 @@ public class QueueFileEditor implements FileEditor {
                             });
                         }
                         catch (AzureCmdException e) {
-                            UIHelper.showException("Error clearing queue messages", e, "Service Explorer", false, true);
+                            DefaultLoader.getUIHelper().showException("Error clearing queue messages", e, "Service Explorer", false, true);
                         }
                     }
                 });
@@ -221,7 +222,7 @@ public class QueueFileEditor implements FileEditor {
                                 String[] values = {
                                         queueMessage.getId(),
                                         queueMessage.getContent(),
-                                        UIHelper.readableFileSize(queueMessage.getContent().length()),
+                                        UIHelperImpl.readableFileSize(queueMessage.getContent().length()),
                                         new SimpleDateFormat().format(queueMessage.getInsertionTime().getTime()),
                                         new SimpleDateFormat().format(queueMessage.getExpirationTime().getTime()),
                                         String.valueOf(queueMessage.getDequeueCount()),
@@ -236,7 +237,7 @@ public class QueueFileEditor implements FileEditor {
                     });
 
                 } catch (AzureCmdException e) {
-                    UIHelper.showException("Error getting queue messages", e, "Service Explorer", false, true);
+                    DefaultLoader.getUIHelper().showException("Error getting queue messages", e, "Service Explorer", false, true);
                 }
             }
         });
@@ -290,7 +291,7 @@ public class QueueFileEditor implements FileEditor {
                             }
                         });
                     } catch (AzureCmdException e) {
-                        UIHelper.showException("Error dequeuing messages", e, "Service Explorer", false, true);
+                        DefaultLoader.getUIHelper().showException("Error dequeuing messages", e, "Service Explorer", false, true);
                     }
                 }
             });
@@ -307,7 +308,7 @@ public class QueueFileEditor implements FileEditor {
         ViewMessageForm viewMessageForm = new ViewMessageForm();
         viewMessageForm.setMessage(queueMessages.get(queueTable.getSelectedRow()).getContent());
 
-        UIHelper.packAndCenterJDialog(viewMessageForm);
+        UIHelperImpl.packAndCenterJDialog(viewMessageForm);
         viewMessageForm.setVisible(true);
 
     }

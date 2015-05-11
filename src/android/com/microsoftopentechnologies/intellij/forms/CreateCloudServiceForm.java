@@ -22,13 +22,13 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.ListCellRendererWrapper;
-import com.microsoftopentechnologies.intellij.helpers.UIHelper;
-import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerImpl;
-import com.microsoftopentechnologies.intellij.model.ms.Subscription;
-import com.microsoftopentechnologies.intellij.model.vm.AffinityGroup;
-import com.microsoftopentechnologies.intellij.model.vm.CloudService;
-import com.microsoftopentechnologies.intellij.model.vm.Location;
+import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk.AzureSDKManagerImpl;
+import com.microsoftopentechnologies.tooling.msservices.model.ms.Subscription;
+import com.microsoftopentechnologies.tooling.msservices.model.vm.AffinityGroup;
+import com.microsoftopentechnologies.tooling.msservices.model.vm.CloudService;
+import com.microsoftopentechnologies.tooling.msservices.model.vm.Location;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -175,7 +175,7 @@ public class CreateCloudServiceForm extends JDialog {
                         }
                     });
                 } catch (AzureCmdException e) {
-                    UIHelper.showException("An error occurred while trying to load the regions list",
+                    DefaultLoader.getUIHelper().showException("An error occurred while trying to load the regions list",
                             e, "Error Loading Regions", false, true);
                 }
             }
@@ -207,7 +207,7 @@ public class CreateCloudServiceForm extends JDialog {
             AzureSDKManagerImpl.getManager().createCloudService(cloudService);
         } catch (Exception e) {
             cloudService = null;
-            UIHelper.showException("An error occurred while trying to create the specified cloud service", e, "Error Creating Storage Account", false, true);
+            DefaultLoader.getUIHelper().showException("An error occurred while trying to create the specified cloud service", e, "Error Creating Storage Account", false, true);
         }
 
         onCreate.run();

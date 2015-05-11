@@ -15,7 +15,7 @@
  */
 package com.microsoftopentechnologies.intellij.forms;
 
-import com.microsoftopentechnologies.intellij.helpers.StringHelper;
+import com.microsoftopentechnologies.tooling.msservices.helpers.StringHelper;
 
 import javax.swing.*;
 import java.awt.*;

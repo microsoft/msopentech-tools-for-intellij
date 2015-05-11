@@ -20,9 +20,9 @@ import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.Consumer;
+import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.helpers.LinkListener;
-import com.microsoftopentechnologies.intellij.helpers.UIHelper;
-import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManagerImpl;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.rest.AzureRestAPIManagerImpl;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -120,10 +120,10 @@ public class ImportSubscriptionForm extends JDialog {
                         form.dispose();
                     } catch (Throwable e) {
                         form.setCursor(Cursor.getDefaultCursor());
-                        UIHelper.showException("Error: " + e.getMessage(), e);
+                        DefaultLoader.getUIHelper().showException("Error: " + e.getMessage(), e);
                     }
                 } else {
-                    UIHelper.showException("The specified Subscriptions File does not exist.",
+                    DefaultLoader.getUIHelper().showException("The specified Subscriptions File does not exist.",
                             null,
                             "Invalid Subscriptions File Path",
                             false,

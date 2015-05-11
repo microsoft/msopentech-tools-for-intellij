@@ -28,12 +28,13 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
+import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
+import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.forms.UploadBlobFileForm;
-import com.microsoftopentechnologies.intellij.helpers.CallableSingleArg;
-import com.microsoftopentechnologies.intellij.helpers.UIHelper;
-import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerImpl;
-import com.microsoftopentechnologies.intellij.model.storage.*;
+import com.microsoftopentechnologies.tooling.msservices.helpers.CallableSingleArg;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk.AzureSDKManagerImpl;
+import com.microsoftopentechnologies.tooling.msservices.model.storage.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -311,7 +312,7 @@ public class BlobExplorerFileEditor implements FileEditor {
                             for (BlobItem blobItem : blobItems) {
                                 if(blobItem instanceof BlobDirectory) {
                                     model.addRow(new Object[]{
-                                            UIHelper.loadIcon("storagefolder.png"),
+                                            UIHelperImpl.loadIcon("storagefolder.png"),
                                             blobItem.getName(),
                                             "",
                                             "",
@@ -324,7 +325,7 @@ public class BlobExplorerFileEditor implements FileEditor {
                                     model.addRow(new String[]{
                                             "",
                                             blobFile.getName(),
-                                            UIHelper.readableFileSize(blobFile.getSize()),
+                                            UIHelperImpl.readableFileSize(blobFile.getSize()),
                                             new SimpleDateFormat().format(blobFile.getLastModified().getTime()),
                                             blobFile.getContentType(),
                                             blobFile.getUri()
@@ -339,7 +340,7 @@ public class BlobExplorerFileEditor implements FileEditor {
                     });
 
                 } catch (AzureCmdException ex) {
-                    UIHelper.showException("Error querying blob list.", ex, "Error querying blobs", false, true);
+                    DefaultLoader.getUIHelper().showException("Error querying blob list.", ex, "Error querying blobs", false, true);
                 }
             }
         });
@@ -491,7 +492,7 @@ public class BlobExplorerFileEditor implements FileEditor {
                             });
 
                         } catch (AzureCmdException ex) {
-                            UIHelper.showException("Error deleting blob.", ex, "Error deleting blob", false, true);
+                            DefaultLoader.getUIHelper().showException("Error deleting blob.", ex, "Error deleting blob", false, true);
                         }
                     }
                 });
@@ -594,7 +595,7 @@ public class BlobExplorerFileEditor implements FileEditor {
                         }
 
                     } catch (IOException e) {
-                        UIHelper.showException("Error downloading Blob", e, "Error downloading Blob", false, true);
+                        DefaultLoader.getUIHelper().showException("Error downloading Blob", e, "Error downloading Blob", false, true);
                     }
                 }
 
@@ -607,7 +608,7 @@ public class BlobExplorerFileEditor implements FileEditor {
     private void uploadFile() {
 
         final UploadBlobFileForm form = new UploadBlobFileForm();
-        UIHelper.packAndCenterJDialog(form);
+        UIHelperImpl.packAndCenterJDialog(form);
         form.setUploadSelected(new Runnable() {
             @Override
             public void run() {
@@ -712,7 +713,7 @@ public class BlobExplorerFileEditor implements FileEditor {
                                 }
                             }
                         } catch (AzureCmdException e) {
-                            UIHelper.showException("Error showing new blob", e, "Error showing new blob", false, true);
+                            DefaultLoader.getUIHelper().showException("Error showing new blob", e, "Error showing new blob", false, true);
                         }
 
                         ApplicationManager.getApplication().invokeLater(new Runnable() {
@@ -737,7 +738,7 @@ public class BlobExplorerFileEditor implements FileEditor {
                         progressIndicator.setText2((connectionFault instanceof SocketTimeoutException) ? "Connection timed out" : message);
                     }
                 } catch (IOException e) {
-                    UIHelper.showException("Error uploading Blob", e, "Error uploading Blob", false, true);
+                    DefaultLoader.getUIHelper().showException("Error uploading Blob", e, "Error uploading Blob", false, true);
                 }
             }
         });

@@ -21,16 +21,16 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.ListCellRendererWrapper;
+import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.helpers.LinkListener;
-import com.microsoftopentechnologies.intellij.helpers.UIHelper;
-import com.microsoftopentechnologies.intellij.helpers.azure.AzureAuthenticationMode;
-import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.intellij.helpers.azure.rest.AzureRestAPIManagerImpl;
-import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerImpl;
-import com.microsoftopentechnologies.intellij.model.ms.Subscription;
-import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
-import com.microsoftopentechnologies.intellij.model.vm.AffinityGroup;
-import com.microsoftopentechnologies.intellij.model.vm.Location;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureAuthenticationMode;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.rest.AzureRestAPIManagerImpl;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk.AzureSDKManagerImpl;
+import com.microsoftopentechnologies.tooling.msservices.model.ms.Subscription;
+import com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount;
+import com.microsoftopentechnologies.tooling.msservices.model.vm.AffinityGroup;
+import com.microsoftopentechnologies.tooling.msservices.model.vm.Location;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -200,7 +200,7 @@ public class CreateStorageAccountForm extends JDialog {
             }
         } catch (AzureCmdException e) {
             storageAccount = null;
-            UIHelper.showException("An error occurred while trying to create the specified storage account.", e, "Error Creating Storage Account", false, true);
+            DefaultLoader.getUIHelper().showException("An error occurred while trying to create the specified storage account.", e, "Error Creating Storage Account", false, true);
         }
 
         setCursor(Cursor.getDefaultCursor());
@@ -237,7 +237,7 @@ public class CreateStorageAccountForm extends JDialog {
                 }
 
             } catch (AzureCmdException e) {
-                UIHelper.showException("Error getting subscriptions", e);
+                DefaultLoader.getUIHelper().showException("Error getting subscriptions", e);
             }
 
         } else {
@@ -293,7 +293,7 @@ public class CreateStorageAccountForm extends JDialog {
                         }
                     });
                 } catch (AzureCmdException e) {
-                    UIHelper.showException("An error occurred while trying to load the regions list",
+                    DefaultLoader.getUIHelper().showException("An error occurred while trying to load the regions list",
                             e, "Error Loading Regions", false, true);
                 }
             }

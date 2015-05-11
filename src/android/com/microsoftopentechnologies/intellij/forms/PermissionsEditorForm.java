@@ -19,8 +19,8 @@ package com.microsoftopentechnologies.intellij.forms;
 import com.intellij.ui.CheckBoxList;
 import com.intellij.ui.CheckBoxListListener;
 import com.intellij.uiDesigner.core.GridConstraints;
-import com.microsoftopentechnologies.intellij.model.Office365Permission;
-import com.microsoftopentechnologies.intellij.model.Office365PermissionList;
+import com.microsoftopentechnologies.tooling.msservices.model.Office365Permission;
+import com.microsoftopentechnologies.tooling.msservices.model.Office365PermissionList;
 
 import javax.swing.*;
 import java.awt.*;

@@ -17,6 +17,7 @@
 package com.microsoftopentechnologies.intellij.helpers;
 
 import com.intellij.ui.JBColor;
+import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import org.jdesktop.swingx.JXMonthView;
 import org.jdesktop.swingx.calendar.DateSelectionModel;
 import sun.reflect.misc.ReflectUtil;
@@ -108,7 +109,7 @@ public abstract class DatePickerCellEditor extends DefaultCellEditor {
                 frame.setModal(true);
                 frame.setAlwaysOnTop(true);
                 frame.setMinimumSize(monthView.getPreferredSize());
-                UIHelper.packAndCenterJDialog(frame);
+                UIHelperImpl.packAndCenterJDialog(frame);
                 frame.setVisible(true);
             }
         });

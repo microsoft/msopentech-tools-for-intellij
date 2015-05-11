@@ -16,6 +16,8 @@
 
 package com.microsoftopentechnologies.intellij.helpers;
 
+import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
+
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -37,7 +39,7 @@ public class LinkListener implements MouseListener {
         try {
             Desktop.getDesktop().browse(new URI(mLink));
         } catch (Exception e) {
-            UIHelper.showException("Error:", e);
+            DefaultLoader.getUIHelper().showException("Error:", e);
         }
     }
 

@@ -21,12 +21,12 @@ import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
-import com.microsoftopentechnologies.intellij.helpers.UIHelper;
-import com.microsoftopentechnologies.intellij.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.intellij.helpers.azure.sdk.AzureSDKManagerImpl;
-import com.microsoftopentechnologies.intellij.model.storage.Queue;
-import com.microsoftopentechnologies.intellij.model.storage.QueueMessage;
-import com.microsoftopentechnologies.intellij.model.storage.StorageAccount;
+import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk.AzureSDKManagerImpl;
+import com.microsoftopentechnologies.tooling.msservices.model.storage.Queue;
+import com.microsoftopentechnologies.tooling.msservices.model.storage.QueueMessage;
+import com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -149,7 +149,7 @@ public class QueueMessageForm extends JDialog {
                         ApplicationManager.getApplication().invokeLater(onAddedMessage);
                     }
                 } catch (AzureCmdException e) {
-                    UIHelper.showException("Error adding queue message", e, "Service Explorer", false, true);
+                    DefaultLoader.getUIHelper().showException("Error adding queue message", e, "Service Explorer", false, true);
                 }
             }
         });

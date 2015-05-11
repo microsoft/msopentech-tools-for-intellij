@@ -18,7 +18,7 @@ package com.microsoftopentechnologies.intellij.wizards.activityConfiguration;
 
 import com.intellij.ui.wizard.WizardNavigationState;
 import com.intellij.ui.wizard.WizardStep;
-import com.microsoftopentechnologies.intellij.helpers.StringHelper;
+import com.microsoftopentechnologies.tooling.msservices.helpers.StringHelper;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
