@@ -1,19 +1,18 @@
 /**
  * Copyright 2014 Microsoft Open Technologies Inc.
- *
+ * <p/>
  * Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p/>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p/>
  * Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-
 package com.microsoftopentechnologies.intellij.helpers.storage;
 
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter;
@@ -28,10 +27,10 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
-import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
-import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.forms.QueueMessageForm;
 import com.microsoftopentechnologies.intellij.forms.ViewMessageForm;
+import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
+import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk.AzureSDKManagerImpl;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.Queue;
@@ -61,10 +60,10 @@ public class QueueFileEditor implements FileEditor {
     private JTable queueTable;
     private List<QueueMessage> queueMessages;
 
-    public QueueFileEditor(){
+    public QueueFileEditor() {
         queueTable.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
-        DefaultTableModel model =  new DefaultTableModel() {
+        DefaultTableModel model = new DefaultTableModel() {
             @Override
             public boolean isCellEditable(int i, int i1) {
                 return false;
@@ -97,6 +96,7 @@ public class QueueFileEditor implements FileEditor {
             public void mousePressed(MouseEvent me) {
                 if (me.getComponent() instanceof JTable) {
                     int r = queueTable.rowAtPoint(me.getPoint());
+
                     if (r >= 0 && r < queueTable.getRowCount()) {
                         queueTable.setRowSelectionInterval(r, r);
                     } else {
@@ -104,16 +104,18 @@ public class QueueFileEditor implements FileEditor {
                     }
 
                     int rowIndex = queueTable.getSelectedRow();
-                    if (rowIndex < 0)
+
+                    if (rowIndex < 0) {
                         return;
+                    }
 
                     if (me.getClickCount() == 2) {
                         viewMessageText();
                     }
 
                     if (me.getButton() == 3) {
-
                         QueueMessage message = getSelectedQueueMessage();
+
                         if (message != null) {
                             JPopupMenu popup = createTablePopUp(r == 0);
                             popup.show(me.getComponent(), me.getX(), me.getY());
@@ -180,7 +182,6 @@ public class QueueFileEditor implements FileEditor {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 ProgressManager.getInstance().run(new Task.Backgroundable(project, "Clearing queue messages", false) {
-
                     @Override
                     public void run(@NotNull ProgressIndicator progressIndicator) {
                         try {
@@ -192,8 +193,7 @@ public class QueueFileEditor implements FileEditor {
                                     fillGrid();
                                 }
                             });
-                        }
-                        catch (AzureCmdException e) {
+                        } catch (AzureCmdException e) {
                             DefaultLoader.getUIHelper().showException("Error clearing queue messages", e, "Service Explorer", false, true);
                         }
                     }
@@ -204,7 +204,6 @@ public class QueueFileEditor implements FileEditor {
 
     public void fillGrid() {
         ProgressManager.getInstance().run(new Task.Backgroundable(project, "Loading queue messages", false) {
-
             @Override
             public void run(@NotNull ProgressIndicator progressIndicator) {
                 try {
@@ -214,6 +213,7 @@ public class QueueFileEditor implements FileEditor {
                         @Override
                         public void run() {
                             DefaultTableModel model = (DefaultTableModel) queueTable.getModel();
+
                             while (model.getRowCount() > 0) {
                                 model.removeRow(0);
                             }
@@ -267,18 +267,15 @@ public class QueueFileEditor implements FileEditor {
         menu.add(dequeueMenu);
 
         return menu;
-
     }
 
     private void dequeueFirstMessage() {
-        if(JOptionPane.showConfirmDialog(mainPanel,
+        if (JOptionPane.showConfirmDialog(mainPanel,
                 "Are you sure you want to dequeue the first message in the queue?",
                 "Service Explorer",
                 JOptionPane.YES_NO_OPTION,
                 JOptionPane.INFORMATION_MESSAGE) == JOptionPane.YES_OPTION) {
-
             ProgressManager.getInstance().run(new Task.Backgroundable(project, "Dequeuing message", false) {
-
                 @Override
                 public void run(@NotNull ProgressIndicator progressIndicator) {
                     try {
@@ -304,13 +301,11 @@ public class QueueFileEditor implements FileEditor {
     }
 
     private void viewMessageText() {
-
         ViewMessageForm viewMessageForm = new ViewMessageForm();
         viewMessageForm.setMessage(queueMessages.get(queueTable.getSelectedRow()).getContent());
 
         UIHelperImpl.packAndCenterJDialog(viewMessageForm);
         viewMessageForm.setVisible(true);
-
     }
 
     public void setProject(Project project) {
@@ -351,7 +346,8 @@ public class QueueFileEditor implements FileEditor {
     }
 
     @Override
-    public void setState(@NotNull FileEditorState fileEditorState) {}
+    public void setState(@NotNull FileEditorState fileEditorState) {
+    }
 
     @Override
     public boolean isModified() {
@@ -364,16 +360,20 @@ public class QueueFileEditor implements FileEditor {
     }
 
     @Override
-    public void selectNotify() {}
+    public void selectNotify() {
+    }
 
     @Override
-    public void deselectNotify() {}
+    public void deselectNotify() {
+    }
 
     @Override
-    public void addPropertyChangeListener(@NotNull PropertyChangeListener propertyChangeListener) {}
+    public void addPropertyChangeListener(@NotNull PropertyChangeListener propertyChangeListener) {
+    }
 
     @Override
-    public void removePropertyChangeListener(@NotNull PropertyChangeListener propertyChangeListener) {}
+    public void removePropertyChangeListener(@NotNull PropertyChangeListener propertyChangeListener) {
+    }
 
     @Nullable
     @Override
@@ -394,7 +394,8 @@ public class QueueFileEditor implements FileEditor {
     }
 
     @Override
-    public void dispose() {}
+    public void dispose() {
+    }
 
     @Nullable
     @Override
@@ -403,6 +404,6 @@ public class QueueFileEditor implements FileEditor {
     }
 
     @Override
-    public <T> void putUserData(@NotNull Key<T> key, @Nullable T t) {}
-
+    public <T> void putUserData(@NotNull Key<T> key, @Nullable T t) {
+    }
 }

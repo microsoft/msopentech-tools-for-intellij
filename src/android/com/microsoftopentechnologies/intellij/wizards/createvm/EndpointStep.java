@@ -1,19 +1,18 @@
 /**
  * Copyright 2014 Microsoft Open Technologies Inc.
- *
+ * <p/>
  * Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p/>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p/>
  * Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-
 package com.microsoftopentechnologies.intellij.wizards.createvm;
 
 import com.intellij.openapi.application.ApplicationManager;
@@ -106,6 +105,7 @@ public class EndpointStep extends WizardStep<CreateVMWizardModel> {
                 } else {
                     endpointsTableModel.getData().add(new Endpoint(portNameComboBox.getSelectedItem().toString(), "TCP", 0, 0));
                 }
+
                 endpointsTableModel.fireTableDataChanged();
             }
         });
@@ -117,6 +117,7 @@ public class EndpointStep extends WizardStep<CreateVMWizardModel> {
             public void mouseClicked(MouseEvent evt) {
                 int row = endpointsTable.rowAtPoint(evt.getPoint());
                 int col = endpointsTable.columnAtPoint(evt.getPoint());
+
                 if (col == 5) {
                     //Determine if click was on the "X" label
                     if (endpointsTable.getWidth() - 30 < evt.getX()) {
@@ -130,10 +131,11 @@ public class EndpointStep extends WizardStep<CreateVMWizardModel> {
         endpointTableModel.addTableModelListener(new TableModelListener() {
             @Override
             public void tableChanged(TableModelEvent tableModelEvent) {
-
                 boolean hasErrors = false;
+
                 for (int i = 0; i < endpointTableModel.getRowCount() && !hasErrors; i++) {
                     String errorFromRow = getErrorFromRow(i, endpointTableModel.getData());
+
                     if (errorFromRow.length() > 0) {
                         hasErrors = true;
                     }
@@ -146,7 +148,6 @@ public class EndpointStep extends WizardStep<CreateVMWizardModel> {
         endpointsTable.setTableHeader(null);
 
         endpointsTable.setModel(endpointTableModel);
-
     }
 
     @Override
@@ -160,7 +161,6 @@ public class EndpointStep extends WizardStep<CreateVMWizardModel> {
         endpointsTable.getColumnModel().getColumn(4).setPreferredWidth(60);
         endpointsTable.getColumnModel().getColumn(5).setPreferredWidth(205);
 
-
         EndpointTableModel endpointTableModel = (EndpointTableModel) endpointsTable.getModel();
 
         if (model.getEndpoints() == null) {
@@ -172,11 +172,11 @@ public class EndpointStep extends WizardStep<CreateVMWizardModel> {
             }
         } else {
             endpointTableModel.getData().removeAllElements();
+
             for (Endpoint ep : model.getEndpoints()) {
                 endpointTableModel.getData().add(ep);
             }
         }
-
 
         return rootPanel;
     }
@@ -191,7 +191,6 @@ public class EndpointStep extends WizardStep<CreateVMWizardModel> {
 
     @Override
     public boolean onFinish() {
-
         final EndpointTableModel tableModel = (EndpointTableModel) endpointsTable.getModel();
         ProgressManager.getInstance().run(new Task.Backgroundable(project, "Creating virtual machine...", false) {
 
@@ -225,6 +224,7 @@ public class EndpointStep extends WizardStep<CreateVMWizardModel> {
                             try {
                                 certStream = new FileInputStream(certFile);
                                 certData = new byte[(int) certFile.length()];
+
                                 if (certStream.read(certData) != certData.length) {
                                     throw new Exception("Unable to process certificate: stream longer than informed size.");
                                 }
@@ -357,9 +357,7 @@ public class EndpointStep extends WizardStep<CreateVMWizardModel> {
         return errors;
     }
 
-
     private class DeleteRenderer extends JPanel implements TableCellRenderer {
-
         public DeleteRenderer() {
             setOpaque(false);
             setLayout(new BorderLayout());
@@ -381,7 +379,6 @@ public class EndpointStep extends WizardStep<CreateVMWizardModel> {
     }
 
     private class ProtocolRenderer extends ComboBox implements TableCellRenderer {
-
         public ProtocolRenderer() {
             super(new String[]{"TCP", "UDP"});
         }
@@ -395,7 +392,6 @@ public class EndpointStep extends WizardStep<CreateVMWizardModel> {
     }
 
     private class ErrorRenderer extends JLabel implements TableCellRenderer {
-
         public ErrorRenderer() {
             setOpaque(false);
         }
@@ -486,6 +482,7 @@ public class EndpointStep extends WizardStep<CreateVMWizardModel> {
                     endpoint.setProtocol(object.toString());
                     break;
             }
+
             fireTableCellUpdated(row, col);
         }
 

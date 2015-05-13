@@ -1,23 +1,24 @@
 /**
  * Copyright 2014 Microsoft Open Technologies Inc.
- *
+ * <p/>
  * Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p/>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p/>
  * Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-
 package com.microsoftopentechnologies.intellij.wizards.activityConfiguration;
 
-import com.google.common.base.*;
-import com.google.common.collect.*;
+import com.google.common.base.Function;
+import com.google.common.base.Joiner;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.intellij.openapi.application.ApplicationManager;
@@ -30,10 +31,10 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import com.microsoft.directoryservices.Application;
 import com.microsoftopentechnologies.intellij.forms.CreateOffice365ApplicationForm;
-import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
-import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.forms.PermissionsEditorForm;
 import com.microsoftopentechnologies.intellij.helpers.ReadOnlyCellTableModel;
+import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
+import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.tooling.msservices.helpers.StringHelper;
 import com.microsoftopentechnologies.tooling.msservices.helpers.graph.ServicePermissionEntry;
 import com.microsoftopentechnologies.tooling.msservices.helpers.o365.Office365Manager;
@@ -44,13 +45,16 @@ import com.microsoftopentechnologies.tooling.msservices.model.Office365Service;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import javax.swing.table.*;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.ParseException;
-import java.util.*;
 import java.util.List;
+import java.util.Vector;
 
 public class Office365Step extends WizardStep<AddServiceWizardModel> {
     private class AppPermissionsTM extends AbstractTableModel {
@@ -87,8 +91,8 @@ public class Office365Step extends WizardStep<AddServiceWizardModel> {
 
         @Override
         public void setValueAt(Object value, int rowIndex, int columnIndex) {
-            if(columnIndex == 1) {
-                servicePermissionEntries.get(rowIndex).setValue((Office365PermissionList)value);
+            if (columnIndex == 1) {
+                servicePermissionEntries.get(rowIndex).setValue((Office365PermissionList) value);
                 fireTableCellUpdated(rowIndex, columnIndex);
             }
         }
@@ -117,12 +121,12 @@ public class Office365Step extends WizardStep<AddServiceWizardModel> {
 
         @Override
         public boolean isCellEditable(int rowIndex, int columnIndex) {
-            if(columnIndex == 0) {
+            if (columnIndex == 0) {
                 return false;
-            }
-            else if (columnIndex == 1) {
+            } else if (columnIndex == 1) {
                 return true;
             }
+
             throw new IndexOutOfBoundsException("columnIndex");
         }
     }
@@ -147,13 +151,14 @@ public class Office365Step extends WizardStep<AddServiceWizardModel> {
 
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            return getTableCellComponent(table, (Office365PermissionList) value, row, column, isSelected);
+            return getTableCellComponent(table, (Office365PermissionList) value, row);
         }
 
         @Override
         public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
-            currentRow = row; currentCol = column;
-            return getTableCellComponent(table, (Office365PermissionList) value, row, column, isSelected);
+            currentRow = row;
+            currentCol = column;
+            return getTableCellComponent(table, (Office365PermissionList) value, row);
         }
 
         @Override
@@ -161,9 +166,9 @@ public class Office365Step extends WizardStep<AddServiceWizardModel> {
             return permissionSet;
         }
 
-        private Component getTableCellComponent(JTable table, Office365PermissionList permissionSet, int row, int column, boolean isSelected) {
+        private Component getTableCellComponent(JTable table, Office365PermissionList permissionSet, int row) {
             this.permissionSet = permissionSet;
-            this.service = (Office365Service)table.getModel().getValueAt(row, 0);
+            this.service = (Office365Service) table.getModel().getValueAt(row, 0);
 
             // build the label text
             Iterable<Office365Permission> enabledPermissions = Iterables.filter(this.permissionSet, new Predicate<Office365Permission>() {
@@ -179,7 +184,8 @@ public class Office365Step extends WizardStep<AddServiceWizardModel> {
                     return office365Permission.getName();
                 }
             }));
-            if(StringHelper.isNullOrWhiteSpace(permissions)) {
+
+            if (StringHelper.isNullOrWhiteSpace(permissions)) {
                 permissions = "No permissions assigned";
             }
 
@@ -189,7 +195,7 @@ public class Office365Step extends WizardStep<AddServiceWizardModel> {
             panel.setOpaque(false);
 
             // create the label and the button
-            if(permissionsLabel == null) {
+            if (permissionsLabel == null) {
                 panel.setComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
 
                 CellConstraints constraints = new CellConstraints();
@@ -217,7 +223,7 @@ public class Office365Step extends WizardStep<AddServiceWizardModel> {
                 UIHelperImpl.packAndCenterJDialog(permissionsEditorForm);
                 permissionsEditorForm.setVisible(true);
 
-                if(permissionsEditorForm.getDialogResult() == PermissionsEditorForm.DialogResult.OK) {
+                if (permissionsEditorForm.getDialogResult() == PermissionsEditorForm.DialogResult.OK) {
                     // update our permissions
                     permissionSet = permissionsEditorForm.getPermissions();
                     tblAppPermissions.getModel().setValueAt(permissionSet, currentRow, currentCol);
@@ -261,7 +267,7 @@ public class Office365Step extends WizardStep<AddServiceWizardModel> {
                 UIHelperImpl.packAndCenterJDialog(form);
                 form.setVisible(true);
 
-                if(form.getDialogResult() == CreateOffice365ApplicationForm.DialogResult.OK) {
+                if (form.getDialogResult() == CreateOffice365ApplicationForm.DialogResult.OK) {
                     refreshApps(form.getApplication().getappId());
                 }
             }
@@ -289,7 +295,7 @@ public class Office365Step extends WizardStep<AddServiceWizardModel> {
 
     @Override
     public WizardStep onNext(AddServiceWizardModel model) {
-        model.setOfficeApp((Application)cmbApps.getSelectedItem());
+        model.setOfficeApp((Application) cmbApps.getSelectedItem());
         AppPermissionsTM permissionsModel = (AppPermissionsTM) tblAppPermissions.getModel();
         model.setOfficePermissions(permissionsModel.getPermissionEntries());
 
@@ -351,7 +357,7 @@ public class Office365Step extends WizardStep<AddServiceWizardModel> {
                 // if we still don't have an authentication token then the
                 // user has cancelled out of login; so we cancel out of this
                 // wizard
-                if(manager.getAuthenticationToken() == null) {
+                if (manager.getAuthenticationToken() == null) {
                     ApplicationManager.getApplication().invokeAndWait(new Runnable() {
                         @Override
                         public void run() {
@@ -380,7 +386,7 @@ public class Office365Step extends WizardStep<AddServiceWizardModel> {
                                 cmbApps.setEnabled(true);
 
                                 int selectedIndex = 0;
-                                if(!StringHelper.isNullOrWhiteSpace(selectedAppId)) {
+                                if (!StringHelper.isNullOrWhiteSpace(selectedAppId)) {
                                     selectedIndex = Iterables.indexOf(applications, new Predicate<Application>() {
                                         @Override
                                         public boolean apply(Application application) {
@@ -416,10 +422,8 @@ public class Office365Step extends WizardStep<AddServiceWizardModel> {
                     }, ModalityState.any());
                 }
             });
-        }
-        catch (Throwable throwable) {
+        } catch (Throwable throwable) {
             DefaultLoader.getUIHelper().showException("An error occurred while trying to authenticate with Office 365", throwable);
-            return;
         }
     }
 

@@ -1,17 +1,17 @@
 /**
  * Copyright 2014 Microsoft Open Technologies Inc.
- *
+ * <p/>
  * Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p/>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p/>
  * Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.microsoftopentechnologies.intellij.wizards.activityConfiguration;
 
@@ -33,7 +33,6 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
-import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ex.ProjectRootManagerEx;
 import com.intellij.ui.wizard.WizardNavigationState;
 import com.intellij.ui.wizard.WizardStep;
@@ -233,7 +232,6 @@ public class SummaryStep extends WizardStep<AddServiceWizardModel> {
     }
 
     private void associateMobileService() {
-        final Project project = this.model.getProject();
         final Module module = this.model.getModule();
         final String activityName = this.model.getActivityName();
         final String appUrl = this.model.getMobileService().getAppUrl();
@@ -258,7 +256,6 @@ public class SummaryStep extends WizardStep<AddServiceWizardModel> {
     }
 
     private void associateNotificationHub() {
-        final Project project = this.model.getProject();
         final Module module = this.model.getModule();
         final String activityName = this.model.getActivityName();
         final String senderId = this.model.getSenderId();
@@ -308,7 +305,7 @@ public class SummaryStep extends WizardStep<AddServiceWizardModel> {
             }
         }, ModalityState.NON_MODAL);
 
-        if(model.getOfficeApp() != null) {
+        if (model.getOfficeApp() != null) {
             updateO365Permission();
         }
     }
@@ -363,6 +360,7 @@ public class SummaryStep extends WizardStep<AddServiceWizardModel> {
                 }
             } else if (oDataResponse.getResponse() != null) {
                 int status = oDataResponse.getResponse().getStatus();
+
                 switch (status) {
                     case 403:
                         result = "Authorization error - Status 403";

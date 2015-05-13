@@ -1,19 +1,18 @@
 /**
  * Copyright 2014 Microsoft Open Technologies Inc.
- *
+ * <p/>
  * Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p/>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p/>
  * Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-
 package com.microsoftopentechnologies.intellij.helpers.storage;
 
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter;
@@ -28,9 +27,9 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
+import com.microsoftopentechnologies.intellij.forms.UploadBlobFileForm;
 import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
-import com.microsoftopentechnologies.intellij.forms.UploadBlobFileForm;
 import com.microsoftopentechnologies.tooling.msservices.helpers.CallableSingleArg;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk.AzureSDKManagerImpl;
@@ -60,7 +59,6 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
-
 public class BlobExplorerFileEditor implements FileEditor {
     private JPanel mainPanel;
     private JTextField queryTextField;
@@ -84,7 +82,7 @@ public class BlobExplorerFileEditor implements FileEditor {
     public BlobExplorerFileEditor() {
         blobListTable.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
-        DefaultTableModel model =  new DefaultTableModel() {
+        DefaultTableModel model = new DefaultTableModel() {
             @Override
             public boolean isCellEditable(int i, int i1) {
                 return false;
@@ -110,7 +108,6 @@ public class BlobExplorerFileEditor implements FileEditor {
         blobListTable.getColumnModel().getColumn(3).setPreferredWidth(15);
         blobListTable.getColumnModel().getColumn(4).setPreferredWidth(40);
 
-
         JTableHeader tableHeader = blobListTable.getTableHeader();
         Dimension headerSize = tableHeader.getPreferredSize();
         headerSize.setSize(headerSize.getWidth(), 18);
@@ -134,11 +131,11 @@ public class BlobExplorerFileEditor implements FileEditor {
         sorter.setComparator(2, new Comparator<String>() {
             @Override
             public int compare(String s, String t1) {
-                if(s == null || s.isEmpty()) {
+                if (s == null || s.isEmpty()) {
                     s = "0";
                 }
 
-                if(t1 == null || t1.isEmpty()) {
+                if (t1 == null || t1.isEmpty()) {
                     t1 = "0";
                 }
 
@@ -146,21 +143,22 @@ public class BlobExplorerFileEditor implements FileEditor {
             }
 
             private Long getValue(String strValue) {
-                if(strValue.endsWith("kB")) {
+                if (strValue.endsWith("kB")) {
                     double l = Double.parseDouble(strValue.substring(0, strValue.length() - 2));
                     return (long) (l * 1024);
-                } else if(strValue.endsWith("MB")) {
+                } else if (strValue.endsWith("MB")) {
                     double l = Double.parseDouble(strValue.substring(0, strValue.length() - 2));
                     return (long) (l * 1024 * 1024);
-                } else if(strValue.endsWith("GB")) {
+                } else if (strValue.endsWith("GB")) {
                     double l = Double.parseDouble(strValue.substring(0, strValue.length() - 2));
-                    return (long)(l * 1024 * 1024 * 1024);
-                } else if(strValue.endsWith("TB")) {
+                    return (long) (l * 1024 * 1024 * 1024);
+                } else if (strValue.endsWith("TB")) {
                     double l = Double.parseDouble(strValue.substring(0, strValue.length() - 2));
-                    return (long)(l * 1024 * 1024 * 1024 * 1024);
+                    return (long) (l * 1024 * 1024 * 1024 * 1024);
                 } else {
                     String value = strValue.substring(0, strValue.length() - 1);
-                    if(value.isEmpty()) {
+
+                    if (value.isEmpty()) {
                         return 0l;
                     }
 
@@ -189,8 +187,9 @@ public class BlobExplorerFileEditor implements FileEditor {
 
         blobListTable.addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent me) {
-                if(me.getComponent() instanceof JTable) {
+                if (me.getComponent() instanceof JTable) {
                     int r = blobListTable.rowAtPoint(me.getPoint());
+
                     if (r >= 0 && r < blobListTable.getRowCount()) {
                         blobListTable.setRowSelectionInterval(r, r);
                     } else {
@@ -198,17 +197,19 @@ public class BlobExplorerFileEditor implements FileEditor {
                     }
 
                     int rowIndex = blobListTable.getSelectedRow();
-                    if (rowIndex < 0)
+
+                    if (rowIndex < 0) {
                         return;
+                    }
 
                     if (me.getClickCount() == 2) {
                         tableSelection();
                     }
 
-                    if(me.getButton() == 3) {
-
+                    if (me.getButton() == 3) {
                         BlobFile fileSelection = getFileSelection();
-                        if(fileSelection != null) {
+
+                        if (fileSelection != null) {
                             JPopupMenu popup = createTablePopUp();
                             popup.show(me.getComponent(), me.getX(), me.getY());
                         }
@@ -219,17 +220,19 @@ public class BlobExplorerFileEditor implements FileEditor {
 
         blobListTable.addKeyListener(new KeyListener() {
             @Override
-            public void keyTyped(KeyEvent keyEvent) {}
+            public void keyTyped(KeyEvent keyEvent) {
+            }
 
             @Override
             public void keyPressed(KeyEvent keyEvent) {
-                if(keyEvent.getKeyCode() == KeyEvent.VK_ENTER) {
+                if (keyEvent.getKeyCode() == KeyEvent.VK_ENTER) {
                     tableSelection();
                 }
             }
 
             @Override
-            public void keyReleased(KeyEvent keyEvent) {}
+            public void keyReleased(KeyEvent keyEvent) {
+            }
         });
 
         ActionListener queryAction = new ActionListener() {
@@ -272,31 +275,29 @@ public class BlobExplorerFileEditor implements FileEditor {
     }
 
     public void fillGrid() {
-
         setUIState(true);
 
         ProgressManager.getInstance().run(new Task.Backgroundable(project, "Loading blobs...", false) {
-
             @Override
             public void run(@NotNull ProgressIndicator progressIndicator) {
                 try {
                     progressIndicator.setIndeterminate(true);
 
-                    if(directoryQueue.peekLast() == null) {
+                    if (directoryQueue.peekLast() == null) {
                         directoryQueue.addLast(AzureSDKManagerImpl.getManager().getRootDirectory(storageAccount, blobContainer));
                     }
 
                     blobItems = AzureSDKManagerImpl.getManager().getBlobItems(storageAccount, directoryQueue.peekLast());
-                    if(!queryTextField.getText().isEmpty()) {
+
+                    if (!queryTextField.getText().isEmpty()) {
                         for (int i = blobItems.size() - 1; i >= 0; i--) {
                             BlobItem blobItem = blobItems.get(i);
-                            if(blobItem instanceof BlobFile && !blobItem.getName().startsWith(queryTextField.getText())) {
+
+                            if (blobItem instanceof BlobFile && !blobItem.getName().startsWith(queryTextField.getText())) {
                                 blobItems.remove(i);
                             }
                         }
-
                     }
-
 
                     ApplicationManager.getApplication().invokeLater(new Runnable() {
                         @Override
@@ -305,12 +306,12 @@ public class BlobExplorerFileEditor implements FileEditor {
                             pathLabel.setText(directoryQueue.peekLast().getPath());
                             DefaultTableModel model = (DefaultTableModel) blobListTable.getModel();
 
-                            while(model.getRowCount() > 0) {
+                            while (model.getRowCount() > 0) {
                                 model.removeRow(0);
                             }
 
                             for (BlobItem blobItem : blobItems) {
-                                if(blobItem instanceof BlobDirectory) {
+                                if (blobItem instanceof BlobDirectory) {
                                     model.addRow(new Object[]{
                                             UIHelperImpl.loadIcon("storagefolder.png"),
                                             blobItem.getName(),
@@ -338,17 +339,15 @@ public class BlobExplorerFileEditor implements FileEditor {
                             blobListTable.clearSelection();
                         }
                     });
-
                 } catch (AzureCmdException ex) {
                     DefaultLoader.getUIHelper().showException("Error querying blob list.", ex, "Error querying blobs", false, true);
                 }
             }
         });
-
     }
 
     private void setUIState(boolean loading) {
-        if(loading) {
+        if (loading) {
             blobListTable.setEnabled(false);
             backButton.setEnabled(false);
             queryButton.setEnabled(false);
@@ -371,7 +370,7 @@ public class BlobExplorerFileEditor implements FileEditor {
     }
 
     private BlobDirectory getFolderSelection() {
-        if(blobListTable.getSelectedRow() >= 0) {
+        if (blobListTable.getSelectedRow() >= 0) {
             String name = blobListTable.getValueAt(blobListTable.getSelectedRow(), 1).toString();
 
             for (BlobItem item : blobItems) {
@@ -380,13 +379,12 @@ public class BlobExplorerFileEditor implements FileEditor {
                 }
             }
         }
+
         return null;
     }
 
-
     private BlobFile getFileSelection() {
-
-        if(blobListTable.getSelectedRow() >= 0) {
+        if (blobListTable.getSelectedRow() >= 0) {
             String name = blobListTable.getValueAt(blobListTable.getSelectedRow(), 1).toString();
 
             for (BlobItem item : blobItems) {
@@ -395,13 +393,14 @@ public class BlobExplorerFileEditor implements FileEditor {
                 }
             }
         }
+
         return null;
     }
 
     private boolean isDirectorySelected() {
         int selectedRow = blobListTable.getSelectedRow();
 
-        if(selectedRow < 0) {
+        if (selectedRow < 0) {
             return false;
         } else {
             Object icon = blobListTable.getValueAt(selectedRow, 0);
@@ -410,7 +409,7 @@ public class BlobExplorerFileEditor implements FileEditor {
     }
 
     private void tableSelection() {
-        if(isDirectorySelected()) {
+        if (isDirectorySelected()) {
             BlobDirectory item = getFolderSelection();
 
             if (item != null) {
@@ -466,8 +465,8 @@ public class BlobExplorerFileEditor implements FileEditor {
     private void deleteSelectedFile() {
         final BlobFile blobItem = getFileSelection();
 
-        if(blobItem != null) {
-            if(JOptionPane.showConfirmDialog(mainPanel, "Are you sure you want to delete this blob?", "Delete Blob",JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE) == JOptionPane.OK_OPTION) {
+        if (blobItem != null) {
+            if (JOptionPane.showConfirmDialog(mainPanel, "Are you sure you want to delete this blob?", "Delete Blob", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE) == JOptionPane.OK_OPTION) {
                 setUIState(true);
 
                 ProgressManager.getInstance().run(new Task.Backgroundable(project, "Deleting blob...", false) {
@@ -477,7 +476,7 @@ public class BlobExplorerFileEditor implements FileEditor {
                         try {
                             AzureSDKManagerImpl.getManager().deleteBlobFile(storageAccount, blobItem);
 
-                            if(blobItems.size() <= 1) {
+                            if (blobItems.size() <= 1) {
                                 directoryQueue.clear();
                                 directoryQueue.addLast(AzureSDKManagerImpl.getManager().getRootDirectory(storageAccount, blobContainer));
 
@@ -490,7 +489,6 @@ public class BlobExplorerFileEditor implements FileEditor {
                                     fillGrid();
                                 }
                             });
-
                         } catch (AzureCmdException ex) {
                             DefaultLoader.getUIHelper().showException("Error deleting blob.", ex, "Error deleting blob", false, true);
                         }
@@ -502,7 +500,8 @@ public class BlobExplorerFileEditor implements FileEditor {
 
     private void copyURLSelectedFile() {
         BlobFile fileSelection = getFileSelection();
-        if(fileSelection != null) {
+
+        if (fileSelection != null) {
             StringSelection selection = new StringSelection(fileSelection.getUri());
             Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
             clipboard.setContents(selection, selection);
@@ -517,7 +516,7 @@ public class BlobExplorerFileEditor implements FileEditor {
         jFileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         int saveDialog = jFileChooser.showSaveDialog(this.mainPanel);
 
-        if(saveDialog == JFileChooser.APPROVE_OPTION) {
+        if (saveDialog == JFileChooser.APPROVE_OPTION) {
             downloadSelectedFile(jFileChooser.getSelectedFile());
         }
     }
@@ -525,7 +524,8 @@ public class BlobExplorerFileEditor implements FileEditor {
     private void downloadSelectedFile() {
         String defaultFolder = System.getProperty("user.home") + File.separator + "Downloads";
         BlobFile fileSelection = getFileSelection();
-        if(fileSelection != null) {
+
+        if (fileSelection != null) {
             downloadSelectedFile(new File(defaultFolder + File.separator + fileSelection.getName()));
         }
     }
@@ -533,19 +533,15 @@ public class BlobExplorerFileEditor implements FileEditor {
     private void downloadSelectedFile(final File targetFile) {
         final BlobFile fileSelection = getFileSelection();
 
-        if(fileSelection != null) {
+        if (fileSelection != null) {
             ProgressManager.getInstance().run(new Task.Backgroundable(project, "Downloading blob...", true) {
-
                 @Override
                 public void run(@NotNull final ProgressIndicator progressIndicator) {
-
-
                     try {
-
                         progressIndicator.setIndeterminate(false);
 
                         if (!targetFile.exists()) {
-                            if(!targetFile.createNewFile()){
+                            if (!targetFile.createNewFile()) {
                                 throw new IOException("File not created");
                             }
                         }
@@ -563,17 +559,14 @@ public class BlobExplorerFileEditor implements FileEditor {
                                 progressIndicator.setFraction(progress);
                                 progressIndicator.setText2(String.format("%s%% downloaded", (int) (progress * 100)));
                             }
-
                         };
-                        try {
 
+                        try {
                             Future<?> future = ApplicationManager.getApplication().executeOnPooledThread(new Runnable() {
                                 @Override
                                 public void run() {
-
                                     try {
                                         AzureSDKManagerImpl.getManager().downloadBlobFileContent(storageAccount, fileSelection, bufferedOutputStream);
-
                                     } catch (AzureCmdException e) {
                                         Throwable connectionFault = e.getCause().getCause();
 
@@ -585,28 +578,23 @@ public class BlobExplorerFileEditor implements FileEditor {
 
                             while (!future.isDone()) {
                                 progressIndicator.checkCanceled();
+
                                 if (progressIndicator.isCanceled()) {
                                     future.cancel(true);
                                 }
                             }
-
                         } finally {
                             bufferedOutputStream.close();
                         }
-
                     } catch (IOException e) {
                         DefaultLoader.getUIHelper().showException("Error downloading Blob", e, "Error downloading Blob", false, true);
                     }
                 }
-
             });
         }
-
     }
 
-
     private void uploadFile() {
-
         final UploadBlobFileForm form = new UploadBlobFileForm();
         UIHelperImpl.packAndCenterJDialog(form);
         form.setUploadSelected(new Runnable() {
@@ -615,10 +603,10 @@ public class BlobExplorerFileEditor implements FileEditor {
                 String path = form.getFolder();
                 File selectedFile = form.getSelectedFile();
 
-                if(!path.endsWith("/"))
+                if (!path.endsWith("/"))
                     path = path + "/";
 
-                if(path.startsWith("/")) {
+                if (path.startsWith("/")) {
                     path = path.substring(1);
                 }
 
@@ -631,15 +619,11 @@ public class BlobExplorerFileEditor implements FileEditor {
         form.setVisible(true);
     }
 
-    private void uploadFile(final String path, final File selectedFile)
-    {
-
+    private void uploadFile(final String path, final File selectedFile) {
         ProgressManager.getInstance().run(new Task.Backgroundable(project, "Uploading blob...", true) {
-
             @Override
             public void run(@NotNull final ProgressIndicator progressIndicator) {
                 try {
-
                     final BlobDirectory blobDirectory = directoryQueue.peekLast();
 
                     final BufferedInputStream bufferedInputStream = new BufferedInputStream(new FileInputStream(selectedFile));
@@ -649,7 +633,6 @@ public class BlobExplorerFileEditor implements FileEditor {
                     progressIndicator.setText2("0% uploaded");
 
                     try {
-
                         final CallableSingleArg<Void, Long> callable = new CallableSingleArg<Void, Long>() {
                             @Override
                             public Void call(Long uploadedBytes) throws Exception {
@@ -665,7 +648,6 @@ public class BlobExplorerFileEditor implements FileEditor {
                         Future<Void> future = ApplicationManager.getApplication().executeOnPooledThread(new Callable<Void>() {
                             @Override
                             public Void call() throws AzureCmdException {
-
                                 try {
                                     AzureSDKManagerImpl.getManager().uploadBlobFileContent(
                                             storageAccount,
@@ -675,7 +657,7 @@ public class BlobExplorerFileEditor implements FileEditor {
                                             callable,
                                             1024 * 1024,
                                             selectedFile.length());
-                                }  finally {
+                                } finally {
                                     try {
                                         bufferedInputStream.close();
                                     } catch (IOException ignored) {
@@ -686,15 +668,16 @@ public class BlobExplorerFileEditor implements FileEditor {
                             }
                         });
 
-                        while(!future.isDone()) {
+                        while (!future.isDone()) {
                             Thread.sleep(500);
                             progressIndicator.checkCanceled();
-                            if(progressIndicator.isCanceled()) {
+
+                            if (progressIndicator.isCanceled()) {
                                 future.cancel(true);
                                 bufferedInputStream.close();
 
                                 for (BlobItem blobItem : AzureSDKManagerImpl.getManager().getBlobItems(storageAccount, blobDirectory)) {
-                                    if(blobItem instanceof BlobFile && blobItem.getPath().equals(path)) {
+                                    if (blobItem instanceof BlobFile && blobItem.getPath().equals(path)) {
                                         AzureSDKManagerImpl.getManager().deleteBlobFile(storageAccount, (BlobFile) blobItem);
                                     }
                                 }
@@ -706,7 +689,7 @@ public class BlobExplorerFileEditor implements FileEditor {
                             directoryQueue.addLast(AzureSDKManagerImpl.getManager().getRootDirectory(storageAccount, blobContainer));
 
                             for (String pathDir : path.split("/")) {
-                                for (BlobItem blobItem : AzureSDKManagerImpl.getManager().getBlobItems(storageAccount, directoryQueue.getLast()) ) {
+                                for (BlobItem blobItem : AzureSDKManagerImpl.getManager().getBlobItems(storageAccount, directoryQueue.getLast())) {
                                     if (blobItem instanceof BlobDirectory && blobItem.getName().equals(pathDir)) {
                                         directoryQueue.addLast((BlobDirectory) blobItem);
                                     }
@@ -722,19 +705,21 @@ public class BlobExplorerFileEditor implements FileEditor {
                                 fillGrid();
                             }
                         });
-
                     } catch (Exception e) {
                         Throwable connectionFault = e.getCause();
                         Throwable realFault = null;
+
                         if (connectionFault != null) {
                             realFault = connectionFault.getCause();
                         }
 
                         progressIndicator.setText("Error uploading Blob");
-                        String message = realFault == null ? null : realFault.getMessage() ;
+                        String message = realFault == null ? null : realFault.getMessage();
+
                         if (connectionFault != null && message == null) {
                             message = "Error type " + connectionFault.getClass().getName();
                         }
+
                         progressIndicator.setText2((connectionFault instanceof SocketTimeoutException) ? "Connection timed out" : message);
                     }
                 } catch (IOException e) {
@@ -769,7 +754,8 @@ public class BlobExplorerFileEditor implements FileEditor {
     }
 
     @Override
-    public void setState(@NotNull FileEditorState fileEditorState) {}
+    public void setState(@NotNull FileEditorState fileEditorState) {
+    }
 
     @Override
     public boolean isModified() {
@@ -782,16 +768,20 @@ public class BlobExplorerFileEditor implements FileEditor {
     }
 
     @Override
-    public void selectNotify() {}
+    public void selectNotify() {
+    }
 
     @Override
-    public void deselectNotify() {}
+    public void deselectNotify() {
+    }
 
     @Override
-    public void addPropertyChangeListener(@NotNull PropertyChangeListener propertyChangeListener) {}
+    public void addPropertyChangeListener(@NotNull PropertyChangeListener propertyChangeListener) {
+    }
 
     @Override
-    public void removePropertyChangeListener(@NotNull PropertyChangeListener propertyChangeListener) {}
+    public void removePropertyChangeListener(@NotNull PropertyChangeListener propertyChangeListener) {
+    }
 
     @Nullable
     @Override
@@ -812,7 +802,8 @@ public class BlobExplorerFileEditor implements FileEditor {
     }
 
     @Override
-    public void dispose() {}
+    public void dispose() {
+    }
 
     @Nullable
     @Override
@@ -821,7 +812,8 @@ public class BlobExplorerFileEditor implements FileEditor {
     }
 
     @Override
-    public <T> void putUserData(@NotNull Key<T> key, @Nullable T t) {}
+    public <T> void putUserData(@NotNull Key<T> key, @Nullable T t) {
+    }
 
     public void setStorageAccount(StorageAccount storageAccount) {
         this.storageAccount = storageAccount;

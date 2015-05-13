@@ -110,7 +110,6 @@ public class SelectImageStep extends WizardStep<CreateVMWizardModel> {
                 default:
                     return super.toString();
             }
-
         }
     }
 
@@ -132,7 +131,6 @@ public class SelectImageStep extends WizardStep<CreateVMWizardModel> {
     private Project project;
 
     public SelectImageStep(final CreateVMWizardModel model, Project project) {
-
         super("Select a Virtual Machine Image", null, null);
 
         this.model = model;
@@ -148,7 +146,6 @@ public class SelectImageStep extends WizardStep<CreateVMWizardModel> {
         imageTypeList.add("Private Images");
         imageTypeList.addAll(Arrays.asList(PrivateImages.values()));
 
-
         imageTypeComboBox.setModel(new DefaultComboBoxModel(imageTypeList.toArray()) {
             @Override
             public void setSelectedItem(Object o) {
@@ -159,7 +156,6 @@ public class SelectImageStep extends WizardStep<CreateVMWizardModel> {
         });
 
         imageTypeComboBox.setRenderer(new ListCellRendererWrapper<Object>() {
-
             @Override
             public void customize(JList jList, Object o, int i, boolean b, boolean b1) {
                 if (o instanceof Enum) {
@@ -249,9 +245,9 @@ public class SelectImageStep extends WizardStep<CreateVMWizardModel> {
 
                     try {
                         for (VirtualMachineImage virtualMachineImage : AzureSDKManagerImpl.getManager().getVirtualMachineImages(model.getSubscription().getId().toString())) {
-
                             if (virtualMachineImage.isShowInGui()) {
                                 Enum type = null;
+
                                 if (virtualMachineImage.getCategory().equals("Public")) {
                                     for (PublicImages publicImage : PublicImages.values()) {
                                         if (virtualMachineImage.getPublisherName().contains(publicImage.toString())) {
@@ -320,6 +316,7 @@ public class SelectImageStep extends WizardStep<CreateVMWizardModel> {
 
         List<VirtualMachineImage> machineImages = virtualMachineImages.get(imageType);
         imageLabelList.setListData(machineImages == null ? new Object[]{} : machineImages.toArray());
+
         if (machineImages != null && machineImages.size() > 0) {
             imageLabelList.setSelectedIndex(0);
         }

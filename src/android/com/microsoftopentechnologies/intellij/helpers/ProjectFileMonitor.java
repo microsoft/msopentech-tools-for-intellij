@@ -1,29 +1,30 @@
 /**
  * Copyright 2014 Microsoft Open Technologies Inc.
- *
+ * <p/>
  * Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p/>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p/>
  * Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-
 package com.microsoftopentechnologies.intellij.helpers;
 
 import com.google.common.collect.ImmutableList;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.project.ProjectLocator;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.vfs.*;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class ProjectFileMonitor implements VirtualFileListener {
@@ -37,7 +38,7 @@ public class ProjectFileMonitor implements VirtualFileListener {
     private ReentrantLock registrationLock = new ReentrantLock();
 
     private interface FileListenerDelegate {
-        public abstract void run(VirtualFileListener fileListener);
+        void run(VirtualFileListener fileListener);
     }
 
     private ProjectFileMonitor() {
@@ -45,42 +46,47 @@ public class ProjectFileMonitor implements VirtualFileListener {
 
     public void addProjectFileListener(Project project, VirtualFileListener fileListener) {
         projectFileListenersMapLock.lock();
+
         try {
             // lazily register this object with the virtual file manager
-            if(!fileListenerRegistered) {
+            if (!fileListenerRegistered) {
                 registrationLock.lock();
+
                 try {
-                    if(!fileListenerRegistered) {
+                    if (!fileListenerRegistered) {
                         VirtualFileManager.getInstance().addVirtualFileListener(this);
                         fileListenerRegistered = true;
                     }
-                }
-                finally {
+                } finally {
                     registrationLock.unlock();
                 }
             }
 
-            if(!projectFileListenersMap.containsKey(project)) {
+            if (!projectFileListenersMap.containsKey(project)) {
                 projectFileListenersMap.put(project, new ArrayList<VirtualFileListener>());
             }
+
             List<VirtualFileListener> fileListeners = projectFileListenersMap.get(project);
-            if(!fileListeners.contains(fileListener)) {
+
+            if (!fileListeners.contains(fileListener)) {
                 fileListeners.add(fileListener);
             }
-        }
-        finally {
+        } finally {
             projectFileListenersMapLock.unlock();
         }
     }
 
     public void removeProjectFileListener(Project project, VirtualFileListener fileListener) {
         projectFileListenersMapLock.lock();
+
         try {
-            if(projectFileListenersMap.containsKey(project)) {
+            if (projectFileListenersMap.containsKey(project)) {
                 List<VirtualFileListener> fileListeners = projectFileListenersMap.get(project);
-                if(fileListeners.contains(fileListener)) {
+
+                if (fileListeners.contains(fileListener)) {
                     fileListeners.remove(fileListener);
-                    if(fileListeners.isEmpty()) {
+
+                    if (fileListeners.isEmpty()) {
                         projectFileListenersMap.remove(project);
                     }
                 }
@@ -88,54 +94,56 @@ public class ProjectFileMonitor implements VirtualFileListener {
 
             // if there are no more project file listeners then unregister this object
             // from the virtual file manager
-            if(projectFileListenersMap.isEmpty()) {
+            if (projectFileListenersMap.isEmpty()) {
                 registrationLock.lock();
+
                 try {
-                    if(projectFileListenersMap.isEmpty()) {
+                    if (projectFileListenersMap.isEmpty()) {
                         VirtualFileManager.getInstance().removeVirtualFileListener(this);
                         fileListenerRegistered = false;
                     }
-                }
-                finally {
+                } finally {
                     registrationLock.unlock();
                 }
             }
-        }
-        finally {
+        } finally {
             projectFileListenersMapLock.unlock();
         }
     }
 
     private void fireEventForProject(VirtualFileEvent fileEvent, FileListenerDelegate action) {
         projectFileListenersMapLock.lock();
+
         try {
             Project project = guessProjectForFile(fileEvent.getFile());
+
             if (project != null && projectFileListenersMap.containsKey(project)) {
                 ImmutableList<VirtualFileListener> fileListeners = ImmutableList.copyOf(projectFileListenersMap.get(project));
-                for(VirtualFileListener fileListener : fileListeners) {
+
+                for (VirtualFileListener fileListener : fileListeners) {
                     action.run(fileListener);
                 }
             }
-        }
-        finally {
+        } finally {
             projectFileListenersMapLock.unlock();
         }
     }
 
     private Project guessProjectForFile(VirtualFile virtualFile) {
         ProjectManager projectManager = ProjectManager.getInstance();
-        if(projectManager == null) {
+
+        if (projectManager == null) {
             return null;
         }
 
         Project[] openProjects = projectManager.getOpenProjects();
-        if(openProjects.length == 0) {
+        if (openProjects.length == 0) {
             return null;
         }
 
         // if there's only one project open then we assume this file belongs to
         // that project
-        if(openProjects.length == 1 && !openProjects[0].isDisposed()) {
+        if (openProjects.length == 1 && !openProjects[0].isDisposed()) {
             return openProjects[0];
         }
 
@@ -145,11 +153,14 @@ public class ProjectFileMonitor implements VirtualFileListener {
         // when you have multiple projects open it guesses the wrong project for the new files
         // when creating a new project
         String filePath = virtualFile.getCanonicalPath();
+
         if (filePath != null) {
             filePath = filePath.toLowerCase();
+
             for (Project openProject : openProjects) {
-                if(openProject.isInitialized() && !openProject.isDisposed()) {
+                if (openProject.isInitialized() && !openProject.isDisposed()) {
                     String projectPath = openProject.getBaseDir().getCanonicalPath();
+
                     if (projectPath != null && filePath.startsWith(projectPath.toLowerCase())) {
                         return openProject;
                     }
@@ -161,14 +172,14 @@ public class ProjectFileMonitor implements VirtualFileListener {
     }
 
     public static ProjectFileMonitor getInstance() {
-        if(projectFileMonitor == null) {
+        if (projectFileMonitor == null) {
             instanceLock.lock();
+
             try {
-                if(projectFileMonitor == null) {
+                if (projectFileMonitor == null) {
                     projectFileMonitor = new ProjectFileMonitor();
                 }
-            }
-            finally {
+            } finally {
                 instanceLock.unlock();
             }
         }

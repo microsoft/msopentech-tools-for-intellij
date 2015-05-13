@@ -1,17 +1,17 @@
 /**
  * Copyright 2014 Microsoft Open Technologies Inc.
- *
+ * <p/>
  * Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p/>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p/>
  * Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.microsoftopentechnologies.intellij.wizards.createvm;
 
@@ -143,7 +143,6 @@ public class MachineSettingsStep extends WizardStep<CreateVMWizardModel> {
         certificateButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-
                 FileChooserDescriptor fileChooserDescriptor = new FileChooserDescriptor(true, false, false, false, false, false) {
                     @Override
                     public boolean isFileVisible(VirtualFile file, boolean showHiddenFiles) {
@@ -211,7 +210,6 @@ public class MachineSettingsStep extends WizardStep<CreateVMWizardModel> {
                         Collections.sort(virtualMachineSizes, new Comparator<VirtualMachineSize>() {
                             @Override
                             public int compare(VirtualMachineSize t0, VirtualMachineSize t1) {
-
                                 if (t0.getName().contains("Basic") && t1.getName().contains("Basic")) {
                                     return t0.getName().compareTo(t1.getName());
                                 } else if (t0.getName().contains("Basic")) {
@@ -301,7 +299,6 @@ public class MachineSettingsStep extends WizardStep<CreateVMWizardModel> {
         ApplicationManager.getApplication().invokeAndWait(new Runnable() {
             @Override
             public void run() {
-
                 String recommendedVMSize = model.getVirtualMachineImage().getRecommendedVMSize().isEmpty()
                         ? "Small"
                         : model.getVirtualMachineImage().getRecommendedVMSize();
@@ -313,14 +310,11 @@ public class MachineSettingsStep extends WizardStep<CreateVMWizardModel> {
                         break;
                     }
                 }
-
             }
         }, ModalityState.any());
     }
 
-
     private void validateEmptyFields() {
-
         boolean allFieldsCompleted = !(
                 vmNameTextField.getText().isEmpty()
                         || vmUserTextField.getText().isEmpty()

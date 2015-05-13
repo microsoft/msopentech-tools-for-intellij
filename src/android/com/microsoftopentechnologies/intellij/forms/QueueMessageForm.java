@@ -1,19 +1,18 @@
 /**
  * Copyright 2014 Microsoft Open Technologies Inc.
- *
+ * <p/>
  * Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p/>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p/>
  * Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-
 package com.microsoftopentechnologies.intellij.forms;
 
 import com.intellij.openapi.application.ApplicationManager;
@@ -89,7 +88,6 @@ public class QueueMessageForm extends JDialog {
         ((AbstractDocument) expireTimeTextField.getDocument()).setDocumentFilter(new DocumentFilter() {
             Pattern pat = compile("\\d+");
 
-
             @Override
             public void replace(FilterBypass filterBypass, int i, int i1, String s, AttributeSet attributeSet) throws BadLocationException {
                 if (pat.matcher(s).matches()) {
@@ -97,15 +95,13 @@ public class QueueMessageForm extends JDialog {
                 }
             }
         });
-
     }
 
     private void onOK() {
-
         int expireUnitFactor = 1;
         int maxSeconds = 60 * 60 * 24 * 7;
 
-        switch(unitComboBox.getSelectedIndex()){
+        switch (unitComboBox.getSelectedIndex()) {
             case 0: //Days
                 expireUnitFactor = 60 * 60 * 24;
                 break;
@@ -120,7 +116,7 @@ public class QueueMessageForm extends JDialog {
         final int expireSeconds = expireUnitFactor * Integer.parseInt(expireTimeTextField.getText());
         final String message = messageTextArea.getText();
 
-        if(expireSeconds > maxSeconds) {
+        if (expireSeconds > maxSeconds) {
             JOptionPane.showMessageDialog(this,
                     "The specified message time span exceeds the maximum allowed by the storage client.",
                     "Service Explorer",
@@ -129,7 +125,7 @@ public class QueueMessageForm extends JDialog {
             return;
         }
 
-        ProgressManager.getInstance().run(new Task.Backgroundable(project,  "Adding queue message", false) {
+        ProgressManager.getInstance().run(new Task.Backgroundable(project, "Adding queue message", false) {
             @Override
             public void run(@NotNull ProgressIndicator progressIndicator) {
                 try {
@@ -142,10 +138,9 @@ public class QueueMessageForm extends JDialog {
                             0,
                             storageAccount.getSubscriptionId());
 
-
                     AzureSDKManagerImpl.getManager().createQueueMessage(storageAccount, queueMessage, expireSeconds);
 
-                    if(onAddedMessage != null) {
+                    if (onAddedMessage != null) {
                         ApplicationManager.getApplication().invokeLater(onAddedMessage);
                     }
                 } catch (AzureCmdException e) {
