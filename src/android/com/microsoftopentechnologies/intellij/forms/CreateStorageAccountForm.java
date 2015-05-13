@@ -21,8 +21,8 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.ListCellRendererWrapper;
-import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.helpers.LinkListener;
+import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureAuthenticationMode;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.rest.AzureRestAPIManagerImpl;
@@ -164,7 +164,6 @@ public class CreateStorageAccountForm extends JDialog {
         });
     }
 
-
     private void validateEmptyFields() {
         boolean allFieldsCompleted = !(
                 nameTextField.getText().isEmpty() || regionOrAffinityGroupComboBox.getSelectedObjects().length == 0);
@@ -235,11 +234,9 @@ public class CreateStorageAccountForm extends JDialog {
                     createStorageAccountForm.subscription = fullSubscriptionList.get(0);
                     loadRegions();
                 }
-
             } catch (AzureCmdException e) {
                 DefaultLoader.getUIHelper().showException("Error getting subscriptions", e);
             }
-
         } else {
             this.subscription = subscription;
             subscriptionComboBox.addItem(subscription.getName());
@@ -262,7 +259,6 @@ public class CreateStorageAccountForm extends JDialog {
         ProgressManager.getInstance().run(new Task.Backgroundable(project, "Loading regions...", false) {
             @Override
             public void run(@NotNull ProgressIndicator progressIndicator) {
-
                 progressIndicator.setIndeterminate(true);
 
                 try {

@@ -1,3 +1,18 @@
+/**
+ * Copyright 2014 Microsoft Open Technologies Inc.
+ * <p/>
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * <p/>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p/>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.microsoftopentechnologies.intellij.serviceexplorer.azure.mobileservice;
 
 import com.intellij.openapi.application.ApplicationManager;
@@ -38,11 +53,13 @@ public class UpdateJobAction extends NodeActionListener {
         final MobileService mobileService = mobileServiceNode.getMobileService();
 
         VirtualFile editorFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(new File(scheduledJobNode.getJob().getLocalFilePath(mobileService.getName())));
+
         if (editorFile != null) {
             FileEditor[] fe = FileEditorManager.getInstance((Project) scheduledJobNode.getProject()).getAllEditors(editorFile);
 
             if (fe.length > 0 && fe[0].isModified()) {
                 int i = JOptionPane.showConfirmDialog(null, "The file is modified. Do you want to save pending changes?", "Service Explorer", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE);
+
                 switch (i) {
                     case JOptionPane.YES_OPTION:
                         ApplicationManager.getApplication().saveAll();

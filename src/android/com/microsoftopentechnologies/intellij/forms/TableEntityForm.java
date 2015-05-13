@@ -1,19 +1,18 @@
 /**
  * Copyright 2014 Microsoft Open Technologies Inc.
- *
+ * <p/>
  * Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p/>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p/>
  * Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-
 package com.microsoftopentechnologies.intellij.forms;
 
 import com.intellij.openapi.progress.ProgressIndicator;
@@ -22,12 +21,12 @@ import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBoxTableRenderer;
 import com.intellij.util.ui.table.ComboBoxTableCellEditor;
-import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
-import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.helpers.DatePickerCellEditor;
+import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
+import com.microsoftopentechnologies.intellij.helpers.storage.TableFileEditor;
+import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk.AzureSDKManagerImpl;
-import com.microsoftopentechnologies.intellij.helpers.storage.TableFileEditor;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.TableEntity;
 import org.jetbrains.annotations.NotNull;
@@ -55,13 +54,12 @@ public class TableEntityForm extends JDialog {
     private String tableName;
 
     private static String[] INVALID_KEYWORDS = {
-        "abstract","as","base","bool","break","byte","case","catch","char","checked","class","const","continue","decimal","default","delegate","do","double","else",
-        "enum","event","explicit","extern","false","finally","fixed","float","for","foreach","goto","if","implicit",
-        "in","int","interface","internal","is","lock","long","namespace","new","null","object","operator","out","override","params","private","protected","public",
-        "readonly","ref","return","sbyte","sealed","short","sizeof","stackalloc","static","string","struct","switch","this","throw","true",
-        "try","typeof","uint","ulong","unchecked","unsafe","ushort","using","virtual","void","volatile","while"
+            "abstract", "as", "base", "bool", "break", "byte", "case", "catch", "char", "checked", "class", "const", "continue", "decimal", "default", "delegate", "do", "double", "else",
+            "enum", "event", "explicit", "extern", "false", "finally", "fixed", "float", "for", "foreach", "goto", "if", "implicit",
+            "in", "int", "interface", "internal", "is", "lock", "long", "namespace", "new", "null", "object", "operator", "out", "override", "params", "private", "protected", "public",
+            "readonly", "ref", "return", "sbyte", "sealed", "short", "sizeof", "stackalloc", "static", "string", "struct", "switch", "this", "throw", "true",
+            "try", "typeof", "uint", "ulong", "unchecked", "unsafe", "ushort", "using", "virtual", "void", "volatile", "while"
     };
-
 
     public TableEntityForm() {
         setContentPane(contentPane);
@@ -70,9 +68,9 @@ public class TableEntityForm extends JDialog {
         setResizable(false);
         setPreferredSize(new Dimension(500, 400));
 
-        DefaultTableModel model = new DefaultTableModel(){
+        DefaultTableModel model = new DefaultTableModel() {
 
-           @Override
+            @Override
             public boolean isCellEditable(int row, int col) {
                 return (col != 0) && (row > 1 || (col == 3 && tableEntity == null));
             }
@@ -153,8 +151,6 @@ public class TableEntityForm extends JDialog {
     }
 
     public void setTableEntity(TableEntity tableEntity) {
-
-
         this.tableEntity = tableEntity;
 
         final DefaultTableModel model = (DefaultTableModel) propertiesTable.getModel();
@@ -172,7 +168,7 @@ public class TableEntityForm extends JDialog {
                 tableEntity == null ? "" : tableEntity.getRowKey()
         });
 
-        if(tableEntity != null) {
+        if (tableEntity != null) {
             for (String propertyName : tableEntity.getProperties().keySet()) {
                 model.addRow(new Object[]{
                         "",
@@ -185,34 +181,31 @@ public class TableEntityForm extends JDialog {
     }
 
     private void onOK() {
-
         final TableModel model = propertiesTable.getModel();
-        final String partitionKey =  model.getValueAt(0, 3).toString();
-        final String rowKey =  model.getValueAt(1, 3).toString();
+        final String partitionKey = model.getValueAt(0, 3).toString();
+        final String rowKey = model.getValueAt(1, 3).toString();
         final Map<String, TableEntity.Property> properties = new LinkedHashMap<String, TableEntity.Property>();
 
         String errors = "";
 
-        for(int row = 2; row != model.getRowCount(); row++) {
+        for (int row = 2; row != model.getRowCount(); row++) {
             TableEntity.PropertyType propertyType = (TableEntity.PropertyType) model.getValueAt(row, 2);
             String name = model.getValueAt(row, 1).toString();
             String value = model.getValueAt(row, 3).toString();
 
-            if(!isValidPropertyName(name)){
+            if (!isValidPropertyName(name)) {
                 errors = errors + String.format("The property name \"%s\" is invalid\n", name);
             }
 
             TableEntity.Property property = getProperty(value, propertyType);
-            if(property == null) {
+            if (property == null) {
                 errors = errors + String.format("The field %s has an invalid value for its type.\n", name);
             } else {
                 properties.put(name, property);
             }
-
-
         }
 
-        if(errors.length() > 0) {
+        if (errors.length() > 0) {
             JOptionPane.showMessageDialog(this, errors, "Service Explorer", JOptionPane.ERROR_MESSAGE);
             return;
         }
@@ -235,9 +228,7 @@ public class TableEntityForm extends JDialog {
                         tableEntity = AzureSDKManagerImpl.getManager().updateTableEntity(storageAccount, tableEntity);
                     }
 
-
                     onFinish.run();
-
                 } catch (AzureCmdException e) {
                     DefaultLoader.getUIHelper().showException("Error creating entity", e, "Service Explorer", false, true);
                 }
@@ -247,11 +238,9 @@ public class TableEntityForm extends JDialog {
         dispose();
     }
 
-
-
     private TableEntity.Property getProperty(String value, TableEntity.PropertyType propertyType) {
-        try{
-            switch(propertyType) {
+        try {
+            switch (propertyType) {
                 case Boolean:
                     return new TableEntity.Property(Boolean.parseBoolean(value));
                 case Integer:
@@ -278,16 +267,15 @@ public class TableEntityForm extends JDialog {
 
     private boolean isValidPropertyName(String propertyName) {
         //Validate starting with number
-        if(propertyName.matches("^[0-9]\\w*")) {
+        if (propertyName.matches("^[0-9]\\w*")) {
             return false;
         }
         //Validate special characters
-        if(!propertyName.matches("[_\\p{Lu}\\p{Ll}\\p{Lt}\\p{Lm}\\p{Lo}\\p{Nl}][\\p{Lu}\\p{Ll}\\p{Lt}\\p{Lm}\\p{Lo}\\p{Nl}\\p{Mn}\\p{Mc}\\p{Nd}\\p{Pc}\\p{Cf}]*")) {
+        if (!propertyName.matches("[_\\p{Lu}\\p{Ll}\\p{Lt}\\p{Lm}\\p{Lo}\\p{Nl}][\\p{Lu}\\p{Ll}\\p{Lt}\\p{Lm}\\p{Lo}\\p{Nl}\\p{Mn}\\p{Mc}\\p{Nd}\\p{Pc}\\p{Cf}]*")) {
             return false;
         }
         //Validate invalid keywords
         return !Arrays.asList(INVALID_KEYWORDS).contains(propertyName);
-
     }
 
     private void onCancel() {
@@ -305,6 +293,7 @@ public class TableEntityForm extends JDialog {
     public void setOnFinish(Runnable onFinish) {
         this.onFinish = onFinish;
     }
+
     public TableEntity getTableEntity() {
         return tableEntity;
     }
@@ -327,7 +316,4 @@ public class TableEntityForm extends JDialog {
             return (row < 2) ? super.getTableCellRendererComponent(jTable, o, b, b1, row, i1) : deleteButton;
         }
     }
-
-
-
 }

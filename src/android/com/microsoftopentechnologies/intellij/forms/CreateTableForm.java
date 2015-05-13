@@ -1,3 +1,18 @@
+/**
+ * Copyright 2014 Microsoft Open Technologies Inc.
+ * <p/>
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * <p/>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p/>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.microsoftopentechnologies.intellij.forms;
 
 import com.intellij.openapi.application.ApplicationManager;
@@ -5,8 +20,8 @@ import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
-import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.helpers.LinkListener;
+import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk.AzureSDKManagerImpl;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount;
@@ -96,15 +111,12 @@ public class CreateTableForm extends JDialog {
         }
 
         ProgressManager.getInstance().run(new Task.Backgroundable(project, "Creating table...", false) {
-
             @Override
             public void run(@NotNull ProgressIndicator progressIndicator) {
                 try {
                     progressIndicator.setIndeterminate(true);
 
-
                     for (Table table : AzureSDKManagerImpl.getManager().getTables(storageAccount)) {
-
                         if (table.getName().equals(name)) {
                             ApplicationManager.getApplication().invokeLater(new Runnable() {
                                 @Override
@@ -114,10 +126,8 @@ public class CreateTableForm extends JDialog {
                             });
 
                             return;
-
                         }
                     }
-
 
                     Table table = new Table(name, "", "");
                     AzureSDKManagerImpl.getManager().createTable(storageAccount, table);
@@ -125,7 +135,7 @@ public class CreateTableForm extends JDialog {
                     if (onCreate != null) {
                         ApplicationManager.getApplication().invokeLater(onCreate);
                     }
-                } catch(AzureCmdException e) {
+                } catch (AzureCmdException e) {
                     DefaultLoader.getUIHelper().showException("Error creating table", e, "Service explorer", false, true);
                 }
             }
@@ -142,11 +152,9 @@ public class CreateTableForm extends JDialog {
         this.project = project;
     }
 
-
     public void setStorageAccount(StorageAccount storageAccount) {
         this.storageAccount = storageAccount;
     }
-
 
     public void setOnCreate(Runnable onCreate) {
         this.onCreate = onCreate;

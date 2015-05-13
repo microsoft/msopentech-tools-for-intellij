@@ -18,6 +18,8 @@ package com.microsoftopentechnologies.intellij.helpers;
 import com.intellij.openapi.application.ApplicationManager;
 import com.microsoftopentechnologies.intellij.forms.ErrorMessageForm;
 import com.microsoftopentechnologies.intellij.forms.ImportSubscriptionForm;
+import com.microsoftopentechnologies.tooling.msservices.helpers.NotNull;
+import com.microsoftopentechnologies.tooling.msservices.helpers.Nullable;
 import com.microsoftopentechnologies.tooling.msservices.helpers.UIHelper;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
 
@@ -28,30 +30,22 @@ import java.io.StringWriter;
 import java.text.DecimalFormat;
 
 public class UIHelperImpl implements UIHelper {
-    public static void packAndCenterJDialog(JDialog form) {
-        form.pack();
-        form.setLocation(
-                (Toolkit.getDefaultToolkit().getScreenSize().width) / 2 - form.getWidth() / 2,
-                (Toolkit.getDefaultToolkit().getScreenSize().height) / 2 - form.getHeight() / 2);
-    }
-
     @Override
-    public void showException(final String message, final Throwable ex) {
+    public void showException(@NotNull final String message, @Nullable final Throwable ex) {
         showException(message, ex, "Error");
     }
 
     @Override
-    public void showException(final String message, final Throwable ex, final String title) {
-
+    public void showException(@NotNull final String message, @Nullable final Throwable ex, @NotNull final String title) {
         showException(message, ex, title, !(ex instanceof AzureCmdException), false);
     }
 
     @Override
-    public void showException(final String message,
-                                     final Throwable ex,
-                                     final String title,
-                                     final boolean appendEx,
-                                     final boolean suggestDetail) {
+    public void showException(@NotNull final String message,
+                              @Nullable final Throwable ex,
+                              @NotNull final String title,
+                              final boolean appendEx,
+                              final boolean suggestDetail) {
         ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -92,7 +86,7 @@ public class UIHelperImpl implements UIHelper {
     }
 
     @Override
-    public void showError(final String message, final String title) {
+    public void showError(@NotNull final String message, @NotNull final String title) {
         ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -101,7 +95,16 @@ public class UIHelperImpl implements UIHelper {
         });
     }
 
-    private static String getHeaderMessage(String message, Throwable ex, boolean appendEx, boolean suggestDetail) {
+    public static void packAndCenterJDialog(@NotNull JDialog form) {
+        form.pack();
+        form.setLocation(
+                (Toolkit.getDefaultToolkit().getScreenSize().width) / 2 - form.getWidth() / 2,
+                (Toolkit.getDefaultToolkit().getScreenSize().height) / 2 - form.getHeight() / 2);
+    }
+
+    @NotNull
+    private static String getHeaderMessage(@NotNull String message, @Nullable Throwable ex,
+                                           boolean appendEx, boolean suggestDetail) {
         String headerMessage = message.trim();
 
         if (ex != null && appendEx) {
@@ -118,7 +121,8 @@ public class UIHelperImpl implements UIHelper {
         return headerMessage;
     }
 
-    private static String getDetails(Throwable ex) {
+    @NotNull
+    private static String getDetails(@Nullable Throwable ex) {
         String details = "";
 
         if (ex != null) {
@@ -137,7 +141,8 @@ public class UIHelperImpl implements UIHelper {
         return details;
     }
 
-    public static ImageIcon loadIcon(String name) {
+    @NotNull
+    public static ImageIcon loadIcon(@Nullable String name) {
         java.net.URL url = UIHelperImpl.class.getResource("/com/microsoftopentechnologies/intellij/icons/" + name);
         return new ImageIcon(url);
     }

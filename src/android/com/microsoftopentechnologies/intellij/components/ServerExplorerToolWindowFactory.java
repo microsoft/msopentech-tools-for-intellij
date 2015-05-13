@@ -1,19 +1,18 @@
 /**
  * Copyright 2014 Microsoft Open Technologies Inc.
- *
+ * <p/>
  * Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p/>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p/>
  * Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-
 package com.microsoftopentechnologies.intellij.components;
 
 import com.intellij.icons.AllIcons;
@@ -30,13 +29,12 @@ import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.treeStructure.Tree;
 import com.microsoftopentechnologies.intellij.forms.ManageSubscriptionForm;
 import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
-import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.tooling.msservices.helpers.collections.ListChangeListener;
 import com.microsoftopentechnologies.tooling.msservices.helpers.collections.ListChangedEvent;
 import com.microsoftopentechnologies.tooling.msservices.helpers.collections.ObservableList;
-import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.AzureServiceModule;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.Node;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.NodeAction;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.AzureServiceModule;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -100,24 +98,24 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
     private void treeMousePressed(MouseEvent e) {
         // get the tree node associated with this mouse click
         TreePath treePath = tree.getPathForLocation(e.getX(), e.getY());
-        if(treePath == null)
+        if (treePath == null)
             return;
 
-        DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode)treePath.getLastPathComponent();
-        Node node = (Node)treeNode.getUserObject();
+        DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) treePath.getLastPathComponent();
+        Node node = (Node) treeNode.getUserObject();
 
         // delegate click to the node's click action if this is a left button click
-        if(SwingUtilities.isLeftMouseButton(e)) {
+        if (SwingUtilities.isLeftMouseButton(e)) {
             // if the node in question is in a "loading" state then we
             // do not propagate the click event to it
-            if(!node.isLoading()) {
+            if (!node.isLoading()) {
                 node.getClickAction().fireNodeActionEvent();
             }
         }
         // for right click show the context menu populated with all the
         // actions from the node
-        else if(SwingUtilities.isRightMouseButton(e) || e.isPopupTrigger()) {
-            if(node.hasNodeActions()) {
+        else if (SwingUtilities.isRightMouseButton(e) || e.isPopupTrigger()) {
+            if (node.hasNodeActions()) {
                 // select the node which was right-clicked
                 tree.getSelectionModel().setSelectionPath(treePath);
 
@@ -130,7 +128,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
     private JPopupMenu createPopupMenuForNode(Node node) {
         JPopupMenu menu = new JPopupMenu();
 
-        for(final NodeAction nodeAction : node.getNodeActions()) {
+        for (final NodeAction nodeAction : node.getNodeActions()) {
             JMenuItem menuItem = new JMenuItem(nodeAction.getName());
             menuItem.setIconTextGap(16);
             menuItem.setEnabled(nodeAction.isEnabled());
@@ -165,7 +163,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         node.getChildNodes().addChangeListener(new NodeListChangeListener(treeNode));
 
         // create child tree nodes for each child node
-        if(node.hasChildNodes()) {
+        if (node.hasChildNodes()) {
             for (Node childNode : node.getChildNodes()) {
                 treeNode.add(createTreeNode(childNode));
             }
@@ -180,7 +178,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         ObservableList<Node> childNodes = node.getChildNodes();
         childNodes.removeAllChangeListeners();
 
-        if(node.hasChildNodes()) {
+        if (node.hasChildNodes()) {
             // this remove call should cause the NodeListChangeListener object
             // registered on it's child nodes to fire which should recursively
             // clean up event handlers on it's children
@@ -192,7 +190,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
     public void propertyChange(final PropertyChangeEvent evt) {
         // if we are not running on the dispatch thread then switch
         // to dispatch thread
-        if(!ApplicationManager.getApplication().isDispatchThread()) {
+        if (!ApplicationManager.getApplication().isDispatchThread()) {
             ApplicationManager.getApplication().invokeAndWait(new Runnable() {
                 @Override
                 public void run() {
@@ -206,12 +204,12 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         // this event is fired whenever a property on a node in the
         // model changes; we respond by triggering a node change
         // event in the tree's model
-        Node node = (Node)evt.getSource();
+        Node node = (Node) evt.getSource();
 
         // the treeModel object can be null before it is initialized
         // from createToolWindowContent; we ignore property change
         // notifications till we have a valid model object
-        if(treeModel != null) {
+        if (treeModel != null) {
             treeModel.nodeChanged((TreeNode) node.getViewData());
         }
     }
@@ -227,7 +225,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         public void listChanged(final ListChangedEvent e) {
             // if we are not running on the dispatch thread then switch
             // to dispatch thread
-            if(!ApplicationManager.getApplication().isDispatchThread()) {
+            if (!ApplicationManager.getApplication().isDispatchThread()) {
                 ApplicationManager.getApplication().invokeAndWait(new Runnable() {
                     @Override
                     public void run() {
@@ -241,14 +239,14 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
             switch (e.getAction()) {
                 case add:
                     // create child tree nodes for the new nodes
-                    for(Node childNode : (Collection<Node>)e.getNewItems()) {
+                    for (Node childNode : (Collection<Node>) e.getNewItems()) {
                         treeNode.add(createTreeNode(childNode));
                     }
                     break;
                 case remove:
                     // unregister all event handlers recursively and remove
                     // child nodes from the tree
-                    for(Node childNode : (Collection<Node>)e.getOldItems()) {
+                    for (Node childNode : (Collection<Node>) e.getOldItems()) {
                         removeEventHandlers(childNode);
 
                         // remove this node from the tree
@@ -279,17 +277,17 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
             super.customizeCellRenderer(tree, value, selected, expanded, isLeaf, row, focused);
 
             // if the node has an icon set then we use that
-            DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode)value;
-            Node node = (Node)treeNode.getUserObject();
+            DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) value;
+            Node node = (Node) treeNode.getUserObject();
 
             // "node" can be null if it's the root node which we keep hidden to simulate
             // a multi-root tree control
-            if(node == null) {
+            if (node == null) {
                 return;
             }
 
             String iconPath = node.getIconPath();
-            if(iconPath != null && !iconPath.isEmpty()) {
+            if (iconPath != null && !iconPath.isEmpty()) {
                 setIcon(loadIcon(iconPath));
             }
 

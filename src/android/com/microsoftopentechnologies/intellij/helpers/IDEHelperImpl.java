@@ -1,3 +1,18 @@
+/**
+ * Copyright 2014 Microsoft Open Technologies Inc.
+ * <p/>
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * <p/>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p/>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.microsoftopentechnologies.intellij.helpers;
 
 import com.google.common.collect.ImmutableMap;
@@ -17,22 +32,22 @@ import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.LightVirtualFile;
-import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.forms.OpenSSLFinderForm;
-import com.microsoftopentechnologies.tooling.msservices.helpers.IDEHelper;
-import com.microsoftopentechnologies.tooling.msservices.helpers.ServiceCodeReferenceHelper;
-import com.microsoftopentechnologies.tooling.msservices.helpers.aadauth.BrowserLauncher;
 import com.microsoftopentechnologies.intellij.helpers.aadauth.LauncherTask;
 import com.microsoftopentechnologies.intellij.helpers.storage.BlobExplorerFileEditorProvider;
 import com.microsoftopentechnologies.intellij.helpers.storage.QueueExplorerFileEditorProvider;
 import com.microsoftopentechnologies.intellij.helpers.storage.QueueFileEditor;
 import com.microsoftopentechnologies.intellij.helpers.storage.TableExplorerFileEditorProvider;
 import com.microsoftopentechnologies.intellij.serviceexplorer.BackgroundLoader;
+import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
+import com.microsoftopentechnologies.tooling.msservices.helpers.IDEHelper;
+import com.microsoftopentechnologies.tooling.msservices.helpers.NotNull;
+import com.microsoftopentechnologies.tooling.msservices.helpers.Nullable;
+import com.microsoftopentechnologies.tooling.msservices.helpers.ServiceCodeReferenceHelper;
+import com.microsoftopentechnologies.tooling.msservices.helpers.aadauth.BrowserLauncher;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.*;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.Node;
 import org.apache.commons.lang3.tuple.Pair;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.io.ByteArrayOutputStream;
@@ -52,7 +67,7 @@ public class IDEHelperImpl implements IDEHelper {
             Table.class, TableExplorerFileEditorProvider.TABLE_KEY);
 
     @Override
-    public void openFile(File file, final Node node) {
+    public void openFile(@NotNull File file, @NotNull final Node node) {
         final VirtualFile finalEditfile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(file);
         ApplicationManager.getApplication().runReadAction(new Runnable() {
             @Override
@@ -67,54 +82,42 @@ public class IDEHelperImpl implements IDEHelper {
     }
 
     @Override
-    public void runInBackground(Object project, String name, boolean canBeCancelled, final boolean isIndeterminate, final String indicatorText, final Runnable runnable) {
-        ProgressManager.getInstance().run(new Task.Backgroundable((Project) project, "Creating blob container...", false) {
+    public void runInBackground(@Nullable Object project, @NotNull String name, boolean canBeCancelled,
+                                final boolean isIndeterminate, @Nullable final String indicatorText,
+                                final Runnable runnable) {
+        ProgressManager.getInstance().run(new Task.Backgroundable((Project) project,
+                name, canBeCancelled) {
             @Override
             public void run(@NotNull ProgressIndicator indicator) {
                 if (isIndeterminate) {
                     indicator.setIndeterminate(true);
                 }
+
                 if (indicatorText != null) {
                     indicator.setText(indicatorText);
                 }
+
                 runnable.run();
             }
         });
     }
 
-    private void openFile(final Object projectObject, final VirtualFile finalEditfile) {
-        try {
-            if (finalEditfile != null) {
-                finalEditfile.setWritable(true);
-
-                ApplicationManager.getApplication().invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        FileEditorManager.getInstance((Project) projectObject).openFile(finalEditfile, true);
-                    }
-                });
-            }
-        } catch (Throwable e) {
-            DefaultLoader.getUIHelper().showException("Error writing temporal editable file:", e);
-        }
-    }
-
-    public void saveFile(final File file, final ByteArrayOutputStream buff, final Node node) {
+    @Override
+    public void saveFile(@NotNull final File file, @NotNull final ByteArrayOutputStream buff, @NotNull final Node node) {
         ApplicationManager.getApplication().runWriteAction(new Runnable() {
             @Override
             public void run() {
                 try {
-
                     final VirtualFile editfile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(file);
+
                     if (editfile != null) {
                         editfile.setWritable(true);
-
                         editfile.setBinaryContent(buff.toByteArray());
 
                         ApplicationManager.getApplication().invokeLater(new Runnable() {
                             @Override
                             public void run() {
-                                FileEditorManager.getInstance((Project)node.getProject()).openFile(editfile, true);
+                                FileEditorManager.getInstance((Project) node.getProject()).openFile(editfile, true);
                             }
                         });
                     }
@@ -127,8 +130,10 @@ public class IDEHelperImpl implements IDEHelper {
         });
     }
 
-    public void replaceInFile(Object moduleObject, Pair<String, String>... replace) {
+    @Override
+    public void replaceInFile(@NotNull Object moduleObject, @NotNull Pair<String, String>... replace) {
         Module module = (Module) moduleObject;
+
         if (module.getModuleFile() != null && module.getModuleFile().getParent() != null) {
             VirtualFile vf = module.getModuleFile().getParent().findFileByRelativePath(ServiceCodeReferenceHelper.STRINGS_XML);
 
@@ -138,9 +143,11 @@ public class IDEHelperImpl implements IDEHelper {
 
                 if (document != null) {
                     String content = document.getText();
+
                     for (Pair<String, String> pair : replace) {
                         content = content.replace(pair.getLeft(), pair.getRight());
                     }
+
                     document.setText(content);
                     fdm.saveDocument(document);
                 }
@@ -149,7 +156,8 @@ public class IDEHelperImpl implements IDEHelper {
     }
 
     @Override
-    public void copyJarFiles2Module(Object moduleObject, File zipFile, String zipPath) throws IOException {
+    public void copyJarFiles2Module(@NotNull Object moduleObject, @NotNull File zipFile, @NotNull String zipPath)
+            throws IOException {
         Module module = (Module) moduleObject;
         final VirtualFile moduleFile = module.getModuleFile();
 
@@ -166,78 +174,25 @@ public class IDEHelperImpl implements IDEHelper {
         }
     }
 
-    private void copyJarFiles(final Module module, VirtualFile baseDir, File zipFile, String zipPath) throws IOException {
-        if (baseDir.isDirectory()) {
-            final ZipFile zip = new ZipFile(zipFile);
-            Enumeration<? extends ZipEntry> entries = zip.entries();
-
-            while (entries.hasMoreElements()) {
-                final ZipEntry zipEntry = entries.nextElement();
-
-                if (!zipEntry.isDirectory() && zipEntry.getName().startsWith(zipPath) &&
-                        zipEntry.getName().endsWith(".jar") &&
-                        !(zipEntry.getName().endsWith("-sources.jar") || zipEntry.getName().endsWith("-javadoc.jar"))) {
-                    VirtualFile libsVf = null;
-
-                    for (VirtualFile vf : baseDir.getChildren()) {
-                        if (vf.getName().equals("libs")) {
-                            libsVf = vf;
-                            break;
-                        }
-                    }
-
-                    if (libsVf == null) {
-                        libsVf = baseDir.createChildDirectory(module.getProject(), "libs");
-                    }
-
-                    final VirtualFile libs = libsVf;
-
-                    ApplicationManager.getApplication().invokeAndWait(new Runnable() {
-                        @Override
-                        public void run() {
-                            ApplicationManager.getApplication().runWriteAction(new Runnable() {
-                                @Override
-                                public void run() {
-                                    try {
-                                        InputStream mobileserviceInputStream = zip.getInputStream(zipEntry);
-                                        VirtualFile msVF = libs.createChildData(module.getProject(), zipEntry.getName().split("/")[1]);
-                                        msVF.setBinaryContent(getArray(mobileserviceInputStream));
-                                    } catch (Throwable ex) {
-                                        DefaultLoader.getUIHelper().showException("Error trying to configure Azure Mobile Services", ex);
-                                    }
-                                }
-                            });
-                        }
-                    }, ModalityState.defaultModalityState());
-                }
-            }
-        }
-    }
-
-    private byte[] getArray(InputStream is) throws IOException {
-        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-
-        int nRead;
-        byte[] data = new byte[16384];
-
-        while ((nRead = is.read(data, 0, data.length)) != -1) {
-            buffer.write(data, 0, nRead);
-        }
-        buffer.flush();
-        return buffer.toByteArray();
-    }
-
-    public boolean isFileEditing(Object projectObject, File file) {
+    @Override
+    public boolean isFileEditing(@NotNull Object projectObject, @NotNull File file) {
         VirtualFile scriptFile = LocalFileSystem.getInstance().findFileByIoFile(file);
         boolean fileIsEditing = false;
 
-        if (scriptFile != null)
+        if (scriptFile != null) {
             fileIsEditing = FileEditorManager.getInstance((Project) projectObject).getEditors(scriptFile).length != 0;
+        }
+
         return fileIsEditing;
     }
 
-    public <T extends StorageServiceTreeItem> void openItem(@NotNull Object projectObject, StorageAccount storageAccount, T item, String itemType, final String itemName,
-                                                     final String iconName) {
+    @Override
+    public <T extends StorageServiceTreeItem> void openItem(@NotNull Object projectObject,
+                                                            @Nullable StorageAccount storageAccount,
+                                                            @NotNull T item,
+                                                            @Nullable String itemType,
+                                                            @NotNull final String itemName,
+                                                            @Nullable final String iconName) {
         LightVirtualFile itemVirtualFile = new LightVirtualFile(item.getName() + itemType);
         itemVirtualFile.putUserData((Key<T>) name2Key.get(item.getClass()), item);
         itemVirtualFile.putUserData(STORAGE_KEY, storageAccount);
@@ -286,33 +241,41 @@ public class IDEHelperImpl implements IDEHelper {
         FileEditorManager.getInstance((Project) projectObject).openFile(itemVirtualFile, true, true);
     }
 
-    public <T extends StorageServiceTreeItem> Object getOpenedFile(Object projectObject, StorageAccount storageAccount, T item) {
+    @Nullable
+    @Override
+    public <T extends StorageServiceTreeItem> Object getOpenedFile(@NotNull Object projectObject,
+                                                                   @NotNull StorageAccount storageAccount,
+                                                                   @NotNull T item) {
         FileEditorManager fileEditorManager = FileEditorManager.getInstance((Project) projectObject);
 
         for (VirtualFile editedFile : fileEditorManager.getOpenFiles()) {
             T editedItem = editedFile.getUserData((Key<T>) name2Key.get(item.getClass()));
             StorageAccount editedStorageAccount = editedFile.getUserData(STORAGE_KEY);
 
-            if(editedStorageAccount != null
+            if (editedStorageAccount != null
                     && editedItem != null
                     && editedStorageAccount.getName().equals(storageAccount.getName())
                     && editedItem.getName().equals(item.getName())) {
                 return editedFile;
             }
         }
+
         return null;
     }
 
-    public void closeFile(Object projectObject, Object openedFile) {
+    @Override
+    public void closeFile(@NotNull Object projectObject, @NotNull Object openedFile) {
         FileEditorManager.getInstance((Project) projectObject).closeFile((VirtualFile) openedFile);
     }
 
-    public void refreshQueue(final Object projectObject, final StorageAccount storageAccount, final Queue queue) {
+    @Override
+    public void refreshQueue(@NotNull final Object projectObject, @NotNull final StorageAccount storageAccount,
+                             @NotNull final Queue queue) {
         ApplicationManager.getApplication().runReadAction(new Runnable() {
             @Override
             public void run() {
                 VirtualFile file = (VirtualFile) getOpenedFile(projectObject, storageAccount, queue);
-                if(file != null) {
+                if (file != null) {
                     final QueueFileEditor queueFileEditor = (QueueFileEditor) FileEditorManager.getInstance((Project) projectObject).getEditors(file)[0];
                     ApplicationManager.getApplication().invokeLater(new Runnable() {
                         @Override
@@ -325,12 +288,16 @@ public class IDEHelperImpl implements IDEHelper {
         });
     }
 
-    public void invokeAuthLauncherTask(Object projectObject, BrowserLauncher browserLauncher, String windowTitle) {
+    @Override
+    public void invokeAuthLauncherTask(@Nullable Object projectObject, @NotNull BrowserLauncher browserLauncher,
+                                       @NotNull String windowTitle) {
         LauncherTask task = new LauncherTask(browserLauncher, (Project) projectObject, windowTitle, true);
         task.queue();
     }
 
-    public void invokeBackgroundLoader(final Object projectObject, final Node node, final SettableFuture<List<Node>> future, final String name) {
+    @Override
+    public void invokeBackgroundLoader(@Nullable final Object projectObject, @NotNull final Node node,
+                                       @NotNull final SettableFuture<List<Node>> future, @NotNull final String name) {
         // background tasks via ProgressManager can be scheduled only on the
         // dispatch thread
         ApplicationManager.getApplication().invokeLater(new Runnable() {
@@ -341,39 +308,50 @@ public class IDEHelperImpl implements IDEHelper {
         });
     }
 
-    public void invokeLater(Runnable runnable) {
+    @Override
+    public void invokeLater(@NotNull Runnable runnable) {
         ApplicationManager.getApplication().invokeLater(runnable);
     }
 
-    public void invokeAndWait(Runnable runnable) {
+    @Override
+    public void invokeAndWait(@NotNull Runnable runnable) {
         ApplicationManager.getApplication().invokeAndWait(runnable, ModalityState.any());
     }
 
-    public void executeOnPooledThread(Runnable runnable) {
+    @Override
+    public void executeOnPooledThread(@NotNull Runnable runnable) {
         ApplicationManager.getApplication().executeOnPooledThread(runnable);
     }
 
-    public String getProperty(String name) {
+    @Nullable
+    @Override
+    public String getProperty(@NotNull String name) {
         return PropertiesComponent.getInstance().getValue(name);
     }
 
-    public String getProperty(String name, String defaultValue) {
-        PropertiesComponent pc = PropertiesComponent.getInstance();
-        return pc.getValue(name, defaultValue);
+    @NotNull
+    @Override
+    public String getProperty(@NotNull String name, @NotNull String defaultValue) {
+        return PropertiesComponent.getInstance().getValue(name, defaultValue);
     }
 
-    public void setProperty(String name, String value) {
+    @Override
+    public void setProperty(@NotNull String name, @NotNull String value) {
         PropertiesComponent.getInstance().setValue(name, value);
     }
 
-    public void unsetProperty(String name) {
+    @Override
+    public void unsetProperty(@NotNull String name) {
         PropertiesComponent.getInstance().unsetValue(name);
     }
 
-    public boolean isPropertySet(String name) {
+    @Override
+    public boolean isPropertySet(@NotNull String name) {
         return PropertiesComponent.getInstance().isValueSet(name);
     }
 
+    @NotNull
+    @Override
     public String promptForOpenSSLPath() {
         OpenSSLFinderForm openSSLFinderForm = new OpenSSLFinderForm();
         openSSLFinderForm.setModal(true);
@@ -381,5 +359,88 @@ public class IDEHelperImpl implements IDEHelper {
         openSSLFinderForm.setVisible(true);
 
         return getProperty("MSOpenSSLPath", "");
+    }
+
+    private static void openFile(@NotNull final Object projectObject, @Nullable final VirtualFile finalEditfile) {
+        try {
+            if (finalEditfile != null) {
+                finalEditfile.setWritable(true);
+
+                ApplicationManager.getApplication().invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        FileEditorManager.getInstance((Project) projectObject).openFile(finalEditfile, true);
+                    }
+                });
+            }
+        } catch (Throwable e) {
+            DefaultLoader.getUIHelper().showException("Error writing temporal editable file:", e);
+        }
+    }
+
+    private static void copyJarFiles(@NotNull final Module module, @NotNull VirtualFile baseDir,
+                                     @NotNull File zipFile, @NotNull String zipPath)
+            throws IOException {
+        if (baseDir.isDirectory()) {
+            final ZipFile zip = new ZipFile(zipFile);
+            Enumeration<? extends ZipEntry> entries = zip.entries();
+
+            while (entries.hasMoreElements()) {
+                final ZipEntry zipEntry = entries.nextElement();
+
+                if (!zipEntry.isDirectory() && zipEntry.getName().startsWith(zipPath) &&
+                        zipEntry.getName().endsWith(".jar") &&
+                        !(zipEntry.getName().endsWith("-sources.jar") || zipEntry.getName().endsWith("-javadoc.jar"))) {
+                    VirtualFile libsVf = null;
+
+                    for (VirtualFile vf : baseDir.getChildren()) {
+                        if (vf.getName().equals("libs")) {
+                            libsVf = vf;
+                            break;
+                        }
+                    }
+
+                    if (libsVf == null) {
+                        libsVf = baseDir.createChildDirectory(module.getProject(), "libs");
+                    }
+
+                    final VirtualFile libs = libsVf;
+
+                    ApplicationManager.getApplication().invokeAndWait(new Runnable() {
+                        @Override
+                        public void run() {
+                            ApplicationManager.getApplication().runWriteAction(new Runnable() {
+                                @Override
+                                public void run() {
+                                    try {
+                                        InputStream mobileserviceInputStream = zip.getInputStream(zipEntry);
+                                        VirtualFile msVF = libs.createChildData(module.getProject(), zipEntry.getName().split("/")[1]);
+                                        msVF.setBinaryContent(getArray(mobileserviceInputStream));
+                                    } catch (Throwable ex) {
+                                        DefaultLoader.getUIHelper().showException("Error trying to configure Azure Mobile Services", ex);
+                                    }
+                                }
+                            });
+                        }
+                    }, ModalityState.defaultModalityState());
+                }
+            }
+        }
+    }
+
+    @NotNull
+    private static byte[] getArray(@NotNull InputStream is) throws IOException {
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+
+        int nRead;
+        byte[] data = new byte[16384];
+
+        while ((nRead = is.read(data, 0, data.length)) != -1) {
+            buffer.write(data, 0, nRead);
+        }
+
+        buffer.flush();
+
+        return buffer.toByteArray();
     }
 }

@@ -1,19 +1,18 @@
 /**
  * Copyright 2014 Microsoft Open Technologies Inc.
- *
+ * <p/>
  * Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p/>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p/>
  * Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-
 package com.microsoftopentechnologies.intellij.helpers.storage;
 
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter;
@@ -28,10 +27,10 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
-import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
-import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.forms.TableEntityForm;
 import com.microsoftopentechnologies.intellij.forms.TablesQueryDesigner;
+import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
+import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk.AzureSDKManagerImpl;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount;
@@ -67,11 +66,8 @@ public class TableFileEditor implements FileEditor {
     private JTable entitiesTable;
     private List<TableEntity> tableEntities;
 
-
     public TableFileEditor() {
-
         ActionListener queryActionListener = new ActionListener() {
-
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 fillGrid();
@@ -91,7 +87,6 @@ public class TableFileEditor implements FileEditor {
         newEntityButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-
                 final TableEntityForm form = new TableEntityForm();
                 form.setProject(project);
                 form.setTableName(table.getName());
@@ -118,7 +113,6 @@ public class TableFileEditor implements FileEditor {
         queryDesignerButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-
                 final TablesQueryDesigner form = new TablesQueryDesigner();
 
                 form.setOnFinish(new Runnable() {
@@ -199,12 +193,12 @@ public class TableFileEditor implements FileEditor {
         menu.add(deleteMenu);
 
         return menu;
-
     }
 
     private void editEntity() {
         TableEntity[] selectedEntities = getSelectedEntities();
-        if(selectedEntities.length > 0) {
+
+        if (selectedEntities.length > 0) {
             final TableEntity selectedEntity = selectedEntities[0];
 
             final TableEntityForm form = new TableEntityForm();
@@ -214,7 +208,6 @@ public class TableFileEditor implements FileEditor {
             form.setTableEntity(selectedEntity);
 
             form.setTitle("Edit Entity");
-
 
             form.setOnFinish(new Runnable() {
                 @Override
@@ -253,7 +246,6 @@ public class TableFileEditor implements FileEditor {
         ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
             public void run() {
-
                 Map<String, List<String>> columnData = new LinkedHashMap<String, List<String>>();
                 columnData.put(PARTITION_KEY, new ArrayList<String>());
                 columnData.put(ROW_KEY, new ArrayList<String>());
@@ -280,7 +272,6 @@ public class TableFileEditor implements FileEditor {
                     }
                 }
 
-
                 DefaultTableModel model = new DefaultTableModel() {
                     @Override
                     public boolean isCellEditable(int i, int i1) {
@@ -294,15 +285,14 @@ public class TableFileEditor implements FileEditor {
 
                 entitiesTable.setModel(model);
 
-                for(int i = 0; i != entitiesTable.getColumnCount(); i++) {
+                for (int i = 0; i != entitiesTable.getColumnCount(); i++) {
                     entitiesTable.getColumnModel().getColumn(i).setPreferredWidth(100);
                 }
             }
         });
-
     }
 
-    private void deleteSelection(){
+    private void deleteSelection() {
         final TableEntity[] selectedEntities = getSelectedEntities();
 
         ProgressManager.getInstance().run(new Task.Backgroundable(project, "Deleting entities", false) {
@@ -311,7 +301,6 @@ public class TableFileEditor implements FileEditor {
                 progressIndicator.setIndeterminate(false);
 
                 try {
-
                     if (selectedEntities != null) {
                         for (int i = 0; i < selectedEntities.length; i++) {
                             progressIndicator.setFraction((double) i / selectedEntities.length);
@@ -328,7 +317,7 @@ public class TableFileEditor implements FileEditor {
                             }
                         });
                     }
-                } catch(AzureCmdException ex) {
+                } catch (AzureCmdException ex) {
                     DefaultLoader.getUIHelper().showException("Error deleting entities", ex, "Service Explorer", false, true);
                 }
             }
@@ -336,19 +325,21 @@ public class TableFileEditor implements FileEditor {
     }
 
     private TableEntity[] getSelectedEntities() {
-        if(tableEntities == null) {
+        if (tableEntities == null) {
             return null;
         }
 
         int partitionIdIndex = -1;
         int rowIdIndex = -1;
 
-        for(int i = 0; i < entitiesTable.getColumnCount(); i++) {
+        for (int i = 0; i < entitiesTable.getColumnCount(); i++) {
             String columnName = entitiesTable.getColumnName(i);
-            if(columnName.equals(PARTITION_KEY)){
+
+            if (columnName.equals(PARTITION_KEY)) {
                 partitionIdIndex = i;
             }
-            if(columnName.equals(ROW_KEY)){
+
+            if (columnName.equals(ROW_KEY)) {
                 rowIdIndex = i;
             }
         }
@@ -359,8 +350,9 @@ public class TableFileEditor implements FileEditor {
             for (TableEntity tableEntity : tableEntities) {
                 String partitionValue = entitiesTable.getValueAt(i, partitionIdIndex).toString();
                 String rowIdValue = entitiesTable.getValueAt(i, rowIdIndex).toString();
-                if(tableEntity.getPartitionKey().equals(partitionValue)
-                        && tableEntity.getRowKey().equals(rowIdValue)){
+
+                if (tableEntity.getPartitionKey().equals(partitionValue)
+                        && tableEntity.getRowKey().equals(rowIdValue)) {
                     selectedEntities.add(tableEntity);
                 }
             }
@@ -388,7 +380,8 @@ public class TableFileEditor implements FileEditor {
                 case String:
                     return property.getValueAsString();
             }
-        } catch (AzureCmdException ignored) {}
+        } catch (AzureCmdException ignored) {
+        }
 
         return "";
     }
@@ -430,7 +423,8 @@ public class TableFileEditor implements FileEditor {
     }
 
     @Override
-    public void setState(@NotNull FileEditorState fileEditorState) {}
+    public void setState(@NotNull FileEditorState fileEditorState) {
+    }
 
     @Override
     public boolean isModified() {
@@ -443,16 +437,20 @@ public class TableFileEditor implements FileEditor {
     }
 
     @Override
-    public void selectNotify() {}
+    public void selectNotify() {
+    }
 
     @Override
-    public void deselectNotify() {}
+    public void deselectNotify() {
+    }
 
     @Override
-    public void addPropertyChangeListener(@NotNull PropertyChangeListener propertyChangeListener) {}
+    public void addPropertyChangeListener(@NotNull PropertyChangeListener propertyChangeListener) {
+    }
 
     @Override
-    public void removePropertyChangeListener(@NotNull PropertyChangeListener propertyChangeListener) {}
+    public void removePropertyChangeListener(@NotNull PropertyChangeListener propertyChangeListener) {
+    }
 
     @Nullable
     @Override
@@ -473,7 +471,8 @@ public class TableFileEditor implements FileEditor {
     }
 
     @Override
-    public void dispose() {}
+    public void dispose() {
+    }
 
     @Nullable
     @Override
@@ -482,7 +481,6 @@ public class TableFileEditor implements FileEditor {
     }
 
     @Override
-    public <T> void putUserData(@NotNull Key<T> key, @Nullable T t) {}
-
-
+    public <T> void putUserData(@NotNull Key<T> key, @Nullable T t) {
+    }
 }
