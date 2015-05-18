@@ -238,7 +238,12 @@ public class IDEHelperImpl implements IDEHelper {
             }
         });
 
-        FileEditorManager.getInstance((Project) projectObject).openFile(itemVirtualFile, true, true);
+        openItem(projectObject, itemVirtualFile);
+    }
+
+    @Override
+    public <T extends StorageServiceTreeItem> void openItem(@NotNull Object projectObject, @NotNull Object itemVirtualFile){
+        FileEditorManager.getInstance((Project) projectObject).openFile((VirtualFile) itemVirtualFile, true, true);
     }
 
     @Nullable
