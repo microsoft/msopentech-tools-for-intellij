@@ -19,6 +19,7 @@ package com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.m
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
+import com.microsoftopentechnologies.tooling.msservices.helpers.NotNull;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.rest.AzureRestAPIManager;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.rest.AzureRestAPIHelper;
@@ -30,12 +31,15 @@ import com.microsoftopentechnologies.tooling.msservices.model.ms.Table;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.Node;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.NodeActionListener;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.NodeActionListenerAsync;
 
+import javax.swing.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.Callable;
 
 public class MobileServiceNode extends Node {
     private static final String ICON_PATH = "service.png";
@@ -148,7 +152,9 @@ public class MobileServiceNode extends Node {
     @Override
     protected Map<String, Class<? extends NodeActionListener>> initActions() {
         if (isNodeRuntime()) {
+            addAction("Delete", new DeleteMobileServiceAction());
             super.initActions();
+
             return null;
         } else {// register the sole edit table action
             // todo
@@ -198,4 +204,53 @@ public class MobileServiceNode extends Node {
     public Node getJobsNode() {
         return jobsNode;
     }
+
+    public class DeleteMobileServiceAction extends NodeActionListenerAsync {
+        int optionDialog;
+
+        public DeleteMobileServiceAction() {
+            super("Deleting Mobile Service");
+        }
+
+        @NotNull
+        @Override
+        protected Callable<Boolean> beforeAsyncActionPerfomed() {
+
+            return new Callable<Boolean>() {
+                @Override
+                public Boolean call() throws Exception {
+                    optionDialog = JOptionPane.showOptionDialog(null,
+                            "This operation will delete mobile service " + mobileService.getName() +
+                                    ".\nAre you sure you want to continue?",
+                            "Service explorer",
+                            JOptionPane.YES_NO_OPTION,
+                            JOptionPane.QUESTION_MESSAGE,
+                            null,
+                            new String[]{"Yes", "No"},
+                            null);
+
+                    return (optionDialog == JOptionPane.YES_OPTION);
+                }
+            };
+        }
+
+        @Override
+        protected void runInBackground(NodeActionEvent e) throws AzureCmdException {
+
+            MobileServiceNode.this.setLoading(true);
+
+            AzureRestAPIManagerImpl.getManager().deleteService(mobileService.getSubcriptionId(), mobileService.getName());
+
+            DefaultLoader.getIdeHelper().invokeLater(new Runnable() {
+                @Override
+                public void run() {
+
+                    // instruct parent node to remove this node
+                    getParent().removeDirectChildNode(MobileServiceNode.this);
+                }
+            });
+
+        }
+    }
+
 }

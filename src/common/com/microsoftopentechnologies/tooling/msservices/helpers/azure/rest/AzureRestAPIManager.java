@@ -57,13 +57,11 @@ public interface AzureRestAPIManager {
 
     AuthenticationResult getAuthenticationTokenForSubscription(String subscriptionId);
 
-    public void setAuthenticationTokenForSubscription(String subscriptionId, AuthenticationResult authenticationToken);
+    void setAuthenticationTokenForSubscription(String subscriptionId, AuthenticationResult authenticationToken);
 
-    public Subscription getSubscriptionFromId(final String subscriptionId) throws SAXException, ParserConfigurationException, XPathExpressionException, IOException, CertificateException, NoSuchAlgorithmException, UnrecoverableKeyException, ExecutionException, InterruptedException, KeyManagementException, KeyStoreException, AzureCmdException, NoSubscriptionException;
+    Subscription getSubscriptionFromId(final String subscriptionId) throws SAXException, ParserConfigurationException, XPathExpressionException, IOException, CertificateException, NoSuchAlgorithmException, UnrecoverableKeyException, ExecutionException, InterruptedException, KeyManagementException, KeyStoreException, AzureCmdException, NoSubscriptionException;
 
     void loadSubscriptionFile(String subscriptionFile) throws AzureCmdException;
-
-    void removeSubscription(String subscriptionId) throws AzureCmdException;
 
     List<SqlDb> getSqlDb(UUID subscriptionId, SqlServer server) throws AzureCmdException;
 
@@ -110,4 +108,6 @@ public interface AzureRestAPIManager {
     List<String> getLocations(UUID subscriptionId) throws AzureCmdException;
 
     void setSelectedSubscriptions(List<UUID> selectedList) throws AzureCmdException;
+
+    void deleteService(UUID subscriptionId, String serviceName);
 }
