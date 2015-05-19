@@ -126,31 +126,35 @@ public abstract class DatePickerCellEditor extends DefaultCellEditor {
         return this.value;
     }
 
-    private static void checkAccess(int var0) {
-        if (System.getSecurityManager() != null && !Modifier.isPublic(var0)) {
+    private static void checkAccess(int modifiers) {
+        if (System.getSecurityManager() != null && !Modifier.isPublic(modifiers)) {
             throw new SecurityException("Resource is not accessible");
         }
     }
 
-    private static void checkPackageAccess(Class var0) {
-        checkPackageAccess(var0.getName());
+    private static void checkPackageAccess(Class clazz) {
+        checkPackageAccess(clazz.getName());
     }
 
-    private static void checkPackageAccess(String var0) {
-        SecurityManager var1 = System.getSecurityManager();
-        if (var1 != null) {
-            String var2 = var0.replace('/', '.');
-            int var3;
-            if (var2.startsWith("[")) {
-                var3 = var2.lastIndexOf(91) + 2;
-                if (var3 > 1 && var3 < var2.length()) {
-                    var2 = var2.substring(var3);
+    private static void checkPackageAccess(String name) {
+        SecurityManager securityManager = System.getSecurityManager();
+
+        if (securityManager != null) {
+            String classname = name.replace('/', '.');
+            int index;
+
+            if (classname.startsWith("[")) {
+                index = classname.lastIndexOf('[') + 2;
+
+                if (index > 1 && index < classname.length()) {
+                    classname = classname.substring(index);
                 }
             }
 
-            var3 = var2.lastIndexOf(46);
-            if (var3 != -1) {
-                var1.checkPackageAccess(var2.substring(0, var3));
+            index = classname.lastIndexOf('.');
+
+            if (index != -1) {
+                securityManager.checkPackageAccess(classname.substring(0, index));
             }
         }
     }

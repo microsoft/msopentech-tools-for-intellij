@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="msopentech_plugin_for_intellij/android_studio" default="all">
+  
+  
+  <property file="build.properties"/>
+  <!-- Uncomment the following property if no tests compilation is needed -->
+  <!-- 
+  <property name="skip.tests" value="true"/>
+   -->
+  
+  <!-- Compiler options -->
+  
+  <property name="compiler.debug" value="on"/>
+  <property name="compiler.generate.no.warnings" value="off"/>
+  <property name="compiler.args" value=""/>
+  <property name="compiler.max.memory" value="700m"/>
+  <patternset id="ignored.files">
+    <exclude name="**/*.hprof/**"/>
+    <exclude name="**/*.pyc/**"/>
+    <exclude name="**/*.pyo/**"/>
+    <exclude name="**/*.rbc/**"/>
+    <exclude name="**/*~/**"/>
+    <exclude name="**/.DS_Store/**"/>
+    <exclude name="**/.bundle/**"/>
+    <exclude name="**/.git/**"/>
+    <exclude name="**/.hg/**"/>
+    <exclude name="**/.svn/**"/>
+    <exclude name="**/.tox/**"/>
+    <exclude name="**/CVS/**"/>
+    <exclude name="**/RCS/**"/>
+    <exclude name="**/SCCS/**"/>
+    <exclude name="**/__pycache__/**"/>
+    <exclude name="**/_svn/**"/>
+    <exclude name="**/rcs/**"/>
+    <exclude name="**/vssver.scc/**"/>
+    <exclude name="**/vssver2.scc/**"/>
+  </patternset>
+  <patternset id="library.patterns">
+    <include name="*.zip"/>
+    <include name="*.apk"/>
+    <include name="*.war"/>
+    <include name="*.egg"/>
+    <include name="*.ear"/>
+    <include name="*.ane"/>
+    <include name="*.swc"/>
+    <include name="*.jar"/>
+  </patternset>
+  <patternset id="compiler.resources">
+    <exclude name="**/?*.java"/>
+    <exclude name="**/?*.form"/>
+    <exclude name="**/?*.class"/>
+    <exclude name="**/?*.groovy"/>
+    <exclude name="**/?*.scala"/>
+    <exclude name="**/?*.flex"/>
+    <exclude name="**/?*.kt"/>
+    <exclude name="**/?*.clj"/>
+  </patternset>
+  
+  
+  <!-- Project Libraries -->
+  
+  <path id="library..cspack.classpath">
+    <pathelement location="${basedir}/lib/.cspack.jar"/>
+  </path>
+  
+  <path id="library.antintegration.classpath">
+    <pathelement location="${idea.home}/plugins/ant/lib/antIntegration.jar"/>
+  </path>
+  
+  <path id="library.azure-activedirectory-interactive-auth-library-for-java.classpath">
+    <pathelement location="${basedir}/lib/azure-activedirectory-interactive-auth-library-for-java/azure-activedirectory-interactive-auth-library-for-java.jar"/>
+    <pathelement location="${basedir}/lib/azure-activedirectory-interactive-auth-library-for-java/dependencies/gson-2.3.1.jar"/>
+    <pathelement location="${basedir}/lib/azure-activedirectory-interactive-auth-library-for-java/dependencies/guava-18.0.jar"/>
+  </path>
+  
+  <path id="library.azure-graph-api.classpath">
+    <pathelement location="${basedir}/lib/graph/directory-services-0.11.1.jar"/>
+    <pathelement location="${basedir}/lib/graph/odata-engine-core-0.11.1.jar"/>
+    <pathelement location="${basedir}/lib/graph/odata-engine-jvm-impl-0.11.1.jar"/>
+  </path>
+  
+  <path id="library.azure-sdk.classpath">
+    <pathelement location="${basedir}/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/azure-core-0.7.0.jar"/>
+    <pathelement location="${basedir}/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/dependencies/activation-1.1.jar"/>
+    <pathelement location="${basedir}/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/dependencies/azure-management-0.7.0.jar"/>
+    <pathelement location="${basedir}/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/dependencies/azure-management-compute-0.7.0.jar"/>
+    <pathelement location="${basedir}/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/dependencies/azure-management-network-0.7.0.jar"/>
+    <pathelement location="${basedir}/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/dependencies/azure-management-storage-0.7.0.jar"/>
+    <pathelement location="${basedir}/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/dependencies/commons-codec-1.6.jar"/>
+    <pathelement location="${basedir}/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/dependencies/commons-logging-1.1.3.jar"/>
+    <pathelement location="${basedir}/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/dependencies/httpclient-4.3.1.jar"/>
+    <pathelement location="${basedir}/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/dependencies/httpcore-4.3.jar"/>
+    <pathelement location="${basedir}/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/dependencies/jackson-core-asl-1.9.2.jar"/>
+    <pathelement location="${basedir}/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/dependencies/jackson-jaxrs-1.9.2.jar"/>
+    <pathelement location="${basedir}/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/dependencies/jackson-mapper-asl-1.9.2.jar"/>
+    <pathelement location="${basedir}/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/dependencies/jackson-xc-1.9.2.jar"/>
+    <pathelement location="${basedir}/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/dependencies/javax.inject-1.jar"/>
+    <pathelement location="${basedir}/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/dependencies/jaxb-impl-2.2.3-1.jar"/>
+    <pathelement location="${basedir}/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/dependencies/jersey-client-1.13.jar"/>
+    <pathelement location="${basedir}/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/dependencies/jersey-core-1.13.jar"/>
+    <pathelement location="${basedir}/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/dependencies/jersey-json-1.13.jar"/>
+    <pathelement location="${basedir}/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/dependencies/jettison-1.1.jar"/>
+    <pathelement location="${basedir}/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/dependencies/mail-1.4.5.jar"/>
+  </path>
+  
+  <path id="library.azurecommons.classpath">
+    <pathelement location="${basedir}/lib/AzureCommons.jar"/>
+  </path>
+  
+  <path id="library.com.microsoft.azure:azure-storage:2.0.0.classpath">
+    <pathelement location="${path.variable.maven_repository}/com/fasterxml/jackson/core/jackson-core/2.2.3/jackson-core-2.2.3.jar"/>
+    <pathelement location="${path.variable.maven_repository}/com/microsoft/azure/azure-storage/2.0.0/azure-storage-2.0.0.jar"/>
+    <pathelement location="${path.variable.maven_repository}/org/apache/commons/commons-lang3/3.3.2/commons-lang3-3.3.2.jar"/>
+    <pathelement location="${path.variable.maven_repository}/org/slf4j/slf4j-api/1.7.5/slf4j-api-1.7.5.jar"/>
+  </path>
+  
+  <path id="library.gradle.classpath">
+    <pathelement location="${idea.home}/plugins/gradle/lib/gradle.jar"/>
+  </path>
+  
+  <path id="library.org.apache.commons:commons-lang3:3.3.2.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/apache/commons/commons-lang3/3.3.2/commons-lang3-3.3.2.jar"/>
+  </path>
+  
+  <path id="library.org.apache.httpcomponents:httpclient-cache:4.3.5.classpath">
+    <pathelement location="${path.variable.maven_repository}/commons-codec/commons-codec/1.6/commons-codec-1.6.jar"/>
+    <pathelement location="${path.variable.maven_repository}/commons-logging/commons-logging/1.1.3/commons-logging-1.1.3.jar"/>
+    <pathelement location="${path.variable.maven_repository}/org/apache/httpcomponents/httpclient-cache/4.3.5/httpclient-cache-4.3.5.jar"/>
+    <pathelement location="${path.variable.maven_repository}/org/apache/httpcomponents/httpclient/4.3.5/httpclient-4.3.5.jar"/>
+    <pathelement location="${path.variable.maven_repository}/org/apache/httpcomponents/httpcore/4.3.2/httpcore-4.3.2.jar"/>
+  </path>
+  
+  <path id="library.projectmanagerlibrary.classpath">
+    <pathelement location="${basedir}/lib/ProjectManagerLibrary.jar"/>
+  </path>
+  <!-- Register Custom Compiler Taskdefs -->
+  <property name="javac2.home" value="${idea.home}/lib"/>
+  <path id="javac2.classpath">
+    <pathelement location="${javac2.home}/javac2.jar"/>
+    <pathelement location="${javac2.home}/jdom.jar"/>
+    <pathelement location="${javac2.home}/asm-all.jar"/>
+    <pathelement location="${javac2.home}/jgoodies-forms.jar"/>
+  </path>
+  <target name="register.custom.compilers">
+    <taskdef name="javac2" classname="com.intellij.ant.Javac2" classpathref="javac2.classpath"/>
+    <taskdef name="instrumentIdeaExtensions" classname="com.intellij.ant.InstrumentIdeaExtensions" classpathref="javac2.classpath"/>
+  </target>
+  
+  <!-- Modules -->
+  
+  <import file="${basedir}/src/common/module_common.xml"/>
+  
+  <import file="${basedir}/module_msopentech-tools-for-intellij.xml"/>
+  
+  <target name="init" description="Build initialization">
+    <!-- Perform any build initialization in this target -->
+  </target>
+  
+  <target name="clean" depends="clean.module.common, clean.module.msopentech-tools-for-intellij" description="cleanup all"/>
+  
+  <target name="build.modules" depends="init, clean, compile.module.common, plugin.build.jar.msopentech-tools-for-intellij" description="build all modules"/>
+  
+  <target name="all" depends="build.modules" description="build all"/>
+</project>
