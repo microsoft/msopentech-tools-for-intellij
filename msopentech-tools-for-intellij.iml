@@ -10,19 +10,16 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module" module-name="common" />
+    <orderEntry type="library" scope="PROVIDED" name="antIntegration" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="gradle" level="project" />
     <orderEntry type="library" name="AzureCommons" level="project" />
     <orderEntry type="library" name="ProjectManagerLibrary" level="project" />
-    <orderEntry type="library" name="com.nimbusds:nimbus-jose-jwt:2.11.0" level="project" />
-    <orderEntry type="library" name="org.apache.httpcomponents:fluent-hc:4.3.5" level="project" />
-    <orderEntry type="library" name="org.apache.httpcomponents:httpclient-cache:4.3.5" level="project" />
-    <orderEntry type="library" name="org.apache.httpcomponents:httpmime:4.3.5" level="project" />
-    <orderEntry type="library" scope="PROVIDED" name="gradle" level="project" />
-    <orderEntry type="library" scope="PROVIDED" name="antIntegration" level="project" />
-    <orderEntry type="library" name="com.google.guava:guava:18.0" level="project" />
     <orderEntry type="library" name="azure-graph-api" level="project" />
-    <orderEntry type="library" exported="" name="com.microsoft.azure:azure-storage:2.0.0" level="project" />
     <orderEntry type="library" name=".cspack" level="project" />
     <orderEntry type="library" name="azure-sdk" level="project" />
-    <orderEntry type="module" module-name="common" />
+    <orderEntry type="library" name="azure-activedirectory-interactive-auth-library-for-java" level="project" />
+    <orderEntry type="library" name="org.apache.commons:commons-lang3:3.3.2" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="org.apache.httpcomponents:httpclient-cache:4.3.5" level="project" />
   </component>
 </module>

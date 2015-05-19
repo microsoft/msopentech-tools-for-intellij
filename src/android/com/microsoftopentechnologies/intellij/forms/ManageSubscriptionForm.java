@@ -1,19 +1,18 @@
 /**
  * Copyright 2014 Microsoft Open Technologies Inc.
- *
+ * <p/>
  * Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p/>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p/>
  * Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-
 package com.microsoftopentechnologies.intellij.forms;
 
 import com.google.common.util.concurrent.FutureCallback;
@@ -22,14 +21,14 @@ import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.project.Project;
+import com.microsoftopentechnologies.aad.adal4j.AuthenticationContext;
+import com.microsoftopentechnologies.aad.adal4j.AuthenticationResult;
+import com.microsoftopentechnologies.aad.adal4j.PromptValue;
+import com.microsoftopentechnologies.intellij.components.MSOpenTechToolsApplication;
 import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
 import com.microsoftopentechnologies.tooling.msservices.components.AppSettingsNames;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
-import com.microsoftopentechnologies.intellij.components.MSOpenTechToolsApplication;
 import com.microsoftopentechnologies.tooling.msservices.components.PluginSettings;
-import com.microsoftopentechnologies.tooling.msservices.helpers.aadauth.AuthenticationContext;
-import com.microsoftopentechnologies.tooling.msservices.helpers.aadauth.AuthenticationResult;
-import com.microsoftopentechnologies.tooling.msservices.helpers.aadauth.PromptValue;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureAuthenticationMode;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.rest.AzureRestAPIManager;
@@ -105,7 +104,6 @@ public class ManageSubscriptionForm extends JDialog {
                                 settings.getAzureServiceManagementUri(),
                                 settings.getClientId(),
                                 settings.getRedirectUri(),
-                                project,
                                 PromptValue.login), new FutureCallback<AuthenticationResult>() {
                             @Override
                             public void onSuccess(AuthenticationResult authenticationResult) {

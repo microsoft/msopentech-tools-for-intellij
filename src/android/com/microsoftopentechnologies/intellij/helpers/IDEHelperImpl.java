@@ -33,7 +33,6 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.LightVirtualFile;
 import com.microsoftopentechnologies.intellij.forms.OpenSSLFinderForm;
-import com.microsoftopentechnologies.intellij.helpers.aadauth.LauncherTask;
 import com.microsoftopentechnologies.intellij.helpers.storage.BlobExplorerFileEditorProvider;
 import com.microsoftopentechnologies.intellij.helpers.storage.QueueExplorerFileEditorProvider;
 import com.microsoftopentechnologies.intellij.helpers.storage.QueueFileEditor;
@@ -44,7 +43,6 @@ import com.microsoftopentechnologies.tooling.msservices.helpers.IDEHelper;
 import com.microsoftopentechnologies.tooling.msservices.helpers.NotNull;
 import com.microsoftopentechnologies.tooling.msservices.helpers.Nullable;
 import com.microsoftopentechnologies.tooling.msservices.helpers.ServiceCodeReferenceHelper;
-import com.microsoftopentechnologies.tooling.msservices.helpers.aadauth.BrowserLauncher;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.*;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.Node;
 import org.apache.commons.lang3.tuple.Pair;
@@ -291,13 +289,6 @@ public class IDEHelperImpl implements IDEHelper {
                 }
             }
         });
-    }
-
-    @Override
-    public void invokeAuthLauncherTask(@Nullable Object projectObject, @NotNull BrowserLauncher browserLauncher,
-                                       @NotNull String windowTitle) {
-        LauncherTask task = new LauncherTask(browserLauncher, (Project) projectObject, windowTitle, true);
-        task.queue();
     }
 
     @Override

@@ -19,12 +19,12 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.microsoftopentechnologies.aad.adal4j.AuthenticationResult;
 import com.microsoftopentechnologies.tooling.msservices.components.AppSettingsNames;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.tooling.msservices.helpers.NoSubscriptionException;
 import com.microsoftopentechnologies.tooling.msservices.helpers.StringHelper;
 import com.microsoftopentechnologies.tooling.msservices.helpers.XmlHelper;
-import com.microsoftopentechnologies.tooling.msservices.helpers.aadauth.AuthenticationResult;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureAuthenticationMode;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.rest.model.*;
@@ -764,7 +764,6 @@ public class AzureRestAPIManagerImpl implements AzureRestAPIManager {
         }
     }
 
-
     @Override
     public void uploadTableScript(UUID subscriptionId, String serviceName, String scriptName, String filePath) throws AzureCmdException {
         try {
@@ -778,7 +777,6 @@ public class AzureRestAPIManagerImpl implements AzureRestAPIManager {
         } catch (Exception e) {
             throw new AzureCmdException("Error upload script", e);
         }
-
     }
 
     @Override
@@ -811,7 +809,6 @@ public class AzureRestAPIManagerImpl implements AzureRestAPIManager {
         } catch (Exception e) {
             throw new AzureCmdException("Error getting API list", e);
         }
-
     }
 
     @Override
@@ -976,7 +973,6 @@ public class AzureRestAPIManagerImpl implements AzureRestAPIManager {
             //On error, create script for template
         }
     }
-
 
     @Override
     public void uploadJobScript(UUID subscriptionId, String serviceName, String scriptName, String filePath) throws AzureCmdException {

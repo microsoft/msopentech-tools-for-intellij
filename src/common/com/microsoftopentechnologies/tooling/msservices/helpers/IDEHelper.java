@@ -16,7 +16,6 @@
 package com.microsoftopentechnologies.tooling.msservices.helpers;
 
 import com.google.common.util.concurrent.SettableFuture;
-import com.microsoftopentechnologies.tooling.msservices.helpers.aadauth.BrowserLauncher;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.ClientStorageAccount;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.Queue;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.StorageServiceTreeItem;
@@ -61,9 +60,6 @@ public interface IDEHelper {
     void closeFile(@NotNull Object projectObject, @NotNull Object openedFile);
 
     void refreshQueue(@NotNull Object projectObject, @NotNull ClientStorageAccount storageAccount, @NotNull Queue queue);
-
-    void invokeAuthLauncherTask(@Nullable Object projectObject, @NotNull BrowserLauncher browserLauncher,
-                                @NotNull String windowTitle);
 
     void invokeBackgroundLoader(@Nullable Object projectObject, @NotNull Node node,
                                 @NotNull SettableFuture<List<Node>> future, @NotNull String name);

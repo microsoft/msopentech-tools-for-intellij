@@ -16,12 +16,12 @@
 package com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk;
 
 import com.microsoft.windowsazure.exception.ServiceException;
+import com.microsoftopentechnologies.aad.adal4j.AuthenticationContext;
+import com.microsoftopentechnologies.aad.adal4j.AuthenticationResult;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.tooling.msservices.components.PluginSettings;
 import com.microsoftopentechnologies.tooling.msservices.helpers.NotNull;
 import com.microsoftopentechnologies.tooling.msservices.helpers.StringHelper;
-import com.microsoftopentechnologies.tooling.msservices.helpers.aadauth.AuthenticationContext;
-import com.microsoftopentechnologies.tooling.msservices.helpers.aadauth.AuthenticationResult;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.rest.AzureRestAPIHelper;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.rest.AzureRestAPIManager;

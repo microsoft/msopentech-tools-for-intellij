@@ -18,7 +18,7 @@ package com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk;
 
 import com.microsoft.windowsazure.core.pipeline.filter.ServiceRequestContext;
 import com.microsoft.windowsazure.core.pipeline.filter.ServiceRequestFilter;
-import com.microsoftopentechnologies.tooling.msservices.helpers.aadauth.AuthenticationResult;
+import com.microsoftopentechnologies.aad.adal4j.AuthenticationResult;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.rest.AzureRestAPIManager;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.rest.AzureRestAPIHelper;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.rest.AzureRestAPIManagerImpl;

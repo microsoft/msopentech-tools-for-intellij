@@ -1,35 +1,33 @@
 /**
  * Copyright 2014 Microsoft Open Technologies Inc.
- *
+ * <p/>
  * Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p/>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p/>
  * Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-
 package com.microsoftopentechnologies.tooling.msservices.helpers.azure.rest;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.microsoftopentechnologies.aad.adal4j.AuthenticationContext;
+import com.microsoftopentechnologies.aad.adal4j.AuthenticationResult;
+import com.microsoftopentechnologies.aad.adal4j.PromptValue;
 import com.microsoftopentechnologies.tooling.msservices.components.AppSettingsNames;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.tooling.msservices.components.PluginSettings;
 import com.microsoftopentechnologies.tooling.msservices.helpers.*;
-import com.microsoftopentechnologies.tooling.msservices.helpers.aadauth.AuthenticationContext;
-import com.microsoftopentechnologies.tooling.msservices.helpers.aadauth.AuthenticationResult;
-import com.microsoftopentechnologies.tooling.msservices.helpers.aadauth.PromptValue;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureAuthenticationMode;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.tooling.msservices.model.ms.Subscription;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -41,7 +39,8 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
-import javax.xml.xpath.*;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -382,7 +381,7 @@ public class AzureRestAPIHelper {
         HttpsURLConnection sslConnection = getSSLConnectionFromCert(path, jsonContent, subscriptionId);
         int response = callback.apply(sslConnection);
         if (response < 200 || response > 299) {
-            if(callback.getError() != null) {
+            if (callback.getError() != null) {
                 throw callback.getError();
             }
 
@@ -461,7 +460,7 @@ public class AzureRestAPIHelper {
                     "Sign in to your Microsoft account";
 
             String promptValue = PromptValue.login;
-            if(isForSubscription) {
+            if (isForSubscription) {
                 promptValue = PromptValue.attemptNone;
 
                 // if we are on Linux or OS X version Mavericks or lesser then we use
@@ -486,7 +485,6 @@ public class AzureRestAPIHelper {
                     settings.getAzureServiceManagementUri(),
                     settings.getClientId(),
                     settings.getRedirectUri(),
-                    null,
                     windowTitle,
                     promptValue);
             token = future.get();
@@ -536,17 +534,15 @@ public class AzureRestAPIHelper {
                         getTenantName(subscriptionId),
                         settings.getAzureServiceManagementUri(),
                         settings.getClientId());
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 // if the error is HTTP status code 400 then we need to
                 // do interactive auth
-                if(e.getMessage().contains("HTTP status code 400")) {
+                if (e.getMessage().contains("HTTP status code 400")) {
                     return null;
                 }
 
                 throw e;
-            }
-            finally {
+            } finally {
                 context.dispose();
             }
 
