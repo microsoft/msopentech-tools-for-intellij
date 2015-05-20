@@ -45,8 +45,12 @@ public class TableNode extends Node {
 
     @Override
     protected void onNodeClick(NodeActionEvent ex) {
-        if(DefaultLoader.getIdeHelper().getOpenedFile(getProject(), storageAccount, table) == null) {
+
+        final Object openedFile = DefaultLoader.getIdeHelper().getOpenedFile(getProject(), storageAccount, table);
+        if (openedFile == null) {
             DefaultLoader.getIdeHelper().openItem(getProject(), storageAccount, table, " [Table]", "Table", "container.png");
+        } else {
+            DefaultLoader.getIdeHelper().openItem(getProject(), openedFile);
         }
     }
 

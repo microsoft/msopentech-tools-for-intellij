@@ -16,10 +16,19 @@
 
 package com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.storage;
 
+import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
+import com.microsoftopentechnologies.tooling.msservices.helpers.NotNull;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk.AzureSDKManagerImpl;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.Node;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.NodeActionEvent;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.NodeActionListener;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.NodeActionListenerAsync;
+
+import javax.swing.*;
+import java.util.Map;
+import java.util.concurrent.Callable;
 
 public class StorageNode extends Node {
     private static final String WAIT_ICON_PATH = "storageaccount.png";
@@ -52,6 +61,60 @@ public class StorageNode extends Node {
         addChildNode(blobsNode);
         addChildNode(queueNode);
         addChildNode(tableNode);
+    }
+
+    @Override
+    protected Map<String, Class<? extends NodeActionListener>> initActions() {
+        addAction("Delete", new DeleteStorageAccountAction());
+        return super.initActions();
+    }
+
+    public class DeleteStorageAccountAction extends NodeActionListenerAsync {
+        int optionDialog;
+
+        public DeleteStorageAccountAction() {
+            super("Deleting Storage Account");
+        }
+
+        @NotNull
+        @Override
+        protected Callable<Boolean> beforeAsyncActionPerfomed() {
+
+            return new Callable<Boolean>() {
+                @Override
+                public Boolean call() throws Exception {
+                    optionDialog = JOptionPane.showOptionDialog(null,
+                            "This operation will delete storage account " + storageAccount.getName() +
+                                    ".\nAre you sure you want to continue?",
+                            "Service explorer",
+                            JOptionPane.YES_NO_OPTION,
+                            JOptionPane.QUESTION_MESSAGE,
+                            null,
+                            new String[]{"Yes", "No"},
+                            null);
+
+                    return (optionDialog == JOptionPane.YES_OPTION);
+                }
+            };
+        }
+
+        @Override
+        protected void runInBackground(NodeActionEvent e) throws AzureCmdException {
+            final Node node = e.getAction().getNode();
+            node.setLoading(true);
+
+            AzureSDKManagerImpl.getManager().deleteStorageAccount(storageAccount);
+
+            DefaultLoader.getIdeHelper().invokeLater(new Runnable() {
+                @Override
+                public void run() {
+
+                    // instruct parent node to remove this node
+                    getParent().removeDirectChildNode(node);
+                }
+            });
+
+        }
     }
 
 }

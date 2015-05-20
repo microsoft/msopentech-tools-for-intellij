@@ -266,9 +266,11 @@ public class TableFileEditor implements FileEditor {
 
                 for (TableEntity tableEntity : tableEntities) {
                     for (String column : columnData.keySet()) {
-                        columnData.get(column).add(tableEntity.getProperties().containsKey(column)
-                                ? getFormattedProperty(tableEntity.getProperties().get(column))
-                                : "");
+                        if(!column.equals(PARTITION_KEY) && !column.equals(ROW_KEY) && !column.equals(TIMESTAMP)) {
+                            columnData.get(column).add(tableEntity.getProperties().containsKey(column)
+                                    ? getFormattedProperty(tableEntity.getProperties().get(column))
+                                    : "");
+                        }
                     }
                 }
 

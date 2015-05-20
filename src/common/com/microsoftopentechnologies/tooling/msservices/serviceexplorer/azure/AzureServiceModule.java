@@ -16,10 +16,16 @@
 
 package com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure;
 
+import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.rest.AzureRestAPIManagerImpl;
+import com.microsoftopentechnologies.tooling.msservices.model.ms.Subscription;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.Node;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.mobileservice.MobileServiceModule;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.storage.StorageModule;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.vm.VMServiceModule;
+
+import java.util.ArrayList;
 
 public class AzureServiceModule extends Node {
     private static final String AZURE_SERVICE_MODULE_ID = AzureServiceModule.class.getName();
@@ -41,7 +47,22 @@ public class AzureServiceModule extends Node {
     }
 
     @Override
-    protected void refreshItems() {
+    public String getName() {
+        try {
+            ArrayList<Subscription> subscriptionList = AzureRestAPIManagerImpl.getManager().getSubscriptionList();
+            if (subscriptionList != null && subscriptionList.size() > 0) {
+                return String.format("%s (%s)", BASE_MODULE_NAME, subscriptionList.size() > 1
+                        ? String.format("%s subscriptions", subscriptionList.size())
+                        : subscriptionList.get(0).getName());
+            }
+        } catch (AzureCmdException e) {
+            DefaultLoader.getUIHelper().showException("Error getting subscription list", e, "Service explorer", false, true);
+        }
+        return BASE_MODULE_NAME;
+    }
+
+    @Override
+    protected void refreshItems() throws AzureCmdException {
         // add the mobile service module; we check if the node has
         // already been added first because this method can be called
         // multiple times when the user clicks the "Refresh" context

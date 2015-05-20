@@ -16,6 +16,7 @@
 package com.microsoftopentechnologies.tooling.msservices.helpers;
 
 import com.google.common.util.concurrent.SettableFuture;
+import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.tooling.msservices.helpers.aadauth.BrowserLauncher;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.Queue;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount;
@@ -50,6 +51,8 @@ public interface IDEHelper {
                                                      @Nullable String itemType,
                                                      @NotNull String itemName,
                                                      @Nullable String iconName);
+
+    <T extends StorageServiceTreeItem> void openItem(@NotNull Object projectObject, @NotNull Object itemVirtualFile);
 
     @Nullable
     <T extends StorageServiceTreeItem> Object getOpenedFile(@NotNull Object projectObject,

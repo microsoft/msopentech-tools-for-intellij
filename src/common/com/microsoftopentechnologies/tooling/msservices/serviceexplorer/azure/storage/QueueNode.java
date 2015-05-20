@@ -46,8 +46,11 @@ public class QueueNode extends Node {
 
     @Override
     protected void onNodeClick(NodeActionEvent ex) {
-        if(DefaultLoader.getIdeHelper().getOpenedFile(getProject(), storageAccount, queue) == null) {
+        final Object openedFile = DefaultLoader.getIdeHelper().getOpenedFile(getProject(), storageAccount, queue);
+        if (openedFile == null) {
             DefaultLoader.getIdeHelper().openItem(getProject(), storageAccount, queue, " [Queue]", "Queue", "container.png");
+        } else {
+            DefaultLoader.getIdeHelper().openItem(getProject(), openedFile);
         }
     }
 

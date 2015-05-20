@@ -419,15 +419,6 @@ public class AzureRestAPIManagerImpl implements AzureRestAPIManager {
     }
 
     @Override
-    public void removeSubscription(String subscriptionId) throws AzureCmdException {
-        try {
-            AzureRestAPIHelper.removeSubscription(subscriptionId);
-        } catch (Exception e) {
-            throw new AzureCmdException("Error removing subscription", e);
-        }
-    }
-
-    @Override
     public List<MobileService> getServiceList(UUID subscriptionId) throws AzureCmdException {
         try {
             String path = String.format("/%s/services/mobileservices/mobileservices", subscriptionId.toString());
@@ -612,7 +603,8 @@ public class AzureRestAPIManagerImpl implements AzureRestAPIManager {
         }
     }
 
-    private void deleteService(UUID subscriptionId, String serviceName) {
+    @Override
+    public void deleteService(UUID subscriptionId, String serviceName) {
         String mspath = String.format("/%s/services/mobileservices/mobileservices/%s?deletedata=true", subscriptionId.toString(), serviceName);
 
         try {

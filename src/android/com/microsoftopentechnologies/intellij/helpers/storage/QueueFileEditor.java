@@ -181,23 +181,35 @@ public class QueueFileEditor implements FileEditor {
         clearQueueButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                ProgressManager.getInstance().run(new Task.Backgroundable(project, "Clearing queue messages", false) {
-                    @Override
-                    public void run(@NotNull ProgressIndicator progressIndicator) {
-                        try {
-                            AzureSDKManagerImpl.getManager().clearQueue(storageAccount, queue);
+                int optionDialog = JOptionPane.showOptionDialog(null,
+                        "Are you sure you want to clear the queue \"" + queue.getName() + "\"?",
+                        "Service explorer",
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.QUESTION_MESSAGE,
+                        null,
+                        new String[]{"Yes", "No"},
+                        null);
 
-                            ApplicationManager.getApplication().invokeLater(new Runnable() {
-                                @Override
-                                public void run() {
-                                    fillGrid();
-                                }
-                            });
-                        } catch (AzureCmdException e) {
-                            DefaultLoader.getUIHelper().showException("Error clearing queue messages", e, "Service Explorer", false, true);
+                if (optionDialog == JOptionPane.YES_OPTION) {
+                    ProgressManager.getInstance().run(new Task.Backgroundable(project, "Clearing queue messages", false) {
+                        @Override
+                        public void run(@NotNull ProgressIndicator progressIndicator) {
+                            try {
+
+                                AzureSDKManagerImpl.getManager().clearQueue(storageAccount, queue);
+
+                                ApplicationManager.getApplication().invokeLater(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        fillGrid();
+                                    }
+                                });
+                            } catch (AzureCmdException e) {
+                                DefaultLoader.getUIHelper().showException("Error clearing queue messages", e, "Service Explorer", false, true);
+                            }
                         }
-                    }
-                });
+                    });
+                }
             }
         });
     }
