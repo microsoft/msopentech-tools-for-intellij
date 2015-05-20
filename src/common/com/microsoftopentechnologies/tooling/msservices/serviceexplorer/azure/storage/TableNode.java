@@ -1,27 +1,25 @@
 /**
  * Copyright 2014 Microsoft Open Technologies Inc.
- *
+ * <p/>
  * Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p/>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p/>
  * Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-
 package com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.storage;
-
 
 import com.google.common.collect.ImmutableMap;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk.AzureSDKManagerImpl;
-import com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk.StorageClientSDKManagerImpl;
+import com.microsoftopentechnologies.tooling.msservices.model.storage.ClientStorageAccount;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.Table;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.Node;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.NodeActionEvent;
@@ -34,9 +32,9 @@ public class TableNode extends Node {
     private static final String TABLE_MODULE_ID = TableNode.class.getName();
     private static final String ICON_PATH = "container.png";
     private final Table table;
-    private final StorageAccount storageAccount;
+    private final ClientStorageAccount storageAccount;
 
-    public TableNode(TableModule parent, StorageAccount storageAccount, Table table) {
+    public TableNode(TableModule parent, ClientStorageAccount storageAccount, Table table) {
         super(TABLE_MODULE_ID, table.getName(), parent, ICON_PATH, true);
 
         this.storageAccount = storageAccount;
@@ -45,7 +43,6 @@ public class TableNode extends Node {
 
     @Override
     protected void onNodeClick(NodeActionEvent ex) {
-
         final Object openedFile = DefaultLoader.getIdeHelper().getOpenedFile(getProject(), storageAccount, table);
         if (openedFile == null) {
             DefaultLoader.getIdeHelper().openItem(getProject(), storageAccount, table, " [Table]", "Table", "container.png");
@@ -70,7 +67,6 @@ public class TableNode extends Node {
     }
 
     public class DeleteTable extends NodeActionListener {
-
         @Override
         public void actionPerformed(final NodeActionEvent e) {
             int optionDialog = JOptionPane.showOptionDialog(null,
@@ -83,9 +79,8 @@ public class TableNode extends Node {
                     null);
 
             if (optionDialog == JOptionPane.YES_OPTION) {
-
                 Object openedFile = DefaultLoader.getIdeHelper().getOpenedFile(getProject(), storageAccount, table);
-                if(openedFile != null) {
+                if (openedFile != null) {
                     DefaultLoader.getIdeHelper().closeFile(getProject(), openedFile);
                 }
 
@@ -93,7 +88,7 @@ public class TableNode extends Node {
                     @Override
                     public void run() {
                         try {
-                            AzureSDKManagerImpl.getManager().deleteTable(storageAccount, table);
+                            StorageClientSDKManagerImpl.getManager().deleteTable(storageAccount, table);
 
                             parent.removeAllChildNodes();
                             parent.load();
@@ -105,5 +100,4 @@ public class TableNode extends Node {
             }
         }
     }
-
 }

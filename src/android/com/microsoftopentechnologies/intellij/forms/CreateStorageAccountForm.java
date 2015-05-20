@@ -39,7 +39,6 @@ import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
-import java.util.GregorianCalendar;
 import java.util.Vector;
 
 public class CreateStorageAccountForm extends JDialog {
@@ -189,8 +188,11 @@ public class CreateStorageAccountForm extends JDialog {
             String affinityGroup = (regionOrAffinityGroupComboBox.getSelectedItem() instanceof AffinityGroup) ? regionOrAffinityGroupComboBox.getSelectedItem().toString() : "";
             String replication = replicationComboBox.getSelectedItem().toString();
 
-            storageAccount = new StorageAccount(name, replication, "", "", "", region, affinityGroup, "", "",
-                    "", "", "", "", "", "", "", "", new GregorianCalendar(), subscription.getId().toString());
+            storageAccount = new StorageAccount(name, subscription.getId().toString());
+            storageAccount.setType(replication);
+            storageAccount.setLocation(region);
+            storageAccount.setAffinityGroup(affinityGroup);
+
             AzureSDKManagerImpl.getManager().createStorageAccount(storageAccount);
             AzureSDKManagerImpl.getManager().refreshStorageAccountInformation(storageAccount);
 

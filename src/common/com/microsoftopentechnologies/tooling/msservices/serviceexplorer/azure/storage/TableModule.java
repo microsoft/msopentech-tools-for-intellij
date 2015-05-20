@@ -13,21 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.storage;
 
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk.AzureSDKManagerImpl;
-import com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk.StorageClientSDKManagerImpl;
+import com.microsoftopentechnologies.tooling.msservices.model.storage.ClientStorageAccount;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.Table;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.Node;
 
 public class TableModule extends Node {
-
     private static final String TABLES = "Tables";
-    final StorageAccount storageAccount;
+    final ClientStorageAccount storageAccount;
 
-    public TableModule(StorageNode parent, StorageAccount storageAccount) {
+    public TableModule(Node parent, ClientStorageAccount storageAccount) {
         super(TABLES + storageAccount.getName(), TABLES, parent, null, true);
 
         this.storageAccount = storageAccount;
@@ -38,12 +36,12 @@ public class TableModule extends Node {
     protected void refreshItems() throws AzureCmdException {
         removeAllChildNodes();
 
-        for (Table table : AzureSDKManagerImpl.getManager().getTables(storageAccount)) {
+        for (Table table : StorageClientSDKManagerImpl.getManager().getTables(storageAccount)) {
             addChildNode(new TableNode(this, storageAccount, table));
         }
     }
 
-    public StorageAccount getStorageAccount() {
+    public ClientStorageAccount getStorageAccount() {
         return storageAccount;
     }
 }

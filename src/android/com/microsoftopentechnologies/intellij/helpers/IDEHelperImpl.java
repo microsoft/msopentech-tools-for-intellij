@@ -61,7 +61,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 public class IDEHelperImpl implements IDEHelper {
-    public static Key<StorageAccount> STORAGE_KEY = new Key<StorageAccount>("storageAccount");
+    public static Key<ClientStorageAccount> STORAGE_KEY = new Key<ClientStorageAccount>("storageAccount");
     private Map<Class<? extends StorageServiceTreeItem>, Key<? extends StorageServiceTreeItem>> name2Key = ImmutableMap.of(BlobContainer.class, BlobExplorerFileEditorProvider.CONTAINER_KEY,
             Queue.class, QueueExplorerFileEditorProvider.QUEUE_KEY,
             Table.class, TableExplorerFileEditorProvider.TABLE_KEY);
@@ -188,7 +188,7 @@ public class IDEHelperImpl implements IDEHelper {
 
     @Override
     public <T extends StorageServiceTreeItem> void openItem(@NotNull Object projectObject,
-                                                            @Nullable StorageAccount storageAccount,
+                                                            @Nullable ClientStorageAccount storageAccount,
                                                             @NotNull T item,
                                                             @Nullable String itemType,
                                                             @NotNull final String itemName,
@@ -242,20 +242,20 @@ public class IDEHelperImpl implements IDEHelper {
     }
 
     @Override
-    public <T extends StorageServiceTreeItem> void openItem(@NotNull Object projectObject, @NotNull Object itemVirtualFile){
+    public void openItem(@NotNull Object projectObject, @NotNull Object itemVirtualFile) {
         FileEditorManager.getInstance((Project) projectObject).openFile((VirtualFile) itemVirtualFile, true, true);
     }
 
     @Nullable
     @Override
     public <T extends StorageServiceTreeItem> Object getOpenedFile(@NotNull Object projectObject,
-                                                                   @NotNull StorageAccount storageAccount,
+                                                                   @NotNull ClientStorageAccount storageAccount,
                                                                    @NotNull T item) {
         FileEditorManager fileEditorManager = FileEditorManager.getInstance((Project) projectObject);
 
         for (VirtualFile editedFile : fileEditorManager.getOpenFiles()) {
             T editedItem = editedFile.getUserData((Key<T>) name2Key.get(item.getClass()));
-            StorageAccount editedStorageAccount = editedFile.getUserData(STORAGE_KEY);
+            ClientStorageAccount editedStorageAccount = editedFile.getUserData(STORAGE_KEY);
 
             if (editedStorageAccount != null
                     && editedItem != null
@@ -274,7 +274,7 @@ public class IDEHelperImpl implements IDEHelper {
     }
 
     @Override
-    public void refreshQueue(@NotNull final Object projectObject, @NotNull final StorageAccount storageAccount,
+    public void refreshQueue(@NotNull final Object projectObject, @NotNull final ClientStorageAccount storageAccount,
                              @NotNull final Queue queue) {
         ApplicationManager.getApplication().runReadAction(new Runnable() {
             @Override
@@ -364,6 +364,17 @@ public class IDEHelperImpl implements IDEHelper {
         openSSLFinderForm.setVisible(true);
 
         return getProperty("MSOpenSSLPath", "");
+    }
+
+    @Nullable
+    @Override
+    public String[] getProperties(@NotNull String name) {
+        return PropertiesComponent.getInstance().getValues(name);
+    }
+
+    @Override
+    public void setProperties(@NotNull String name, @NotNull String[] value) {
+        PropertiesComponent.getInstance().setValues(name, value);
     }
 
     private static void openFile(@NotNull final Object projectObject, @Nullable final VirtualFile finalEditfile) {

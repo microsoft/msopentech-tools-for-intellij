@@ -26,7 +26,7 @@ import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoftopentechnologies.intellij.helpers.IDEHelperImpl;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.BlobContainer;
-import com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount;
+import com.microsoftopentechnologies.tooling.msservices.model.storage.ClientStorageAccount;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 
@@ -35,7 +35,7 @@ public class BlobExplorerFileEditorProvider implements FileEditorProvider, DumbA
 
     @Override
     public boolean accept(@NotNull Project project, @NotNull VirtualFile virtualFile) {
-        StorageAccount storageAccount = virtualFile.getUserData(IDEHelperImpl.STORAGE_KEY);
+        ClientStorageAccount storageAccount = virtualFile.getUserData(IDEHelperImpl.STORAGE_KEY);
         BlobContainer blobContainer = virtualFile.getUserData(CONTAINER_KEY);
 
         return (storageAccount != null && blobContainer != null);
@@ -46,7 +46,7 @@ public class BlobExplorerFileEditorProvider implements FileEditorProvider, DumbA
     public FileEditor createEditor(@NotNull Project project, @NotNull VirtualFile virtualFile) {
         BlobExplorerFileEditor blobExplorerFileEditor = new BlobExplorerFileEditor();
 
-        StorageAccount storageAccount = virtualFile.getUserData(IDEHelperImpl.STORAGE_KEY);
+        ClientStorageAccount storageAccount = virtualFile.getUserData(IDEHelperImpl.STORAGE_KEY);
         BlobContainer blobContainer = virtualFile.getUserData(CONTAINER_KEY);
 
         blobExplorerFileEditor.setBlobContainer(blobContainer);

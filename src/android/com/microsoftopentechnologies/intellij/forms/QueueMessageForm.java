@@ -22,10 +22,10 @@ import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk.AzureSDKManagerImpl;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk.StorageClientSDKManagerImpl;
+import com.microsoftopentechnologies.tooling.msservices.model.storage.ClientStorageAccount;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.Queue;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.QueueMessage;
-import com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -47,7 +47,7 @@ public class QueueMessageForm extends JDialog {
     private JTextArea messageTextArea;
     private JComboBox unitComboBox;
     private JTextField expireTimeTextField;
-    private StorageAccount storageAccount;
+    private ClientStorageAccount storageAccount;
     private Queue queue;
     private Project project;
     private Runnable onAddedMessage;
@@ -135,10 +135,9 @@ public class QueueMessageForm extends JDialog {
                             message,
                             new GregorianCalendar(),
                             new GregorianCalendar(),
-                            0,
-                            storageAccount.getSubscriptionId());
+                            0);
 
-                    AzureSDKManagerImpl.getManager().createQueueMessage(storageAccount, queueMessage, expireSeconds);
+                    StorageClientSDKManagerImpl.getManager().createQueueMessage(storageAccount, queueMessage, expireSeconds);
 
                     if (onAddedMessage != null) {
                         ApplicationManager.getApplication().invokeLater(onAddedMessage);
@@ -156,7 +155,7 @@ public class QueueMessageForm extends JDialog {
         dispose();
     }
 
-    public void setStorageAccount(StorageAccount storageAccount) {
+    public void setStorageAccount(ClientStorageAccount storageAccount) {
         this.storageAccount = storageAccount;
     }
 

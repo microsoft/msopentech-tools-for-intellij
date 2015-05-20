@@ -23,16 +23,13 @@ public class Queue implements StorageServiceTreeItem {
     private String name;
     private String uri;
     private long approximateMessageCount;
-    private String subscriptionId;
 
     public Queue(@NotNull String name,
                  @NotNull String uri,
-                 long approximateMessageCount,
-                 @NotNull String subscriptionId) {
+                 long approximateMessageCount) {
         this.name = name;
         this.uri = uri;
         this.approximateMessageCount = approximateMessageCount;
-        this.subscriptionId = subscriptionId;
     }
 
     @Override
@@ -65,11 +62,6 @@ public class Queue implements StorageServiceTreeItem {
 
     public void setApproximateMessageCount(long approximateMessageCount) {
         this.approximateMessageCount = approximateMessageCount;
-    }
-
-    @NotNull
-    public String getSubscriptionId() {
-        return subscriptionId;
     }
 
     @Override

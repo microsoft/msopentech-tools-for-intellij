@@ -23,9 +23,9 @@ import com.intellij.openapi.project.Project;
 import com.microsoftopentechnologies.intellij.helpers.LinkListener;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk.AzureSDKManagerImpl;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk.StorageClientSDKManagerImpl;
+import com.microsoftopentechnologies.tooling.msservices.model.storage.ClientStorageAccount;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.Queue;
-import com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -44,7 +44,7 @@ public class CreateQueueForm extends JDialog {
     private JLabel namingGuidelinesLink;
     private JTextField nameTextField;
     private Runnable onCreate;
-    private StorageAccount storageAccount;
+    private ClientStorageAccount storageAccount;
     private Project project;
 
     public CreateQueueForm() {
@@ -122,7 +122,7 @@ public class CreateQueueForm extends JDialog {
                 try {
                     progressIndicator.setIndeterminate(true);
 
-                    for (Queue queue : AzureSDKManagerImpl.getManager().getQueues(storageAccount)) {
+                    for (Queue queue : StorageClientSDKManagerImpl.getManager().getQueues(storageAccount)) {
                         if (queue.getName().equals(name)) {
                             ApplicationManager.getApplication().invokeLater(new Runnable() {
                                 @Override
@@ -135,8 +135,9 @@ public class CreateQueueForm extends JDialog {
                         }
                     }
 
-                    Queue queue = new Queue(name, "", 0, storageAccount.getSubscriptionId());
-                    AzureSDKManagerImpl.getManager().createQueue(storageAccount, queue);
+
+                    Queue queue = new Queue(name, "", 0);
+                    StorageClientSDKManagerImpl.getManager().createQueue(storageAccount, queue);
 
                     if (onCreate != null) {
                         ApplicationManager.getApplication().invokeLater(onCreate);
@@ -158,7 +159,7 @@ public class CreateQueueForm extends JDialog {
         this.onCreate = onCreate;
     }
 
-    public void setStorageAccount(StorageAccount storageAccount) {
+    public void setStorageAccount(ClientStorageAccount storageAccount) {
         this.storageAccount = storageAccount;
     }
 

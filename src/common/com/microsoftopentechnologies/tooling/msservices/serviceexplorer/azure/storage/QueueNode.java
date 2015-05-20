@@ -1,27 +1,26 @@
 /**
  * Copyright 2014 Microsoft Open Technologies Inc.
- *
+ * <p/>
  * Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p/>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p/>
  * Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-
 package com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.storage;
 
 import com.google.common.collect.ImmutableMap;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk.AzureSDKManagerImpl;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk.StorageClientSDKManagerImpl;
+import com.microsoftopentechnologies.tooling.msservices.model.storage.ClientStorageAccount;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.Queue;
-import com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.Node;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.NodeActionListener;
@@ -33,20 +32,19 @@ public class QueueNode extends Node {
     private static final String QUEUE_MODULE_ID = QueueNode.class.getName();
     private static final String ICON_PATH = "container.png";
     private final Queue queue;
-    private final StorageAccount storageAccount;
+    private final ClientStorageAccount storageAccount;
 
-    public QueueNode(QueueModule parent, StorageAccount storageAccount, Queue queue) {
+    public QueueNode(QueueModule parent, ClientStorageAccount storageAccount, Queue queue) {
         super(QUEUE_MODULE_ID, queue.getName(), parent, ICON_PATH, true);
 
         this.storageAccount = storageAccount;
         this.queue = queue;
     }
 
-
-
     @Override
     protected void onNodeClick(NodeActionEvent ex) {
         final Object openedFile = DefaultLoader.getIdeHelper().getOpenedFile(getProject(), storageAccount, queue);
+        
         if (openedFile == null) {
             DefaultLoader.getIdeHelper().openItem(getProject(), storageAccount, queue, " [Queue]", "Queue", "container.png");
         } else {
@@ -71,7 +69,6 @@ public class QueueNode extends Node {
     }
 
     public class DeleteQueue extends NodeActionListener {
-
         @Override
         public void actionPerformed(final NodeActionEvent e) {
             int optionDialog = JOptionPane.showOptionDialog(null,
@@ -84,9 +81,8 @@ public class QueueNode extends Node {
                     null);
 
             if (optionDialog == JOptionPane.YES_OPTION) {
-
                 Object openedFile = DefaultLoader.getIdeHelper().getOpenedFile(getProject(), storageAccount, queue);
-                if(openedFile != null) {
+                if (openedFile != null) {
                     DefaultLoader.getIdeHelper().closeFile(getProject(), openedFile);
                 }
 
@@ -94,7 +90,7 @@ public class QueueNode extends Node {
                     @Override
                     public void run() {
                         try {
-                            AzureSDKManagerImpl.getManager().deleteQueue(storageAccount, queue);
+                            StorageClientSDKManagerImpl.getManager().deleteQueue(storageAccount, queue);
 
                             parent.removeAllChildNodes();
                             parent.load();
@@ -108,7 +104,6 @@ public class QueueNode extends Node {
     }
 
     public class ClearQueue extends NodeActionListener {
-
         @Override
         public void actionPerformed(final NodeActionEvent e) {
             int optionDialog = JOptionPane.showOptionDialog(null,
@@ -125,7 +120,7 @@ public class QueueNode extends Node {
                     @Override
                     public void run() {
                         try {
-                            AzureSDKManagerImpl.getManager().clearQueue(storageAccount, queue);
+                            StorageClientSDKManagerImpl.getManager().clearQueue(storageAccount, queue);
 
                             DefaultLoader.getIdeHelper().refreshQueue(getProject(), storageAccount, queue);
                         } catch (AzureCmdException ex) {
@@ -136,5 +131,4 @@ public class QueueNode extends Node {
             }
         }
     }
-
 }

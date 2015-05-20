@@ -1,17 +1,17 @@
 /**
  * Copyright 2014 Microsoft Open Technologies Inc.
- *
+ * <p/>
  * Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p/>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p/>
  * Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.microsoftopentechnologies.tooling.msservices.model.storage;
 
@@ -26,20 +26,17 @@ public class BlobContainer implements StorageServiceTreeItem {
     private String eTag;
     private Calendar lastModified;
     private String publicReadAccessType;
-    private String subscriptionId;
 
     public BlobContainer(@NotNull String name,
                          @NotNull String uri,
                          @NotNull String eTag,
                          @NotNull Calendar lastModified,
-                         @NotNull String publicReadAccessType,
-                         @NotNull String subscriptionId) {
+                         @NotNull String publicReadAccessType) {
         this.name = name;
         this.uri = uri;
         this.eTag = eTag;
         this.lastModified = lastModified;
         this.publicReadAccessType = publicReadAccessType;
-        this.subscriptionId = subscriptionId;
     }
 
     @Override
@@ -91,11 +88,6 @@ public class BlobContainer implements StorageServiceTreeItem {
 
     public void setPublicReadAccessType(@NotNull String publicReadAccessType) {
         this.publicReadAccessType = publicReadAccessType;
-    }
-
-    @NotNull
-    public String getSubscriptionId() {
-        return subscriptionId;
     }
 
     @Override

@@ -26,8 +26,8 @@ import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
 import com.microsoftopentechnologies.intellij.helpers.storage.TableFileEditor;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk.AzureSDKManagerImpl;
-import com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk.StorageClientSDKManagerImpl;
+import com.microsoftopentechnologies.tooling.msservices.model.storage.ClientStorageAccount;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.TableEntity;
 import org.jetbrains.annotations.NotNull;
 
@@ -49,7 +49,7 @@ public class TableEntityForm extends JDialog {
 
     private Project project;
     private TableEntity tableEntity;
-    private StorageAccount storageAccount;
+    private ClientStorageAccount storageAccount;
     private Runnable onFinish;
     private String tableName;
 
@@ -217,7 +217,7 @@ public class TableEntityForm extends JDialog {
 
                 try {
                     if (tableEntity == null) {
-                        tableEntity = AzureSDKManagerImpl.getManager().createTableEntity(storageAccount,
+                        tableEntity = StorageClientSDKManagerImpl.getManager().createTableEntity(storageAccount,
                                 tableName,
                                 partitionKey,
                                 rowKey,
@@ -225,7 +225,7 @@ public class TableEntityForm extends JDialog {
                     } else {
                         tableEntity.getProperties().clear();
                         tableEntity.getProperties().putAll(properties);
-                        tableEntity = AzureSDKManagerImpl.getManager().updateTableEntity(storageAccount, tableEntity);
+                        tableEntity = StorageClientSDKManagerImpl.getManager().updateTableEntity(storageAccount, tableEntity);
                     }
 
                     onFinish.run();
@@ -286,7 +286,7 @@ public class TableEntityForm extends JDialog {
         this.project = project;
     }
 
-    public void setStorageAccount(StorageAccount storageAccount) {
+    public void setStorageAccount(ClientStorageAccount storageAccount) {
         this.storageAccount = storageAccount;
     }
 

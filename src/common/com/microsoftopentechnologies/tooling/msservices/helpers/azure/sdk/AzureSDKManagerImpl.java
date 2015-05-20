@@ -20,13 +20,8 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import com.microsoft.azure.storage.CloudStorageAccount;
-import com.microsoft.azure.storage.StorageException;
-import com.microsoft.azure.storage.blob.*;
-import com.microsoft.azure.storage.queue.CloudQueue;
-import com.microsoft.azure.storage.queue.CloudQueueClient;
-import com.microsoft.azure.storage.queue.CloudQueueMessage;
-import com.microsoft.azure.storage.queue.QueueListingDetails;
-import com.microsoft.azure.storage.table.*;
+import com.microsoft.azure.storage.blob.CloudBlobClient;
+import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import com.microsoft.windowsazure.core.OperationResponse;
 import com.microsoft.windowsazure.core.OperationStatus;
 import com.microsoft.windowsazure.core.OperationStatusResponse;
@@ -52,36 +47,27 @@ import com.microsoft.windowsazure.management.network.models.NetworkListResponse.
 import com.microsoft.windowsazure.management.storage.StorageAccountOperations;
 import com.microsoft.windowsazure.management.storage.StorageManagementClient;
 import com.microsoft.windowsazure.management.storage.models.*;
-import com.microsoft.azure.storage.core.Base64;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
-import com.microsoftopentechnologies.tooling.msservices.helpers.CallableSingleArg;
 import com.microsoftopentechnologies.tooling.msservices.helpers.NotNull;
 import com.microsoftopentechnologies.tooling.msservices.helpers.Nullable;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureAuthenticationMode;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.rest.AzureRestAPIManagerImpl;
-import com.microsoftopentechnologies.tooling.msservices.model.storage.*;
-import com.microsoftopentechnologies.tooling.msservices.model.storage.Queue;
+import com.microsoftopentechnologies.tooling.msservices.model.storage.ClientStorageAccount;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount;
-import com.microsoftopentechnologies.tooling.msservices.model.storage.TableEntity;
 import com.microsoftopentechnologies.tooling.msservices.model.vm.*;
+import com.microsoftopentechnologies.tooling.msservices.model.vm.CloudService.Deployment;
 
 import javax.security.cert.X509Certificate;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.security.MessageDigest;
 import java.util.*;
-import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
-import static com.microsoftopentechnologies.tooling.msservices.model.storage.TableEntity.Property;
+
 import static com.microsoftopentechnologies.tooling.msservices.model.vm.VirtualMachine.Status;
 
 public class AzureSDKManagerImpl implements AzureSDKManager {
-
     private static class StatusLiterals {
         private static final String UNKNOWN = "Unknown";
         private static final String READY_ROLE = "ReadyRole";
@@ -449,9 +435,9 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
 
             return saList;
         } catch (ExecutionException e) {
-            throw new AzureCmdException("Error retrieving Storage Accounts list", e.getCause());
+            throw new AzureCmdException("Error retrieving the Storage Account list", e.getCause());
         } catch (Throwable t) {
-            throw new AzureCmdException("Error retrieving Storage Accounts list", t);
+            throw new AzureCmdException("Error retrieving the Storage Account list", t);
         } finally {
             if (client != null) {
                 try {
@@ -596,9 +582,9 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
 
             return vnList;
         } catch (ExecutionException e) {
-            throw new AzureCmdException("Error retrieving Virtual Networks list", e.getCause());
+            throw new AzureCmdException("Error retrieving the Virtual Network list", e.getCause());
         } catch (Throwable t) {
-            throw new AzureCmdException("Error retrieving Virtual Networks list", t);
+            throw new AzureCmdException("Error retrieving the Virtual Network list", t);
         } finally {
             if (client != null) {
                 try {
@@ -831,658 +817,6 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     }
 
     @NotNull
-    @Override
-    public List<BlobContainer> getBlobContainers(@NotNull StorageAccount storageAccount)
-            throws AzureCmdException {
-        List<BlobContainer> bcList = new ArrayList<BlobContainer>();
-
-        try {
-            CloudBlobClient client = getCloudBlobClient(storageAccount);
-
-            for (CloudBlobContainer container : client.listContainers(null, ContainerListingDetails.ALL, null, null)) {
-                String uri = container.getUri() != null ? container.getUri().toString() : "";
-                String eTag = "";
-                Calendar lastModified = new GregorianCalendar();
-                BlobContainerProperties properties = container.getProperties();
-
-                if (properties != null) {
-                    eTag = Strings.nullToEmpty(properties.getEtag());
-
-                    if (properties.getLastModified() != null) {
-                        lastModified.setTime(properties.getLastModified());
-                    }
-                }
-
-                String publicReadAccessType = "";
-                BlobContainerPermissions blobContainerPermissions = container.downloadPermissions();
-
-                if (blobContainerPermissions != null && blobContainerPermissions.getPublicAccess() != null) {
-                    publicReadAccessType = blobContainerPermissions.getPublicAccess().toString();
-                }
-
-                bcList.add(new BlobContainer(Strings.nullToEmpty(container.getName()),
-                        uri,
-                        eTag,
-                        lastModified,
-                        publicReadAccessType,
-                        storageAccount.getSubscriptionId()));
-            }
-
-            return bcList;
-        } catch (Throwable t) {
-            throw new AzureCmdException("Error retrieving the Blob Container list", t);
-        }
-    }
-
-    @NotNull
-    @Override
-    public BlobContainer createBlobContainer(@NotNull StorageAccount storageAccount,
-                                             @NotNull BlobContainer blobContainer)
-            throws AzureCmdException {
-        try {
-            CloudBlobClient client = getCloudBlobClient(storageAccount);
-
-            CloudBlobContainer container = client.getContainerReference(blobContainer.getName());
-            container.createIfNotExists();
-            container.downloadAttributes();
-
-            String uri = container.getUri() != null ? container.getUri().toString() : "";
-            String eTag = "";
-            Calendar lastModified = new GregorianCalendar();
-            BlobContainerProperties properties = container.getProperties();
-
-            if (properties != null) {
-                eTag = Strings.nullToEmpty(properties.getEtag());
-
-                if (properties.getLastModified() != null) {
-                    lastModified.setTime(properties.getLastModified());
-                }
-            }
-
-            String publicReadAccessType = "";
-            BlobContainerPermissions blobContainerPermissions = container.downloadPermissions();
-
-            if (blobContainerPermissions != null && blobContainerPermissions.getPublicAccess() != null) {
-                publicReadAccessType = blobContainerPermissions.getPublicAccess().toString();
-            }
-
-            blobContainer.setUri(uri);
-            blobContainer.setETag(eTag);
-            blobContainer.setLastModified(lastModified);
-            blobContainer.setPublicReadAccessType(publicReadAccessType);
-
-            return blobContainer;
-        } catch (Throwable t) {
-            throw new AzureCmdException("Error creating the Blob Container", t);
-        }
-    }
-
-    @Override
-    public void deleteBlobContainer(@NotNull StorageAccount storageAccount, @NotNull BlobContainer blobContainer)
-            throws AzureCmdException {
-        try {
-            CloudBlobClient client = getCloudBlobClient(storageAccount);
-
-            CloudBlobContainer container = client.getContainerReference(blobContainer.getName());
-            container.deleteIfExists();
-        } catch (Throwable t) {
-            throw new AzureCmdException("Error deleting the Blob Container", t);
-        }
-    }
-
-    @NotNull
-    @Override
-    public BlobDirectory getRootDirectory(@NotNull StorageAccount storageAccount, @NotNull BlobContainer blobContainer)
-            throws AzureCmdException {
-        try {
-            CloudBlobClient client = getCloudBlobClient(storageAccount);
-
-            CloudBlobContainer container = client.getContainerReference(blobContainer.getName());
-            CloudBlobDirectory directory = container.getDirectoryReference("");
-
-            String uri = directory.getUri() != null ? directory.getUri().toString() : "";
-
-            return new BlobDirectory("", uri, blobContainer.getName(), "", storageAccount.getSubscriptionId());
-        } catch (Throwable t) {
-            throw new AzureCmdException("Error retrieving the root Blob Directory", t);
-        }
-    }
-
-    @NotNull
-    @Override
-    public List<BlobItem> getBlobItems(@NotNull StorageAccount storageAccount, @NotNull BlobDirectory blobDirectory)
-            throws AzureCmdException {
-        List<BlobItem> biList = new ArrayList<BlobItem>();
-
-        try {
-            CloudBlobClient client = getCloudBlobClient(storageAccount);
-            String containerName = blobDirectory.getContainerName();
-            String subscriptionId = storageAccount.getSubscriptionId();
-            String delimiter = client.getDirectoryDelimiter();
-
-            CloudBlobContainer container = client.getContainerReference(containerName);
-            CloudBlobDirectory directory = container.getDirectoryReference(blobDirectory.getPath());
-
-            for (ListBlobItem item : directory.listBlobs()) {
-                String uri = item.getUri() != null ? item.getUri().toString() : "";
-
-                if (item instanceof CloudBlobDirectory) {
-                    CloudBlobDirectory subDirectory = (CloudBlobDirectory) item;
-
-                    String name = extractBlobItemName(subDirectory.getPrefix(), delimiter);
-                    String path = Strings.nullToEmpty(subDirectory.getPrefix());
-
-                    biList.add(new BlobDirectory(name, uri, containerName, path, subscriptionId));
-                } else if (item instanceof CloudBlob) {
-                    CloudBlob blob = (CloudBlob) item;
-
-                    String name = extractBlobItemName(blob.getName(), delimiter);
-                    String path = Strings.nullToEmpty(blob.getName());
-                    String type = "";
-                    String cacheControlHeader = "";
-                    String contentEncoding = "";
-                    String contentLanguage = "";
-                    String contentType = "";
-                    String contentMD5Header = "";
-                    String eTag = "";
-                    Calendar lastModified = new GregorianCalendar();
-                    long size = 0;
-
-                    BlobProperties properties = blob.getProperties();
-
-                    if (properties != null) {
-                        if (properties.getBlobType() != null) {
-                            type = properties.getBlobType().toString();
-                        }
-
-                        cacheControlHeader = Strings.nullToEmpty(properties.getCacheControl());
-                        contentEncoding = Strings.nullToEmpty(properties.getContentEncoding());
-                        contentLanguage = Strings.nullToEmpty(properties.getContentLanguage());
-                        contentType = Strings.nullToEmpty(properties.getContentType());
-                        contentMD5Header = Strings.nullToEmpty(properties.getContentMD5());
-                        eTag = Strings.nullToEmpty(properties.getEtag());
-
-                        if (properties.getLastModified() != null) {
-                            lastModified.setTime(properties.getLastModified());
-                        }
-
-                        size = properties.getLength();
-                    }
-
-                    biList.add(new BlobFile(name, uri, containerName, path, type, cacheControlHeader, contentEncoding,
-                            contentLanguage, contentType, contentMD5Header, eTag, lastModified, size, subscriptionId));
-                }
-            }
-
-            return biList;
-        } catch (Throwable t) {
-            throw new AzureCmdException("Error retrieving the Blob Item list", t);
-        }
-    }
-
-    @NotNull
-    @Override
-    public BlobDirectory createBlobDirectory(@NotNull StorageAccount storageAccount,
-                                             @NotNull BlobDirectory parentBlobDirectory,
-                                             @NotNull BlobDirectory blobDirectory)
-            throws AzureCmdException {
-        try {
-            CloudBlobClient client = getCloudBlobClient(storageAccount);
-            String containerName = parentBlobDirectory.getContainerName();
-
-            CloudBlobContainer container = client.getContainerReference(containerName);
-            CloudBlobDirectory parentDirectory = container.getDirectoryReference(parentBlobDirectory.getPath());
-            CloudBlobDirectory directory = parentDirectory.getDirectoryReference(blobDirectory.getName());
-
-            String uri = directory.getUri() != null ? directory.getUri().toString() : "";
-            String path = Strings.nullToEmpty(directory.getPrefix());
-
-            blobDirectory.setUri(uri);
-            blobDirectory.setContainerName(containerName);
-            blobDirectory.setPath(path);
-
-            return blobDirectory;
-        } catch (Throwable t) {
-            throw new AzureCmdException("Error creating the Blob Directory", t);
-        }
-    }
-
-    @NotNull
-    @Override
-    public BlobFile createBlobFile(@NotNull StorageAccount storageAccount,
-                                   @NotNull BlobDirectory parentBlobDirectory,
-                                   @NotNull BlobFile blobFile)
-            throws AzureCmdException {
-        try {
-            CloudBlobClient client = getCloudBlobClient(storageAccount);
-            String containerName = parentBlobDirectory.getContainerName();
-
-            CloudBlobContainer container = client.getContainerReference(containerName);
-            CloudBlobDirectory parentDirectory = container.getDirectoryReference(parentBlobDirectory.getPath());
-
-            CloudBlob blob = getCloudBlob(parentDirectory, blobFile);
-
-            blob.upload(new ByteArrayInputStream(new byte[0]), 0);
-
-            return reloadBlob(blob, containerName, blobFile);
-        } catch (Throwable t) {
-            throw new AzureCmdException("Error creating the Blob File", t);
-        }
-    }
-
-    @Override
-    public void deleteBlobFile(@NotNull StorageAccount storageAccount, @NotNull BlobFile blobFile)
-            throws AzureCmdException {
-        try {
-            CloudBlobClient client = getCloudBlobClient(storageAccount);
-            String containerName = blobFile.getContainerName();
-
-            CloudBlobContainer container = client.getContainerReference(containerName);
-
-            CloudBlob blob = getCloudBlob(container, blobFile);
-
-            blob.deleteIfExists();
-        } catch (Throwable t) {
-            throw new AzureCmdException("Error deleting the Blob File", t);
-        }
-    }
-
-    @Override
-    public void uploadBlobFileContent(@NotNull StorageAccount storageAccount,
-                                      @NotNull BlobContainer blobContainer,
-                                      @NotNull String filePath,
-                                      @NotNull InputStream content,
-                                      CallableSingleArg<Void, Long> processBlock,
-                                      long maxBlockSize,
-                                      long length)
-            throws AzureCmdException {
-        try {
-            CloudBlobClient client = getCloudBlobClient(storageAccount);
-            String containerName = blobContainer.getName();
-
-            CloudBlobContainer container = client.getContainerReference(containerName);
-            final CloudBlockBlob blob = container.getBlockBlobReference(filePath);
-            long uploadedBytes = 0;
-
-            ArrayList<BlockEntry> blockEntries = new ArrayList<BlockEntry>();
-
-            while (uploadedBytes < length) {
-                String blockId = Base64.encode(UUID.randomUUID().toString().getBytes());
-                BlockEntry entry = new BlockEntry(blockId, BlockSearchMode.UNCOMMITTED);
-
-                long blockSize = maxBlockSize;
-                if (length - uploadedBytes <= maxBlockSize) {
-                    blockSize = length - uploadedBytes;
-                }
-
-                if (processBlock != null) {
-                    processBlock.call(uploadedBytes);
-                }
-
-                entry.setSize(blockSize);
-
-                blockEntries.add(entry);
-                blob.uploadBlock(entry.getId(), content, blockSize);
-                uploadedBytes += blockSize;
-            }
-
-            blob.commitBlockList(blockEntries);
-
-        } catch (Throwable t) {
-            throw new AzureCmdException("Error uploading the Blob File content", t);
-        }
-    }
-
-    @Override
-    public void downloadBlobFileContent(@NotNull StorageAccount storageAccount,
-                                        @NotNull BlobFile blobFile,
-                                        @NotNull OutputStream content)
-            throws AzureCmdException {
-        try {
-            CloudBlobClient client = getCloudBlobClient(storageAccount);
-            String containerName = blobFile.getContainerName();
-
-            CloudBlobContainer container = client.getContainerReference(containerName);
-
-            CloudBlob blob = getCloudBlob(container, blobFile);
-
-            blob.download(content);
-        } catch (Throwable t) {
-            throw new AzureCmdException("Error downloading the Blob File content", t);
-        }
-    }
-
-    @NotNull
-    @Override
-    public List<Queue> getQueues(@NotNull StorageAccount storageAccount)
-            throws AzureCmdException {
-        List<Queue> qList = new ArrayList<Queue>();
-
-        try {
-            CloudQueueClient client = getCloudQueueClient(storageAccount);
-
-            for (CloudQueue cloudQueue : client.listQueues(null, QueueListingDetails.ALL, null, null)) {
-                String uri = cloudQueue.getUri() != null ? cloudQueue.getUri().toString() : "";
-
-                qList.add(new Queue(Strings.nullToEmpty(cloudQueue.getName()),
-                        uri,
-                        cloudQueue.getApproximateMessageCount(),
-                        storageAccount.getSubscriptionId()));
-            }
-
-            return qList;
-        } catch (Throwable t) {
-            throw new AzureCmdException("Error retrieving the Queue list", t);
-        }
-    }
-
-    @NotNull
-    @Override
-    public Queue createQueue(@NotNull StorageAccount storageAccount,
-                             @NotNull Queue queue)
-            throws AzureCmdException {
-        try {
-            CloudQueueClient client = getCloudQueueClient(storageAccount);
-
-            CloudQueue cloudQueue = client.getQueueReference(queue.getName());
-            cloudQueue.createIfNotExists();
-            cloudQueue.downloadAttributes();
-
-            String uri = cloudQueue.getUri() != null ? cloudQueue.getUri().toString() : "";
-            long approximateMessageCount = cloudQueue.getApproximateMessageCount();
-
-            queue.setUri(uri);
-            queue.setApproximateMessageCount(approximateMessageCount);
-
-            return queue;
-        } catch (Throwable t) {
-            throw new AzureCmdException("Error creating the Queue", t);
-        }
-    }
-
-    @Override
-    public void deleteQueue(@NotNull StorageAccount storageAccount, @NotNull Queue queue)
-            throws AzureCmdException {
-        try {
-            CloudQueueClient client = getCloudQueueClient(storageAccount);
-
-            CloudQueue cloudQueue = client.getQueueReference(queue.getName());
-            cloudQueue.deleteIfExists();
-        } catch (Throwable t) {
-            throw new AzureCmdException("Error deleting the Queue", t);
-        }
-    }
-
-    @NotNull
-    @Override
-    public List<QueueMessage> getQueueMessages(@NotNull StorageAccount storageAccount, @NotNull Queue queue)
-            throws AzureCmdException {
-        List<QueueMessage> qmList = new ArrayList<QueueMessage>();
-
-        try {
-            CloudQueueClient client = getCloudQueueClient(storageAccount);
-            String queueName = queue.getName();
-            String subscriptionId = storageAccount.getSubscriptionId();
-
-            CloudQueue cloudQueue = client.getQueueReference(queueName);
-
-            for (CloudQueueMessage cqm : cloudQueue.peekMessages(32)) {
-                String id = Strings.nullToEmpty(cqm.getId());
-                String content = Strings.nullToEmpty(cqm.getMessageContentAsString());
-
-                Calendar insertionTime = new GregorianCalendar();
-
-                if (cqm.getInsertionTime() != null) {
-                    insertionTime.setTime(cqm.getInsertionTime());
-                }
-
-                Calendar expirationTime = new GregorianCalendar();
-
-                if (cqm.getExpirationTime() != null) {
-                    expirationTime.setTime(cqm.getExpirationTime());
-                }
-
-                int dequeueCount = cqm.getDequeueCount();
-
-                qmList.add(new QueueMessage(id, queueName, content, insertionTime, expirationTime, dequeueCount, subscriptionId));
-            }
-
-            return qmList;
-        } catch (Throwable t) {
-            throw new AzureCmdException("Error retrieving the Queue Message list", t);
-        }
-    }
-
-    @Override
-    public void clearQueue(@NotNull StorageAccount storageAccount, @NotNull Queue queue)
-            throws AzureCmdException {
-        try {
-            CloudQueueClient client = getCloudQueueClient(storageAccount);
-
-            CloudQueue cloudQueue = client.getQueueReference(queue.getName());
-            cloudQueue.clear();
-        } catch (Throwable t) {
-            throw new AzureCmdException("Error clearing the Queue", t);
-        }
-    }
-
-    @Override
-    public void createQueueMessage(@NotNull StorageAccount storageAccount,
-                                   @NotNull QueueMessage queueMessage,
-                                   int timeToLiveInSeconds)
-            throws AzureCmdException {
-        try {
-            CloudQueueClient client = getCloudQueueClient(storageAccount);
-
-            CloudQueue cloudQueue = client.getQueueReference(queueMessage.getQueueName());
-            cloudQueue.addMessage(new CloudQueueMessage(queueMessage.getContent()), timeToLiveInSeconds, 0, null, null);
-        } catch (Throwable t) {
-            throw new AzureCmdException("Error creating the Queue Message", t);
-        }
-    }
-
-    @NotNull
-    @Override
-    public QueueMessage dequeueFirstQueueMessage(@NotNull StorageAccount storageAccount, @NotNull Queue queue)
-            throws AzureCmdException {
-        try {
-            CloudQueueClient client = getCloudQueueClient(storageAccount);
-            String queueName = queue.getName();
-            String subscriptionId = storageAccount.getSubscriptionId();
-
-            CloudQueue cloudQueue = client.getQueueReference(queueName);
-            CloudQueueMessage cqm = cloudQueue.retrieveMessage();
-
-            String id = "";
-            String content = "";
-            Calendar insertionTime = new GregorianCalendar();
-            Calendar expirationTime = new GregorianCalendar();
-            int dequeueCount = 0;
-
-            if (cqm != null) {
-                id = Strings.nullToEmpty(cqm.getId());
-                content = Strings.nullToEmpty(cqm.getMessageContentAsString());
-
-                if (cqm.getInsertionTime() != null) {
-                    insertionTime.setTime(cqm.getInsertionTime());
-                }
-
-                if (cqm.getExpirationTime() != null) {
-                    expirationTime.setTime(cqm.getExpirationTime());
-                }
-
-                dequeueCount = cqm.getDequeueCount();
-            }
-
-            QueueMessage queueMessage = new QueueMessage(id, queueName, content, insertionTime, expirationTime, dequeueCount, subscriptionId);
-
-            if (cqm != null) {
-                cloudQueue.deleteMessage(cqm);
-            }
-
-            return queueMessage;
-        } catch (Throwable t) {
-            throw new AzureCmdException("Error dequeuing the first Queue Message", t);
-        }
-    }
-
-    @NotNull
-    @Override
-    public List<Table> getTables(@NotNull StorageAccount storageAccount)
-            throws AzureCmdException {
-        List<Table> tList = new ArrayList<Table>();
-
-        try {
-            CloudTableClient client = getCloudTableClient(storageAccount);
-
-            for (String tableName : client.listTables()) {
-                CloudTable cloudTable = client.getTableReference(tableName);
-
-                String uri = cloudTable.getUri() != null ? cloudTable.getUri().toString() : "";
-
-                tList.add(new Table(tableName,
-                        uri,
-                        storageAccount.getSubscriptionId()));
-            }
-
-            return tList;
-        } catch (Throwable t) {
-            throw new AzureCmdException("Error retrieving the Table list", t);
-        }
-    }
-
-    @NotNull
-    @Override
-    public Table createTable(@NotNull StorageAccount storageAccount,
-                             @NotNull Table table)
-            throws AzureCmdException {
-        try {
-            CloudTableClient client = getCloudTableClient(storageAccount);
-
-            CloudTable cloudTable = client.getTableReference(table.getName());
-            cloudTable.createIfNotExists();
-
-            String uri = cloudTable.getUri() != null ? cloudTable.getUri().toString() : "";
-
-            table.setUri(uri);
-
-            return table;
-        } catch (Throwable t) {
-            throw new AzureCmdException("Error creating the Table", t);
-        }
-    }
-
-    @Override
-    public void deleteTable(@NotNull StorageAccount storageAccount, @NotNull Table table)
-            throws AzureCmdException {
-        try {
-            CloudTableClient client = getCloudTableClient(storageAccount);
-
-            CloudTable cloudTable = client.getTableReference(table.getName());
-            cloudTable.deleteIfExists();
-        } catch (Throwable t) {
-            throw new AzureCmdException("Error deleting the Table", t);
-        }
-    }
-
-    @NotNull
-    @Override
-    public List<TableEntity> getTableEntities(@NotNull StorageAccount storageAccount, @NotNull Table table,
-                                              @NotNull String filter)
-            throws AzureCmdException {
-        List<TableEntity> teList = new ArrayList<TableEntity>();
-
-        try {
-            CloudTableClient client = getCloudTableClient(storageAccount);
-            String tableName = table.getName();
-            String subscriptionId = storageAccount.getSubscriptionId();
-            CloudTable cloudTable = client.getTableReference(tableName);
-
-            TableQuery<DynamicTableEntity> tableQuery = TableQuery.from(DynamicTableEntity.class);
-
-            if (!filter.isEmpty()) {
-                tableQuery.where(filter);
-            }
-
-            TableRequestOptions tro = new TableRequestOptions();
-            tro.setTablePayloadFormat(TablePayloadFormat.JsonFullMetadata);
-
-            for (DynamicTableEntity dte : cloudTable.execute(tableQuery, tro, null)) {
-                teList.add(getTableEntity(tableName, dte, subscriptionId));
-            }
-
-            return teList;
-        } catch (Throwable t) {
-            throw new AzureCmdException("Error retrieving the Table Entity list", t);
-        }
-    }
-
-    @NotNull
-    @Override
-    public TableEntity createTableEntity(@NotNull StorageAccount storageAccount, @NotNull String tableName,
-                                         @NotNull String partitionKey, @NotNull String rowKey,
-                                         @NotNull Map<String, Property> properties)
-            throws AzureCmdException {
-        try {
-            CloudTableClient client = getCloudTableClient(storageAccount);
-            String subscriptionId = storageAccount.getSubscriptionId();
-            CloudTable cloudTable = client.getTableReference(tableName);
-
-            DynamicTableEntity entity = getDynamicTableEntity(partitionKey, rowKey, properties);
-
-            TableRequestOptions tro = new TableRequestOptions();
-            tro.setTablePayloadFormat(TablePayloadFormat.JsonFullMetadata);
-
-            TableResult result = cloudTable.execute(TableOperation.insert(entity, true), tro, null);
-            DynamicTableEntity resultEntity = result.getResultAsType();
-
-            return getTableEntity(tableName, resultEntity, subscriptionId);
-        } catch (Throwable t) {
-            throw new AzureCmdException("Error creating the Table Entity", t);
-        }
-    }
-
-    @NotNull
-    @Override
-    public TableEntity updateTableEntity(@NotNull StorageAccount storageAccount, @NotNull TableEntity tableEntity)
-            throws AzureCmdException {
-        try {
-            CloudTableClient client = getCloudTableClient(storageAccount);
-            CloudTable cloudTable = client.getTableReference(tableEntity.getTableName());
-
-            DynamicTableEntity entity = getDynamicTableEntity(tableEntity);
-
-            TableRequestOptions tro = new TableRequestOptions();
-            tro.setTablePayloadFormat(TablePayloadFormat.JsonFullMetadata);
-
-            TableResult result = cloudTable.execute(TableOperation.replace(entity), tro, null);
-            DynamicTableEntity resultEntity = result.getResultAsType();
-
-            return getTableEntity(tableEntity.getTableName(), resultEntity, tableEntity.getSubscriptionId());
-        } catch (Throwable t) {
-            throw new AzureCmdException("Error updating the Table Entity", t);
-        }
-    }
-
-    @Override
-    public void deleteTableEntity(@NotNull StorageAccount storageAccount, @NotNull TableEntity tableEntity)
-            throws AzureCmdException {
-        try {
-            CloudTableClient client = getCloudTableClient(storageAccount);
-            CloudTable cloudTable = client.getTableReference(tableEntity.getTableName());
-
-            DynamicTableEntity entity = getDynamicTableEntity(tableEntity);
-
-            TableRequestOptions tro = new TableRequestOptions();
-            tro.setTablePayloadFormat(TablePayloadFormat.JsonFullMetadata);
-
-            cloudTable.execute(TableOperation.delete(entity), tro, null);
-        } catch (Throwable t) {
-            throw new AzureCmdException("Error deleting the Table Entity", t);
-        }
-    }
-
-    @NotNull
     private static ComputeManagementClient getComputeManagementClient(@NotNull String subscriptionId) throws Exception {
         ComputeManagementClient client = AzureSDKHelper.getComputeManagementClient(subscriptionId);
 
@@ -1527,27 +861,11 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     }
 
     @NotNull
-    private static CloudBlobClient getCloudBlobClient(@NotNull StorageAccount storageAccount)
+    private static CloudBlobClient getCloudBlobClient(@NotNull ClientStorageAccount storageAccount)
             throws Exception {
         CloudStorageAccount csa = AzureSDKHelper.getCloudStorageAccount(storageAccount);
 
         return csa.createCloudBlobClient();
-    }
-
-    @NotNull
-    private static CloudQueueClient getCloudQueueClient(@NotNull StorageAccount storageAccount)
-            throws Exception {
-        CloudStorageAccount csa = AzureSDKHelper.getCloudStorageAccount(storageAccount);
-
-        return csa.createCloudQueueClient();
-    }
-
-    @NotNull
-    private static CloudTableClient getCloudTableClient(@NotNull StorageAccount storageAccount)
-            throws Exception {
-        CloudStorageAccount csa = AzureSDKHelper.getCloudStorageAccount(storageAccount);
-
-        return csa.createCloudTableClient();
     }
 
     @NotNull
@@ -1711,6 +1029,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
                 }
             }
         });
+
         return future;
     }
 
@@ -1760,6 +1079,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
                                                                            @NotNull final com.microsoft.windowsazure.management.storage.models.StorageAccount storageAccount)
             throws Exception {
         final SettableFuture<StorageAccount> future = SettableFuture.create();
+
         DefaultLoader.getIdeHelper().executeOnPooledThread(new Runnable() {
             @Override
             public void run() {
@@ -1770,6 +1090,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
                 }
             }
         });
+
         return future;
     }
 
@@ -1808,26 +1129,30 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
             }
         }
 
-        return new StorageAccount(
-                Strings.nullToEmpty(storageAccount.getName()),
-                Strings.nullToEmpty(sap.getAccountType()),
-                Strings.nullToEmpty(sap.getDescription()),
-                Strings.nullToEmpty(sap.getLabel()),
-                sap.getStatus() != null ? sap.getStatus().toString() : "",
-                Strings.nullToEmpty(sap.getLocation()),
-                Strings.nullToEmpty(sap.getAffinityGroup()),
-                Strings.nullToEmpty(primaryKey),
-                Strings.nullToEmpty(secondaryKey),
-                storageAccount.getUri() != null ? storageAccount.getUri().toString() : "",
-                blobsUri,
-                queuesUri,
-                tablesUri,
-                Strings.nullToEmpty(sap.getGeoPrimaryRegion()),
-                sap.getStatusOfGeoPrimaryRegion() != null ? sap.getStatusOfGeoPrimaryRegion().toString() : "",
-                Strings.nullToEmpty(sap.getGeoSecondaryRegion()),
-                sap.getStatusOfGeoSecondaryRegion() != null ? sap.getStatusOfGeoSecondaryRegion().toString() : "",
-                sap.getLastGeoFailoverTime() != null ? sap.getLastGeoFailoverTime() : new GregorianCalendar(),
-                subscriptionId);
+        StorageAccount sa = new StorageAccount(Strings.nullToEmpty(storageAccount.getName()), subscriptionId);
+
+        sa.setPrimaryKey(Strings.nullToEmpty(primaryKey));
+        sa.setProtocol("https");
+        sa.setBlobsUri(blobsUri);
+        sa.setQueuesUri(queuesUri);
+        sa.setTablesUri(tablesUri);
+        sa.setUseCustomEndpoints(true);
+
+        sa.setType(Strings.nullToEmpty(sap.getAccountType()));
+        sa.setDescription(Strings.nullToEmpty(sap.getDescription()));
+        sa.setLabel(Strings.nullToEmpty(sap.getLabel()));
+        sa.setStatus(sap.getStatus() != null ? sap.getStatus().toString() : "");
+        sa.setLocation(Strings.nullToEmpty(sap.getLocation()));
+        sa.setAffinityGroup(Strings.nullToEmpty(sap.getAffinityGroup()));
+        sa.setSecondaryKey(Strings.nullToEmpty(secondaryKey));
+        sa.setManagementUri(storageAccount.getUri() != null ? storageAccount.getUri().toString() : "");
+        sa.setPrimaryRegion(Strings.nullToEmpty(sap.getGeoPrimaryRegion()));
+        sa.setPrimaryRegionStatus(sap.getStatusOfGeoPrimaryRegion() != null ? sap.getStatusOfGeoPrimaryRegion().toString() : "");
+        sa.setSecondaryRegion(Strings.nullToEmpty(sap.getGeoSecondaryRegion()));
+        sa.setSecondaryRegionStatus(sap.getStatusOfGeoSecondaryRegion() != null ? sap.getStatusOfGeoSecondaryRegion().toString() : "");
+        sa.setLastFailover(sap.getLastGeoFailoverTime() != null ? sap.getLastGeoFailoverTime() : new GregorianCalendar());
+
+        return sa;
     }
 
     @NotNull
@@ -1950,7 +1275,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
                                                @NotNull CloudService cloudService)
             throws Exception {
         if (deployment.getDeploymentSlot() != null) {
-            CloudService.Deployment dep;
+            Deployment dep;
 
             switch (deployment.getDeploymentSlot()) {
                 case Production:
@@ -2109,6 +1434,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
     private static ListenableFuture<List<VirtualMachineImage>> getOSImagesAsync(
             @NotNull final ComputeManagementClient client) {
         final SettableFuture<List<VirtualMachineImage>> future = SettableFuture.create();
+
         DefaultLoader.getIdeHelper().executeOnPooledThread(new Runnable() {
             @Override
             public void run() {
@@ -2119,6 +1445,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
                 }
             }
         });
+
         return future;
     }
 
@@ -2170,6 +1497,7 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
                 }
             }
         });
+
         return future;
     }
 
@@ -2503,241 +1831,6 @@ public class AzureSDKManagerImpl implements AzureSDKManager {
         }
 
         return result;
-    }
-
-    @NotNull
-    private static CloudBlob getCloudBlob(@NotNull CloudBlobContainer container,
-                                          @NotNull BlobFile blobFile)
-            throws URISyntaxException, StorageException {
-        CloudBlob blob;
-
-        if (blobFile.getType().equals(BlobType.BLOCK_BLOB.toString())) {
-            blob = container.getBlockBlobReference(blobFile.getPath());
-        } else {
-            blob = container.getPageBlobReference(blobFile.getPath());
-        }
-
-        return blob;
-    }
-
-    @NotNull
-    private static CloudBlob getCloudBlob(@NotNull CloudBlobDirectory parentDirectory,
-                                          @NotNull BlobFile blobFile)
-            throws URISyntaxException, StorageException {
-        CloudBlob blob;
-
-        if (blobFile.getType().equals(BlobType.BLOCK_BLOB.toString())) {
-            blob = parentDirectory.getBlockBlobReference(blobFile.getName());
-        } else {
-            blob = parentDirectory.getPageBlobReference(blobFile.getName());
-        }
-        return blob;
-    }
-
-    @NotNull
-    private static BlobFile reloadBlob(@NotNull CloudBlob blob, @NotNull String containerName, @NotNull BlobFile blobFile)
-            throws StorageException, URISyntaxException {
-        blob.downloadAttributes();
-
-        String uri = blob.getUri() != null ? blob.getUri().toString() : "";
-        String path = Strings.nullToEmpty(blob.getName());
-        String type = "";
-        String cacheControlHeader = "";
-        String contentEncoding = "";
-        String contentLanguage = "";
-        String contentType = "";
-        String contentMD5Header = "";
-        String eTag = "";
-        Calendar lastModified = new GregorianCalendar();
-        long size = 0;
-
-        BlobProperties properties = blob.getProperties();
-
-        if (properties != null) {
-            if (properties.getBlobType() != null) {
-                type = properties.getBlobType().toString();
-            }
-
-            cacheControlHeader = Strings.nullToEmpty(properties.getCacheControl());
-            contentEncoding = Strings.nullToEmpty(properties.getContentEncoding());
-            contentLanguage = Strings.nullToEmpty(properties.getContentLanguage());
-            contentType = Strings.nullToEmpty(properties.getContentType());
-            contentMD5Header = Strings.nullToEmpty(properties.getContentMD5());
-            eTag = Strings.nullToEmpty(properties.getEtag());
-
-            if (properties.getLastModified() != null) {
-                lastModified.setTime(properties.getLastModified());
-            }
-
-            size = properties.getLength();
-        }
-
-        blobFile.setUri(uri);
-        blobFile.setPath(path);
-        blobFile.setContainerName(containerName);
-        blobFile.setType(type);
-        blobFile.setCacheControlHeader(cacheControlHeader);
-        blobFile.setContentEncoding(contentEncoding);
-        blobFile.setContentLanguage(contentLanguage);
-        blobFile.setContentType(contentType);
-        blobFile.setContentMD5Header(contentMD5Header);
-        blobFile.setETag(eTag);
-        blobFile.setLastModified(lastModified);
-        blobFile.setSize(size);
-
-        return blobFile;
-    }
-
-    @NotNull
-    private static String extractBlobItemName(@Nullable String path, @Nullable String delimiter) {
-        if (path == null) {
-            return "";
-        } else if (delimiter == null || delimiter.isEmpty()) {
-            return path;
-        } else {
-            String[] parts = path.split(delimiter);
-
-            if (parts.length == 0) {
-                return "";
-            } else {
-                return parts[parts.length - 1];
-            }
-        }
-    }
-
-    @NotNull
-    private static TableEntity getTableEntity(@NotNull String tableName,
-                                              @NotNull DynamicTableEntity dte,
-                                              @NotNull String subscriptionId) {
-        String partitionKey = Strings.nullToEmpty(dte.getPartitionKey());
-        String rowKey = Strings.nullToEmpty(dte.getRowKey());
-        String eTag = Strings.nullToEmpty(dte.getEtag());
-
-        Calendar timestamp = new GregorianCalendar();
-
-        if (dte.getTimestamp() != null) {
-            timestamp.setTime(dte.getTimestamp());
-        }
-
-        Map<String, Property> properties = new HashMap<String, Property>();
-
-        if (dte.getProperties() != null) {
-            for (Entry<String, EntityProperty> entry : dte.getProperties().entrySet()) {
-                if (entry.getKey() != null && entry.getValue() != null) {
-                    String key = entry.getKey();
-                    Property property;
-
-                    switch (entry.getValue().getEdmType()) {
-                        case BOOLEAN:
-                            property = new Property(entry.getValue().getValueAsBooleanObject());
-                            break;
-                        case DATE_TIME:
-                            Calendar value = new GregorianCalendar();
-                            value.setTime(entry.getValue().getValueAsDate());
-                            property = new Property(value);
-                            break;
-                        case DOUBLE:
-                            property = new Property(entry.getValue().getValueAsDoubleObject());
-                            break;
-                        case GUID:
-                            property = new Property(entry.getValue().getValueAsUUID());
-                            break;
-                        case INT32:
-                            property = new Property(entry.getValue().getValueAsIntegerObject());
-                            break;
-                        case INT64:
-                            property = new Property(entry.getValue().getValueAsLongObject());
-                            break;
-                        case STRING:
-                            property = new Property(entry.getValue().getValueAsString());
-                            break;
-                        default:
-                            property = new Property(entry.getValue().getValueAsString());
-                            break;
-                    }
-
-                    properties.put(key, property);
-                }
-            }
-        }
-
-        return new TableEntity(partitionKey, rowKey, tableName, eTag, timestamp, properties, subscriptionId);
-    }
-
-    @NotNull
-    private static DynamicTableEntity getDynamicTableEntity(@NotNull TableEntity tableEntity)
-            throws AzureCmdException {
-        return getDynamicTableEntity(tableEntity.getPartitionKey(), tableEntity.getRowKey(),
-                tableEntity.getTimestamp(), tableEntity.getETag(), tableEntity.getProperties());
-
-    }
-
-    @NotNull
-    private static DynamicTableEntity getDynamicTableEntity(@NotNull String partitionKey,
-                                                            @NotNull String rowKey,
-                                                            @NotNull Map<String, Property> properties)
-            throws AzureCmdException {
-        return getDynamicTableEntity(partitionKey, rowKey, null, null, properties);
-    }
-
-    @NotNull
-    private static DynamicTableEntity getDynamicTableEntity(@NotNull String partitionKey,
-                                                            @NotNull String rowKey,
-                                                            @Nullable Calendar timestamp,
-                                                            @Nullable String eTag,
-                                                            @NotNull Map<String, Property> properties)
-            throws AzureCmdException {
-        Date ts = null;
-
-        if (timestamp != null) {
-            ts = timestamp.getTime();
-        }
-
-        HashMap<String, EntityProperty> entityProperties = getEntityProperties(properties);
-
-        return new DynamicTableEntity(partitionKey, rowKey, ts, eTag, entityProperties);
-    }
-
-    @NotNull
-    private static HashMap<String, EntityProperty> getEntityProperties(@NotNull Map<String, Property> properties) throws AzureCmdException {
-        HashMap<String, EntityProperty> entityProperties = new HashMap<String, EntityProperty>();
-
-        for (Entry<String, Property> entry : properties.entrySet()) {
-            String key = entry.getKey();
-            Property property = entry.getValue();
-
-            EntityProperty entityProperty;
-
-            switch (property.getType()) {
-                case Boolean:
-                    entityProperty = new EntityProperty(property.getValueAsBoolean());
-                    break;
-                case DateTime:
-                    entityProperty = new EntityProperty(property.getValueAsCalendar().getTime());
-                    break;
-                case Double:
-                    entityProperty = new EntityProperty(property.getValueAsDouble());
-                    break;
-                case Uuid:
-                    entityProperty = new EntityProperty(property.getValueAsUuid());
-                    break;
-                case Integer:
-                    entityProperty = new EntityProperty(property.getValueAsInteger());
-                    break;
-                case Long:
-                    entityProperty = new EntityProperty(property.getValueAsLong());
-                    break;
-                case String:
-                    entityProperty = new EntityProperty(property.getValueAsString());
-                    break;
-                default:
-                    entityProperty = new EntityProperty(property.getValueAsString());
-                    break;
-            }
-
-            entityProperties.put(key, entityProperty);
-        }
-        return entityProperties;
     }
 
     @NotNull

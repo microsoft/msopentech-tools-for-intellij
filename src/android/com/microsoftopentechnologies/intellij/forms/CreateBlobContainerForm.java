@@ -23,9 +23,9 @@ import com.intellij.openapi.project.Project;
 import com.microsoftopentechnologies.intellij.helpers.LinkListener;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk.AzureSDKManagerImpl;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk.StorageClientSDKManagerImpl;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.BlobContainer;
-import com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount;
+import com.microsoftopentechnologies.tooling.msservices.model.storage.ClientStorageAccount;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -43,7 +43,7 @@ public class CreateBlobContainerForm extends JDialog {
     private JLabel namingGuidelinesLink;
 
     private Project project;
-    private StorageAccount storageAccount;
+    private ClientStorageAccount storageAccount;
     private Runnable onCreate;
 
     private static final String NAME_REGEX = "^[a-z0-9](?!.*--)[a-z0-9-]+[a-z0-9]$";
@@ -125,8 +125,7 @@ public class CreateBlobContainerForm extends JDialog {
                 try {
                     progressIndicator.setIndeterminate(true);
 
-                    for (BlobContainer blobContainer : AzureSDKManagerImpl.getManager().getBlobContainers(storageAccount)) {
-
+                    for (BlobContainer blobContainer : StorageClientSDKManagerImpl.getManager().getBlobContainers(storageAccount)) {
                         if (blobContainer.getName().equals(name)) {
                             ApplicationManager.getApplication().invokeLater(new Runnable() {
                                 @Override
@@ -136,12 +135,11 @@ public class CreateBlobContainerForm extends JDialog {
                             });
 
                             return;
-
                         }
                     }
 
-                    BlobContainer blobContainer = new BlobContainer(name, storageAccount.getBlobsUri() + name, "", Calendar.getInstance(), "", storageAccount.getSubscriptionId());
-                    AzureSDKManagerImpl.getManager().createBlobContainer(storageAccount, blobContainer);
+                    BlobContainer blobContainer = new BlobContainer(name, storageAccount.getBlobsUri() + name, "", Calendar.getInstance(), "");
+                    StorageClientSDKManagerImpl.getManager().createBlobContainer(storageAccount, blobContainer);
 
                     if (onCreate != null) {
                         ApplicationManager.getApplication().invokeLater(onCreate);
@@ -163,7 +161,7 @@ public class CreateBlobContainerForm extends JDialog {
         this.project = project;
     }
 
-    public void setStorageAccount(StorageAccount storageAccount) {
+    public void setStorageAccount(ClientStorageAccount storageAccount) {
         this.storageAccount = storageAccount;
     }
 

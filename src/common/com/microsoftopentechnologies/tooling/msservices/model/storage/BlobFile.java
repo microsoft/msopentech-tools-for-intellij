@@ -1,23 +1,22 @@
 /**
  * Copyright 2014 Microsoft Open Technologies Inc.
- *
+ * <p/>
  * Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p/>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p/>
  * Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.microsoftopentechnologies.tooling.msservices.model.storage;
 
 import com.microsoftopentechnologies.tooling.msservices.helpers.NotNull;
 import com.microsoftopentechnologies.tooling.msservices.model.ServiceTreeItem;
-
 
 import java.util.Calendar;
 
@@ -36,7 +35,6 @@ public class BlobFile implements ServiceTreeItem, BlobItem {
     private String eTag;
     private Calendar lastModified;
     private long size;
-    private String subscriptionId;
 
     public BlobFile(@NotNull String name,
                     @NotNull String uri,
@@ -50,8 +48,7 @@ public class BlobFile implements ServiceTreeItem, BlobItem {
                     @NotNull String contentMD5Header,
                     @NotNull String eTag,
                     @NotNull Calendar lastModified,
-                    @NotNull long size,
-                    @NotNull String subscriptionId) {
+                    @NotNull long size) {
         this.name = name;
         this.uri = uri;
         this.containerName = containerName;
@@ -65,7 +62,6 @@ public class BlobFile implements ServiceTreeItem, BlobItem {
         this.eTag = eTag;
         this.lastModified = lastModified;
         this.size = size;
-        this.subscriptionId = subscriptionId;
     }
 
     @Override
@@ -196,11 +192,6 @@ public class BlobFile implements ServiceTreeItem, BlobItem {
 
     public void setSize(long size) {
         this.size = size;
-    }
-
-    @NotNull
-    public String getSubscriptionId() {
-        return subscriptionId;
     }
 
     @Override
