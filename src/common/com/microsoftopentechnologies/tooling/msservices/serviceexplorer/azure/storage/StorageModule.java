@@ -13,13 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.storage;
 
+import com.microsoftopentechnologies.tooling.msservices.helpers.ExternalStorageHelper;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.rest.AzureRestAPIManagerImpl;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk.AzureSDKManagerImpl;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk.StorageClientSDKManagerImpl;
 import com.microsoftopentechnologies.tooling.msservices.model.ms.Subscription;
+import com.microsoftopentechnologies.tooling.msservices.model.storage.ClientStorageAccount;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.Node;
 
@@ -27,7 +29,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class StorageModule extends Node {
-
     private static final String STORAGE_MODULE_ID = StorageModule.class.getName();
     private static final String ICON_PATH = "storage.png";
     private static final String BASE_MODULE_NAME = "Storage";
@@ -52,5 +53,10 @@ public class StorageModule extends Node {
             }
         }
 
+        // load External Accounts
+        for (ClientStorageAccount clientStorageAccount : ExternalStorageHelper.getList()) {
+            ClientStorageAccount storageAccount = StorageClientSDKManagerImpl.getManager().getStorageAccount(clientStorageAccount.getConnectionString());
+            addChildNode(new ExternalStorageNode(this, storageAccount));
+        }
     }
 }

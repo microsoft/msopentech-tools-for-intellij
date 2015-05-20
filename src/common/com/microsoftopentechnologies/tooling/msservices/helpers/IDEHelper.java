@@ -16,10 +16,9 @@
 package com.microsoftopentechnologies.tooling.msservices.helpers;
 
 import com.google.common.util.concurrent.SettableFuture;
-import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.tooling.msservices.helpers.aadauth.BrowserLauncher;
+import com.microsoftopentechnologies.tooling.msservices.model.storage.ClientStorageAccount;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.Queue;
-import com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.StorageServiceTreeItem;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.Node;
 import org.apache.commons.lang3.tuple.Pair;
@@ -46,22 +45,22 @@ public interface IDEHelper {
     boolean isFileEditing(@NotNull Object projectObject, @NotNull File file);
 
     <T extends StorageServiceTreeItem> void openItem(@NotNull Object projectObject,
-                                                     @Nullable StorageAccount storageAccount,
+                                                     @Nullable ClientStorageAccount storageAccount,
                                                      @NotNull T blobContainer,
                                                      @Nullable String itemType,
                                                      @NotNull String itemName,
                                                      @Nullable String iconName);
 
-    <T extends StorageServiceTreeItem> void openItem(@NotNull Object projectObject, @NotNull Object itemVirtualFile);
+    void openItem(@NotNull Object projectObject, @NotNull Object itemVirtualFile);
 
     @Nullable
     <T extends StorageServiceTreeItem> Object getOpenedFile(@NotNull Object projectObject,
-                                                            @NotNull StorageAccount storageAccount,
+                                                            @NotNull ClientStorageAccount storageAccount,
                                                             @NotNull T blobContainer);
 
     void closeFile(@NotNull Object projectObject, @NotNull Object openedFile);
 
-    void refreshQueue(@NotNull Object projectObject, @NotNull StorageAccount storageAccount, @NotNull Queue queue);
+    void refreshQueue(@NotNull Object projectObject, @NotNull ClientStorageAccount storageAccount, @NotNull Queue queue);
 
     void invokeAuthLauncherTask(@Nullable Object projectObject, @NotNull BrowserLauncher browserLauncher,
                                 @NotNull String windowTitle);
@@ -89,4 +88,9 @@ public interface IDEHelper {
 
     @NotNull
     String promptForOpenSSLPath();
+
+    @Nullable
+    String[] getProperties(@NotNull String name);
+
+    void setProperties(@NotNull String name, @NotNull String[] value);
 }

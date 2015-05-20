@@ -23,8 +23,8 @@ import com.intellij.openapi.project.Project;
 import com.microsoftopentechnologies.intellij.helpers.LinkListener;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk.AzureSDKManagerImpl;
-import com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk.StorageClientSDKManagerImpl;
+import com.microsoftopentechnologies.tooling.msservices.model.storage.ClientStorageAccount;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.Table;
 import org.jetbrains.annotations.NotNull;
 
@@ -41,7 +41,7 @@ public class CreateTableForm extends JDialog {
     private JTextField nameTextField;
     private JLabel namingGuidelinesLink;
     private Project project;
-    private StorageAccount storageAccount;
+    private ClientStorageAccount storageAccount;
     private Runnable onCreate;
 
     public CreateTableForm() {
@@ -116,7 +116,7 @@ public class CreateTableForm extends JDialog {
                 try {
                     progressIndicator.setIndeterminate(true);
 
-                    for (Table table : AzureSDKManagerImpl.getManager().getTables(storageAccount)) {
+                    for (Table table : StorageClientSDKManagerImpl.getManager().getTables(storageAccount)) {
                         if (table.getName().equals(name)) {
                             ApplicationManager.getApplication().invokeLater(new Runnable() {
                                 @Override
@@ -129,8 +129,8 @@ public class CreateTableForm extends JDialog {
                         }
                     }
 
-                    Table table = new Table(name, "", "");
-                    AzureSDKManagerImpl.getManager().createTable(storageAccount, table);
+                    Table table = new Table(name, "");
+                    StorageClientSDKManagerImpl.getManager().createTable(storageAccount, table);
 
                     if (onCreate != null) {
                         ApplicationManager.getApplication().invokeLater(onCreate);
@@ -152,7 +152,7 @@ public class CreateTableForm extends JDialog {
         this.project = project;
     }
 
-    public void setStorageAccount(StorageAccount storageAccount) {
+    public void setStorageAccount(ClientStorageAccount storageAccount) {
         this.storageAccount = storageAccount;
     }
 

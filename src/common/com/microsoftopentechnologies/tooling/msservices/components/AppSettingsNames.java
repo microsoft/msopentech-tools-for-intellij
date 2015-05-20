@@ -12,4 +12,5 @@ public class AppSettingsNames {
     public static final String AZURE_AUTHENTICATION_MODE = "com.microsoftopentechnologies.intellij.AzureAuthenticationMode";
     public static final String AZURE_AUTHENTICATION_TOKEN = "com.microsoftopentechnologies.intellij.AzureAuthenticationToken";
     public static final String CURRENT_PLUGIN_VERSION = "com.microsoftopentechnologies.intellij.PluginVersion";
+    public static final String EXTERNAL_STORAGE_ACCOUNT_LIST = "com.microsoftopentechnologies.intellij.ExternalStorageAccountList";
 }

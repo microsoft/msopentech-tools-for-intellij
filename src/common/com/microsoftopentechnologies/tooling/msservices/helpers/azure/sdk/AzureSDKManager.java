@@ -2,30 +2,25 @@
  * Copyright 2014 Microsoft Open Technologies Inc.
  * <p/>
  * Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p/>
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  * <p/>
  * Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk;
 
-import com.microsoftopentechnologies.tooling.msservices.helpers.CallableSingleArg;
 import com.microsoftopentechnologies.tooling.msservices.helpers.NotNull;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.tooling.msservices.model.storage.*;
+import com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount;
 import com.microsoftopentechnologies.tooling.msservices.model.vm.*;
 
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.List;
-import java.util.Map;
-import static com.microsoftopentechnologies.tooling.msservices.model.storage.TableEntity.Property;
 
 public interface AzureSDKManager {
     @NotNull
@@ -88,111 +83,4 @@ public interface AzureSDKManager {
             throws AzureCmdException;
 
     void deleteStorageAccount(@NotNull StorageAccount storageAccount) throws AzureCmdException;
-
-    @NotNull
-    List<BlobContainer> getBlobContainers(@NotNull StorageAccount storageAccount) throws AzureCmdException;
-
-    @NotNull
-    BlobContainer createBlobContainer(@NotNull StorageAccount storageAccount, @NotNull BlobContainer blobContainer)
-            throws AzureCmdException;
-
-    void deleteBlobContainer(@NotNull StorageAccount storageAccount, @NotNull BlobContainer blobContainer)
-            throws AzureCmdException;
-
-    @NotNull
-    BlobDirectory getRootDirectory(@NotNull StorageAccount storageAccount, @NotNull BlobContainer blobContainer)
-            throws AzureCmdException;
-
-    @NotNull
-    List<BlobItem> getBlobItems(@NotNull StorageAccount storageAccount, @NotNull BlobDirectory blobDirectory)
-            throws AzureCmdException;
-
-    @NotNull
-    BlobDirectory createBlobDirectory(@NotNull StorageAccount storageAccount,
-                                      @NotNull BlobDirectory parentBlobDirectory,
-                                      @NotNull BlobDirectory blobDirectory)
-            throws AzureCmdException;
-
-    @NotNull
-    BlobFile createBlobFile(@NotNull StorageAccount storageAccount,
-                            @NotNull BlobDirectory parentBlobDirectory,
-                            @NotNull BlobFile blobFile)
-            throws AzureCmdException;
-
-    void deleteBlobFile(@NotNull StorageAccount storageAccount,
-                        @NotNull BlobFile blobFile)
-            throws AzureCmdException;
-
-
-    void uploadBlobFileContent(@NotNull StorageAccount storageAccount,
-                               @NotNull BlobContainer blobContainer,
-                               @NotNull String filePath,
-                               @NotNull InputStream content,
-                               CallableSingleArg<Void, Long> processBlockEvent,
-                               long maxBlockSize,
-                               long length)
-            throws AzureCmdException;
-
-    void downloadBlobFileContent(@NotNull StorageAccount storageAccount,
-                                 @NotNull BlobFile blobFile,
-                                 @NotNull OutputStream content)
-            throws AzureCmdException;
-
-    @NotNull
-    List<Queue> getQueues(@NotNull StorageAccount storageAccount)
-            throws AzureCmdException;
-
-    @NotNull
-    Queue createQueue(@NotNull StorageAccount storageAccount,
-                      @NotNull Queue queue)
-            throws AzureCmdException;
-
-    void deleteQueue(@NotNull StorageAccount storageAccount, @NotNull Queue queue)
-            throws AzureCmdException;
-
-    @NotNull
-    List<QueueMessage> getQueueMessages(@NotNull StorageAccount storageAccount, @NotNull Queue queue)
-            throws AzureCmdException;
-
-    void clearQueue(@NotNull StorageAccount storageAccount, @NotNull Queue queue)
-            throws AzureCmdException;
-
-    void createQueueMessage(@NotNull StorageAccount storageAccount,
-                            @NotNull QueueMessage queueMessage,
-                            int timeToLiveInSeconds)
-            throws AzureCmdException;
-
-    @NotNull
-    QueueMessage dequeueFirstQueueMessage(@NotNull StorageAccount storageAccount, @NotNull Queue queue)
-            throws AzureCmdException;
-
-    @NotNull
-    List<Table> getTables(@NotNull StorageAccount storageAccount)
-            throws AzureCmdException;
-
-    @NotNull
-    Table createTable(@NotNull StorageAccount storageAccount,
-                      @NotNull Table table)
-            throws AzureCmdException;
-
-    void deleteTable(@NotNull StorageAccount storageAccount, @NotNull Table table)
-            throws AzureCmdException;
-
-    @NotNull
-    List<TableEntity> getTableEntities(@NotNull StorageAccount storageAccount, @NotNull Table table,
-                                       @NotNull String filter)
-            throws AzureCmdException;
-
-    @NotNull
-    TableEntity createTableEntity(@NotNull StorageAccount storageAccount, @NotNull String tableName,
-                                  @NotNull String partitionKey, @NotNull String rowKey,
-                                  @NotNull Map<String, Property> properties)
-            throws AzureCmdException;
-
-    @NotNull
-    TableEntity updateTableEntity(@NotNull StorageAccount storageAccount, @NotNull TableEntity tableEntity)
-            throws AzureCmdException;
-
-    void deleteTableEntity(@NotNull StorageAccount storageAccount, @NotNull TableEntity tableEntity)
-            throws AzureCmdException;
 }

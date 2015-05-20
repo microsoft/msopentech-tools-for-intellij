@@ -32,7 +32,7 @@ import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.tooling.msservices.helpers.CallableSingleArg;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk.AzureSDKManagerImpl;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk.StorageClientSDKManagerImpl;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -72,7 +72,7 @@ public class BlobExplorerFileEditor implements FileEditor {
     private JButton backButton;
     private JLabel pathLabel;
 
-    private StorageAccount storageAccount;
+    private ClientStorageAccount storageAccount;
     private BlobContainer blobContainer;
     private Project project;
 
@@ -284,11 +284,11 @@ public class BlobExplorerFileEditor implements FileEditor {
                     progressIndicator.setIndeterminate(true);
 
                     if (directoryQueue.peekLast() == null) {
-                        directoryQueue.addLast(AzureSDKManagerImpl.getManager().getRootDirectory(storageAccount, blobContainer));
+                        directoryQueue.addLast(StorageClientSDKManagerImpl.getManager().getRootDirectory(storageAccount, blobContainer));
                     }
 
-                    blobItems = AzureSDKManagerImpl.getManager().getBlobItems(storageAccount, directoryQueue.peekLast());
-
+                    blobItems = StorageClientSDKManagerImpl.getManager().getBlobItems(storageAccount, directoryQueue.peekLast());
+                    
                     if (!queryTextField.getText().isEmpty()) {
                         for (int i = blobItems.size() - 1; i >= 0; i--) {
                             BlobItem blobItem = blobItems.get(i);
@@ -474,11 +474,11 @@ public class BlobExplorerFileEditor implements FileEditor {
                     public void run(@NotNull ProgressIndicator progressIndicator) {
                         progressIndicator.setIndeterminate(true);
                         try {
-                            AzureSDKManagerImpl.getManager().deleteBlobFile(storageAccount, blobItem);
+                            StorageClientSDKManagerImpl.getManager().deleteBlobFile(storageAccount, blobItem);
 
                             if (blobItems.size() <= 1) {
                                 directoryQueue.clear();
-                                directoryQueue.addLast(AzureSDKManagerImpl.getManager().getRootDirectory(storageAccount, blobContainer));
+                                directoryQueue.addLast(StorageClientSDKManagerImpl.getManager().getRootDirectory(storageAccount, blobContainer));
 
                                 queryTextField.setText("");
                             }
@@ -566,7 +566,7 @@ public class BlobExplorerFileEditor implements FileEditor {
                                 @Override
                                 public void run() {
                                     try {
-                                        AzureSDKManagerImpl.getManager().downloadBlobFileContent(storageAccount, fileSelection, bufferedOutputStream);
+                                        StorageClientSDKManagerImpl.getManager().downloadBlobFileContent(storageAccount, fileSelection, bufferedOutputStream);
                                     } catch (AzureCmdException e) {
                                         Throwable connectionFault = e.getCause().getCause();
 
@@ -649,7 +649,7 @@ public class BlobExplorerFileEditor implements FileEditor {
                             @Override
                             public Void call() throws AzureCmdException {
                                 try {
-                                    AzureSDKManagerImpl.getManager().uploadBlobFileContent(
+                                    StorageClientSDKManagerImpl.getManager().uploadBlobFileContent(
                                             storageAccount,
                                             blobContainer,
                                             path,
@@ -676,9 +676,9 @@ public class BlobExplorerFileEditor implements FileEditor {
                                 future.cancel(true);
                                 bufferedInputStream.close();
 
-                                for (BlobItem blobItem : AzureSDKManagerImpl.getManager().getBlobItems(storageAccount, blobDirectory)) {
+                                for (BlobItem blobItem : StorageClientSDKManagerImpl.getManager().getBlobItems(storageAccount, blobDirectory)) {
                                     if (blobItem instanceof BlobFile && blobItem.getPath().equals(path)) {
-                                        AzureSDKManagerImpl.getManager().deleteBlobFile(storageAccount, (BlobFile) blobItem);
+                                        StorageClientSDKManagerImpl.getManager().deleteBlobFile(storageAccount, (BlobFile) blobItem);
                                     }
                                 }
                             }
@@ -686,10 +686,10 @@ public class BlobExplorerFileEditor implements FileEditor {
 
                         try {
                             directoryQueue.clear();
-                            directoryQueue.addLast(AzureSDKManagerImpl.getManager().getRootDirectory(storageAccount, blobContainer));
+                            directoryQueue.addLast(StorageClientSDKManagerImpl.getManager().getRootDirectory(storageAccount, blobContainer));
 
                             for (String pathDir : path.split("/")) {
-                                for (BlobItem blobItem : AzureSDKManagerImpl.getManager().getBlobItems(storageAccount, directoryQueue.getLast())) {
+                                for (BlobItem blobItem : StorageClientSDKManagerImpl.getManager().getBlobItems(storageAccount, directoryQueue.getLast())) {
                                     if (blobItem instanceof BlobDirectory && blobItem.getName().equals(pathDir)) {
                                         directoryQueue.addLast((BlobDirectory) blobItem);
                                     }
@@ -815,7 +815,7 @@ public class BlobExplorerFileEditor implements FileEditor {
     public <T> void putUserData(@NotNull Key<T> key, @Nullable T t) {
     }
 
-    public void setStorageAccount(StorageAccount storageAccount) {
+    public void setStorageAccount(ClientStorageAccount storageAccount) {
         this.storageAccount = storageAccount;
     }
 

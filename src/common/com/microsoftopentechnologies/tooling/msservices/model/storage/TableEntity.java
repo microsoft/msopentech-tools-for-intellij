@@ -149,22 +149,19 @@ public class TableEntity implements ServiceTreeItem {
     private String eTag;
     private Calendar timestamp;
     private Map<String, Property> properties;
-    private String subscriptionId;
 
     public TableEntity(@NotNull String partitionKey,
                        @NotNull String rowKey,
                        @NotNull String tableName,
                        @NotNull String eTag,
                        @NotNull Calendar timestamp,
-                       @NotNull Map<String, Property> properties,
-                       @NotNull String subscriptionId) {
+                       @NotNull Map<String, Property> properties) {
         this.partitionKey = partitionKey;
         this.rowKey = rowKey;
         this.tableName = tableName;
         this.eTag = eTag;
         this.timestamp = timestamp;
         this.properties = properties;
-        this.subscriptionId = subscriptionId;
     }
 
     @Override
@@ -217,11 +214,6 @@ public class TableEntity implements ServiceTreeItem {
     @NotNull
     public Map<String, Property> getProperties() {
         return properties;
-    }
-
-    @NotNull
-    public String getSubscriptionId() {
-        return subscriptionId;
     }
 
     @Override

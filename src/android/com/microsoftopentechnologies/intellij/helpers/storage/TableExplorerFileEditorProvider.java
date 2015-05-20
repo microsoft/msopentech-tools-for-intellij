@@ -25,7 +25,7 @@ import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoftopentechnologies.intellij.helpers.IDEHelperImpl;
-import com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount;
+import com.microsoftopentechnologies.tooling.msservices.model.storage.ClientStorageAccount;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.Table;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
@@ -35,7 +35,7 @@ public class TableExplorerFileEditorProvider implements FileEditorProvider, Dumb
 
     @Override
     public boolean accept(@NotNull Project project, @NotNull VirtualFile virtualFile) {
-        StorageAccount storageAccount = virtualFile.getUserData(IDEHelperImpl.STORAGE_KEY);
+        ClientStorageAccount storageAccount = virtualFile.getUserData(IDEHelperImpl.STORAGE_KEY);
         Table table = virtualFile.getUserData(TABLE_KEY);
 
         return (storageAccount != null && table != null);
@@ -46,7 +46,7 @@ public class TableExplorerFileEditorProvider implements FileEditorProvider, Dumb
     public FileEditor createEditor(@NotNull Project project, @NotNull VirtualFile virtualFile) {
         TableFileEditor tableFileEditor = new TableFileEditor();
 
-        StorageAccount storageAccount = virtualFile.getUserData(IDEHelperImpl.STORAGE_KEY);
+        ClientStorageAccount storageAccount = virtualFile.getUserData(IDEHelperImpl.STORAGE_KEY);
         Table table = virtualFile.getUserData(TABLE_KEY);
 
         tableFileEditor.setTable(table);

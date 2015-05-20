@@ -33,7 +33,8 @@ import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk.AzureSDKManagerImpl;
-import com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk.StorageClientSDKManagerImpl;
+import com.microsoftopentechnologies.tooling.msservices.model.storage.ClientStorageAccount;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.Table;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.TableEntity;
 import org.jetbrains.annotations.NotNull;
@@ -53,7 +54,7 @@ public class TableFileEditor implements FileEditor {
     public static final String ROW_KEY = "Row key";
     private static final String TIMESTAMP = "Timestamp";
 
-    private StorageAccount storageAccount;
+    private ClientStorageAccount storageAccount;
     private Project project;
     private Table table;
     private JPanel mainPanel;
@@ -232,7 +233,7 @@ public class TableFileEditor implements FileEditor {
                 progressIndicator.setIndeterminate(true);
 
                 try {
-                    tableEntities = AzureSDKManagerImpl.getManager().getTableEntities(storageAccount, table, queryText);
+                    tableEntities = StorageClientSDKManagerImpl.getManager().getTableEntities(storageAccount, table, queryText);
 
                     refreshGrid();
                 } catch (AzureCmdException e) {
@@ -307,7 +308,7 @@ public class TableFileEditor implements FileEditor {
                         for (int i = 0; i < selectedEntities.length; i++) {
                             progressIndicator.setFraction((double) i / selectedEntities.length);
 
-                            AzureSDKManagerImpl.getManager().deleteTableEntity(storageAccount, selectedEntities[i]);
+                            StorageClientSDKManagerImpl.getManager().deleteTableEntity(storageAccount, selectedEntities[i]);
                         }
 
                         ApplicationManager.getApplication().invokeLater(new Runnable() {
@@ -388,7 +389,7 @@ public class TableFileEditor implements FileEditor {
         return "";
     }
 
-    public void setStorageAccount(StorageAccount storageAccount) {
+    public void setStorageAccount(ClientStorageAccount storageAccount) {
         this.storageAccount = storageAccount;
     }
 

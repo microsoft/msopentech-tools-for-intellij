@@ -15,21 +15,17 @@
  */
 package com.microsoftopentechnologies.tooling.msservices.model.storage;
 
-
 import com.microsoftopentechnologies.tooling.msservices.helpers.NotNull;
 
 public class Table implements StorageServiceTreeItem {
     private boolean loading;
     private String name;
     private String uri;
-    private String subscriptionId;
 
     public Table(@NotNull String name,
-                 @NotNull String uri,
-                 @NotNull String subscriptionId) {
+                 @NotNull String uri) {
         this.name = name;
         this.uri = uri;
-        this.subscriptionId = subscriptionId;
     }
 
     @Override
@@ -54,11 +50,6 @@ public class Table implements StorageServiceTreeItem {
 
     public void setUri(@NotNull String uri) {
         this.uri = uri;
-    }
-
-    @NotNull
-    public String getSubscriptionId() {
-        return subscriptionId;
     }
 
     @Override
