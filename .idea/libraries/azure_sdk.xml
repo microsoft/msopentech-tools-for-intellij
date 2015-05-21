@@ -21,6 +21,7 @@
       <root url="jar://$PROJECT_DIR$/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/dependencies/azure-management-compute-0.7.0.jar!/" />
       <root url="jar://$PROJECT_DIR$/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/dependencies/azure-management-storage-0.7.0.jar!/" />
       <root url="jar://$PROJECT_DIR$/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/dependencies/azure-management-network-0.7.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/dependencies/jaxb-impl-2.2.3-1.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES>
@@ -34,6 +35,16 @@
       <root url="jar://$PROJECT_DIR$/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/dependencies/azure-management-compute-0.7.0-sources.jar!/" />
       <root url="jar://$PROJECT_DIR$/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/dependencies/azure-management-storage-0.7.0-sources.jar!/" />
       <root url="jar://$PROJECT_DIR$/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/dependencies/azure-management-network-0.7.0-sources.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/dependencies/jaxb-impl-2.2.3-1-sources.jar!/fi" />
+      <root url="jar://$PROJECT_DIR$/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/dependencies/jaxb-impl-2.2.3-1-sources.jar!/impl" />
+      <root url="jar://$PROJECT_DIR$/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/dependencies/jaxb-impl-2.2.3-1-sources.jar!/istack-commons/src/main/java" />
+      <root url="jar://$PROJECT_DIR$/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/dependencies/jaxb-impl-2.2.3-1-sources.jar!/istack-commons/src/test/java" />
+      <root url="jar://$PROJECT_DIR$/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/dependencies/jaxb-impl-2.2.3-1-sources.jar!/staxex" />
+      <root url="jar://$PROJECT_DIR$/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/dependencies/jaxb-impl-2.2.3-1-sources.jar!/txw2/src/compiler" />
+      <root url="jar://$PROJECT_DIR$/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/dependencies/jaxb-impl-2.2.3-1-sources.jar!/txw2/src/runtime" />
+      <root url="jar://$PROJECT_DIR$/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/dependencies/jaxb-impl-2.2.3-1-sources.jar!/txw2/src/test" />
+      <root url="jar://$PROJECT_DIR$/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/dependencies/jaxb-impl-2.2.3-1-sources.jar!/txw2/wsdl11/src" />
+      <root url="jar://$PROJECT_DIR$/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/dependencies/jaxb-impl-2.2.3-1-sources.jar!/txw2/xmlschema/src" />
     </SOURCES>
   </library>
 </component>

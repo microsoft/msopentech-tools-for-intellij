@@ -1,26 +1,24 @@
 /**
  * Copyright 2014 Microsoft Open Technologies Inc.
- *
+ * <p/>
  * Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p/>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p/>
  * Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.microsoftopentechnologies.intellij.helpers;
 
 import com.intellij.ui.JBColor;
-import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import org.jdesktop.swingx.JXMonthView;
 import org.jdesktop.swingx.calendar.DateSelectionModel;
-import sun.reflect.misc.ReflectUtil;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
@@ -43,11 +41,11 @@ public abstract class DatePickerCellEditor extends DefaultCellEditor {
 
     @Override
     public boolean stopCellEditing() {
-        String var1 = (String)super.getCellEditorValue();
+        String var1 = (String) super.getCellEditorValue();
 
         try {
-            if("".equals(var1)) {
-                if(this.constructor.getDeclaringClass() == String.class) {
+            if ("".equals(var1)) {
+                if (this.constructor.getDeclaringClass() == String.class) {
                     this.value = var1;
                 }
 
@@ -57,7 +55,7 @@ public abstract class DatePickerCellEditor extends DefaultCellEditor {
             checkAccess(this.constructor.getModifiers());
             this.value = this.constructor.newInstance(var1);
         } catch (Exception var3) {
-            ((JComponent)this.getComponent()).setBorder(new LineBorder( JBColor.RED));
+            ((JComponent) this.getComponent()).setBorder(new LineBorder(JBColor.RED));
             return false;
         }
 
@@ -67,15 +65,15 @@ public abstract class DatePickerCellEditor extends DefaultCellEditor {
     @Override
     public Component getTableCellEditorComponent(JTable jTable, Object value, boolean b, int row, int col) {
         this.value = null;
-        ((JComponent)this.getComponent()).setBorder(new LineBorder(JBColor.BLACK));
+        ((JComponent) this.getComponent()).setBorder(new LineBorder(JBColor.BLACK));
 
         try {
             Class columnClass = jTable.getColumnClass(col);
-            if(columnClass == Object.class) {
+            if (columnClass == Object.class) {
                 columnClass = String.class;
             }
 
-            ReflectUtil.checkPackageAccess(columnClass);
+            checkPackageAccess(columnClass);
             checkAccess(columnClass.getModifiers());
             this.constructor = columnClass.getConstructor(String.class);
         } catch (Exception ignored) {
@@ -84,7 +82,7 @@ public abstract class DatePickerCellEditor extends DefaultCellEditor {
 
         final Component component = super.getTableCellEditorComponent(jTable, value, b, row, col);
 
-        if(!isCellDate(jTable, row, col)) {
+        if (!isCellDate(jTable, row, col)) {
             return component;
         }
 
@@ -128,10 +126,36 @@ public abstract class DatePickerCellEditor extends DefaultCellEditor {
         return this.value;
     }
 
-    private static void checkAccess(int var0) {
-        if(System.getSecurityManager() != null && !Modifier.isPublic(var0)) {
+    private static void checkAccess(int modifiers) {
+        if (System.getSecurityManager() != null && !Modifier.isPublic(modifiers)) {
             throw new SecurityException("Resource is not accessible");
         }
     }
 
+    private static void checkPackageAccess(Class clazz) {
+        checkPackageAccess(clazz.getName());
+    }
+
+    private static void checkPackageAccess(String name) {
+        SecurityManager securityManager = System.getSecurityManager();
+
+        if (securityManager != null) {
+            String classname = name.replace('/', '.');
+            int index;
+
+            if (classname.startsWith("[")) {
+                index = classname.lastIndexOf('[') + 2;
+
+                if (index > 1 && index < classname.length()) {
+                    classname = classname.substring(index);
+                }
+            }
+
+            index = classname.lastIndexOf('.');
+
+            if (index != -1) {
+                securityManager.checkPackageAccess(classname.substring(0, index));
+            }
+        }
+    }
 }
