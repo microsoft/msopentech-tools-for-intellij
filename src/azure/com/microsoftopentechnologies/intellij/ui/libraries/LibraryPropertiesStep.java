@@ -20,7 +20,6 @@ import javax.swing.*;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.ui.wizard.WizardNavigationState;
 import com.intellij.ui.wizard.WizardStep;
-import com.microsoftopentechnologies.intellij.actions.LibraryConfigurationAction;
 import com.microsoftopentechnologies.intellij.ui.components.Validatable;
 
 import static com.microsoftopentechnologies.intellij.ui.messages.AzureBundle.message;
@@ -37,13 +36,13 @@ public class LibraryPropertiesStep extends WizardStep<AddLibraryWizardModel> imp
 
     @Override
     public JComponent prepare(final WizardNavigationState state) {
-        libraryPropertiesPanel = new LibraryPropertiesPanel(myModel.getMyModule(), myModel.getSelectedLibrary());
+        libraryPropertiesPanel = new LibraryPropertiesPanel(myModel.getMyModule(), myModel.getSelectedLibrary(), false, true);
         return libraryPropertiesPanel.prepare();
     }
 
     @Override
     public ValidationInfo doValidate() {
-        if (myModel.getSelectedLibrary() == LibraryConfigurationAction.ACS_FILTER) {
+        if (myModel.getSelectedLibrary() == AzureLibrary.ACS_FILTER) {
             ValidationInfo result = libraryPropertiesPanel.doValidate();
             myModel.getCurrentNavigationState().FINISH.setEnabled(result == null);
         }

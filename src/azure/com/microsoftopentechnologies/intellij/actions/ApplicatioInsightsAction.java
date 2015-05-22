@@ -1,5 +1,5 @@
 /**
- * Copyright 2015 Microsoft Open Technologies Inc.
+ * Copyright 2015 Microsoft Open Technologies, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -20,26 +20,18 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleTypeId;
-import com.intellij.openapi.roots.ModuleRootManager;
-import com.microsoftopentechnologies.intellij.ui.libraries.*;
+import com.microsoftopentechnologies.intellij.ui.components.DefaultDialogWrapper;
+import com.microsoftopentechnologies.intellij.ui.libraries.ApplicationInsightsPanel;
 
-import java.util.ArrayList;
-import java.util.List;
-
-public class LibraryConfigurationAction extends AnAction {
-
+public class ApplicatioInsightsAction extends AnAction {
+    @Override
     public void actionPerformed(AnActionEvent event) {
         final Module module = event.getData(LangDataKeys.MODULE);
-        List<AzureLibrary> currentLibs = new ArrayList<AzureLibrary>();
-        for (AzureLibrary azureLibrary : AzureLibrary.LIBRARIES) {
-            if (ModuleRootManager.getInstance(module).getModifiableModel().getModuleLibraryTable().getLibraryByName(azureLibrary.getName()) != null) {
-                currentLibs.add(azureLibrary);
-            }
-        }
-        LibrariesConfigurationDialog configurationDialog = new LibrariesConfigurationDialog(module, currentLibs);
-        configurationDialog.show();
+        DefaultDialogWrapper dialog = new DefaultDialogWrapper(module.getProject(), new ApplicationInsightsPanel(module));
+        dialog.show();
     }
 
+    @Override
     public void update(AnActionEvent event) {
         final Module module = event.getData(LangDataKeys.MODULE);
         event.getPresentation().setEnabledAndVisible(module != null && ModuleTypeId.JAVA_MODULE.equals(module.getOptionValue(Module.ELEMENT_TYPE)));

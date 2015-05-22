@@ -763,6 +763,6 @@ public class DeployAction extends AnAction {
 
     public void update(AnActionEvent event) {
         final Module module = event.getData(LangDataKeys.MODULE);
-        event.getPresentation().setEnabled(module != null && AzureModuleType.AZURE_MODULE.equals(module.getOptionValue(Module.ELEMENT_TYPE)));
+        event.getPresentation().setEnabledAndVisible(module != null && AzureModuleType.AZURE_MODULE.equals(module.getOptionValue(Module.ELEMENT_TYPE)));
     }
 }

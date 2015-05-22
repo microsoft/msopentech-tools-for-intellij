@@ -3,7 +3,6 @@ package com.microsoftopentechnologies.intellij.ui.libraries;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.ui.wizard.WizardNavigationState;
 import com.intellij.ui.wizard.WizardStep;
-import com.microsoftopentechnologies.intellij.actions.LibraryConfigurationAction;
 import com.microsoftopentechnologies.intellij.ui.components.Validatable;
 
 import javax.swing.*;
@@ -22,7 +21,7 @@ public class SelectLibraryStep extends WizardStep<AddLibraryWizardModel> impleme
     }
 
     public void init() {
-        libraryList.setListData(LibraryConfigurationAction.LIBRARIES);
+        libraryList.setListData(AzureLibrary.LIBRARIES);
         libraryList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     }
 

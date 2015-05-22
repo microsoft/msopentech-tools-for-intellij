@@ -17,11 +17,13 @@ package com.microsoftopentechnologies.intellij.actions;
 
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.options.ConfigurableGroup;
 import com.intellij.openapi.options.ShowSettingsUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.interopbridges.tools.windowsazure.WindowsAzureProjectManager;
 import com.interopbridges.tools.windowsazure.WindowsAzureRole;
 import com.microsoftopentechnologies.intellij.module.AzureModuleType;
@@ -58,6 +60,8 @@ public class AddRoleAction extends AnAction {
 
     public void update(@NotNull AnActionEvent event) {
         final Module module = event.getData(LangDataKeys.MODULE);
-        event.getPresentation().setEnabled(module != null && AzureModuleType.AZURE_MODULE.equals(module.getOptionValue(Module.ELEMENT_TYPE)));
+        VirtualFile selectedFile = CommonDataKeys.VIRTUAL_FILE.getData(event.getDataContext());
+        event.getPresentation().setEnabledAndVisible(module != null && AzureModuleType.AZURE_MODULE.equals(module.getOptionValue(Module.ELEMENT_TYPE))
+                && PluginUtil.isModuleRoot(selectedFile, module));
     }
 }

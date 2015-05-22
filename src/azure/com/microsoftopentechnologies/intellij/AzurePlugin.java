@@ -1,5 +1,5 @@
 /**
- * Copyright 2014 Microsoft Open Technologies Inc.
+ * Copyright 2015 Microsoft Open Technologies Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -25,8 +25,11 @@ import com.interopbridges.tools.windowsazure.WindowsAzureProjectManager;
 import com.microsoftopentechnologies.azurecommons.deploy.DeploymentEventArgs;
 import com.microsoftopentechnologies.azurecommons.deploy.DeploymentEventListener;
 import com.microsoftopentechnologies.azurecommons.wacommonutil.FileUtil;
+import com.microsoftopentechnologies.intellij.ui.libraries.AzureLibrary;
 import com.microsoftopentechnologies.intellij.ui.messages.AzureBundle;
 import com.microsoftopentechnologies.intellij.util.WAHelper;
+import com.microsoftopentechnologies.windowsazure.tools.cspack.Utils;
+
 import javax.swing.event.EventListenerList;
 import java.io.*;
 import java.net.URL;
@@ -95,8 +98,8 @@ public class AzurePlugin extends AbstractProjectComponent {
     }
 
     /**
-     * Copies all Eclipse plugin for Azure
-     * related files in eclipse plugins folder at startup.
+     * Copies MS Open Tech Tools for Azure
+     * related files in msopentech-tools-for-intellij plugin folder at startup.
      */
     private void copyPluginComponents() {
         try {
@@ -125,6 +128,14 @@ public class AzurePlugin extends AbstractProjectComponent {
             }
             copyResourceFile(message("starterKitEntry"), starterKit);
             copyResourceFile(message("encFileName"), enctFile);
+            for (AzureLibrary azureLibrary : AzureLibrary.LIBRARIES) {
+                if (!new File(pluginInstLoc + File.separator + azureLibrary.getLocation()).exists()) {
+                for (String entryName : Utils.getJarEntries(pluginInstLoc + File.separator + "lib" + File.separator + PLUGIN_ID + ".jar", azureLibrary.getLocation())) {
+                        new File(pluginInstLoc + File.separator + entryName).getParentFile().mkdirs();
+                        copyResourceFile(entryName, pluginInstLoc + File.separator + entryName);
+                    }
+                }
+            }
         } catch (Exception e) {
             LOG.error(e.getMessage(), e);
         }

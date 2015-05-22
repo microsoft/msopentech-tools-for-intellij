@@ -141,9 +141,16 @@ limitations under the License.
                 class="com.microsoftopentechnologies.intellij.actions.AddRoleAction"
                 text="Add Role..."
                 description="Add Role..." icon="/icons/RoleFolder.gif"/>
+        <action id="Actions.LibraryConfigurationAction"
+                class="com.microsoftopentechnologies.intellij.actions.LibraryConfigurationAction" text="Libraries Configuration"
+                description="Libraries Configuration"/>
+        <action id="Actions.ApplicationInsightsAction"
+                class="com.microsoftopentechnologies.intellij.actions.ApplicatioInsightsAction" text="Configure Application Insights..."
+                description="Configure Application Insights..."/>
 
         <group id="AzurePopupGroup" text="Azure" description="Azure" icon="/icons/small/windowsAzure.png" popup="true"
                class="com.microsoftopentechnologies.intellij.actions.AzurePopupGroup">
+            <reference ref="Actions.ApplicationInsightsAction"/>
             <reference ref="Actions.PackageAction"/>
             <separator/>
             <reference ref="Actions.DeployAction"/>
@@ -153,6 +160,7 @@ limitations under the License.
             <reference id="Actions.AddRoleAction"/>
             <separator/>
             <reference ref="Actions.ModulePropertiesAction"/>
+            <reference ref="Actions.LibraryConfigurationAction"/>
         </group>
 
         <group id="AzureToolbarGroup" text="Azure" description="Azure">
