@@ -6,7 +6,6 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.roots.ModifiableRootModel;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.OrderEntry;
-import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.roots.impl.ModuleLibraryOrderEntryImpl;
 import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.roots.libraries.ui.OrderRoot;
@@ -14,7 +13,6 @@ import com.intellij.openapi.roots.ui.configuration.projectRoot.LibrariesContaine
 import com.intellij.openapi.roots.ui.configuration.projectRoot.LibrariesContainerFactory;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.vfs.LocalFileSystem;
-import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.ui.*;
 import com.intellij.ui.components.JBList;
 import com.microsoftopentechnologies.intellij.AzurePlugin;
@@ -89,34 +87,32 @@ public class LibrariesConfigurationDialog extends DialogWrapper {
             AccessToken token = WriteAction.start();
             try {
                 final ModifiableRootModel modifiableModel = ModuleRootManager.getInstance(module).getModifiableModel();
-                Library newLibrary = LibrariesContainerFactory.createContainer(modifiableModel).createLibrary(/*libraryName*/azureLibrary.getName(), level, new ArrayList<OrderRoot>());
+                Library newLibrary = LibrariesContainerFactory.createContainer(modifiableModel).createLibrary(azureLibrary.getName(), level, new ArrayList<OrderRoot>());
                 if (model.isExported()) {
                     for (OrderEntry orderEntry : modifiableModel.getOrderEntries()) {
-                        if (orderEntry instanceof ModuleLibraryOrderEntryImpl && ((ModuleLibraryOrderEntryImpl) orderEntry).getLibraryName().equals(azureLibrary.getName())) {
+                        if (orderEntry instanceof ModuleLibraryOrderEntryImpl
+                                && azureLibrary.getName().equals(((ModuleLibraryOrderEntryImpl) orderEntry).getLibraryName())) {
                             ((ModuleLibraryOrderEntryImpl) orderEntry).setExported(true);
+                            break;
                         }
                     }
                 }
                 Library.ModifiableModel newLibraryModel = newLibrary.getModifiableModel();
                 File file = new File(String.format("%s%s%s", AzurePlugin.pluginFolder, File.separator, azureLibrary.getLocation()));
-                addLibraryRoot(file, newLibraryModel);
+                AddLibraryUtility.addLibraryRoot(file, newLibraryModel);
+                // if some files already contained in plugin dependencies, take them from there - true for azure sdk library
+                if (azureLibrary.getFiles().length > 0) {
+                    AddLibraryUtility.addLibraryFiles(new File(String.format("%s%s%s", AzurePlugin.pluginFolder, File.separator, "lib")), newLibraryModel, azureLibrary.getFiles());
+                }
                 newLibraryModel.commit();
                 modifiableModel.commit();
                 ((DefaultListModel) librariesList.getModel()).addElement(azureLibrary);
+            } catch (Exception ex) {
+                PluginUtil.displayErrorDialogAndLog(message("error"), message("addLibraryError"), ex);
             } finally {
                 token.finish();
             }
             LocalFileSystem.getInstance().findFileByPath(PluginUtil.getModulePath(module)).refresh(true, true);
-        }
-    }
-
-    private void addLibraryRoot(File file, Library.ModifiableModel libraryModel) {
-        if (file.isFile()) {
-            libraryModel.addRoot(VfsUtil.getUrlForLibraryRoot(file), OrderRootType.CLASSES);
-        } else {
-            for (File file0 : file.listFiles()) {
-                addLibraryRoot(file0, libraryModel);
-            }
         }
     }
 
@@ -134,8 +130,33 @@ public class LibrariesConfigurationDialog extends DialogWrapper {
     }
 
     private void editLibrary() {
-        DefaultDialogWrapper libraryProperties = new DefaultDialogWrapper(module.getProject(),
-                new LibraryPropertiesPanel(module, (AzureLibrary) librariesList.getSelectedValue()));
-        libraryProperties.show();
+        AzureLibrary azureLibrary = (AzureLibrary) librariesList.getSelectedValue();
+        final ModifiableRootModel modifiableModel = ModuleRootManager.getInstance(module).getModifiableModel();
+        OrderEntry libraryOrderEntry = null;
+        for (OrderEntry orderEntry : modifiableModel.getOrderEntries()) {
+            if (orderEntry instanceof ModuleLibraryOrderEntryImpl
+                    && azureLibrary.getName().equals(((ModuleLibraryOrderEntryImpl) orderEntry).getLibraryName())) {
+                libraryOrderEntry = orderEntry;
+                break;
+            }
+        }
+        if (libraryOrderEntry != null) {
+            LibraryPropertiesPanel libraryPropertiesPanel = new LibraryPropertiesPanel(module, azureLibrary, true,
+                    ((ModuleLibraryOrderEntryImpl)libraryOrderEntry).isExported());
+            DefaultDialogWrapper libraryProperties = new DefaultDialogWrapper(module.getProject(), libraryPropertiesPanel);
+            libraryProperties.show();
+            if (libraryProperties.isOK()) {
+                AccessToken token = WriteAction.start();
+                try {
+                    ((ModuleLibraryOrderEntryImpl) libraryOrderEntry).setExported(libraryPropertiesPanel.isExported());
+                    modifiableModel.commit();
+                } finally {
+                    token.finish();
+                }
+                LocalFileSystem.getInstance().findFileByPath(PluginUtil.getModulePath(module)).refresh(true, true);
+            }
+        } else {
+            PluginUtil.displayInfoDialog("Library not found", "Library was not found");
+        }
     }
 }

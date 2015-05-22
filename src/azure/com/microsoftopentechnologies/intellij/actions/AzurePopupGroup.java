@@ -31,10 +31,10 @@ public class AzurePopupGroup extends DefaultActionGroup implements DumbAware {
             e.getPresentation().setEnabledAndVisible(false);
         } else {
             VirtualFile selectedFile = CommonDataKeys.VIRTUAL_FILE.getData(e.getDataContext());
-            e.getPresentation().setEnabledAndVisible(PluginUtil.isModuleRoot(selectedFile, module) &&
-                    AzureModuleType.AZURE_MODULE.equals(module.getOptionValue(Module.ELEMENT_TYPE))
-                    || PluginUtil.isRoleFolder(selectedFile, module)/* ||
-                    ModuleTypeId.JAVA_MODULE.equals(module.getOptionValue(Module.ELEMENT_TYPE))*/);
+            e.getPresentation().setEnabledAndVisible(PluginUtil.isModuleRoot(selectedFile, module)
+                    && (AzureModuleType.AZURE_MODULE.equals(module.getOptionValue(Module.ELEMENT_TYPE))
+                            || ModuleTypeId.JAVA_MODULE.equals(module.getOptionValue(Module.ELEMENT_TYPE)))
+                    || PluginUtil.isRoleFolder(selectedFile, module));
         }
     }
 }

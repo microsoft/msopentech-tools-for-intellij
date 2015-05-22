@@ -35,9 +35,9 @@ import static com.microsoftopentechnologies.intellij.ui.messages.AzureBundle.mes
 /**
  * Utility class used to parse and save xml files.
  */
-final class ACSParserXMLUtility {
+final class ParserXMLUtility {
 
-    private ACSParserXMLUtility() {
+    private ParserXMLUtility() {
 
     }
 
@@ -48,7 +48,7 @@ final class ACSParserXMLUtility {
      * @return XML document or <B>null</B> if error occured
      * @throws WindowsAzureInvalidProjectOperationException
      */
-    protected static Document parseXMLFile(final String fileName) throws Exception {
+    protected static Document parseXMLFile(final String fileName, String errorMessage) throws Exception {
         try {
             DocumentBuilder docBuilder;
             Document doc = null;
@@ -59,8 +59,8 @@ final class ACSParserXMLUtility {
             doc = docBuilder.parse(xmlFile);
             return doc;
         } catch (Exception e) {
-            AzurePlugin.log(String.format("%s%s", message("acsErrMsg"), e.getMessage()), e);
-            throw new Exception(String.format("%s%s", message("acsErrMsg"), e.getMessage()));
+            AzurePlugin.log(String.format("%s%s", errorMessage, e.getMessage()), e);
+            throw new Exception(String.format("%s%s", errorMessage, e.getMessage()));
         }
     }
 

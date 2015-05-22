@@ -47,7 +47,7 @@ public class ACSFilterHandler {
             xmlPath = webXmlPath;
             File xmlFile = new File(webXmlPath);
             if (xmlFile.exists()) {
-                doc = ACSParserXMLUtility.parseXMLFile(webXmlPath);
+                doc = ParserXMLUtility.parseXMLFile(webXmlPath, message("acsErrMsg"));
             } else {
                 throw new Exception(String.format("%s%s", webXmlPath, message("fileErrMsg")));
             }
@@ -69,7 +69,7 @@ public class ACSFilterHandler {
         }
         try {
             //Check Filter tag is present or not. If not exist create new.
-            String exprFilter = message("exprConst");
+            String exprFilter = message("acsExprConst");
             XPath xpath = XPathFactory.newInstance().newXPath();
             Element eleFilter = (Element) xpath.evaluate(exprFilter, doc, XPathConstants.NODE);
             if (eleFilter == null) {
@@ -189,7 +189,7 @@ public class ACSFilterHandler {
      * @throws Exception
      */
     public void save() throws IOException, Exception {
-        ACSParserXMLUtility.saveXMLFile(xmlPath, doc);
+        ParserXMLUtility.saveXMLFile(xmlPath, doc);
     }
 
     /**
@@ -198,7 +198,7 @@ public class ACSFilterHandler {
      */
     public void remove() throws Exception {
         try {
-            String exprFilter = message("exprConst");
+            String exprFilter = message("acsExprConst");
             XPath xpath = XPathFactory.newInstance().newXPath();
             Element eleFilter = (Element) xpath.evaluate(exprFilter, doc, XPathConstants.NODE);
             if (eleFilter != null) {

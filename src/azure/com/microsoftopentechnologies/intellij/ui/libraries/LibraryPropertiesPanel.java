@@ -9,10 +9,11 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoftopentechnologies.azurecommons.wacommonutil.CerPfxUtil;
 import com.microsoftopentechnologies.azuremanagementutil.util.Base64;
 import com.microsoftopentechnologies.intellij.AzurePlugin;
-import com.microsoftopentechnologies.intellij.actions.LibraryConfigurationAction;
 import com.microsoftopentechnologies.intellij.ui.AzureAbstractPanel;
+import com.microsoftopentechnologies.intellij.ui.NewCertificateDialog;
 import com.microsoftopentechnologies.intellij.ui.util.UIUtils;
 import com.microsoftopentechnologies.intellij.util.PluginUtil;
+import com.microsoftopentechnologies.wacommon.commoncontrols.NewCertificateDialogData;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
@@ -25,6 +26,7 @@ import java.io.*;
 import java.security.cert.X509Certificate;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Map;
 
 import static com.microsoftopentechnologies.intellij.ui.messages.AzureBundle.message;
 
@@ -46,10 +48,14 @@ class LibraryPropertiesPanel implements AzureAbstractPanel {
     private AzureLibrary azureLibrary;
     private Module module;
 
-    public LibraryPropertiesPanel(Module module, AzureLibrary azureLibrary) {
+    private boolean isEdit;
+
+    public LibraryPropertiesPanel(Module module, AzureLibrary azureLibrary, boolean isEdit, boolean isExported) {
         this.module = module;
         this.azureLibrary = azureLibrary;
+        this.isEdit = isEdit;
         init();
+        depCheck.setSelected(isExported);
     }
 
     public void init() {
@@ -68,9 +74,50 @@ class LibraryPropertiesPanel implements AzureAbstractPanel {
             }
         };
         fileChooserDescriptor.setTitle("Select Certificate");
-//        FileChooser.chooseFile(fileChooserDescriptor, null, null);
+        newCertBtn.addActionListener(createNewCertListener());
         certTxt.addActionListener(UIUtils.createFileChooserListener(certTxt, null, fileChooserDescriptor));
         requiresHttpsCheck.addActionListener(createRequiredHttpsCheckListener());
+
+        if (isEdit()) {
+            // Edit library scenario
+            try {
+//                com.intellij.psi.search.PsiShortNamesCache.getInstance(module.getProject()).getFilesByName("web.xml");
+                ACSFilterHandler editHandler = new ACSFilterHandler(String.format("%s%s%s", PluginUtil.getModulePath(module), File.separator, message("xmlPath")));
+                Map<String,String> paramMap = editHandler.getAcsFilterParams();
+                acsTxt.setText(paramMap.get(message("acsAttr")));
+                relTxt.setText(paramMap.get(message("relAttr")));
+                if (paramMap.get(message("certAttr")) != null ) {
+                    certTxt.setText(paramMap.get(message("certAttr")));
+                    certInfoTxt.setText(getCertInfo(certTxt.getText()));
+                } else {
+                    certInfoTxt.setText(getEmbeddedCertInfo());
+                    embedCertCheck.setSelected(true);
+                }
+
+                requiresHttpsCheck.setSelected(!Boolean.valueOf(paramMap.get(message("allowHTTPAttr"))));
+            } catch (Exception e) {
+                AzurePlugin.log(e.getMessage(), e);
+            }
+        } else {
+            // Add library scenario
+            depCheck.setSelected(true);
+        }
+    }
+
+    private ActionListener createNewCertListener() {
+        return new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                NewCertificateDialogData data = new NewCertificateDialogData();
+                NewCertificateDialog dialog = new NewCertificateDialog(data, "", module.getProject());
+                dialog.show();
+                if (dialog.isOK()) {
+                    String certPath = data.getCerFilePath();
+                    certTxt.setText(certPath != null ? certPath.replace('\\', '/') : certPath );
+                    certInfoTxt.setText(getCertInfo(certTxt.getText()));
+                }
+            }
+        };
     }
 
     private DocumentListener createCertTxtListener() {
@@ -117,7 +164,7 @@ class LibraryPropertiesPanel implements AzureAbstractPanel {
     }
 
     public JComponent prepare() {
-        acsFilterPanel.setVisible(azureLibrary == LibraryConfigurationAction.ACS_FILTER);
+        acsFilterPanel.setVisible(azureLibrary == AzureLibrary.ACS_FILTER);
         libraryVersion.setText(azureLibrary.getName());
         location.setText((String.format("%s%s%s", AzurePlugin.pluginFolder, File.separator, azureLibrary.getLocation())));
         rootPanel.revalidate();
@@ -125,7 +172,7 @@ class LibraryPropertiesPanel implements AzureAbstractPanel {
     }
 
     public boolean onFinish() {
-        if (azureLibrary == LibraryConfigurationAction.ACS_FILTER) {
+        if (azureLibrary == AzureLibrary.ACS_FILTER) {
             if (doValidate() != null) {
                 return false;
             }
@@ -141,12 +188,18 @@ class LibraryPropertiesPanel implements AzureAbstractPanel {
 
     @Override
     public String getDisplayName() {
-        return null;
+        return message("edtLbrTtl");
     }
 
     @Override
     public boolean doOKAction() {
-        return false;
+        try {
+            configureDeployment();
+            return true;
+        } catch (Exception ex) {
+            PluginUtil.displayErrorDialogAndLog(message("error"), "Error saving configuration", ex);
+            return false;
+        }
     }
 
     @Override
@@ -313,42 +366,9 @@ class LibraryPropertiesPanel implements AzureAbstractPanel {
      * In case of edit, populates previously set values.
      */
     private void configureDeployment() {
-        //edit library
-//        if (isEdit()) {
-//            IJavaProject proj1 = JavaCore.create(ACSFilterUtil.getSelectedProject());
-//            IClasspathEntry[] entries;
-//            try {
-//                entries = proj1.getRawClasspath();
-//                IClasspathEntry[] newentries =
-//                        new IClasspathEntry[entries.length];
-//
-//                for (int i = 0; i < entries.length; i++) {
-//                    if (entries[i].toString().contains(Messages.sdkContainer)) {
-//                        if (depCheck.getSelection()) {
-//                            IClasspathAttribute[] attr =
-//                                    new IClasspathAttribute[1];
-//                            attr[0] = JavaCore.newClasspathAttribute(
-//                                    Messages.jstDep,
-//                                    "/WEB-INF/lib");
-//                            newentries[i] = JavaCore.newContainerEntry(entry,
-//                                    null, attr, true);
-//                        } else {
-//                            newentries[i] = JavaCore.newContainerEntry(entry);
-//                        }
-//                    } else {
-//                        newentries[i] = entries[i];
-//                    }
-//                }
-//                proj1.setRawClasspath(newentries, null);
-//            } catch (Exception e) {
-//                Activator.getDefault().log(e.getMessage(), e);
-//            }
-//        }
-
         ACSFilterHandler handler = null;
         try {
             String xmlPath = String.format("%s%s%s", PluginUtil.getModulePath(module), File.separator, message("xmlPath"));
-//            if (proj.getFile(message("xmlPath")).exists()) {
             File webXml = new File(xmlPath);
             if (webXml.exists()) {
                 handler = new ACSFilterHandler(xmlPath);
@@ -387,7 +407,7 @@ class LibraryPropertiesPanel implements AzureAbstractPanel {
                     handler = new ACSFilterHandler(path);
                     handler.setAcsFilterParams(message("acsAttr"), acsTxt.getText());
                     handler.setAcsFilterParams(message("relAttr"), relTxt.getText());
-                    if (!embedCertCheck.isSelected()) { //Donot make entry if embed cert is selected
+                    if (!embedCertCheck.isSelected()) { //Do not make entry if embed cert is selected
                         handler.setAcsFilterParams(message("certAttr"), certTxt.getText());
                         if (getEmbeddedCertInfo() != null)
                             removeEmbedCert();
@@ -395,19 +415,16 @@ class LibraryPropertiesPanel implements AzureAbstractPanel {
                     handler.setAcsFilterParams(message("secretKeyAttr"), generateKey());
                     handler.setAcsFilterParams(message("allowHTTPAttr"), requiresHttpsCheck.isSelected() ? "false" : "true");
                 } else {
-//                    finishVal = true;
                     return;
                 }
             }
         } catch (Exception e) {
             PluginUtil.displayErrorDialogAndLog(message("acsErrTtl"), message("acsErrMsg"), e);
-//            finishVal = false;
         }
         try {
             handler.save();
         } catch (Exception e) {
             PluginUtil.displayErrorDialogAndLog(message("acsErrTtl"), message("saveErrMsg"), e);
-//            finishVal = false;
         }
     }
 
@@ -415,7 +432,7 @@ class LibraryPropertiesPanel implements AzureAbstractPanel {
      * @return current window is edit or not
      */
     private boolean isEdit() {
-        return false;
+        return isEdit;
     }
 
     public String getHelpId() {
