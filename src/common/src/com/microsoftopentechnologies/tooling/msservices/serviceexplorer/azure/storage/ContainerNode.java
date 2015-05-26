@@ -71,8 +71,11 @@ public class ContainerNode extends Node {
     public class ViewBlobContainer extends NodeActionListener {
         @Override
         public void actionPerformed(NodeActionEvent e) {
-            if (DefaultLoader.getIdeHelper().getOpenedFile(getProject(), storageAccount, blobContainer) == null) {
+            final Object openedFile = DefaultLoader.getIdeHelper().getOpenedFile(getProject(), storageAccount, blobContainer);
+            if (openedFile == null) {
                 DefaultLoader.getIdeHelper().openItem(getProject(), storageAccount, blobContainer, " [Container]", "BlobContainer", "container.png");
+            } else {
+                DefaultLoader.getIdeHelper().openItem(getProject(), openedFile);
             }
         }
     }
