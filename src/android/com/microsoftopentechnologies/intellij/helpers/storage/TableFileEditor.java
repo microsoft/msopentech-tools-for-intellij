@@ -141,6 +141,15 @@ public class TableFileEditor implements FileEditor {
         entitiesTable.addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent me) {
                 if (me.getComponent() instanceof JTable) {
+                    int r = entitiesTable.rowAtPoint(me.getPoint());
+
+                    if (r >= 0 && r < entitiesTable.getRowCount()) {
+                        entitiesTable.setRowSelectionInterval(r, r);
+                    } else {
+                        entitiesTable.clearSelection();
+                    }
+
+
                     if (me.getClickCount() == 2) {
                         editEntity();
                     }
