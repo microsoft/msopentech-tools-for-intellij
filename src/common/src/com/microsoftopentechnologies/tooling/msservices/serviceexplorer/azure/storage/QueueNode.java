@@ -35,7 +35,7 @@ public class QueueNode extends Node {
     private final ClientStorageAccount storageAccount;
 
     public QueueNode(QueueModule parent, ClientStorageAccount storageAccount, Queue queue) {
-        super(QUEUE_MODULE_ID, queue.getName(), parent, ICON_PATH, true);
+        super(QUEUE_MODULE_ID, queue.getName(), parent, ICON_PATH, false);
 
         this.storageAccount = storageAccount;
         this.queue = queue;
@@ -55,6 +55,7 @@ public class QueueNode extends Node {
     @Override
     protected Map<String, Class<? extends NodeActionListener>> initActions() {
         return ImmutableMap.of(
+                "Refresh", RefreshAction.class,
                 "View Queue", ViewQueue.class,
                 "Delete", DeleteQueue.class,
                 "Clear Queue", ClearQueue.class
@@ -129,6 +130,13 @@ public class QueueNode extends Node {
                     }
                 });
             }
+        }
+    }
+
+    public class RefreshAction extends NodeActionListener {
+        @Override
+        public void actionPerformed(NodeActionEvent e) {
+            DefaultLoader.getIdeHelper().refreshQueue(getProject(), storageAccount, queue);
         }
     }
 }

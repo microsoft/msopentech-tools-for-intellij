@@ -33,10 +33,7 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.LightVirtualFile;
 import com.microsoftopentechnologies.intellij.forms.OpenSSLFinderForm;
-import com.microsoftopentechnologies.intellij.helpers.storage.BlobExplorerFileEditorProvider;
-import com.microsoftopentechnologies.intellij.helpers.storage.QueueExplorerFileEditorProvider;
-import com.microsoftopentechnologies.intellij.helpers.storage.QueueFileEditor;
-import com.microsoftopentechnologies.intellij.helpers.storage.TableExplorerFileEditorProvider;
+import com.microsoftopentechnologies.intellij.helpers.storage.*;
 import com.microsoftopentechnologies.intellij.serviceexplorer.BackgroundLoader;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.tooling.msservices.helpers.IDEHelper;
@@ -44,6 +41,7 @@ import com.microsoftopentechnologies.tooling.msservices.helpers.NotNull;
 import com.microsoftopentechnologies.tooling.msservices.helpers.Nullable;
 import com.microsoftopentechnologies.tooling.msservices.helpers.ServiceCodeReferenceHelper;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.*;
+import com.microsoftopentechnologies.tooling.msservices.model.storage.Table;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.Node;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -284,6 +282,47 @@ public class IDEHelperImpl implements IDEHelper {
                         @Override
                         public void run() {
                             queueFileEditor.fillGrid();
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+
+    @Override
+    public void refreshBlobs(@NotNull final Object projectObject, @NotNull final ClientStorageAccount storageAccount,
+                             @NotNull final BlobContainer container) {
+        ApplicationManager.getApplication().runReadAction(new Runnable() {
+            @Override
+            public void run() {
+                VirtualFile file = (VirtualFile) getOpenedFile(projectObject, storageAccount, container);
+                if (file != null) {
+                    final BlobExplorerFileEditor containerFileEditor = (BlobExplorerFileEditor) FileEditorManager.getInstance((Project) projectObject).getEditors(file)[0];
+                    ApplicationManager.getApplication().invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            containerFileEditor.fillGrid();
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    @Override
+    public void refreshTable(@NotNull final Object projectObject, @NotNull final ClientStorageAccount storageAccount,
+                             @NotNull final Table table) {
+        ApplicationManager.getApplication().runReadAction(new Runnable() {
+            @Override
+            public void run() {
+                VirtualFile file = (VirtualFile) getOpenedFile(projectObject, storageAccount, table);
+                if (file != null) {
+                    final TableFileEditor tableFileEditor = (TableFileEditor) FileEditorManager.getInstance((Project) projectObject).getEditors(file)[0];
+                    ApplicationManager.getApplication().invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            tableFileEditor.fillGrid();
                         }
                     });
                 }

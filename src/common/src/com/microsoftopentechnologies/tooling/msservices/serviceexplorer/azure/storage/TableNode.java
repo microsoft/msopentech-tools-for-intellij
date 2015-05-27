@@ -35,7 +35,7 @@ public class TableNode extends Node {
     private final ClientStorageAccount storageAccount;
 
     public TableNode(TableModule parent, ClientStorageAccount storageAccount, Table table) {
-        super(TABLE_MODULE_ID, table.getName(), parent, ICON_PATH, true);
+        super(TABLE_MODULE_ID, table.getName(), parent, ICON_PATH, false);
 
         this.storageAccount = storageAccount;
         this.table = table;
@@ -54,6 +54,7 @@ public class TableNode extends Node {
     @Override
     protected Map<String, Class<? extends NodeActionListener>> initActions() {
         return ImmutableMap.of(
+                "Refresh", RefreshAction.class,
                 "View Table", ViewTable.class,
                 "Delete", DeleteTable.class
         );
@@ -98,6 +99,13 @@ public class TableNode extends Node {
                     }
                 });
             }
+        }
+    }
+
+    public class RefreshAction extends NodeActionListener {
+        @Override
+        public void actionPerformed(NodeActionEvent e) {
+            DefaultLoader.getIdeHelper().refreshTable(getProject(), storageAccount, table);
         }
     }
 }
