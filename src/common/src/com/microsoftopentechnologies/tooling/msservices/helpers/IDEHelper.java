@@ -16,9 +16,7 @@
 package com.microsoftopentechnologies.tooling.msservices.helpers;
 
 import com.google.common.util.concurrent.SettableFuture;
-import com.microsoftopentechnologies.tooling.msservices.model.storage.ClientStorageAccount;
-import com.microsoftopentechnologies.tooling.msservices.model.storage.Queue;
-import com.microsoftopentechnologies.tooling.msservices.model.storage.StorageServiceTreeItem;
+import com.microsoftopentechnologies.tooling.msservices.model.storage.*;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.Node;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -60,6 +58,8 @@ public interface IDEHelper {
     void closeFile(@NotNull Object projectObject, @NotNull Object openedFile);
 
     void refreshQueue(@NotNull Object projectObject, @NotNull ClientStorageAccount storageAccount, @NotNull Queue queue);
+    void refreshBlobs(@NotNull Object projectObject, @NotNull ClientStorageAccount storageAccount, @NotNull BlobContainer container);
+    void refreshTable(@NotNull Object projectObject, @NotNull ClientStorageAccount storageAccount, @NotNull Table table);
 
     void invokeBackgroundLoader(@Nullable Object projectObject, @NotNull Node node,
                                 @NotNull SettableFuture<List<Node>> future, @NotNull String name);

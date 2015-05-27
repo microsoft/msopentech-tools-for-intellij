@@ -27,15 +27,18 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
+import com.intellij.util.io.IOUtil;
 import com.microsoftopentechnologies.intellij.forms.UploadBlobFileForm;
 import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.tooling.msservices.helpers.CallableSingleArg;
+import com.microsoftopentechnologies.tooling.msservices.helpers.OpenSSLHelper;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk.StorageClientSDKManagerImpl;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import sun.misc.IOUtils;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
@@ -262,7 +265,7 @@ public class BlobExplorerFileEditor implements FileEditor {
         openButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                downloadSelectedFile();
+                downloadSelectedFile(true);
             }
         });
 
@@ -426,7 +429,7 @@ public class BlobExplorerFileEditor implements FileEditor {
         openMenu.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                downloadSelectedFile();
+                downloadSelectedFile(true);
             }
         });
 
@@ -517,20 +520,20 @@ public class BlobExplorerFileEditor implements FileEditor {
         int saveDialog = jFileChooser.showSaveDialog(this.mainPanel);
 
         if (saveDialog == JFileChooser.APPROVE_OPTION) {
-            downloadSelectedFile(jFileChooser.getSelectedFile());
+            downloadSelectedFile(jFileChooser.getSelectedFile(), false);
         }
     }
 
-    private void downloadSelectedFile() {
+    private void downloadSelectedFile(boolean open) {
         String defaultFolder = System.getProperty("user.home") + File.separator + "Downloads";
         BlobFile fileSelection = getFileSelection();
 
         if (fileSelection != null) {
-            downloadSelectedFile(new File(defaultFolder + File.separator + fileSelection.getName()));
+            downloadSelectedFile(new File(defaultFolder + File.separator + fileSelection.getName()), open);
         }
     }
 
-    private void downloadSelectedFile(final File targetFile) {
+    private void downloadSelectedFile(final File targetFile, final boolean open) {
         final BlobFile fileSelection = getFileSelection();
 
         if (fileSelection != null) {
@@ -567,11 +570,34 @@ public class BlobExplorerFileEditor implements FileEditor {
                                 public void run() {
                                     try {
                                         StorageClientSDKManagerImpl.getManager().downloadBlobFileContent(storageAccount, fileSelection, bufferedOutputStream);
+
+                                        if(open && targetFile.exists()) {
+                                            Desktop.getDesktop().open(targetFile);
+                                        }
                                     } catch (AzureCmdException e) {
                                         Throwable connectionFault = e.getCause().getCause();
 
                                         progressIndicator.setText("Error downloading Blob");
                                         progressIndicator.setText2((connectionFault instanceof SocketTimeoutException) ? "Connection timed out" : connectionFault.getMessage());
+                                    } catch (IOException ex) {
+                                        try {
+                                            final Process p;
+                                            Runtime runtime = Runtime.getRuntime();
+                                            p = runtime.exec(
+                                                    new String[]{"open", "-R", targetFile.getName()},
+                                                    null,
+                                                    targetFile.getParentFile());
+
+                                            InputStream errorStream = p.getErrorStream();
+                                            String errResponse = new String(IOUtils.readFully(errorStream, -1, true));
+
+                                            if (p.waitFor() != 0) {
+                                                throw new Exception(errResponse);
+                                            }
+                                        } catch (Exception e) {
+                                            progressIndicator.setText("Error openning file");
+                                            progressIndicator.setText2(ex.getMessage());
+                                        }
                                     }
                                 }
                             });

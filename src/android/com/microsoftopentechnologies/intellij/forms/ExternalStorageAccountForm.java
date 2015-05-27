@@ -161,7 +161,7 @@ public class ExternalStorageAccountForm extends JDialog {
             useHTTPSRecommendedRadioButton.setSelected(storageAccount.getProtocol().equals(HTTPS));
         }
         rememberAccountKeyCheckBox.setSelected(!storageAccount.getPrimaryKey().isEmpty());
-        accountKeyTextField.setEnabled(false);
+        accountNameTextField.setEnabled(false);
 
         updateConnectionString();
     }

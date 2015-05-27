@@ -33,11 +33,13 @@ public class ContainerNode extends Node {
     private static final String CONTAINER_MODULE_ID = ContainerNode.class.getName();
     private static final String ICON_PATH = "container.png";
 
+
+
     private final BlobContainer blobContainer;
     private final ClientStorageAccount storageAccount;
 
     public ContainerNode(final Node parent, ClientStorageAccount sa, BlobContainer bc) {
-        super(CONTAINER_MODULE_ID, bc.getName(), parent, ICON_PATH, true);
+        super(CONTAINER_MODULE_ID, bc.getName(), parent, ICON_PATH, false);
 
         blobContainer = bc;
         storageAccount = sa;
@@ -56,23 +58,23 @@ public class ContainerNode extends Node {
     }
 
     @Override
-    public void addAction(NodeAction action) {
-        super.addAction(action);
-    }
-
-    @Override
     protected Map<String, Class<? extends NodeActionListener>> initActions() {
 
         return ImmutableMap.of(
+                "Refresh", RefreshAction.class,
                 "Delete", DeleteBlobContainer.class,
                 "View Blob Container", ViewBlobContainer.class);
     }
 
+
     public class ViewBlobContainer extends NodeActionListener {
         @Override
         public void actionPerformed(NodeActionEvent e) {
-            if (DefaultLoader.getIdeHelper().getOpenedFile(getProject(), storageAccount, blobContainer) == null) {
+            final Object openedFile = DefaultLoader.getIdeHelper().getOpenedFile(getProject(), storageAccount, blobContainer);
+            if (openedFile == null) {
                 DefaultLoader.getIdeHelper().openItem(getProject(), storageAccount, blobContainer, " [Container]", "BlobContainer", "container.png");
+            } else {
+                DefaultLoader.getIdeHelper().openItem(getProject(), openedFile);
             }
         }
     }
@@ -109,6 +111,13 @@ public class ContainerNode extends Node {
                     }
                 });
             }
+        }
+    }
+
+    public class RefreshAction extends NodeActionListener {
+        @Override
+        public void actionPerformed(NodeActionEvent e) {
+            DefaultLoader.getIdeHelper().refreshBlobs(getProject(), storageAccount, blobContainer);
         }
     }
 }
