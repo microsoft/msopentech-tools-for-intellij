@@ -93,6 +93,7 @@ public class TableFileEditor implements FileEditor {
                 form.setTableName(table.getName());
                 form.setStorageAccount(storageAccount);
                 form.setTableEntity(null);
+                form.setTableEntityList(tableEntities);
 
                 form.setTitle("Add Entity");
 
