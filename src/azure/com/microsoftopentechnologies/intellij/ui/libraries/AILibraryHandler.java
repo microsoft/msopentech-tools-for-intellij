@@ -154,7 +154,7 @@ public class AILibraryHandler {
             return;
         }
         try {
-            String exprFilter = message("exprConst");
+            String exprFilter = message("aiExprConst");
             XPath xpath = XPathFactory.newInstance().newXPath();
             Element eleFilter = (Element) xpath.evaluate(exprFilter, webXMLDoc,
                     XPathConstants.NODE);
@@ -185,7 +185,7 @@ public class AILibraryHandler {
             return;
         }
         try {
-            String exprFilter = message("exprConst");
+            String exprFilter = message("aiExprConst");
             XPath xpath = XPathFactory.newInstance().newXPath();
             Element eleFilter = (Element) xpath.evaluate(exprFilter, webXMLDoc, XPathConstants.NODE);
 
