@@ -467,22 +467,25 @@ public final class WizardCacheManager {
 					future.get(OPERATIONS_TIMEOUT, TimeUnit.SECONDS);
 				}
 
-				for (Subscription sub : publishData.getPublishProfile().getSubscriptions()) {
-					/*
-					 * Get collection of storage services in each subscription.
-					 */
-					StorageServices services = publishData.getStoragesPerSubscription().get(sub.getId());
-					if (services != null) {
-						for (StorageService strgService : services) {
-							List<URI> endpoints = strgService.getStorageAccountProperties().getEndpoints();
-                            for (int i = 0; i < endpoints.size(); i++) {
-                                String uri = endpoints.get(i).toString();
-                                if (uri.startsWith("https://")) {
-                                    endpoints.set(i, URI.create(uri.replaceFirst("https://", "http://")));
-                                }
-                            }
+				try {
+					String chinaMngmntUrl = PreferenceSetUtil.getManagementURL("windowsazure.cn (China)", AzurePlugin.prefFilePath);
+					chinaMngmntUrl = chinaMngmntUrl.substring(0, chinaMngmntUrl.lastIndexOf("/"));
+					if (url.equals(chinaMngmntUrl)) {
+						for (Subscription sub : publishData.getPublishProfile().getSubscriptions()) {
+							StorageServices services = publishData.getStoragesPerSubscription().get(sub.getId());
+							for (StorageService strgService : services) {
+								List<URI> endpoints = strgService.getStorageAccountProperties().getEndpoints();
+								for (int i = 0; i < endpoints.size(); i++) {
+									String uri = endpoints.get(i).toString();
+									if (uri.startsWith("https://")) {
+										endpoints.set(i, URI.create(uri.replaceFirst("https://", "http://")));
+									}
+								}
+							}
 						}
 					}
+				} catch (Exception e) {
+					// Ignore error
 				}
 			} catch (InterruptedException e) {
 				if (loadSubscriptionsFuture != null) {
