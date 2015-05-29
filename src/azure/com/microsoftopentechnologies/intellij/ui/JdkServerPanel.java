@@ -442,14 +442,15 @@ public class JdkServerPanel {
                 super.onFileChoosen(chosenFile);
                 serBrowseBtnListener();
                 modifySrvText(waRole, message("dlNtLblDirSrv"));
-                modified = true;
-                /*
-                 * Check server configured previously
-		         * and now server name is changed.
-		         */
-                if (serverPath.getText() != null) {
-                    updateServer((String) serverType.getSelectedItem(), serverPath.getText(), AzurePlugin.cmpntFile);
+                enforceSameLocalCloudServer();
+                if (thrdPrtSrvBtn.isSelected()) {
+                    String currentName = (String) thrdPrtSrvCmb.getSelectedItem();
+                    if (!currentName.equalsIgnoreCase(srvPrevName)) {
+                        srvAccepted = false;
+                        srvPrevName = currentName;
+                    }
                 }
+                modified = true;
             }
         });
         serverCheckBox.setSelected(false);
@@ -2045,37 +2046,6 @@ public class JdkServerPanel {
         }
     }
 
-    public boolean okToLeave() throws ConfigurationException {
-        boolean okToProceed = true;
-        ValidationInfo validationInfo = doValidate();
-        if (validationInfo != null) {
-            throw new ConfigurationException(validationInfo.message);
-        }
-        if (jdkCheckBox.isSelected()) {
-            /*
-			 * Check if third party JDK is selected
-			 * then license is accepted or not.
-			 */
-            if (createAccLicenseAggDlg(true)) {
-                okToProceed = configureJdkCloudDeployment();
-            } else {
-                okToProceed = false;
-            }
-        }
-        if (okToProceed) {
-            boolean tempAccepted = true;
-            if (thrdPrtSrvBtn.isSelected() && !srvAccepted) {
-                tempAccepted = createAccLicenseAggDlg(false);
-            }
-            if (tempAccepted) {
-                okToProceed = configureSrvCloudDeployment();
-            } else {
-                okToProceed = false;
-            }
-        }
-        return okToProceed;
-    }
-
     public boolean createAccLicenseAggDlg(boolean isForJdk) {
         String name = "";
         String url = "";
@@ -2318,14 +2288,11 @@ public class JdkServerPanel {
     }
 
     public void apply() throws ConfigurationException {
-        if (!okToLeave()) {
-            throw new ConfigurationException(message("error"));
-        }
         boolean isJdkValid = true;
+        boolean isSrvValid = true;
         // Validation for JDK
         if (jdkCheckBox.isSelected()) {
             if (jdkPath.getText().isEmpty()) {
-                isJdkValid = false;
                 throw new ConfigurationException(message("jdkPathErrMsg"), message("jdkPathErrTtl"));
             } else {
                 File file = new File(jdkPath.getText());
@@ -2339,7 +2306,6 @@ public class JdkServerPanel {
         if (!(!jdkCheckBox.isSelected() && uploadLocalJdk.isSelected())) {
             String jdkUrl = this.jdkUrl.getText().trim();
             if (jdkUrl.isEmpty()) {
-                isJdkValid = false;
                 throw new ConfigurationException(message("dlgDlUrlErrMsg"), message("dlgDlUrlErrTtl"));
             } else {
                 Boolean isUrlValid = false;
@@ -2365,19 +2331,32 @@ public class JdkServerPanel {
                 if (isUrlValid) {
                     String javaHome = this.javaHome.getText().trim();
                     if (javaHome.isEmpty()) {
-                        isJdkValid = false;
                         throw new ConfigurationException(message("jvHomeErMsg"), message("genErrTitle"));
+                    }  else {
+                        boolean tempAccepted = true;
+                        if (thirdPartyJdk.isSelected() && !accepted) {
+                            tempAccepted = createAccLicenseAggDlg(true);
+                            accepted = tempAccepted;
+                        }
+                        if (tempAccepted) {
+                            isJdkValid = configureJdkCloudDeployment();
+                        } else {
+                            isJdkValid = false;
+                        }
                     }
                 } else {
                     isJdkValid = false;
                 }
             }
         } else {
-            isJdkValid = true;
+            isJdkValid = configureJdkCloudDeployment();
+        }
+        if (!isJdkValid) {
+            throw new ConfigurationException(message("error"), message("jdkErrTtl"));
         }
 
         // Validation for Server
-        if (isJdkValid && serverCheckBox.isSelected()) {
+        if (serverCheckBox.isSelected()) {
             if (serverType.getSelectedItem() == null || ((String) serverType.getSelectedItem()).isEmpty()) {
                 throw new ConfigurationException(message("dplEmtSerMsg"), message("srvErrTtl"));
             } else if (uploadLocalServer.isSelected() && serverPath.getText().isEmpty()) {
@@ -2385,21 +2364,24 @@ public class JdkServerPanel {
             } else if (!serverPath.getText().isEmpty() && !(new File(serverPath.getText()).exists())) {
                 throw new ConfigurationException(message("dplWrngSerMsg"), message("srvErrTtl"));
             } else {
-                // Server download group
-                if (customDownloadServer.isSelected()) {
-                    // Validate Server URL
-                    String srvUrl = this.serverUrl.getText().trim();
-                    if (srvUrl.isEmpty()) {
-                        throw new ConfigurationException(message("dlgDlUrlErrMsg"), message("dlgDlUrlErrTtl"));
+                // Validate Server URL
+                String srvUrl = serverUrl.getText().trim();
+                if (srvUrl.isEmpty()) {
+                    throw new ConfigurationException(message("dlgDlUrlErrMsg"), message("dlgDlUrlErrTtl"));
+                } else {
+                    Boolean isSrvUrlValid = false;
+                    // Server auto upload option selected.
+                    if (uploadLocalServer.isSelected() || thrdPrtSrvBtn.isSelected()) {
+                        if (srvUrl.equalsIgnoreCase(JdkSrvConfig.AUTO_TXT)) {
+                            srvUrl = AUTO;
+                        }
+                        isSrvUrlValid = true;
                     } else {
                         // Server cloud option selected
                         try {
                             new URL(srvUrl);
                             if (WAEclipseHelperMethods.isBlobStorageUrl(srvUrl)) {
-                                String srvHome = serverHomeDir.getText().trim();
-                                if (srvHome.isEmpty()) {
-                                    throw new ConfigurationException(message("srvHomeErMsg"), message("srvErrTtl"));
-                                }
+                                isSrvUrlValid = true;
                             } else {
                                 throw new ConfigurationException(message("dlgDlUrlErrMsg"), message("dlgDlUrlErrTtl"));
                             }
@@ -2407,9 +2389,32 @@ public class JdkServerPanel {
                             throw new ConfigurationException(message("dlgDlUrlErrMsg"), message("dlgDlUrlErrTtl"));
                         }
                     }
-
+                    if (isSrvUrlValid) {
+                        String srvHome = serverHomeDir.getText().trim();
+                        if (srvHome.isEmpty()) {
+                            throw new ConfigurationException(message("srvHomeErMsg"), message("genErrTitle"));
+                        } else {
+                            boolean tempAccepted = true;
+                            if (thrdPrtSrvBtn.isSelected() && !srvAccepted) {
+                                tempAccepted = createAccLicenseAggDlg(false);
+                                srvAccepted = tempAccepted;
+                            }
+                            if (tempAccepted) {
+                                isSrvValid = configureSrvCloudDeployment();
+                            } else {
+                                isSrvValid = false;
+                            }
+                        }
+                    } else {
+                        isSrvValid = false;
+                    }
                 }
             }
+        } else {
+            isSrvValid = configureSrvCloudDeployment();
+        }
+        if (!isSrvValid) {
+            throw new ConfigurationException(message("error"), message("srvErrTtl"));
         }
     }
 }
