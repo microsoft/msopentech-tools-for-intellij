@@ -39,6 +39,8 @@ import java.awt.*;
 import java.awt.event.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.List;
+
 
 public class TableEntityForm extends JDialog {
     private JPanel contentPane;
@@ -52,6 +54,8 @@ public class TableEntityForm extends JDialog {
     private ClientStorageAccount storageAccount;
     private Runnable onFinish;
     private String tableName;
+    private List<TableEntity> tableEntityList;
+
 
     private static String[] INVALID_KEYWORDS = {
             "abstract", "as", "base", "bool", "break", "byte", "case", "catch", "char", "checked", "class", "const", "continue", "decimal", "default", "delegate", "do", "double", "else",
@@ -180,7 +184,7 @@ public class TableEntityForm extends JDialog {
         }
     }
 
-    private void onOK() {
+    private void onOK(){
         final TableModel model = propertiesTable.getModel();
         final String partitionKey = model.getValueAt(0, 3).toString();
         final String rowKey = model.getValueAt(1, 3).toString();
@@ -202,6 +206,14 @@ public class TableEntityForm extends JDialog {
                 errors = errors + String.format("The field %s has an invalid value for its type.\n", name);
             } else {
                 properties.put(name, property);
+            }
+        }
+
+        if(tableEntity == null) {
+            for(TableEntity te : tableEntityList) {
+                if(te.getPartitionKey().equals(partitionKey) && te.getRowKey().equals(rowKey)) {
+                    errors = errors + "An entity already exists with this partition key and row key pair.";
+                }
             }
         }
 
@@ -300,6 +312,10 @@ public class TableEntityForm extends JDialog {
 
     public void setTableName(String tableName) {
         this.tableName = tableName;
+    }
+
+    public void setTableEntityList(List<TableEntity> tableEntityList) {
+        this.tableEntityList = tableEntityList;
     }
 
     private class DeleteButtonRenderer extends DefaultTableCellRenderer {
