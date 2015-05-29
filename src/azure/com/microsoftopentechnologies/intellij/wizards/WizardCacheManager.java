@@ -246,7 +246,7 @@ public final class WizardCacheManager {
 
     public static StorageService createStorageAccount(StorageAccountCreateParameters accountParameters) throws Exception {
         Subscription subscription = currentPublishData.getCurrentSubscription();
-        StorageService storageAccount = WizardCacheManagerUtilMethods.createStorageAccount(accountParameters, currentPublishData);
+        StorageService storageAccount = WizardCacheManagerUtilMethods.createStorageAccount(accountParameters, currentPublishData, AzurePlugin.prefFilePath);
         // remove previous mock if existed
         currentPublishData.getStoragesPerSubscription().get(subscription.getId()).remove(accountParameters.getName());
         currentPublishData.getStoragesPerSubscription().get(subscription.getId()).add(storageAccount);
