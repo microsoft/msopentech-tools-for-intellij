@@ -18,6 +18,7 @@ package com.microsoftopentechnologies.intellij.forms;
 
 import com.intellij.ui.CheckBoxList;
 import com.intellij.ui.CheckBoxListListener;
+import com.intellij.ui.components.JBScrollPane;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.microsoftopentechnologies.tooling.msservices.model.Office365Permission;
 import com.microsoftopentechnologies.tooling.msservices.model.Office365PermissionList;
@@ -59,7 +60,12 @@ public class PermissionsEditorForm extends JDialog {
         constraints.setRow(0);
         constraints.setColumn(0);
         constraints.setFill(GridConstraints.FILL_BOTH);
-        panelPermissions.add(listPermissions, constraints);
+
+        JBScrollPane jbScrollPane = new JBScrollPane(listPermissions,
+                JBScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JBScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+
+        panelPermissions.add(jbScrollPane, constraints);
         for(Office365Permission permission : this.permissions) {
             listPermissions.addItem(permission, permission.getDescription(), permission.isEnabled());
         }
