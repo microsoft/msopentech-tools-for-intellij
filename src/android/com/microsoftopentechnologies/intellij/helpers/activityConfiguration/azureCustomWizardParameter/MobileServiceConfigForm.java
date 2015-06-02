@@ -1,19 +1,18 @@
 /**
  * Copyright 2014 Microsoft Open Technologies Inc.
- *
+ * <p/>
  * Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p/>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p/>
  * Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-
 package com.microsoftopentechnologies.intellij.helpers.activityConfiguration.azureCustomWizardParameter;
 
 import com.intellij.openapi.application.ApplicationManager;
@@ -30,9 +29,9 @@ import com.microsoftopentechnologies.intellij.helpers.ReadOnlyCellTableModel;
 import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.tooling.msservices.helpers.azure.rest.AzureRestAPIManagerImpl;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureManagerImpl;
+import com.microsoftopentechnologies.tooling.msservices.model.Subscription;
 import com.microsoftopentechnologies.tooling.msservices.model.ms.MobileService;
-import com.microsoftopentechnologies.tooling.msservices.model.ms.Subscription;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -41,7 +40,10 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Vector;
 
 
 public class MobileServiceConfigForm extends DialogWrapper {
@@ -135,9 +137,9 @@ public class MobileServiceConfigForm extends DialogWrapper {
         form.setVisible(true);
 
         try {
-            List<Subscription> subscriptionList = AzureRestAPIManagerImpl.getManager().getSubscriptionList();
+            List<Subscription> subscriptionList = AzureManagerImpl.getManager().getSubscriptionList();
 
-            if (subscriptionList == null || subscriptionList.size() == 0) {
+            if (subscriptionList.size() == 0) {
                 buttonAddService.setEnabled(false);
 
                 // clear the mobile services list
@@ -201,14 +203,14 @@ public class MobileServiceConfigForm extends DialogWrapper {
                 try {
 
                     final List<MobileService> currentSubServices = new ArrayList<MobileService>();
-                    final List<Subscription> subscriptionList = AzureRestAPIManagerImpl.getManager().getSubscriptionList();
-                    final HashMap<UUID, String> subscriptionData = new HashMap<UUID, String>();
+                    final List<Subscription> subscriptionList = AzureManagerImpl.getManager().getSubscriptionList();
+                    final HashMap<String, String> subscriptionData = new HashMap<String, String>();
 
-                    if (subscriptionList != null && subscriptionList.size() > 0) {
+                    if (subscriptionList.size() > 0) {
 
                         for (Subscription s : subscriptionList) {
                             subscriptionData.put(s.getId(), s.getName());
-                            currentSubServices.addAll(AzureRestAPIManagerImpl.getManager().getServiceList(s.getId()));
+                            currentSubServices.addAll(AzureManagerImpl.getManager().getMobileServiceList(s.getId()));
                         }
 
 
@@ -239,7 +241,7 @@ public class MobileServiceConfigForm extends DialogWrapper {
 
                                     if (selectedMobileService != null
                                             && selectedMobileService.getName().equals(mobileService.getName())
-                                            && selectedMobileService.getSubcriptionId().toString().equals(mobileService.getSubcriptionId().toString())) {
+                                            && selectedMobileService.getSubcriptionId().equals(mobileService.getSubcriptionId())) {
                                         mobileServices.getSelectionModel().setLeadSelectionIndex(rowIndex);
                                     }
 
@@ -302,6 +304,7 @@ public class MobileServiceConfigForm extends DialogWrapper {
     public MobileService getSelectedMobileService() {
         return selectedMobileService;
     }
+
     public void setSelectedMobileService(MobileService selectedMobileService) {
         this.selectedMobileService = selectedMobileService;
     }
@@ -316,7 +319,7 @@ public class MobileServiceConfigForm extends DialogWrapper {
     @Override
     protected ValidationInfo doValidate() {
         return (mobileServices.getSelectedRows().length == 0)
-            ? new ValidationInfo("Select a Mobile Service", mobileServices)
-            : super.doValidate();
+                ? new ValidationInfo("Select a Mobile Service", mobileServices)
+                : super.doValidate();
     }
 }

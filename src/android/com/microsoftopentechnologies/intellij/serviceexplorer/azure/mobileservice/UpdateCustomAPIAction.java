@@ -1,3 +1,18 @@
+/**
+ * Copyright 2014 Microsoft Open Technologies Inc.
+ * <p/>
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * <p/>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p/>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.microsoftopentechnologies.intellij.serviceexplorer.azure.mobileservice;
 
 import com.intellij.openapi.application.ApplicationManager;
@@ -11,8 +26,9 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.tooling.msservices.helpers.Name;
+import com.microsoftopentechnologies.tooling.msservices.helpers.NotNull;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.tooling.msservices.helpers.azure.rest.AzureRestAPIManagerImpl;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureManagerImpl;
 import com.microsoftopentechnologies.tooling.msservices.model.ms.MobileService;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.NodeActionListener;
@@ -21,7 +37,6 @@ import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.mo
 
 import javax.swing.*;
 import java.io.File;
-import java.util.UUID;
 
 @Name("Update Custom API")
 public class UpdateCustomAPIAction extends NodeActionListener {
@@ -43,7 +58,7 @@ public class UpdateCustomAPIAction extends NodeActionListener {
         }
     }
 
-    public void saveCustomAPI(Project project, final String serviceName, final UUID subscriptionId) throws AzureCmdException {
+    public void saveCustomAPI(Project project, final String serviceName, final String subscriptionId) throws AzureCmdException {
         VirtualFile editorFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(new File(customAPINode.getCustomAPI().getLocalFilePath(serviceName)));
         if (editorFile != null) {
             FileEditor[] fe = FileEditorManager.getInstance(project).getAllEditors(editorFile);
@@ -62,10 +77,10 @@ public class UpdateCustomAPIAction extends NodeActionListener {
 
             ProgressManager.getInstance().run(new Task.Backgroundable(project, "Uploading custom api script", false) {
                 @Override
-                public void run(ProgressIndicator progressIndicator) {
+                public void run(@NotNull ProgressIndicator progressIndicator) {
                     try {
                         progressIndicator.setIndeterminate(true);
-                        AzureRestAPIManagerImpl.getManager().uploadAPIScript(subscriptionId, serviceName, customAPINode.getCustomAPI().getName(),
+                        AzureManagerImpl.getManager().uploadAPIScript(subscriptionId, serviceName, customAPINode.getCustomAPI().getName(),
                                 customAPINode.getCustomAPI().getLocalFilePath(serviceName));
                     } catch (AzureCmdException e) {
                         DefaultLoader.getUIHelper().showException("Error uploading script", e);

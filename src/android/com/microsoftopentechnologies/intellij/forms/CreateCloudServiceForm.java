@@ -24,8 +24,8 @@ import com.intellij.openapi.project.Project;
 import com.intellij.ui.ListCellRendererWrapper;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk.AzureSDKManagerImpl;
-import com.microsoftopentechnologies.tooling.msservices.model.ms.Subscription;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureManagerImpl;
+import com.microsoftopentechnologies.tooling.msservices.model.Subscription;
 import com.microsoftopentechnologies.tooling.msservices.model.vm.AffinityGroup;
 import com.microsoftopentechnologies.tooling.msservices.model.vm.CloudService;
 import com.microsoftopentechnologies.tooling.msservices.model.vm.Location;
@@ -147,8 +147,8 @@ public class CreateCloudServiceForm extends JDialog {
                 progressIndicator.setIndeterminate(true);
 
                 try {
-                    final List<AffinityGroup> affinityGroups = AzureSDKManagerImpl.getManager().getAffinityGroups(subscription.getId().toString());
-                    final List<Location> locations = AzureSDKManagerImpl.getManager().getLocations(subscription.getId().toString());
+                    final List<AffinityGroup> affinityGroups = AzureManagerImpl.getManager().getAffinityGroups(subscription.getId());
+                    final List<Location> locations = AzureManagerImpl.getManager().getLocations(subscription.getId());
 
                     ApplicationManager.getApplication().invokeLater(new Runnable() {
                         @Override
@@ -202,8 +202,8 @@ public class CreateCloudServiceForm extends JDialog {
                     ((AffinityGroup) regionOrAffinity).getName() :
                     "";
 
-            cloudService = new CloudService(name, location, affinityGroup, subscription.getId().toString());
-            AzureSDKManagerImpl.getManager().createCloudService(cloudService);
+            cloudService = new CloudService(name, location, affinityGroup, subscription.getId());
+            AzureManagerImpl.getManager().createCloudService(cloudService);
         } catch (Exception e) {
             cloudService = null;
             DefaultLoader.getUIHelper().showException("An error occurred while trying to create the specified cloud service", e, "Error Creating Storage Account", false, true);

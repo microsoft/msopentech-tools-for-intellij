@@ -1,28 +1,27 @@
 /**
  * Copyright 2014 Microsoft Open Technologies Inc.
- *
+ * <p/>
  * Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p/>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p/>
  * Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-
 package com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.mobileservice;
 
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.tooling.msservices.helpers.azure.rest.AzureRestAPIManagerImpl;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureManagerImpl;
 import com.microsoftopentechnologies.tooling.msservices.model.ms.Column;
-import com.microsoftopentechnologies.tooling.msservices.model.ms.Script;
 import com.microsoftopentechnologies.tooling.msservices.model.ms.MobileService;
+import com.microsoftopentechnologies.tooling.msservices.model.ms.Script;
 import com.microsoftopentechnologies.tooling.msservices.model.ms.Table;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.Node;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.NodeActionEvent;
@@ -47,11 +46,11 @@ public class TableNode extends Node {
     @Override
     protected void refreshItems() throws AzureCmdException {
         // get the parent MobileServiceNode node
-        MobileServiceNode mobileServiceNode = (MobileServiceNode)findParentByType(MobileServiceNode.class);
+        MobileServiceNode mobileServiceNode = (MobileServiceNode) findParentByType(MobileServiceNode.class);
         MobileService mobileService = mobileServiceNode.getMobileService();
 
         // fetch table details
-        Table tableInfo = AzureRestAPIManagerImpl.getManager().showTableDetails(
+        Table tableInfo = AzureManagerImpl.getManager().showTableDetails(
                 mobileService.getSubcriptionId(),
                 mobileService.getName(),
                 table.getName());
@@ -68,7 +67,7 @@ public class TableNode extends Node {
         // added; if we called "addChildNode" after the children of "node"
         // have been added then the service explorer tool window will not be
         // notified of those new nodes
-        if(scriptsNode == null) {
+        if (scriptsNode == null) {
             scriptsNode = new Node(table.getName() + "_script", SCRIPTS, this, null, false);
             addChildNode(scriptsNode);
         } else {
@@ -100,7 +99,7 @@ public class TableNode extends Node {
         // added; if we called "addChildNode" after the children of "node"
         // have been added then the service explorer tool window will not be
         // notified of those new nodes
-        if(columnsNode == null) {
+        if (columnsNode == null) {
             columnsNode = new Node(table.getName() + "_column", COLUMNS, this, null, false);
             addChildNode(columnsNode);
         } else {
@@ -120,7 +119,7 @@ public class TableNode extends Node {
     protected void onNodeClick(NodeActionEvent event) {
         // we attempt loading the services only if we haven't already
         // loaded them
-        if(!childNodesLoaded) {
+        if (!childNodesLoaded) {
             Futures.addCallback(load(), new FutureCallback<List<Node>>() {
                 @Override
                 public void onSuccess(List<Node> nodes) {

@@ -1,23 +1,22 @@
 /**
  * Copyright 2014 Microsoft Open Technologies Inc.
- *
+ * <p/>
  * Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p/>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p/>
  * Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-
 package com.microsoftopentechnologies.intellij.forms;
 
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
-import com.microsoftopentechnologies.tooling.msservices.helpers.azure.rest.AzureRestAPIManagerImpl;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureManagerImpl;
 import com.microsoftopentechnologies.tooling.msservices.model.ms.Job;
 
 import javax.swing.*;
@@ -46,7 +45,7 @@ public class JobForm extends JDialog {
     private JLabel everyLabel;
     private UUID id;
     private String serviceName;
-    private UUID subscriptionId;
+    private String subscriptionId;
 
     private List<String> existingJobNames;
 
@@ -96,12 +95,12 @@ public class JobForm extends JDialog {
         intervalFormattedTextField.setInputVerifier(new InputVerifier() {
             @Override
             public boolean verify(JComponent jComponent) {
-                if(jComponent instanceof JFormattedTextField) {
+                if (jComponent instanceof JFormattedTextField) {
                     JFormattedTextField field = (JFormattedTextField) jComponent;
 
                     try {
                         parseInt(field.getText());
-                    } catch(NumberFormatException e) {
+                    } catch (NumberFormatException e) {
                         return false;
                     }
 
@@ -126,7 +125,7 @@ public class JobForm extends JDialog {
                     String now = ISO8601DATEFORMAT.format(new Date());
 
 
-                    if(!jobName.matches("^[A-Za-z][A-Za-z0-9_]+")) {
+                    if (!jobName.matches("^[A-Za-z][A-Za-z0-9_]+")) {
                         form.setCursor(Cursor.getDefaultCursor());
                         JOptionPane.showMessageDialog(form, "Invalid service name. Job name must start with a letter, \n" +
                                 "contain only letters, numbers, and undercores.", "Service Explorer", JOptionPane.ERROR_MESSAGE);
@@ -134,15 +133,15 @@ public class JobForm extends JDialog {
                     }
 
 
-                    if(id == null) {
+                    if (id == null) {
                         existingJobNames = new ArrayList<String>();
 
-                        for (Job job : AzureRestAPIManagerImpl.getManager().listJobs(subscriptionId, serviceName)) {
+                        for (Job job : AzureManagerImpl.getManager().listJobs(subscriptionId, serviceName)) {
                             existingJobNames.add(job.getName().toLowerCase());
                         }
 
 
-                        if(existingJobNames.contains(jobName.toLowerCase())) {
+                        if (existingJobNames.contains(jobName.toLowerCase())) {
                             form.setCursor(Cursor.getDefaultCursor());
                             JOptionPane.showMessageDialog(form, "Invalid job name. A job with that name already exists in this service.",
                                     "Service Explorer", JOptionPane.ERROR_MESSAGE);
@@ -151,13 +150,13 @@ public class JobForm extends JDialog {
                     }
 
 
-                    if(id == null)
-                        AzureRestAPIManagerImpl.getManager().createJob(subscriptionId, serviceName, jobName, interval, unit, now);
+                    if (id == null)
+                        AzureManagerImpl.getManager().createJob(subscriptionId, serviceName, jobName, interval, unit, now);
                     else {
-                        AzureRestAPIManagerImpl.getManager().updateJob(subscriptionId, serviceName, jobName, interval, unit, now, enabledCheckBox.isSelected());
+                        AzureManagerImpl.getManager().updateJob(subscriptionId, serviceName, jobName, interval, unit, now, enabledCheckBox.isSelected());
                     }
 
-                    if(afterSave != null)
+                    if (afterSave != null)
                         afterSave.run();
 
                     form.setCursor(Cursor.getDefaultCursor());
@@ -191,7 +190,7 @@ public class JobForm extends JDialog {
         id = job.getId();
         jobNameTextField.setText(job.getName());
         enabledCheckBox.setSelected(job.isEnabled());
-        if(job.getIntervalUnit() == null) {
+        if (job.getIntervalUnit() == null) {
             onDemandRadioButton.setSelected(true);
         } else {
             scheduledRadioButton.setSelected(true);
@@ -199,8 +198,8 @@ public class JobForm extends JDialog {
 
             int index = 0;
             String[] units = Job.getUnits();
-            for(int i = 0; i < units.length; i++)
-                if(job.getIntervalUnit().equals(units[i]))
+            for (int i = 0; i < units.length; i++)
+                if (job.getIntervalUnit().equals(units[i]))
                     index = i;
 
             intervalUnitComboBox.setSelectedIndex(index);
@@ -208,7 +207,7 @@ public class JobForm extends JDialog {
 
     }
 
-    public void setSubscriptionId(UUID subscriptionId) {
+    public void setSubscriptionId(String subscriptionId) {
         this.subscriptionId = subscriptionId;
     }
 
@@ -229,7 +228,7 @@ public class JobForm extends JDialog {
         job.setId(id);
         job.setName(jobNameTextField.getText());
         job.setEnabled(enabledCheckBox.isSelected());
-        if(scheduledRadioButton.isSelected()) {
+        if (scheduledRadioButton.isSelected()) {
             job.setIntervalUnit(Job.getUnits()[intervalUnitComboBox.getSelectedIndex()]);
             job.setIntervalPeriod(parseInt(intervalFormattedTextField.getText()));
         }

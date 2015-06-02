@@ -13,8 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.microsoftopentechnologies.tooling.msservices.helpers.o365;
+package com.microsoftopentechnologies.tooling.msservices.helpers.auth;
+
+import com.microsoftopentechnologies.tooling.msservices.helpers.NotNull;
 
 public interface RequestCallback<T> {
-    T execute() throws Throwable;
+    @NotNull
+    T execute(@NotNull String accessToken)
+            throws Throwable;
 }

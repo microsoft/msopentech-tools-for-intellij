@@ -26,7 +26,7 @@ import com.intellij.ui.wizard.WizardNavigationState;
 import com.intellij.ui.wizard.WizardStep;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk.AzureSDKManagerImpl;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureManagerImpl;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount;
 import com.microsoftopentechnologies.tooling.msservices.model.vm.Endpoint;
 import com.microsoftopentechnologies.tooling.msservices.model.vm.VirtualMachine;
@@ -208,7 +208,7 @@ public class EndpointStep extends WizardStep<CreateVMWizardModel> {
                             model.getSubnet(),
                             model.getSize().getName(),
                             VirtualMachine.Status.Unknown,
-                            model.getSubscription().getId().toString()
+                            model.getSubscription().getId()
                     );
 
                     virtualMachine.getEndpoints().addAll(tableModel.getData());
@@ -241,13 +241,16 @@ public class EndpointStep extends WizardStep<CreateVMWizardModel> {
                     }
 
                     StorageAccount storageAccount = model.getStorageAccount();
-                    for (StorageAccount account : AzureSDKManagerImpl.getManager().getStorageAccounts(model.getSubscription().getId().toString())) {
-                        if(account.getName().equals(storageAccount.getName())) {
+
+                    for (StorageAccount account : AzureManagerImpl.getManager().getStorageAccounts(
+                            model.getSubscription().getId())) {
+                        if (account.getName().equals(storageAccount.getName())) {
                             storageAccount = account;
+                            break;
                         }
                     }
 
-                    AzureSDKManagerImpl.getManager().createVirtualMachine(virtualMachine,
+                    AzureManagerImpl.getManager().createVirtualMachine(virtualMachine,
                             model.getVirtualMachineImage(),
                             storageAccount,
                             model.getVirtualNetwork() != null ? model.getVirtualNetwork().getName() : "",
@@ -255,7 +258,7 @@ public class EndpointStep extends WizardStep<CreateVMWizardModel> {
                             model.getPassword(),
                             certData);
 
-                    virtualMachine = AzureSDKManagerImpl.getManager().refreshVirtualMachineInformation(virtualMachine);
+                    virtualMachine = AzureManagerImpl.getManager().refreshVirtualMachineInformation(virtualMachine);
 
                     final VirtualMachine vm = virtualMachine;
 

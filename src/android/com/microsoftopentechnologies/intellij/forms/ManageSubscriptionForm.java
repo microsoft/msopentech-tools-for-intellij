@@ -15,25 +15,14 @@
  */
 package com.microsoftopentechnologies.intellij.forms;
 
-import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.Futures;
-import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.project.Project;
-import com.microsoftopentechnologies.aad.adal4j.AuthenticationContext;
-import com.microsoftopentechnologies.aad.adal4j.AuthenticationResult;
-import com.microsoftopentechnologies.aad.adal4j.PromptValue;
-import com.microsoftopentechnologies.intellij.components.MSOpenTechToolsApplication;
 import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
-import com.microsoftopentechnologies.tooling.msservices.components.AppSettingsNames;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
-import com.microsoftopentechnologies.tooling.msservices.components.PluginSettings;
-import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureAuthenticationMode;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.tooling.msservices.helpers.azure.rest.AzureRestAPIManager;
-import com.microsoftopentechnologies.tooling.msservices.helpers.azure.rest.AzureRestAPIManagerImpl;
-import com.microsoftopentechnologies.tooling.msservices.model.ms.Subscription;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureManager;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureManagerImpl;
+import com.microsoftopentechnologies.tooling.msservices.model.Subscription;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -44,9 +33,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.UUID;
 import java.util.Vector;
 
 public class ManageSubscriptionForm extends JDialog {
@@ -56,7 +43,7 @@ public class ManageSubscriptionForm extends JDialog {
     private JButton removeButton;
     private JButton importSubscriptionButton;
     private JButton closeButton;
-    private ArrayList<Subscription> subscriptionList;
+    private java.util.List<Subscription> subscriptionList;
     private Project project;
 
     public ManageSubscriptionForm(final Project project) {
@@ -65,6 +52,8 @@ public class ManageSubscriptionForm extends JDialog {
         this.setTitle("Manage Subscriptions");
         this.setModal(true);
         this.setContentPane(mainPanel);
+
+        final ManageSubscriptionForm form = this;
 
         this.setResizable(false);
 
@@ -93,54 +82,21 @@ public class ManageSubscriptionForm extends JDialog {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    if (AzureRestAPIManagerImpl.getManager().getAuthenticationToken() != null) {
+                    if (AzureManagerImpl.getManager().authenticated()) {
                         clearSubscriptions(false);
                     } else {
-                        PluginSettings settings = MSOpenTechToolsApplication.getCurrent().getSettings();
-                        final AuthenticationContext context = new AuthenticationContext(settings.getAdAuthority());
+                        form.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
-                        Futures.addCallback(context.acquireTokenInteractiveAsync(
-                                settings.getTenantName(),
-                                settings.getAzureServiceManagementUri(),
-                                settings.getClientId(),
-                                settings.getRedirectUri(),
-                                PromptValue.login), new FutureCallback<AuthenticationResult>() {
-                            @Override
-                            public void onSuccess(AuthenticationResult authenticationResult) {
-                                context.dispose();
+                        AzureManager apiManager = AzureManagerImpl.getManager();
+                        apiManager.clearImportedPublishSettingsFiles();
+                        apiManager.authenticate();
 
-                                if (authenticationResult != null) {
-                                    final AzureRestAPIManager apiManager = AzureRestAPIManagerImpl.getManager();
-                                    apiManager.setAuthenticationMode(AzureAuthenticationMode.ActiveDirectory);
-                                    apiManager.setAuthenticationToken(authenticationResult);
+                        refreshSignInCaption();
+                        loadList();
 
-                                    // load list of subscriptions
-                                    ApplicationManager.getApplication().invokeAndWait(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            try {
-                                                apiManager.clearSubscriptions();
-
-                                                refreshSignInCaption();
-                                            } catch (AzureCmdException e1) {
-                                                DefaultLoader.getUIHelper().showException("An error occurred while attempting to " +
-                                                        "clear your old subscriptions.", e1);
-                                            }
-
-                                            loadList();
-                                        }
-                                    }, ModalityState.any());
-                                }
-                            }
-
-                            @Override
-                            public void onFailure(Throwable throwable) {
-                                context.dispose();
-                                DefaultLoader.getUIHelper().showException("An error occurred while attempting to sign in to your account.", throwable);
-                            }
-                        });
+                        form.setCursor(Cursor.getDefaultCursor());
                     }
-                } catch (IOException e1) {
+                } catch (AzureCmdException e1) {
                     DefaultLoader.getUIHelper().showException("An error occurred while attempting to sign in to your account.", e1);
                 }
             }
@@ -194,7 +150,7 @@ public class ManageSubscriptionForm extends JDialog {
     }
 
     private void refreshSignInCaption() {
-        boolean isNotSigned = (AzureRestAPIManagerImpl.getManager().getAuthenticationToken() == null);
+        boolean isNotSigned = !AzureManagerImpl.getManager().authenticated();
 
         signInButton.setText(isNotSigned ? "Sign In ..." : "Sign Out");
     }
@@ -210,14 +166,9 @@ public class ManageSubscriptionForm extends JDialog {
                 JOptionPane.INFORMATION_MESSAGE);
 
         if (res == JOptionPane.YES_OPTION) {
-            try {
-                AzureRestAPIManager apiManager = AzureRestAPIManagerImpl.getManager();
-                apiManager.clearAuthenticationTokens();
-                apiManager.clearSubscriptions();
-                apiManager.setAuthenticationMode(AzureAuthenticationMode.Unknown);
-            } catch (AzureCmdException t) {
-                DefaultLoader.getUIHelper().showException("Error clearing user subscriptions", t);
-            }
+            AzureManager apiManager = AzureManagerImpl.getManager();
+            apiManager.clearAuthentication();
+            apiManager.clearImportedPublishSettingsFiles();
 
             DefaultTableModel model = (DefaultTableModel) subscriptionTable.getModel();
 
@@ -225,7 +176,6 @@ public class ManageSubscriptionForm extends JDialog {
                 model.removeRow(0);
             }
 
-            PropertiesComponent.getInstance().unsetValue(AppSettingsNames.SELECTED_SUBSCRIPTIONS);
             ApplicationManager.getApplication().saveSettings();
 
             removeButton.setEnabled(false);
@@ -236,7 +186,7 @@ public class ManageSubscriptionForm extends JDialog {
 
     private void onCancel() {
         try {
-            ArrayList<UUID> selectedList = new ArrayList<UUID>();
+            java.util.List<String> selectedList = new ArrayList<String>();
 
             TableModel model = subscriptionTable.getModel();
 
@@ -244,11 +194,11 @@ public class ManageSubscriptionForm extends JDialog {
                 Boolean selected = (Boolean) model.getValueAt(i, 0);
 
                 if (selected) {
-                    selectedList.add(UUID.fromString(model.getValueAt(i, 2).toString()));
+                    selectedList.add(model.getValueAt(i, 2).toString());
                 }
             }
 
-            AzureRestAPIManagerImpl.getManager().setSelectedSubscriptions(selectedList);
+            AzureManagerImpl.getManager().setSelectedSubscriptions(selectedList);
 
             //Saving the project is necessary to save the changes on the PropertiesComponent
             if (project != null) {
@@ -287,14 +237,14 @@ public class ManageSubscriptionForm extends JDialog {
                         model.removeRow(0);
                     }
 
-                    subscriptionList = AzureRestAPIManagerImpl.getManager().getFullSubscriptionList();
+                    subscriptionList = AzureManagerImpl.getManager().getFullSubscriptionList();
 
-                    if (subscriptionList != null && subscriptionList.size() > 0) {
+                    if (subscriptionList.size() > 0) {
                         for (Subscription subs : subscriptionList) {
                             Vector<Object> row = new Vector<Object>();
                             row.add(subs.isSelected());
                             row.add(subs.getName());
-                            row.add(subs.getId().toString());
+                            row.add(subs.getId());
                             model.addRow(row);
                         }
 

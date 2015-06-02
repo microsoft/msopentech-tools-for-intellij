@@ -21,6 +21,12 @@ import java.io.StringWriter;
 public class AzureCmdException extends Exception {
     private String mErrorLog;
 
+    public AzureCmdException(String message) {
+        super(message);
+
+        mErrorLog = "";
+    }
+
     public AzureCmdException(String message, String errorLog) {
         super(message);
 

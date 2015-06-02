@@ -19,7 +19,7 @@ import com.google.common.collect.ImmutableMap;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.tooling.msservices.helpers.NotNull;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk.AzureSDKManagerImpl;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureManagerImpl;
 import com.microsoftopentechnologies.tooling.msservices.model.vm.Endpoint;
 import com.microsoftopentechnologies.tooling.msservices.model.vm.VirtualMachine;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.*;
@@ -67,7 +67,7 @@ public class VMNode extends Node {
     @Override
     protected void refreshItems() throws AzureCmdException {
         // update vm name and status icon
-        virtualMachine = AzureSDKManagerImpl.getManager().refreshVirtualMachineInformation(virtualMachine);
+        virtualMachine = AzureManagerImpl.getManager().refreshVirtualMachineInformation(virtualMachine);
 
         refreshItemsInternal();
     }
@@ -155,7 +155,7 @@ public class VMNode extends Node {
         @Override
         protected void runInBackground(NodeActionEvent e) throws AzureCmdException {
 
-            AzureSDKManagerImpl.getManager().deleteVirtualMachine(virtualMachine, false);
+            AzureManagerImpl.getManager().deleteVirtualMachine(virtualMachine, false);
             DefaultLoader.getIdeHelper().invokeLater(new Runnable() {
                 @Override
                 public void run() {
@@ -178,7 +178,7 @@ public class VMNode extends Node {
 
                     if (rdpFile.exists() || rdpFile.createNewFile()) {
                         FileOutputStream fileOutputStream = new FileOutputStream(rdpFile);
-                        fileOutputStream.write(AzureSDKManagerImpl.getManager().downloadRDP(virtualMachine));
+                        fileOutputStream.write(AzureManagerImpl.getManager().downloadRDP(virtualMachine));
                         fileOutputStream.flush();
                         fileOutputStream.close();
                     }
@@ -255,7 +255,7 @@ public class VMNode extends Node {
 
         @Override
         protected void runVMAction() throws AzureCmdException {
-            AzureSDKManagerImpl.getManager().shutdownVirtualMachine(virtualMachine, true);
+            AzureManagerImpl.getManager().shutdownVirtualMachine(virtualMachine, true);
         }
     }
 
@@ -269,7 +269,7 @@ public class VMNode extends Node {
 
         @Override
         protected void runVMAction() throws AzureCmdException {
-            AzureSDKManagerImpl.getManager().startVirtualMachine(virtualMachine);
+            AzureManagerImpl.getManager().startVirtualMachine(virtualMachine);
         }
     }
 
@@ -283,7 +283,7 @@ public class VMNode extends Node {
 
         @Override
         protected void runVMAction() throws AzureCmdException {
-            AzureSDKManagerImpl.getManager().restartVirtualMachine(virtualMachine);
+            AzureManagerImpl.getManager().restartVirtualMachine(virtualMachine);
         }
     }
 }

@@ -17,6 +17,7 @@ package com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.s
 
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.tooling.msservices.helpers.ExternalStorageHelper;
+import com.microsoftopentechnologies.tooling.msservices.helpers.NotNull;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.ClientStorageAccount;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.*;
@@ -55,7 +56,6 @@ public class ExternalStorageNode extends Node {
                 throw new AzureCmdException("Error opening external storage", e);
             }
         } else {
-
             fillChildren();
         }
     }
@@ -88,6 +88,7 @@ public class ExternalStorageNode extends Node {
             super("Detaching External Storage Account");
         }
 
+        @NotNull
         @Override
         protected Callable<Boolean> beforeAsyncActionPerfomed() {
 

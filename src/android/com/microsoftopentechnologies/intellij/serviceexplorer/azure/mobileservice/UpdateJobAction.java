@@ -27,7 +27,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.tooling.msservices.helpers.Name;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.tooling.msservices.helpers.azure.rest.AzureRestAPIManagerImpl;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureManagerImpl;
 import com.microsoftopentechnologies.tooling.msservices.model.ms.MobileService;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.NodeActionListener;
@@ -75,7 +75,7 @@ public class UpdateJobAction extends NodeActionListener {
                 public void run(@NotNull ProgressIndicator progressIndicator) {
                     try {
                         progressIndicator.setIndeterminate(true);
-                        AzureRestAPIManagerImpl.getManager().uploadJobScript(
+                        AzureManagerImpl.getManager().uploadJobScript(
                                 mobileService.getSubcriptionId(), mobileService.getName(),
                                 scheduledJobNode.getJob().getName(), scheduledJobNode.getJob().getLocalFilePath(mobileService.getName()));
                     } catch (AzureCmdException e) {

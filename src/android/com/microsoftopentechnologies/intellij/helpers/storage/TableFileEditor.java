@@ -32,7 +32,6 @@ import com.microsoftopentechnologies.intellij.forms.TablesQueryDesigner;
 import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk.AzureSDKManagerImpl;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk.StorageClientSDKManagerImpl;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.ClientStorageAccount;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.Table;

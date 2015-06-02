@@ -1,31 +1,30 @@
 /**
  * Copyright 2014 Microsoft Open Technologies Inc.
- *
+ * <p/>
  * Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p/>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p/>
  * Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-
 package com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure;
 
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.tooling.msservices.helpers.azure.rest.AzureRestAPIManagerImpl;
-import com.microsoftopentechnologies.tooling.msservices.model.ms.Subscription;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureManagerImpl;
+import com.microsoftopentechnologies.tooling.msservices.model.Subscription;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.Node;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.mobileservice.MobileServiceModule;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.storage.StorageModule;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.vm.VMServiceModule;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public class AzureServiceModule extends Node {
     private static final String AZURE_SERVICE_MODULE_ID = AzureServiceModule.class.getName();
@@ -49,8 +48,8 @@ public class AzureServiceModule extends Node {
     @Override
     public String getName() {
         try {
-            ArrayList<Subscription> subscriptionList = AzureRestAPIManagerImpl.getManager().getSubscriptionList();
-            if (subscriptionList != null && subscriptionList.size() > 0) {
+            List<Subscription> subscriptionList = AzureManagerImpl.getManager().getSubscriptionList();
+            if (subscriptionList.size() > 0) {
                 return String.format("%s (%s)", BASE_MODULE_NAME, subscriptionList.size() > 1
                         ? String.format("%s subscriptions", subscriptionList.size())
                         : subscriptionList.get(0).getName());
@@ -68,14 +67,14 @@ public class AzureServiceModule extends Node {
         // multiple times when the user clicks the "Refresh" context
         // menu item
 
-        if(!mobileServiceModule.isLoading()) {
+        if (!mobileServiceModule.isLoading()) {
             if (!isDirectChild(mobileServiceModule)) {
                 addChildNode(mobileServiceModule);
             }
             mobileServiceModule.load();
         }
 
-        if(!vmServiceModule.isLoading()) {
+        if (!vmServiceModule.isLoading()) {
             if (!isDirectChild(vmServiceModule)) {
                 addChildNode(vmServiceModule);
             }
@@ -83,7 +82,7 @@ public class AzureServiceModule extends Node {
         }
 
 
-        if(!storageServiceModule.isLoading()) {
+        if (!storageServiceModule.isLoading()) {
             if (!isDirectChild(storageServiceModule)) {
                 addChildNode(storageServiceModule);
             }

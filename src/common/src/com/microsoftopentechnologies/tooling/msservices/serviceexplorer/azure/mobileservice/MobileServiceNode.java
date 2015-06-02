@@ -1,19 +1,18 @@
 /**
  * Copyright 2014 Microsoft Open Technologies Inc.
- *
+ * <p/>
  * Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p/>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p/>
  * Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-
 package com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.mobileservice;
 
 import com.google.common.util.concurrent.FutureCallback;
@@ -21,9 +20,9 @@ import com.google.common.util.concurrent.Futures;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.tooling.msservices.helpers.NotNull;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.tooling.msservices.helpers.azure.rest.AzureRestAPIManager;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureManager;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureManagerImpl;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.rest.AzureRestAPIHelper;
-import com.microsoftopentechnologies.tooling.msservices.helpers.azure.rest.AzureRestAPIManagerImpl;
 import com.microsoftopentechnologies.tooling.msservices.model.ms.CustomAPI;
 import com.microsoftopentechnologies.tooling.msservices.model.ms.Job;
 import com.microsoftopentechnologies.tooling.msservices.model.ms.MobileService;
@@ -38,7 +37,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.Callable;
 
 public class MobileServiceNode extends Node {
@@ -64,8 +62,8 @@ public class MobileServiceNode extends Node {
     protected void refreshItems() throws AzureCmdException {
         if (AzureRestAPIHelper.existsMobileService(mobileService.getName())) {
             try {
-                AzureRestAPIManager apiManager = AzureRestAPIManagerImpl.getManager();
-                UUID subscriptionId = mobileService.getSubcriptionId();
+                AzureManager apiManager = AzureManagerImpl.getManager();
+                String subscriptionId = mobileService.getSubcriptionId();
                 String serviceName = mobileService.getName();
 
                 if (isNodeRuntime()) {
@@ -239,7 +237,7 @@ public class MobileServiceNode extends Node {
 
             MobileServiceNode.this.setLoading(true);
 
-            AzureRestAPIManagerImpl.getManager().deleteService(mobileService.getSubcriptionId(), mobileService.getName());
+            AzureManagerImpl.getManager().deleteMobileService(mobileService.getSubcriptionId(), mobileService.getName());
 
             DefaultLoader.getIdeHelper().invokeLater(new Runnable() {
                 @Override

@@ -15,20 +15,9 @@
  */
 package com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk;
 
-import com.microsoft.windowsazure.core.pipeline.filter.ServiceRequestContext;
-import com.microsoft.windowsazure.core.pipeline.filter.ServiceRequestFilter;
-import com.microsoftopentechnologies.tooling.msservices.helpers.azure.rest.AzureRestAPIHelper;
+import com.microsoftopentechnologies.tooling.msservices.helpers.NotNull;
 
-public class AuthTokenRequestFilter implements ServiceRequestFilter {
-    private String accessToken;
-
-    public AuthTokenRequestFilter(String accessToken) {
-        this.accessToken = accessToken;
-    }
-
-    @Override
-    public void filter(ServiceRequestContext request) {
-        // set access token
-        request.setHeader(AzureRestAPIHelper.AUTHORIZATION_HEADER, "Bearer " + accessToken);
-    }
+public interface SDKRequestCallback<T, V> {
+    @NotNull
+    T execute(@NotNull V client) throws Throwable;
 }

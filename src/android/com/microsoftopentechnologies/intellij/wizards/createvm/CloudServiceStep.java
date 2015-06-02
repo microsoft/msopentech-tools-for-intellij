@@ -29,7 +29,7 @@ import com.microsoftopentechnologies.intellij.forms.CreateStorageAccountForm;
 import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk.AzureSDKManagerImpl;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureManagerImpl;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount;
 import com.microsoftopentechnologies.tooling.msservices.model.vm.CloudService;
 import com.microsoftopentechnologies.tooling.msservices.model.vm.VirtualMachineImage;
@@ -217,8 +217,8 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
                 try {
                     if (cloudServices == null) {
                         try {
-                            List<CloudService> services = AzureSDKManagerImpl.getManager()
-                                    .getCloudServices(model.getSubscription().getId().toString());
+                            List<CloudService> services = AzureManagerImpl.getManager()
+                                    .getCloudServices(model.getSubscription().getId());
                             cloudServices = new TreeMap<String, CloudService>();
 
                             for (CloudService cloudService : services) {
@@ -396,8 +396,8 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
                 try {
                     if (virtualNetworks == null) {
                         try {
-                            List<VirtualNetwork> networks = AzureSDKManagerImpl.getManager()
-                                    .getVirtualNetworks(model.getSubscription().getId().toString());
+                            List<VirtualNetwork> networks = AzureManagerImpl.getManager()
+                                    .getVirtualNetworks(model.getSubscription().getId());
                             virtualNetworks = new TreeMap<String, VirtualNetwork>();
 
                             for (VirtualNetwork virtualNetwork : networks) {
@@ -601,8 +601,8 @@ public class CloudServiceStep extends WizardStep<CreateVMWizardModel> {
                 try {
                     if (storageAccounts == null) {
                         try {
-                            List<StorageAccount> accounts = AzureSDKManagerImpl.getManager()
-                                    .getStorageAccounts(model.getSubscription().getId().toString());
+                            List<StorageAccount> accounts = AzureManagerImpl.getManager()
+                                    .getStorageAccounts(model.getSubscription().getId());
                             storageAccounts = new TreeMap<String, StorageAccount>();
 
                             for (StorageAccount storageAccount : accounts) {
