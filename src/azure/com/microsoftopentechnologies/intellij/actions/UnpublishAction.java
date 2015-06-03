@@ -15,12 +15,12 @@
  */
 package com.microsoftopentechnologies.intellij.actions;
 
-import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.LangDataKeys;
+import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoftopentechnologies.intellij.module.AzureModuleType;
 import com.microsoftopentechnologies.intellij.ui.UndeployWizardDialog;
+import com.microsoftopentechnologies.intellij.util.PluginUtil;
 import com.microsoftopentechnologies.tasks.WindowsAzureUndeploymentTask;
 import com.microsoft.windowsazure.management.compute.models.HostedServiceGetDetailedResponse.Deployment;
 
@@ -40,6 +40,8 @@ public class UnpublishAction extends AnAction {
 
     public void update(AnActionEvent event) {
         final Module module = event.getData(LangDataKeys.MODULE);
-        event.getPresentation().setEnabledAndVisible(module != null && AzureModuleType.AZURE_MODULE.equals(module.getOptionValue(Module.ELEMENT_TYPE)));
+        VirtualFile selectedFile = CommonDataKeys.VIRTUAL_FILE.getData(event.getDataContext());
+        event.getPresentation().setEnabledAndVisible(module != null && AzureModuleType.AZURE_MODULE.equals(module.getOptionValue(Module.ELEMENT_TYPE))
+                && PluginUtil.isModuleRoot(selectedFile, module) || ActionPlaces.MAIN_TOOLBAR.equals(event.getPlace()));
     }
 }
