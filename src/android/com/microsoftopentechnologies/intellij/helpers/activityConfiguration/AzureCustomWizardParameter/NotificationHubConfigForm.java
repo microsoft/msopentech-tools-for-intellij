@@ -89,6 +89,7 @@ public class NotificationHubConfigForm extends DialogWrapper {
                 + "complete set up.</p> </body> </html>");
     }
 
+
     @Nullable
     @Override
     protected ValidationInfo doValidate() {

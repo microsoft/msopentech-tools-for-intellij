@@ -113,6 +113,7 @@ public class AzureParameterPane extends JPanel {
                         vf = psiElement.getContainingFile().getVirtualFile();
                     }
 
+
                     Module module = ProjectFileIndexImpl.SERVICE.getInstance(project).getModuleForFile(vf);
                     final NotificationHubConfigForm form = new NotificationHubConfigForm(module);
 
