@@ -58,17 +58,10 @@ limitations under the License.
         default="com.mycompany.myapp" />
 
     <parameter
-        id="includeMobileServices"
-        name="Azure Mobile Services Client"
-        type="boolean"
-        default="false">
-    </parameter>
-
-    <parameter
-        id="includeNotificationHub"
-        name="Notification Hub"
-        type="boolean"
-        default="false">
+        id="customParameters"
+        name="Azure Services Configuration"
+        type="azureCustomParameter"
+        constraints="nonempty">
     </parameter>
 
     <!-- 128x128 thumbnails relative to template.xml -->

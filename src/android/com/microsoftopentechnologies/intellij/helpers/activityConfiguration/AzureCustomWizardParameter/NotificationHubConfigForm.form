@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.microsoftopentechnologies.intellij.helpers.activityConfiguration.AzureCustomWizardParameter.NotificationHubConfigForm">
+  <grid id="27dc6" binding="rootPanel" layout-manager="FormLayout">
+    <rowspec value="center:200px:grow"/>
+    <rowspec value="top:3dlu:noGrow"/>
+    <rowspec value="fill:100px:grow"/>
+    <colspec value="fill:500px:grow"/>
+    <constraints>
+      <xy x="20" y="136" width="500" height="305"/>
+    </constraints>
+    <properties>
+      <opaque value="false"/>
+    </properties>
+    <border type="none"/>
+    <children>
+      <grid id="6cc4b" layout-manager="FormLayout">
+        <rowspec value="center:max(d;4px):noGrow"/>
+        <rowspec value="center:4dlu:noGrow"/>
+        <rowspec value="center:max(d;4px):noGrow"/>
+        <rowspec value="center:4dlu:noGrow"/>
+        <rowspec value="center:max(d;4px):noGrow"/>
+        <colspec value="right:d:noGrow"/>
+        <colspec value="fill:4dlu:noGrow"/>
+        <colspec value="left:p:grow"/>
+        <constraints>
+          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+          <forms/>
+        </constraints>
+        <properties/>
+        <border type="none"/>
+        <children>
+          <component id="5960c" class="javax.swing.JLabel">
+            <constraints>
+              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <forms/>
+            </constraints>
+            <properties>
+              <labelFor value="5960f"/>
+              <text value="Sender ID:"/>
+            </properties>
+          </component>
+          <component id="5960f" class="javax.swing.JTextField" binding="textSenderID">
+            <constraints>
+              <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                <preferred-size width="150" height="-1"/>
+              </grid>
+              <forms defaultalign-horz="false"/>
+            </constraints>
+            <properties/>
+          </component>
+          <component id="5960d" class="javax.swing.JLabel">
+            <constraints>
+              <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <forms/>
+            </constraints>
+            <properties>
+              <labelFor value="f2678"/>
+              <text value="Connection String:"/>
+            </properties>
+          </component>
+          <component id="f2678" class="javax.swing.JTextField" binding="textConnectionString">
+            <constraints>
+              <grid row="2" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                <preferred-size width="150" height="-1"/>
+              </grid>
+              <forms defaultalign-horz="false"/>
+            </constraints>
+            <properties/>
+          </component>
+          <component id="5960e" class="javax.swing.JLabel">
+            <constraints>
+              <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <forms/>
+            </constraints>
+            <properties>
+              <labelFor value="804c9"/>
+              <text value="Hub Name:"/>
+            </properties>
+          </component>
+          <component id="804c9" class="javax.swing.JTextField" binding="textHubName">
+            <constraints>
+              <grid row="4" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                <preferred-size width="150" height="-1"/>
+              </grid>
+              <forms defaultalign-horz="false"/>
+            </constraints>
+            <properties/>
+          </component>
+        </children>
+      </grid>
+      <scrollpane id="c4718">
+        <constraints>
+          <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+          <forms defaultalign-horz="false" defaultalign-vert="false"/>
+        </constraints>
+        <properties/>
+        <border type="none"/>
+        <children>
+          <component id="96ed6" class="javax.swing.JTextPane" binding="summaryTextPane">
+            <constraints/>
+            <properties>
+              <editable value="false"/>
+              <enabled value="true"/>
+              <text value=""/>
+            </properties>
+          </component>
+        </children>
+      </scrollpane>
+    </children>
+  </grid>
+  <inspectionSuppressions>
+    <suppress inspection="NoLabelFor" id="4f39e"/>
+  </inspectionSuppressions>
+</form>

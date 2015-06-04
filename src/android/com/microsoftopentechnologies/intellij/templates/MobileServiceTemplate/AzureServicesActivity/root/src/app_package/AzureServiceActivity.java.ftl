@@ -1,37 +1,37 @@
-//376d91c0-5633-4523-b012-f2d9ecfbe6c7<#if includeMobileServices>^//010fa0c4-5af1-4f81-95c1-720d9fab8d96</#if><#if includeNotificationHub>^//46cca6b7-ff7d-4e05-9ef2-d7eb4798222e</#if>
 package ${packageName};
+<#assign parameters = customParameters?eval>
 
 import android.app.Activity;
 import android.app.AlertDialog;
-<#if includeMobileServices || includeNotificationHub>
+<#if parameters.hasMobileService || parameters.hasNotificationHub>
 import android.content.Context;
 </#if>
 import android.os.Bundle;
-<#if includeMobileServices>
+<#if parameters.hasMobileService>
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.gson.JsonElement;
 </#if>
-<#if includeNotificationHub>
+<#if parameters.hasNotificationHub>
 import com.microsoft.windowsazure.messaging.NotificationHub;
 </#if>
-<#if includeMobileServices>
+<#if parameters.hasMobileService>
 import com.microsoft.windowsazure.mobileservices.MobileServiceClient;
 import com.microsoft.windowsazure.mobileservices.MobileServiceException;
 import com.microsoft.windowsazure.mobileservices.table.MobileServiceJsonTable;
 </#if>
-<#if includeNotificationHub>
+<#if parameters.hasNotificationHub>
 import com.microsoft.windowsazure.notifications.NotificationsHandler;
 import com.microsoft.windowsazure.notifications.NotificationsManager;
 </#if>
-<#if includeMobileServices>
+<#if parameters.hasMobileService>
 
 import java.net.MalformedURLException;
 </#if>
 
 public class ${activityClass} extends Activity {
-<#if includeNotificationHub>
+<#if parameters.hasNotificationHub>
     public static class NotificationHubsHelper extends NotificationsHandler {
         @Override
         public void onRegistered(Context context, String gcmRegistrationId) {
@@ -73,7 +73,7 @@ public class ${activityClass} extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-<#if includeMobileServices>
+<#if parameters.hasMobileService>
 
         try {
             //Obtain the MobileServiceClient object to query your mobile service
@@ -119,7 +119,7 @@ public class ${activityClass} extends Activity {
             createAndShowDialog(e, "Error trying to query mobile service table. Invalid URL");
         }
 </#if>
-<#if includeNotificationHub>
+<#if parameters.hasNotificationHub>
 
 		handleNotifications(this);
 </#if>
@@ -158,7 +158,7 @@ public class ${activityClass} extends Activity {
         builder.setTitle(title);
         builder.create().show();
     }
-<#if includeMobileServices>
+<#if parameters.hasMobileService>
 
     /**
      * Creates a new MobileServiceClient instance with preconfigured credentials
@@ -175,7 +175,7 @@ public class ${activityClass} extends Activity {
         return new MobileServiceClient(appUrl, appKey, context);
 	}
 </#if>
-<#if includeNotificationHub>
+<#if parameters.hasNotificationHub>
 
     /**
      * Enable notifications handling using the NotificationHubsHelper class

@@ -451,24 +451,27 @@ public class IDEHelperImpl implements IDEHelper {
                     }
 
                     final VirtualFile libs = libsVf;
+                    final String fileName = zipEntry.getName().split("/")[1];
 
-                    ApplicationManager.getApplication().invokeAndWait(new Runnable() {
-                        @Override
-                        public void run() {
-                            ApplicationManager.getApplication().runWriteAction(new Runnable() {
-                                @Override
-                                public void run() {
-                                    try {
-                                        InputStream mobileserviceInputStream = zip.getInputStream(zipEntry);
-                                        VirtualFile msVF = libs.createChildData(module.getProject(), zipEntry.getName().split("/")[1]);
-                                        msVF.setBinaryContent(getArray(mobileserviceInputStream));
-                                    } catch (Throwable ex) {
-                                        DefaultLoader.getUIHelper().showException("Error trying to configure Azure Mobile Services", ex);
+                    if(libs.findChild(fileName) == null) {
+                        ApplicationManager.getApplication().invokeAndWait(new Runnable() {
+                            @Override
+                            public void run() {
+                                ApplicationManager.getApplication().runWriteAction(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        try {
+                                            InputStream mobileserviceInputStream = zip.getInputStream(zipEntry);
+                                            VirtualFile msVF = libs.createChildData(module.getProject(), fileName);
+                                            msVF.setBinaryContent(getArray(mobileserviceInputStream));
+                                        } catch (Throwable ex) {
+                                            DefaultLoader.getUIHelper().showException("Error trying to configure Azure Mobile Services", ex);
+                                        }
                                     }
-                                }
-                            });
-                        }
-                    }, ModalityState.defaultModalityState());
+                                });
+                            }
+                        }, ModalityState.defaultModalityState());
+                    }
                 }
             }
         }
