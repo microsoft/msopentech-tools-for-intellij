@@ -19,18 +19,9 @@ package com.microsoftopentechnologies.intellij.helpers.activityConfiguration.off
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.ValidationInfo;
-import com.intellij.ui.wizard.WizardNavigationState;
-import com.intellij.ui.wizard.WizardStep;
-import com.microsoftopentechnologies.intellij.wizards.activityConfiguration.AddServiceWizardModel;
-import com.microsoftopentechnologies.intellij.wizards.activityConfiguration.ServiceType;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import java.awt.*;
-import java.util.ArrayList;
-import java.util.List;
 
 public class OneNoteConfigForm extends DialogWrapper {
     private JPanel rootPanel;
