@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<#assign parameters = customParameters?eval><?xml version="1.0"?>
 <!--
 Copyright 2014 Microsoft Open Technologies, Inc.
  
@@ -16,23 +16,23 @@ limitations under the License.
 
 -->
 <recipe>
-<#if includeOutlookServices>
+<#if parameters.isOutlookServices>
 	<dependency mavenUrl="com.microsoft.services:outlook-services:(,1.0)" />
 	
 </#if>
-<#if includeFileServices>
+<#if parameters.isFileServices>
 	<dependency mavenUrl="com.microsoft.services:file-services:(,1.0)" />
 	
 </#if>
-<#if includeOutlookServices || includeFileServices || includeOneNoteServices>
+<#if parameters.isOutlookServices || parameters.isFileServices || parameters.isOneNote>
 	<dependency mavenUrl="com.microsoft.services:odata-engine-android-impl:(,1.0)@aar" />
 	
 </#if>
-<#if includeListServices>
+<#if parameters.isSharepointLists>
 	<dependency mavenUrl="com.microsoft.services:sharepoint-services:(,1.0)@aar" />
 	
 </#if>
-<#if includeOneNoteServices>
+<#if parameters.isOneNote>
 	<dependency mavenUrl="com.microsoft.services:onenote-services:(,1.0)" />
     <dependency mavenUrl="com.microsoft.services:live-auth:(,1.0)@aar" />
 </#if>

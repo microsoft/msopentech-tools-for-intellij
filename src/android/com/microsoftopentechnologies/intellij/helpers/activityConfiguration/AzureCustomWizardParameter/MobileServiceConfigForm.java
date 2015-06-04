@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package com.microsoftopentechnologies.intellij.helpers.activityConfiguration.AzureCustomWizardParameter;
+package com.microsoftopentechnologies.intellij.helpers.activityConfiguration.azureCustomWizardParameter;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
@@ -23,6 +23,7 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
+import com.intellij.openapi.ui.ValidationInfo;
 import com.microsoftopentechnologies.intellij.forms.CreateMobileServiceForm;
 import com.microsoftopentechnologies.intellij.forms.ManageSubscriptionForm;
 import com.microsoftopentechnologies.intellij.helpers.ReadOnlyCellTableModel;
@@ -310,5 +311,11 @@ public class MobileServiceConfigForm extends DialogWrapper {
         return rootPanel;
     }
 
-
+    @Nullable
+    @Override
+    protected ValidationInfo doValidate() {
+        return (mobileServices.getSelectedRows().length == 0)
+            ? new ValidationInfo("Select a Mobile Service", mobileServices)
+            : super.doValidate();
+    }
 }

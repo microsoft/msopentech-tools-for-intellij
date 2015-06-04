@@ -90,7 +90,8 @@ limitations under the License.
     </extensions>
 
     <extensions defaultExtensionNs="org.jetbrains.android">
-        <wizardParameterFactory implementation="com.microsoftopentechnologies.intellij.helpers.activityConfiguration.AzureCustomWizardParameter.AzureWizardParameterFactory"/>
+        <wizardParameterFactory implementation="com.microsoftopentechnologies.intellij.helpers.activityConfiguration.azureCustomWizardParameter.AzureWizardParameterFactory"/>
+        <wizardParameterFactory implementation="com.microsoftopentechnologies.intellij.helpers.activityConfiguration.office365CustomWizardParameter.Office365WizardParameterFactory"/>
     </extensions>
 
     <application-components>

@@ -58,33 +58,11 @@ limitations under the License.
         default="com.mycompany.myapp" />
 
     <parameter
-        id="includeOutlookServices"
-        name="Outlook Services (Mail, Contacts and Calendar)"
-        type="boolean"
-        default="false">
+        id="customParameters"
+        name="Office 365 Configuration"
+        constraints="nonempty"
+        type="office365CustomParameter">
     </parameter>
-
-    <parameter
-        id="includeFileServices"
-        name="File Services (OneDrive for Business and SharePoint Sites)"
-        type="boolean"
-        default="false">
-    </parameter>
-
-    <parameter
-        id="includeListServices"
-        name="SharePoint Lists"
-        type="boolean"
-        default="false">
-    </parameter>
-
-    <parameter
-        id="includeOneNoteServices"
-        name="OneNote"
-        type="boolean"
-        default="false">
-    </parameter>
-
 
     <!-- 128x128 thumbnails relative to template.xml -->
     <thumbs>

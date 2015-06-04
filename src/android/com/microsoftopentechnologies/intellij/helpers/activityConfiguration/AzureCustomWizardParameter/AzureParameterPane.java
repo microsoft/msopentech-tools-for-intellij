@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.microsoftopentechnologies.intellij.helpers.activityConfiguration.AzureCustomWizardParameter;
+package com.microsoftopentechnologies.intellij.helpers.activityConfiguration.azureCustomWizardParameter;
 
 import com.google.gson.Gson;
 import com.intellij.ide.DataManager;
@@ -22,21 +22,14 @@ import com.intellij.ide.projectView.ProjectView;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleManager;
-import com.intellij.openapi.module.ModuleWithNameAlreadyExists;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.project.ProjectManager;
-import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.roots.impl.ProjectFileIndexImpl;
 import com.intellij.openapi.ui.DialogWrapper;
-import com.intellij.openapi.util.InvalidDataException;
-import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.tooling.msservices.model.ms.MobileService;
-import org.jdom.JDOMException;
 
 import javax.swing.*;
 import javax.swing.text.BadLocationException;
@@ -44,7 +37,6 @@ import javax.swing.text.PlainDocument;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
 
 
 public class AzureParameterPane extends JPanel {

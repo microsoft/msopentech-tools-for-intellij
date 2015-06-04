@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-
-package com.microsoftopentechnologies.intellij.helpers.activityConfiguration.azureCustomWizardParameter;
+package com.microsoftopentechnologies.intellij.helpers.activityConfiguration.office365CustomWizardParameter;
 
 import com.android.tools.idea.templates.Parameter;
 import com.android.tools.idea.wizard.ScopedDataBinder;
@@ -25,17 +24,15 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import javax.swing.text.Document;
 
-public class AzureWizardParameterFactory implements WizardParameterFactory {
-
-
+public class Office365WizardParameterFactory implements WizardParameterFactory {
     @Override
     public String[] getSupportedTypes() {
-        return new String[] { "azureCustomParameter" };
+        return new String[] { "office365CustomParameter" };
     }
 
     @Override
     public JComponent createComponent(String s, Parameter parameter) {
-        return new AzureParameterPane();
+        return new Office365ParameterPane();
     }
 
     @Override
@@ -44,21 +41,20 @@ public class AzureWizardParameterFactory implements WizardParameterFactory {
             @Nullable
             @Override
             public String getValue(JComponent component) {
-                return ((AzureParameterPane) component).getValue();
+                return ((Office365ParameterPane) component).getValue();
             }
 
             @Override
             public void setValue(@Nullable String newValue, JComponent component) {
-                ((AzureParameterPane) component).setValue(newValue);
+                ((Office365ParameterPane) component).setValue(newValue);
             }
 
             @Nullable
             @Override
             public Document getDocument(JComponent component) {
-                return ((AzureParameterPane) component).getDocument();
+                return ((Office365ParameterPane) component).getDocument();
             }
         };
+
     }
-
-
 }
