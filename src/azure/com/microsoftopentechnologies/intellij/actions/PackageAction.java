@@ -18,7 +18,10 @@ package com.microsoftopentechnologies.intellij.actions;
 import com.intellij.openapi.actionSystem.ActionPlaces;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.application.PathManager;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleTypeId;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.util.PlatformUtils;
@@ -109,6 +112,9 @@ public class PackageAction extends AnAction {
     }
 
     public void update(AnActionEvent event) {
-        event.getPresentation().setVisible(PlatformUtils.isIdeaUltimate() || ActionPlaces.MAIN_TOOLBAR.equals(event.getPlace()));
+        final Module module = event.getData(LangDataKeys.MODULE);
+        event.getPresentation().setVisible(PlatformUtils.isIdeaUltimate() &&
+                module != null && ModuleTypeId.JAVA_MODULE.equals(module.getOptionValue(Module.ELEMENT_TYPE))
+                || ActionPlaces.MAIN_TOOLBAR.equals(event.getPlace()));
     }
 }

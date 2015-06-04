@@ -151,7 +151,6 @@ limitations under the License.
         <group id="AzurePopupGroup" text="Azure" description="Azure" icon="/icons/small/windowsAzure.png" popup="true"
                class="com.microsoftopentechnologies.intellij.actions.AzurePopupGroup">
             <reference ref="Actions.ApplicationInsightsAction"/>
-            <reference ref="Actions.PackageAction"/>
             <separator/>
             <reference ref="Actions.DeployAction"/>
             <reference ref="Actions.UnpublishAction"/>
