@@ -762,7 +762,9 @@ public class DeployAction extends AnAction {
     public void update(AnActionEvent event) {
         final Module module = event.getData(LangDataKeys.MODULE);
         VirtualFile selectedFile = CommonDataKeys.VIRTUAL_FILE.getData(event.getDataContext());
-        event.getPresentation().setEnabledAndVisible(module != null && AzureModuleType.AZURE_MODULE.equals(module.getOptionValue(Module.ELEMENT_TYPE))
-                && PluginUtil.isModuleRoot(selectedFile, module));
+        boolean enabled = module != null && AzureModuleType.AZURE_MODULE.equals(module.getOptionValue(Module.ELEMENT_TYPE))
+                && PluginUtil.isModuleRoot(selectedFile, module);
+        event.getPresentation().setVisible(enabled || ActionPlaces.MAIN_TOOLBAR.equals(event.getPlace()));
+        event.getPresentation().setEnabled(enabled);
     }
 }
