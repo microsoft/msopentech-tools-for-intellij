@@ -56,6 +56,7 @@ limitations under the License.
     <depends>com.intellij.modules.java</depends>
     <depends>com.intellij.modules.lang</depends>
     <depends>org.jetbrains.plugins.gradle</depends>
+    <depends optional="true">org.jetbrains.android</depends>
 
     <extensions defaultExtensionNs="com.intellij">
         <fileEditorProvider implementation="com.microsoftopentechnologies.intellij.helpers.storage.BlobExplorerFileEditorProvider"/>
@@ -86,6 +87,11 @@ limitations under the License.
                       order="before javaDirectory"/>
         <projectService serviceInterface="com.microsoftopentechnologies.intellij.AzureSettings"
                         serviceImplementation="com.microsoftopentechnologies.intellij.AzureSettings"/>
+    </extensions>
+
+    <extensions defaultExtensionNs="org.jetbrains.android">
+        <wizardParameterFactory implementation="com.microsoftopentechnologies.intellij.helpers.activityConfiguration.azureCustomWizardParameter.AzureWizardParameterFactory"/>
+        <wizardParameterFactory implementation="com.microsoftopentechnologies.intellij.helpers.activityConfiguration.office365CustomWizardParameter.Office365WizardParameterFactory"/>
     </extensions>
 
     <application-components>

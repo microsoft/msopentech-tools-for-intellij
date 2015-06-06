@@ -1,9 +1,10 @@
+<#assign parameters = customParameters?eval>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" >
-<#if includeMobileServices || includeNotificationHub>
+<#if parameters.hasMobileService || parameters.hasNotificationHub>
 
     <uses-permission android:name="android.permission.INTERNET"/>
 </#if>
-<#if includeNotificationHub>
+<#if parameters.hasNotificationHub>
     <uses-permission android:name="android.permission.GET_ACCOUNTS"/>
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE"/>
@@ -27,7 +28,7 @@
             </intent-filter>
             </#if>
         </activity>
-<#if includeNotificationHub>
+<#if parameters.hasNotificationHub>
         <receiver android:name="com.microsoft.windowsazure.notifications.NotificationsBroadcastReceiver" android:permission="com.google.android.c2dm.permission.SEND">
             <intent-filter>
                 <action android:name="com.google.android.c2dm.intent.RECEIVE" />

@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<#assign parameters = customParameters?eval><?xml version="1.0"?>
 <!--
 Copyright 2014 Microsoft Open Technologies, Inc.
  
@@ -16,13 +16,13 @@ limitations under the License.
 
 -->
 <recipe>
-<#if includeMobileServices>
+<#if parameters.hasMobileService>
 	<dependency mavenUrl="com.google.code.gson:gson:2.3" />
 	<dependency mavenUrl="com.google.guava:guava:18.0" />
 	<dependency mavenUrl="com.microsoft.azure:azure-mobile-services-android-sdk:2.+@aar" />
 
 </#if>
-<#if includeNotificationHub>
+<#if parameters.hasNotificationHub>
 	<dependency mavenUrl="com.google.android.gms:play-services:3.1.+" />
 	<dependency mavenUrl="com.microsoft.azure:azure-notifications-handler:1.0.1@aar" />
 

@@ -1,27 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-Copyright 2014 Microsoft Open Technologies, Inc.
- 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
- 
-http://www.apache.org/licenses/LICENSE-2.0
- 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-
--->
-<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.microsoftopentechnologies.intellij.wizards.activityConfiguration.Office365Step">
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.microsoftopentechnologies.intellij.helpers.activityConfiguration.office365CustomWizardParameter.Office365ConfigForm">
   <grid id="27dc6" binding="rootPanel" layout-manager="FormLayout">
-    <rowspec value="center:d:grow"/>
+    <rowspec value="center:377px:grow"/>
+    <rowspec value="top:3dlu:noGrow"/>
+    <rowspec value="fill:177px:noGrow"/>
     <colspec value="fill:max(d;4px):noGrow"/>
     <colspec value="fill:d:grow"/>
     <constraints>
-      <xy x="20" y="20" width="608" height="400"/>
+      <xy x="20" y="20" width="608" height="759"/>
     </constraints>
     <properties/>
     <border type="none"/>
@@ -137,6 +123,23 @@ limitations under the License.
           </grid>
         </children>
       </grid>
+      <scrollpane id="37dac">
+        <constraints>
+          <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+          <forms defaultalign-horz="false" defaultalign-vert="false"/>
+        </constraints>
+        <properties/>
+        <border type="none"/>
+        <children>
+          <component id="dbbd8" class="javax.swing.JEditorPane" binding="editorSummary">
+            <constraints/>
+            <properties>
+              <contentType value="text/html"/>
+              <editable value="false"/>
+            </properties>
+          </component>
+        </children>
+      </scrollpane>
     </children>
   </grid>
   <inspectionSuppressions>

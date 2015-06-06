@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.microsoftopentechnologies.intellij.helpers.activityConfiguration.office365CustomWizardParameter.Office365ParameterPane">
+  <grid id="27dc6" binding="mainPanel" layout-manager="FormLayout">
+    <rowspec value="center:33px:noGrow"/>
+    <rowspec value="center:31px:noGrow"/>
+    <rowspec value="center:31px:noGrow"/>
+    <rowspec value="top:10dlu:noGrow"/>
+    <rowspec value="center:31px:noGrow"/>
+    <colspec value="left:d:grow"/>
+    <colspec value="fill:10dlu:noGrow"/>
+    <colspec value="left:104px:grow"/>
+    <constraints>
+      <xy x="20" y="20" width="523" height="165"/>
+    </constraints>
+    <properties/>
+    <border type="none"/>
+    <children>
+      <component id="1e4b8" class="javax.swing.JCheckBox" binding="outlookServicesCheckBox">
+        <constraints>
+          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+          <forms/>
+        </constraints>
+        <properties>
+          <text value="Outlook Services (Mail, Contacts and Calendar)"/>
+        </properties>
+      </component>
+      <component id="a2a8c" class="javax.swing.JCheckBox" binding="sharepointListsCheckBox" default-binding="true">
+        <constraints>
+          <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+          <forms/>
+        </constraints>
+        <properties>
+          <text value="Sharepoint Lists"/>
+        </properties>
+      </component>
+      <component id="2c29f" class="javax.swing.JCheckBox" binding="oneNoteCheckBox" default-binding="true">
+        <constraints>
+          <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+          <forms/>
+        </constraints>
+        <properties>
+          <text value="OneNote "/>
+        </properties>
+      </component>
+      <component id="4bb6d" class="javax.swing.JButton" binding="configureOneNoteButton">
+        <constraints>
+          <grid row="4" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="2" fill="1" indent="0" use-parent-layout="false"/>
+          <forms defaultalign-vert="false"/>
+        </constraints>
+        <properties>
+          <enabled value="false"/>
+          <text value="Configure"/>
+        </properties>
+      </component>
+      <component id="28acc" class="javax.swing.JCheckBox" binding="fileServicesCheckBox">
+        <constraints>
+          <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+          <forms/>
+        </constraints>
+        <properties>
+          <text value="File Services (OneDrive for Bussiness and Sharepoint Sites)"/>
+        </properties>
+      </component>
+      <component id="402ab" class="javax.swing.JButton" binding="configureOffice365Button">
+        <constraints>
+          <grid row="1" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="2" fill="1" indent="0" use-parent-layout="false"/>
+          <forms defaultalign-vert="false"/>
+        </constraints>
+        <properties>
+          <enabled value="false"/>
+          <text value="Configure"/>
+        </properties>
+      </component>
+    </children>
+  </grid>
+</form>

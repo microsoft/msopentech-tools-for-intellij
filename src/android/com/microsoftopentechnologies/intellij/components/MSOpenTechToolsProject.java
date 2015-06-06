@@ -21,7 +21,6 @@ import com.intellij.openapi.components.AbstractProjectComponent;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.*;
 import com.microsoftopentechnologies.intellij.helpers.AndroidStudioHelper;
-import com.microsoftopentechnologies.intellij.helpers.ProjectFileMonitor;
 
 import java.io.*;
 import java.util.zip.ZipEntry;
@@ -46,44 +45,10 @@ public class MSOpenTechToolsProject extends AbstractProjectComponent {
             if (AndroidStudioHelper.isAndroidGradleModule(myProject.getBaseDir())) {
                 createActivityTemplates();
             }
-            else {
-                // if a new project is being created then this method is called before
-                // any file is created; we install a file listener to handle the template
-                // file creation in case the project being created is an Android gradle
-                // project
-                virtualFileListener = new VirtualFileAdapter() {
-                    @Override
-                    public void contentsChanged(VirtualFileEvent event) {
-                        super.fileCreated(event);
-
-                        // if this is a build.gradle file and is an android build file then
-                        // copy the template files
-                        try {
-                            if(event.getFileName().contains("build.gradle") &&
-                                    AndroidStudioHelper.isAndroidGradleBuildFile(event.getFile())) {
-                                createActivityTemplates();
-
-                                // now that we have the activity templates installed in this project
-                                // we don't need to listen for file changes anymore
-                                ProjectFileMonitor.getInstance().removeProjectFileListener(myProject, virtualFileListener);
-                                virtualFileListener = null;
-                            }
-                        } catch (IOException ignored) {}
-                    }
-                };
-                ProjectFileMonitor.getInstance().addProjectFileListener(myProject, virtualFileListener);
-            }
 
         } catch (IOException ignored) {}
     }
 
-    @Override
-    public void projectClosed() {
-        if(virtualFileListener != null) {
-            ProjectFileMonitor.getInstance().removeProjectFileListener(myProject, virtualFileListener);
-            virtualFileListener = null;
-        }
-    }
 
     private void createActivityTemplates() throws IOException {
         // create the root dir to contain our templates zip if the
