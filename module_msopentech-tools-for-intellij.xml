@@ -23,6 +23,7 @@
     <path refid="library.azure-sdk.classpath"/>
     <path refid="library.azure-activedirectory-interactive-auth-library-for-java.classpath"/>
     <path refid="library.org.apache.commons:commons-lang3:3.3.2.classpath"/>
+    <pathelement location="${idea.home}/plugins/android/lib/android.jar"/>
   </path>
   
   <path id="msopentech-tools-for-intellij.runtime.production.module.classpath">
@@ -37,6 +38,7 @@
     <path refid="library.org.apache.commons:commons-lang3:3.3.2.classpath"/>
     <path refid="library.org.apache.httpcomponents:httpclient-cache:4.3.5.classpath"/>
     <path refid="library.com.microsoft.azure:azure-storage:2.0.0.classpath"/>
+    <pathelement location="${idea.home}/plugins/android/lib/android.jar"/>
   </path>
   
   <path id="msopentech-tools-for-intellij.module.classpath">
@@ -52,6 +54,7 @@
     <path refid="library.azure-sdk.classpath"/>
     <path refid="library.azure-activedirectory-interactive-auth-library-for-java.classpath"/>
     <path refid="library.org.apache.commons:commons-lang3:3.3.2.classpath"/>
+    <pathelement location="${idea.home}/plugins/android/lib/android.jar"/>
   </path>
   
   <path id="msopentech-tools-for-intellij.runtime.module.classpath">
@@ -69,6 +72,7 @@
     <path refid="library.org.apache.commons:commons-lang3:3.3.2.classpath"/>
     <path refid="library.org.apache.httpcomponents:httpclient-cache:4.3.5.classpath"/>
     <path refid="library.com.microsoft.azure:azure-storage:2.0.0.classpath"/>
+    <pathelement location="${idea.home}/plugins/android/lib/android.jar"/>
   </path>
   
   
