@@ -169,7 +169,7 @@ public class UIUtils {
         try {
             data = com.microsoftopentechnologies.azurecommons.deploy.util.UIUtils.parse(file);
         } catch (JAXBException e) {
-            PluginUtil.displayErrorDialog(message("importDlgTitle"), String.format(message("importDlgMsg"), file.getName(), message("failedToParse")));
+            PluginUtil.displayErrorDialogAndLog(message("importDlgTitle"), String.format(message("importDlgMsg"), file.getName(), message("failedToParse")), e);
             return null;
         }
         String subscriptionId = data.getSubscriptionIds().get(0);
