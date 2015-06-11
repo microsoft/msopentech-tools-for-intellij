@@ -18,6 +18,7 @@ package com.microsoftopentechnologies.intellij.serviceexplorer.azure.storage;
 
 import com.microsoftopentechnologies.intellij.forms.ExternalStorageAccountForm;
 import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
+import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.tooling.msservices.helpers.ExternalStorageHelper;
 import com.microsoftopentechnologies.tooling.msservices.helpers.Name;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk.StorageClientSDKManagerImpl;
@@ -28,6 +29,7 @@ import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.NodeActi
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.storage.ExternalStorageNode;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.storage.StorageModule;
 
+import javax.swing.*;
 import java.awt.*;
 
 @Name("Attach external storage account")
@@ -50,13 +52,26 @@ public class AttachExternalStorageAccountAction extends NodeActionListener {
                 ClientStorageAccount storageAccount = form.getStorageAccount();
                 ClientStorageAccount fullStorageAccount = form.getFullStorageAccount();
 
+                for (ClientStorageAccount clientStorageAccount : ExternalStorageHelper.getList()) {
+                    String name = storageAccount.getName();
+                    if(clientStorageAccount.getName().equals(name)) {
+                        JOptionPane.showMessageDialog(form,
+                                "Storage account with name '" + name + "' already exists.",
+                                "Service Explorer",
+                                JOptionPane.ERROR_MESSAGE);
+
+                        return;
+                    }
+                }
+
+
+
                 ExternalStorageNode node = new ExternalStorageNode(storageModule, fullStorageAccount);
                 storageModule.addChildNode(node);
 
                 form.setCursor(Cursor.getDefaultCursor());
 
                 ExternalStorageHelper.add(storageAccount);
-
             }
         });
 
