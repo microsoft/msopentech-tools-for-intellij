@@ -17,24 +17,24 @@ limitations under the License.
 -->
 <recipe>
 <#if parameters.isOutlookServices>
-	<dependency mavenUrl="com.microsoft.services:outlook-services:(,1.0)" />
+	<dependency mavenUrl="com.microsoft.services:outlook-services:0.13.0" />
 	
 </#if>
 <#if parameters.isFileServices>
-	<dependency mavenUrl="com.microsoft.services:file-services:(,1.0)" />
+	<dependency mavenUrl="com.microsoft.services:file-services:0.13.0" />
 	
 </#if>
 <#if parameters.isOutlookServices || parameters.isFileServices || parameters.isOneNote>
-	<dependency mavenUrl="com.microsoft.services:odata-engine-android-impl:(,1.0)@aar" />
+	<dependency mavenUrl="com.microsoft.services:odata-engine-android-impl:0.13.0@aar" />
 	
 </#if>
 <#if parameters.isSharepointLists>
-	<dependency mavenUrl="com.microsoft.services:sharepoint-services:(,1.0)@aar" />
+	<dependency mavenUrl="com.microsoft.services:sharepoint-services:0.13.0@aar" />
 	
 </#if>
 <#if parameters.isOneNote>
-	<dependency mavenUrl="com.microsoft.services:onenote-services:(,1.0)" />
-    <dependency mavenUrl="com.microsoft.services:live-auth:(,1.0)@aar" />
+	<dependency mavenUrl="com.microsoft.services:onenote-services:0.13.0" />
+    <dependency mavenUrl="com.microsoft.services:live-auth:0.13.0@aar" />
 </#if>
     <merge from="AndroidManifest.xml.ftl"
             to="${escapeXmlAttribute(manifestOut)}/AndroidManifest.xml" />
