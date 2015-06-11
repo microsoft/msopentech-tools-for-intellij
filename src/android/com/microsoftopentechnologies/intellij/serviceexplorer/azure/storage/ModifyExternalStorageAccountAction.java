@@ -40,7 +40,12 @@ public class ModifyExternalStorageAccountAction extends NodeActionListener {
     public void actionPerformed(NodeActionEvent e) {
         final ExternalStorageAccountForm form = new ExternalStorageAccountForm();
         form.setTitle("Modify External Storage Account");
-        form.setStorageAccount(storageNode.getStorageAccount());
+
+        for (ClientStorageAccount account : ExternalStorageHelper.getList()) {
+            if(account.getName().equals(storageNode.getStorageAccount().getName())) {
+                form.setStorageAccount(account);
+            }
+        }
 
         UIHelperImpl.packAndCenterJDialog(form);
 
@@ -51,10 +56,11 @@ public class ModifyExternalStorageAccountAction extends NodeActionListener {
                 ClientStorageAccount oldStorageAccount = storageNode.getStorageAccount();
                 ClientStorageAccount storageAccount = StorageClientSDKManagerImpl.getManager().getStorageAccount(
                         form.getStorageAccount().getConnectionString());
+                ClientStorageAccount fullStorageAccount = form.getFullStorageAccount();
 
                 Node parent = storageNode.getParent();
                 parent.removeDirectChildNode(storageNode);
-                parent.addChildNode(new ExternalStorageNode(parent, storageAccount));
+                parent.addChildNode(new ExternalStorageNode(parent, fullStorageAccount));
                 form.setCursor(Cursor.getDefaultCursor());
 
                 ExternalStorageHelper.detach(oldStorageAccount);

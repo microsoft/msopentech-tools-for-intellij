@@ -1,6 +1,8 @@
 package com.microsoftopentechnologies.intellij.forms;
 
 import com.microsoftopentechnologies.intellij.helpers.LinkListener;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk.StorageClientSDKManagerImpl;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.ClientStorageAccount;
 import org.apache.commons.lang3.StringUtils;
 
@@ -140,6 +142,18 @@ public class ExternalStorageAccountForm extends JDialog {
             return;
         }
 
+        try{
+            //Validate querystring by making a request
+            StorageClientSDKManagerImpl.getManager().getTables(
+                    StorageClientSDKManagerImpl.getManager().getStorageAccount(
+                            getFullStorageAccount().getConnectionString()));
+
+        } catch (AzureCmdException e) {
+            JOptionPane.showMessageDialog(this,
+                    "The storage account contains invalid values. More information:\n" + e.getCause().getMessage(), "Service Explorer", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
         if (onFinish != null) {
             onFinish.run();
         }
@@ -156,6 +170,8 @@ public class ExternalStorageAccountForm extends JDialog {
             blobURLTextField.setText(storageAccount.getBlobsUri());
             tableURLTextField.setText(storageAccount.getTablesUri());
             queueURLTextField.setText(storageAccount.getQueuesUri());
+
+            customEndpointsPanel.setVisible(true);
         } else {
             useHTTPRadioButton.setSelected(storageAccount.getProtocol().equals(HTTP));
             useHTTPSRecommendedRadioButton.setSelected(storageAccount.getProtocol().equals(HTTPS));
@@ -168,10 +184,27 @@ public class ExternalStorageAccountForm extends JDialog {
 
     public ClientStorageAccount getStorageAccount() {
         ClientStorageAccount clientStorageAccount = new ClientStorageAccount(accountNameTextField.getText());
+        clientStorageAccount.setUseCustomEndpoints(specifyCustomEndpointsRadioButton.isSelected());
 
         if (rememberAccountKeyCheckBox.isSelected()) {
             clientStorageAccount.setPrimaryKey(accountKeyTextField.getText());
         }
+
+        if (specifyCustomEndpointsRadioButton.isSelected()) {
+            clientStorageAccount.setBlobsUri(blobURLTextField.getText());
+            clientStorageAccount.setQueuesUri(queueURLTextField.getText());
+            clientStorageAccount.setTablesUri(tableURLTextField.getText());
+        } else {
+            clientStorageAccount.setProtocol(useHTTPRadioButton.isSelected() ? HTTP : HTTPS);
+        }
+
+        return clientStorageAccount;
+    }
+
+    public ClientStorageAccount getFullStorageAccount() {
+        ClientStorageAccount clientStorageAccount = new ClientStorageAccount(accountNameTextField.getText());
+        clientStorageAccount.setPrimaryKey(accountKeyTextField.getText());
+        clientStorageAccount.setUseCustomEndpoints(specifyCustomEndpointsRadioButton.isSelected());
 
         if (specifyCustomEndpointsRadioButton.isSelected()) {
             clientStorageAccount.setBlobsUri(blobURLTextField.getText());
