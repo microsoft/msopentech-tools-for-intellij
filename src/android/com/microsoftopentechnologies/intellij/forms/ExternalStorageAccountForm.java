@@ -144,7 +144,9 @@ public class ExternalStorageAccountForm extends JDialog {
 
         try{
             //Validate querystring by making a request
-            StorageClientSDKManagerImpl.getManager().getTables(getFullStorageAccount());
+            StorageClientSDKManagerImpl.getManager().getTables(
+                    StorageClientSDKManagerImpl.getManager().getStorageAccount(
+                            getFullStorageAccount().getConnectionString()));
 
         } catch (AzureCmdException e) {
             JOptionPane.showMessageDialog(this,
@@ -168,6 +170,8 @@ public class ExternalStorageAccountForm extends JDialog {
             blobURLTextField.setText(storageAccount.getBlobsUri());
             tableURLTextField.setText(storageAccount.getTablesUri());
             queueURLTextField.setText(storageAccount.getQueuesUri());
+
+            customEndpointsPanel.setVisible(true);
         } else {
             useHTTPRadioButton.setSelected(storageAccount.getProtocol().equals(HTTP));
             useHTTPSRecommendedRadioButton.setSelected(storageAccount.getProtocol().equals(HTTPS));
@@ -180,6 +184,7 @@ public class ExternalStorageAccountForm extends JDialog {
 
     public ClientStorageAccount getStorageAccount() {
         ClientStorageAccount clientStorageAccount = new ClientStorageAccount(accountNameTextField.getText());
+        clientStorageAccount.setUseCustomEndpoints(specifyCustomEndpointsRadioButton.isSelected());
 
         if (rememberAccountKeyCheckBox.isSelected()) {
             clientStorageAccount.setPrimaryKey(accountKeyTextField.getText());
@@ -199,6 +204,7 @@ public class ExternalStorageAccountForm extends JDialog {
     public ClientStorageAccount getFullStorageAccount() {
         ClientStorageAccount clientStorageAccount = new ClientStorageAccount(accountNameTextField.getText());
         clientStorageAccount.setPrimaryKey(accountKeyTextField.getText());
+        clientStorageAccount.setUseCustomEndpoints(specifyCustomEndpointsRadioButton.isSelected());
 
         if (specifyCustomEndpointsRadioButton.isSelected()) {
             clientStorageAccount.setBlobsUri(blobURLTextField.getText());

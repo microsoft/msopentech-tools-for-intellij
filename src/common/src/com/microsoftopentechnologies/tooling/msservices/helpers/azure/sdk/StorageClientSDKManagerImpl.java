@@ -82,11 +82,11 @@ public class StorageClientSDKManagerImpl implements StorageClientSDKManager {
             }
 
             if (settings.containsKey(ClientStorageAccount.QUEUE_ENDPOINT_KEY)) {
-                storageAccount.setBlobsUri(settings.get(ClientStorageAccount.QUEUE_ENDPOINT_KEY));
+                storageAccount.setQueuesUri(settings.get(ClientStorageAccount.QUEUE_ENDPOINT_KEY));
             }
 
             if (settings.containsKey(ClientStorageAccount.TABLE_ENDPOINT_KEY)) {
-                storageAccount.setBlobsUri(settings.get(ClientStorageAccount.TABLE_ENDPOINT_KEY));
+                storageAccount.setTablesUri(settings.get(ClientStorageAccount.TABLE_ENDPOINT_KEY));
             }
         }
 
