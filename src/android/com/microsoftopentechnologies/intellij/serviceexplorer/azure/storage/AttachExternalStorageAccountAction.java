@@ -22,6 +22,7 @@ import com.microsoftopentechnologies.tooling.msservices.helpers.ExternalStorageH
 import com.microsoftopentechnologies.tooling.msservices.helpers.Name;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk.StorageClientSDKManagerImpl;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.ClientStorageAccount;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.Node;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.storage.ExternalStorageNode;
@@ -47,12 +48,14 @@ public class AttachExternalStorageAccountAction extends NodeActionListener {
             @Override
             public void run() {
                 ClientStorageAccount storageAccount = form.getStorageAccount();
+                ClientStorageAccount fullStorageAccount = form.getFullStorageAccount();
 
-                storageModule.addChildNode(new ExternalStorageNode(storageModule, storageAccount));
-
-                ExternalStorageHelper.add(storageAccount);
+                ExternalStorageNode node = new ExternalStorageNode(storageModule, fullStorageAccount);
+                storageModule.addChildNode(node);
 
                 form.setCursor(Cursor.getDefaultCursor());
+
+                ExternalStorageHelper.add(storageAccount);
 
             }
         });

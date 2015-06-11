@@ -184,6 +184,21 @@ public class ExternalStorageAccountForm extends JDialog {
         return clientStorageAccount;
     }
 
+    public ClientStorageAccount getFullStorageAccount() {
+        ClientStorageAccount clientStorageAccount = new ClientStorageAccount(accountNameTextField.getText());
+        clientStorageAccount.setPrimaryKey(accountKeyTextField.getText());
+
+        if (specifyCustomEndpointsRadioButton.isSelected()) {
+            clientStorageAccount.setBlobsUri(blobURLTextField.getText());
+            clientStorageAccount.setQueuesUri(queueURLTextField.getText());
+            clientStorageAccount.setTablesUri(tableURLTextField.getText());
+        } else {
+            clientStorageAccount.setProtocol(useHTTPRadioButton.isSelected() ? HTTP : HTTPS);
+        }
+
+        return clientStorageAccount;
+    }
+
     private void onCancel() {
         dispose();
     }
