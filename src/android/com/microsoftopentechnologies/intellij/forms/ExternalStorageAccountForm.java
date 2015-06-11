@@ -1,6 +1,8 @@
 package com.microsoftopentechnologies.intellij.forms;
 
 import com.microsoftopentechnologies.intellij.helpers.LinkListener;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk.StorageClientSDKManagerImpl;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.ClientStorageAccount;
 import org.apache.commons.lang3.StringUtils;
 
@@ -137,6 +139,16 @@ public class ExternalStorageAccountForm extends JDialog {
         if (!errors.isEmpty()) {
             JOptionPane.showMessageDialog(this,
                     errors, "Service Explorer", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        try{
+            //Validate querystring by making a request
+            StorageClientSDKManagerImpl.getManager().getTables(getFullStorageAccount());
+
+        } catch (AzureCmdException e) {
+            JOptionPane.showMessageDialog(this,
+                    "The storage account contains invalid values. More information:\n" + e.getCause().getMessage(), "Service Explorer", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
