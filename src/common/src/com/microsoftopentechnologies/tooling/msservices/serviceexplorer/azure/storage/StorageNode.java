@@ -99,20 +99,24 @@ public class StorageNode extends Node {
         }
 
         @Override
-        protected void runInBackground(NodeActionEvent e) throws AzureCmdException {
-            final Node node = e.getAction().getNode();
-            node.setLoading(true);
+        protected void runInBackground(NodeActionEvent e) {
+            try {
+                final Node node = e.getAction().getNode();
+                node.setLoading(true);
 
-            AzureSDKManagerImpl.getManager().deleteStorageAccount(storageAccount);
+                AzureSDKManagerImpl.getManager().deleteStorageAccount(storageAccount);
 
-            DefaultLoader.getIdeHelper().invokeLater(new Runnable() {
-                @Override
-                public void run() {
+                DefaultLoader.getIdeHelper().invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
 
-                    // instruct parent node to remove this node
-                    getParent().removeDirectChildNode(node);
-                }
-            });
+                        // instruct parent node to remove this node
+                        getParent().removeDirectChildNode(node);
+                    }
+                });
+            } catch (AzureCmdException ex) {
+                DefaultLoader.getUIHelper().showException("Error deleting storage account", ex);
+            }
 
         }
     }
