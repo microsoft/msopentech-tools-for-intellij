@@ -21,7 +21,7 @@
     <orderEntry type="library" name="azure-activedirectory-interactive-auth-library-for-java" level="project" />
     <orderEntry type="library" name="org.apache.commons:commons-lang3:3.3.2" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="org.apache.httpcomponents:httpclient-cache:4.3.5" level="project" />
-    <orderEntry type="library" scope="RUNTIME" name="com.microsoft.azure:azure-storage:2.0.0" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="com.microsoft.azure:azure-storage:2.2.0" level="project" />
     <orderEntry type="module-library" scope="PROVIDED">
       <library>
         <CLASSES>

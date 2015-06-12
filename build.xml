@@ -66,7 +66,7 @@
   <path id="library.antintegration.classpath">
     <pathelement location="${idea.home}/plugins/ant/lib/antIntegration.jar"/>
   </path>
-  
+
   <path id="library.azure-activedirectory-interactive-auth-library-for-java.classpath">
     <pathelement location="${basedir}/lib/azure-activedirectory-interactive-auth-library-for-java/azure-activedirectory-interactive-auth-library-for-java.jar"/>
     <pathelement location="${basedir}/lib/azure-activedirectory-interactive-auth-library-for-java/dependencies/gson-2.3.1.jar"/>
@@ -81,15 +81,14 @@
   
   <path id="library.azure-sdk.classpath">
     <pathelement location="${basedir}/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/azure-core-0.7.0.jar"/>
-    <pathelement location="${basedir}/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/dependencies/activation-1.1.jar"/>
     <pathelement location="${basedir}/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/dependencies/azure-management-0.7.0.jar"/>
     <pathelement location="${basedir}/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/dependencies/azure-management-compute-0.7.0.jar"/>
     <pathelement location="${basedir}/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/dependencies/azure-management-network-0.7.0.jar"/>
     <pathelement location="${basedir}/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/dependencies/azure-management-storage-0.7.0.jar"/>
     <pathelement location="${basedir}/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/dependencies/commons-codec-1.6.jar"/>
     <pathelement location="${basedir}/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/dependencies/commons-logging-1.1.3.jar"/>
-    <pathelement location="${basedir}/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/dependencies/httpclient-4.3.1.jar"/>
-    <pathelement location="${basedir}/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/dependencies/httpcore-4.3.jar"/>
+    <pathelement location="${basedir}/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/dependencies/httpclient-4.3.5.jar"/>
+    <pathelement location="${basedir}/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/dependencies/httpcore-4.3.2.jar"/>
     <pathelement location="${basedir}/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/dependencies/jackson-core-asl-1.9.2.jar"/>
     <pathelement location="${basedir}/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/dependencies/jackson-jaxrs-1.9.2.jar"/>
     <pathelement location="${basedir}/lib/com.microsoftopentechnologies.windowsazure.tools.sdk/dependencies/jackson-mapper-asl-1.9.2.jar"/>
@@ -107,9 +106,9 @@
     <pathelement location="${basedir}/lib/AzureCommons.jar"/>
   </path>
   
-  <path id="library.com.microsoft.azure:azure-storage:2.0.0.classpath">
+  <path id="library.com.microsoft.azure:azure-storage:2.2.0.classpath">
     <pathelement location="${path.variable.maven_repository}/com/fasterxml/jackson/core/jackson-core/2.2.3/jackson-core-2.2.3.jar"/>
-    <pathelement location="${path.variable.maven_repository}/com/microsoft/azure/azure-storage/2.0.0/azure-storage-2.0.0.jar"/>
+    <pathelement location="${path.variable.maven_repository}/com/microsoft/azure/azure-storage/2.2.0/azure-storage-2.2.0.jar"/>
     <pathelement location="${path.variable.maven_repository}/org/apache/commons/commons-lang3/3.3.2/commons-lang3-3.3.2.jar"/>
     <pathelement location="${path.variable.maven_repository}/org/slf4j/slf4j-api/1.7.5/slf4j-api-1.7.5.jar"/>
   </path>

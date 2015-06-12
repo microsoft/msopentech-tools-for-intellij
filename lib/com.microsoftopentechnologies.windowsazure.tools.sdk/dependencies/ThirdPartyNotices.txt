@@ -1,6 +1,6 @@
 Third Party Notices for Package for Azure Libraries for Java 
 
-This package is based on or incorporates material from the projects listed below (collectively, “Third Party Code”). Microsoft Open Technologies, Inc. is not the original author of the Third Party Code.  The original copyright notices for the Third Party Code and the licenses under which Microsoft Open Technologies, Inc. received the Third Party Code are reproduced below.  Unless otherwise stated, these notices and licenses are provided for informational purposes only.  Unless otherwise stated, Microsoft Open Technologies, Inc., not the third party, licenses the Third Party Code to you under the Microsoft Open Technologies software license terms for the Package for Azure Libraries for Java.  However, the source code included in this package that was originally released under the Common Development and Distribution License, ver. 1.0 (the "CDDL") is licensed to you under the CDDL.  Microsoft Open Technologies, Inc., reserves all rights not expressly granted under the Microsoft Open Technologies software license terms for the Package for Azure Libraries for Java (or the CDDL, to the extent applicable), and does not grant any other rights, whether by implication, estoppel or otherwise.  
+This package is based on or incorporates material from the projects listed below (collectively, ï¿½Third Party Codeï¿½). Microsoft Open Technologies, Inc. is not the original author of the Third Party Code.  The original copyright notices for the Third Party Code and the licenses under which Microsoft Open Technologies, Inc. received the Third Party Code are reproduced below.  Unless otherwise stated, these notices and licenses are provided for informational purposes only.  Unless otherwise stated, Microsoft Open Technologies, Inc., not the third party, licenses the Third Party Code to you under the Microsoft Open Technologies software license terms for the Package for Azure Libraries for Java.  However, the source code included in this package that was originally released under the Common Development and Distribution License, ver. 1.0 (the "CDDL") is licensed to you under the CDDL.  Microsoft Open Technologies, Inc., reserves all rights not expressly granted under the Microsoft Open Technologies software license terms for the Package for Azure Libraries for Java (or the CDDL, to the extent applicable), and does not grant any other rights, whether by implication, estoppel or otherwise.  
 
 
 The files listed below were originally released under the Common Development and Distribution License (CDDL) Version 1.0
@@ -87,7 +87,7 @@ DISCLAIMER.
 7. LIMITATION OF LIABILITY.
 UNDER NO CIRCUMSTANCES AND UNDER NO LEGAL THEORY, WHETHER TORT (INCLUDING NEGLIGENCE), CONTRACT, OR OTHERWISE, SHALL YOU, THE INITIAL DEVELOPER, ANY OTHER CONTRIBUTOR, OR ANY DISTRIBUTOR OF COVERED SOFTWARE, OR ANY SUPPLIER OF ANY OF SUCH PARTIES, BE LIABLE TO ANY PERSON FOR ANY INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES OF ANY CHARACTER INCLUDING, WITHOUT LIMITATION, DAMAGES FOR LOST PROFITS, LOSS OF GOODWILL, WORK STOPPAGE, COMPUTER FAILURE OR MALFUNCTION, OR ANY AND ALL OTHER COMMERCIAL DAMAGES OR LOSSES, EVEN IF SUCH PARTY SHALL HAVE BEEN INFORMED OF THE POSSIBILITY OF SUCH DAMAGES. THIS LIMITATION OF LIABILITY SHALL NOT APPLY TO LIABILITY FOR DEATH OR PERSONAL INJURY RESULTING FROM SUCH PARTY'S NEGLIGENCE TO THE EXTENT APPLICABLE LAW PROHIBITS SUCH LIMITATION. SOME JURISDICTIONS DO NOT ALLOW THE EXCLUSION OR LIMITATION OF INCIDENTAL OR CONSEQUENTIAL DAMAGES, SO THIS EXCLUSION AND LIMITATION MAY NOT APPLY TO YOU.
 8. U.S. GOVERNMENT END USERS.
-The Covered Software is a "commercial item," as that term is defined in 48 C.F.R. 2.101 (Oct. 1995), consisting of "commercial computer software" (as that term is defined at 48 C.F.R. ¤ 252.227-7014(a)(1)) and "commercial computer software documentation" as such terms are used in 48 C.F.R. 12.212 (Sept. 1995). Consistent with 48 C.F.R. 12.212 and 48 C.F.R. 227.7202-1 through 227.7202-4 (June 1995), all .S. Government End Users acquire Covered Software with only those rights set forth herein.
+The Covered Software is a "commercial item," as that term is defined in 48 C.F.R. 2.101 (Oct. 1995), consisting of "commercial computer software" (as that term is defined at 48 C.F.R. ï¿½ 252.227-7014(a)(1)) and "commercial computer software documentation" as such terms are used in 48 C.F.R. 12.212 (Sept. 1995). Consistent with 48 C.F.R. 12.212 and 48 C.F.R. 227.7202-1 through 227.7202-4 (June 1995), all .S. Government End Users acquire Covered Software with only those rights set forth herein.
 This U.S. Government Rights clause is in lieu of, and supersedes, any other FAR, DFAR, or other clause or provision that addresses Government rights in computer software under this License.
 9. MISCELLANEOUS.
 This License represents the complete agreement concerning subject matter hereof. If any provision of this License is held to be unenforceable, such provision shall be reformed only to the extent necessary to make it enforceable. This License shall be governed by the law of the jurisdiction specified in a notice contained within the Original Software (except to the extent applicable law, if any, provides otherwise), excluding such jurisdiction's conflict-of-law provisions. Any litigation relating to this License shall be subject to the jurisdiction of the courts located in the jurisdiction and venue specified in a notice contained within the Original Software, with the losing party responsible for costs, including, without limitation, court costs and reasonable attorneys' fees and expenses. The application of the United Nations Convention on Contracts for the International Sale of Goods is expressly excluded. Any law or regulation which provides that the language of a contract shall be construed against the drafter shall not apply to this License. You agree that You alone are responsible for compliance with the United States export administration regulations (and the export control laws and regulation of any other countries) when You use, distribute or otherwise make available any Covered Software.
@@ -105,12 +105,12 @@ Copyright (C) 2009 The JSR-330 Expert Group
 
 2. Apache Commons Lang3-3.3.2
 http://commons.apache.org/proper/commons-lang/
-Copyright © 2001-2014 The Apache Software Foundation
+Copyright ï¿½ 2001-2014 The Apache Software Foundation
 This product includes software developed at
 The Apache Software Foundation (http://www.apache.org/).
 This product includes software from the Spring Framework, under the Apache License 2.0 (see: StringUtils.containsWhitespace())
 
-3. Apache Commons Logging 1.1.1
+3. Apache Commons Logging 1.1.3
 http://commons.apache.org/proper/commons-logging/
 Copyright 2003-2007 The Apache Software Foundation
 This product includes software developed by
@@ -136,14 +136,14 @@ The Apache Software Foundation (http://www.apache.org/).
 http://code.google.com/p/guava-libraries/ 
 Copyright (c) The Guava Authors
 
-7. httpclient 4.3.1
+7. httpclient 4.3.5
 http://hc.apache.org/downloads.cgi
 Apache HttpComponents Client
 Copyright 1999-2014 The Apache Software Foundation
 This product includes software developed at
 The Apache Software Foundation (http://www.apache.org/).
 
-8. httpcore 4.3.
+8. httpcore 4.3.2
 http://hc.apache.org/downloads.cgi
 Apache HttpComponents Core
 Copyright 2005-2014 The Apache Software Foundation
@@ -168,8 +168,8 @@ Copyright (c) 2007- Tatu Saloranta, tatu.saloranta@iki.fi
 
 11. Windows Azure Libraries for Java
 https://github.com/Azure/azure-sdk-for-java
-Copyright © Microsoft Corporation
-All rights reserved. 
+Copyright ï¿½ Microsoft Corporation
+All rights reserved.ï¿½
 
 
 Apache License 2.0, January 2004
@@ -208,7 +208,7 @@ The file(s) listed below were originally released under the MIT License
 1. Application Insights SDK for Java
 https://github.com/Microsoft/AppInsights-Java
 Copyright (c) Microsoft Corporation
-All rights reserved. 
+All rights reserved.ï¿½
 
 MIT License
 
@@ -223,7 +223,7 @@ The file(s) listed below were originally released under the BSD 3-Clause License
 
 1. jsr305-1.3.9
 http://code.google.com/p/jsr-305/
-Copyright (c)JSR-305 authors and contributors 
+Copyright (c)JSR-305 authors and contributorsï¿½
 
 
 The BSD 3-Clause License
