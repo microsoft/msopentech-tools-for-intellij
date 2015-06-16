@@ -22,11 +22,9 @@ import com.intellij.ide.projectView.ProjectView;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.roots.impl.ProjectFileIndexImpl;
 import com.intellij.openapi.ui.DialogWrapper;
-import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.tooling.msservices.model.ms.MobileService;
@@ -105,16 +103,9 @@ public class AzureParameterPane extends JPanel {
                     DataContext dataContext = DataManager.getInstance().getDataContext(mainPanel);
                     Project project = DataKeys.PROJECT.getData(dataContext);
 
-                    PsiElement psiElement = ProjectView.getInstance(project).getParentOfCurrentSelection();
-                    VirtualFile vf = null;
-                    if(psiElement instanceof PsiDirectory) {
-                        vf = ((PsiDirectory) psiElement).getVirtualFile();
-                    } else {
-                        vf = psiElement.getContainingFile().getVirtualFile();
-                    }
+                    PsiElement selectedElement = (PsiElement) ProjectView.getInstance(project).getCurrentProjectViewPane().getSelectedElement();
+                    Module module = ModuleUtil.findModuleForPsiElement(selectedElement);
 
-
-                    Module module = ProjectFileIndexImpl.SERVICE.getInstance(project).getModuleForFile(vf);
                     final NotificationHubConfigForm form = new NotificationHubConfigForm(module);
 
                     if(connectionString != null) {
