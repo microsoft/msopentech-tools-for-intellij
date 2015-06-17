@@ -66,6 +66,7 @@ public class RunInEmulatorAction extends AnAction {
 
     public void update(AnActionEvent event) {
         final Module module = event.getData(LangDataKeys.MODULE);
-        event.getPresentation().setEnabled(AzurePlugin.IS_WINDOWS && module != null && AzureModuleType.AZURE_MODULE.equals(module.getOptionValue(Module.ELEMENT_TYPE)));
+        event.getPresentation().setVisible(AzurePlugin.IS_WINDOWS);
+        event.getPresentation().setEnabled(module != null && AzureModuleType.AZURE_MODULE.equals(module.getOptionValue(Module.ELEMENT_TYPE)));
     }
 }
