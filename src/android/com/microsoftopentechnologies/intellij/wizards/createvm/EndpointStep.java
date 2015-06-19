@@ -27,6 +27,7 @@ import com.intellij.ui.wizard.WizardStep;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk.AzureSDKManagerImpl;
+import com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount;
 import com.microsoftopentechnologies.tooling.msservices.model.vm.Endpoint;
 import com.microsoftopentechnologies.tooling.msservices.model.vm.VirtualMachine;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.vm.VMNode;
@@ -239,9 +240,16 @@ public class EndpointStep extends WizardStep<CreateVMWizardModel> {
                         }
                     }
 
+                    StorageAccount storageAccount = model.getStorageAccount();
+                    for (StorageAccount account : AzureSDKManagerImpl.getManager().getStorageAccounts(model.getSubscription().getId().toString())) {
+                        if(account.getName().equals(storageAccount.getName())) {
+                            storageAccount = account;
+                        }
+                    }
+
                     AzureSDKManagerImpl.getManager().createVirtualMachine(virtualMachine,
                             model.getVirtualMachineImage(),
-                            model.getStorageAccount(),
+                            storageAccount,
                             model.getVirtualNetwork() != null ? model.getVirtualNetwork().getName() : "",
                             model.getUserName(),
                             model.getPassword(),

@@ -19,9 +19,12 @@ import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
 import com.intellij.openapi.components.AbstractProjectComponent;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vfs.*;
-import com.microsoftopentechnologies.intellij.helpers.AndroidStudioHelper;
+import com.intellij.openapi.startup.StartupManager;
+import com.microsoftopentechnologies.tooling.msservices.helpers.XmlHelper;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
+import javax.xml.xpath.XPathConstants;
 import java.io.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -32,7 +35,6 @@ public class MSOpenTechToolsProject extends AbstractProjectComponent {
     private static final String TEMPLATE_ZIP_NAME = "templates.zip";
     private static final String CACHED_TEMPLATE_ZIP_NAME = "templates-%s.zip";
 
-    private VirtualFileListener virtualFileListener = null;
 
     protected MSOpenTechToolsProject(Project project) {
         super(project);
@@ -40,13 +42,20 @@ public class MSOpenTechToolsProject extends AbstractProjectComponent {
 
     @Override
     public void projectOpened() {
-        try {
-            // get project root dir and check if this is an Android project
-            if (AndroidStudioHelper.isAndroidGradleModule(myProject.getBaseDir())) {
-                createActivityTemplates();
-            }
+        StartupManager.getInstance(myProject).registerPostStartupActivity(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    // get project root dir and check if this is an Android project
+                    //if (AndroidStudioHelper.isAndroidGradleModule(myProject.getBaseDir())) {
+                    if(isAndroidProject()) {
+                        createActivityTemplates();
+                    }
 
-        } catch (IOException ignored) {}
+                } catch (IOException ignored) {}
+
+            }
+        });
     }
 
 
@@ -133,5 +142,20 @@ public class MSOpenTechToolsProject extends AbstractProjectComponent {
         }
 
         return cachedZip;
+    }
+
+    private boolean isAndroidProject() {
+        try {
+            String projectContent = new String(myProject.getProjectFile().contentsToByteArray());
+
+            Node node = ((NodeList) XmlHelper.getXMLValue(projectContent,
+                    "project/component[@name='ProjectType']/option[@name='id']",
+                    XPathConstants.NODESET)).item(0);
+
+            return (node != null && XmlHelper.getAttributeValue(node, "value").equals("Android"));
+
+        } catch (Throwable e) {
+            return false;
+        }
     }
 }

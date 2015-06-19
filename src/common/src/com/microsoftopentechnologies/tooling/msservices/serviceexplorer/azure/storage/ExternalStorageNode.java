@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 
 public class ExternalStorageNode extends Node {
-    private static final String WAIT_ICON_PATH = "storageaccount.png";
+    private static final String WAIT_ICON_PATH = "externalstorageaccount.png";
     private final ClientStorageAccount storageAccount;
 
     public ExternalStorageNode(Node parent, ClientStorageAccount sm) {
