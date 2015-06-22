@@ -21,10 +21,10 @@ import com.microsoftopentechnologies.tooling.msservices.helpers.ExternalStorageH
 import com.microsoftopentechnologies.tooling.msservices.helpers.Name;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk.StorageClientSDKManagerImpl;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.ClientStorageAccount;
-import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.Node;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.storage.ExternalStorageNode;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.storage.StorageModule;
 
 import java.awt.*;
 
@@ -42,7 +42,7 @@ public class ModifyExternalStorageAccountAction extends NodeActionListener {
         form.setTitle("Modify External Storage Account");
 
         for (ClientStorageAccount account : ExternalStorageHelper.getList()) {
-            if(account.getName().equals(storageNode.getStorageAccount().getName())) {
+            if(account.getName().equals(storageNode.getClientStorageAccount().getName())) {
                 form.setStorageAccount(account);
             }
         }
@@ -53,12 +53,12 @@ public class ModifyExternalStorageAccountAction extends NodeActionListener {
             @Override
             public void run() {
                 form.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                ClientStorageAccount oldStorageAccount = storageNode.getStorageAccount();
+                ClientStorageAccount oldStorageAccount = storageNode.getClientStorageAccount();
                 ClientStorageAccount storageAccount = StorageClientSDKManagerImpl.getManager().getStorageAccount(
                         form.getStorageAccount().getConnectionString());
                 ClientStorageAccount fullStorageAccount = form.getFullStorageAccount();
 
-                Node parent = storageNode.getParent();
+                StorageModule parent = (StorageModule)storageNode.getParent();
                 parent.removeDirectChildNode(storageNode);
                 parent.addChildNode(new ExternalStorageNode(parent, fullStorageAccount));
                 form.setCursor(Cursor.getDefaultCursor());

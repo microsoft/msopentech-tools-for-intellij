@@ -22,6 +22,7 @@ import com.microsoftopentechnologies.tooling.msservices.model.Subscription;
 import com.microsoftopentechnologies.tooling.msservices.model.ms.*;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount;
 import com.microsoftopentechnologies.tooling.msservices.model.vm.*;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.EventHelper.EventWaitHandle;
 
 import java.util.List;
 
@@ -55,6 +56,13 @@ public interface AzureManager {
             throws AzureCmdException;
 
     void setSelectedSubscriptions(@NotNull List<String> selectedList)
+            throws AzureCmdException;
+
+    @NotNull
+    EventWaitHandle registerSubscriptionsChanged()
+            throws AzureCmdException;
+
+    void unregisterSubscriptionsChanged(@NotNull EventWaitHandle handle)
             throws AzureCmdException;
 
     @NotNull

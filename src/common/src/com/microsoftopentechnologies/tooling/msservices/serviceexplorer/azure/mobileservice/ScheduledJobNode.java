@@ -27,7 +27,7 @@ public class ScheduledJobNode extends ScriptNodeBase {
     protected Job job;
 
     public ScheduledJobNode(Node parent, Job job) {
-        super(job.getName(), job.getName(), parent, ICON_PATH, false);
+        super(job.getName(), job.getName(), parent, ICON_PATH);
         this.job = job;
     }
 

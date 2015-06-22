@@ -35,7 +35,7 @@ public class UpdateScriptAction extends NodeActionListener {
     @Override
     public void actionPerformed(NodeActionEvent e) {
         // get the parent MobileServiceNode node
-        MobileServiceNode mobileServiceNode = (MobileServiceNode) tableScriptNode.findParentByType(MobileServiceNode.class);
+        MobileServiceNode mobileServiceNode = tableScriptNode.findParentByType(MobileServiceNode.class);
         final MobileService mobileService = mobileServiceNode.getMobileService();
 
         ApplicationManager.getApplication().runWriteAction(new Runnable() {

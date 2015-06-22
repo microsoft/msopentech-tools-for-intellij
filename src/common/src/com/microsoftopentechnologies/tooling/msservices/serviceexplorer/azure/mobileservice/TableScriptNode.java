@@ -27,7 +27,7 @@ public class TableScriptNode extends ScriptNodeBase {
     protected Script script;
 
     public TableScriptNode(Node parent, Script script) {
-        super(script.getName(), script.toString(), parent, ICON_PATH, false);
+        super(script.getName(), script.toString(), parent, ICON_PATH);
         this.script = script;
     }
 

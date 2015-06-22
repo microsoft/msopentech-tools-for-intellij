@@ -71,11 +71,7 @@ public class CreateStorageAccountAction extends NodeActionListener {
         createStorageAccountForm.setOnCreate(new Runnable() {
             @Override
             public void run() {
-                try {
-                    storageModule.refreshItems();
-                } catch (AzureCmdException ex) {
-                    DefaultLoader.getUIHelper().showException("Error refreshing storage accounts", ex, "Service Explorer", false, true);
-                }
+                storageModule.load();
             }
         });
         createStorageAccountForm.setVisible(true);

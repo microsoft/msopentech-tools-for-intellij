@@ -15,25 +15,29 @@
  */
 package com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.vm;
 
+import com.microsoftopentechnologies.tooling.msservices.helpers.NotNull;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureManagerImpl;
 import com.microsoftopentechnologies.tooling.msservices.model.Subscription;
 import com.microsoftopentechnologies.tooling.msservices.model.vm.VirtualMachine;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.EventHelper.EventStateHandle;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.Node;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.AzureRefreshableNode;
 
 import java.util.List;
 
-public class VMServiceModule extends Node {
+public class VMServiceModule extends AzureRefreshableNode {
     private static final String VM_SERVICE_MODULE_ID = VMServiceModule.class.getName();
     private static final String ICON_PATH = "virtualmachines.png";
     private static final String BASE_MODULE_NAME = "Virtual Machines";
 
     public VMServiceModule(Node parent) {
-        super(VM_SERVICE_MODULE_ID, BASE_MODULE_NAME, parent, ICON_PATH, true);
+        super(VM_SERVICE_MODULE_ID, BASE_MODULE_NAME, parent, ICON_PATH);
     }
 
     @Override
-    protected void refreshItems() throws AzureCmdException {
+    protected void refresh(@NotNull EventStateHandle eventState)
+            throws AzureCmdException {
         // remove all child nodes
         removeAllChildNodes();
 
@@ -42,17 +46,14 @@ public class VMServiceModule extends Node {
 
         for (Subscription subscription : subscriptionList) {
             List<VirtualMachine> virtualMachines = AzureManagerImpl.getManager().getVirtualMachines(subscription.getId());
+
+            if (eventState.isEventTriggered()) {
+                return;
+            }
+
             for (VirtualMachine vm : virtualMachines) {
                 addChildNode(new VMNode(this, vm));
             }
         }
     }
-
-//    @Override
-//    protected Map<String, Class<? extends NodeActionListener>> initActions() {
-//
-//        addAction("Create VM", new CreateVMAction());
-//        return null;
-//    }
-
 }

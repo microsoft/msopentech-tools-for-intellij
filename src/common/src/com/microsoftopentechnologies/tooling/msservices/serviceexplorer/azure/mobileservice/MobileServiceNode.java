@@ -27,19 +27,48 @@ import com.microsoftopentechnologies.tooling.msservices.model.ms.CustomAPI;
 import com.microsoftopentechnologies.tooling.msservices.model.ms.Job;
 import com.microsoftopentechnologies.tooling.msservices.model.ms.MobileService;
 import com.microsoftopentechnologies.tooling.msservices.model.ms.Table;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.EventHelper.EventStateHandle;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.Node;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.NodeActionListener;
-import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.NodeActionListenerAsync;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.AzureRefreshableNode;
 
-import javax.swing.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 
-public class MobileServiceNode extends Node {
+public class MobileServiceNode extends AzureRefreshableNode {
+    public class DeleteMobileServiceAction extends AzureNodeActionPromptListener {
+        public DeleteMobileServiceAction() {
+            super(MobileServiceNode.this,
+                    String.format("This operation will delete mobile service %s.\nAre you sure you want to continue?", mobileService.getName()),
+                    "Deleting Mobile Service");
+        }
+
+        @Override
+        protected void azureNodeAction(NodeActionEvent e, @NotNull EventStateHandle stateHandle)
+                throws AzureCmdException {
+            MobileServiceNode.this.setLoading(true);
+
+            AzureManagerImpl.getManager().deleteMobileService(mobileService.getSubcriptionId(), mobileService.getName());
+
+            DefaultLoader.getIdeHelper().invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    // instruct parent node to remove this node
+                    getParent().removeDirectChildNode(MobileServiceNode.this);
+                }
+            });
+        }
+
+        @Override
+        protected void onSubscriptionsChanged(NodeActionEvent e)
+                throws AzureCmdException {
+        }
+    }
+
     private static final String ICON_PATH = "service.png";
     public static final String TABLES = "Tables";
     public static final String CUSTOM_APIS = "Custom APIs";
@@ -53,13 +82,14 @@ public class MobileServiceNode extends Node {
     protected Node jobsNode;        // the parent node for all scheduled job nodes
 
     public MobileServiceNode(Node parent, MobileService mobileService) {
-        super(mobileService.getName(), mobileService.getName(), parent, ICON_PATH, true, true);
+        super(mobileService.getName(), mobileService.getName(), parent, ICON_PATH, true);
+
         this.mobileService = mobileService;
         loadActions();
     }
 
     @Override
-    protected void refreshItems() throws AzureCmdException {
+    protected void refresh(@NotNull EventStateHandle eventState) throws AzureCmdException {
         if (AzureRestAPIHelper.existsMobileService(mobileService.getName())) {
             try {
                 AzureManager apiManager = AzureManagerImpl.getManager();
@@ -68,8 +98,14 @@ public class MobileServiceNode extends Node {
 
                 if (isNodeRuntime()) {
                     // load tables
+                    final List<Table> tableList = apiManager.getTableList(subscriptionId, serviceName);
+
+                    if (eventState.isEventTriggered()) {
+                        return;
+                    }
+
                     tablesNode = loadServiceNode(
-                            apiManager.getTableList(subscriptionId, serviceName),
+                            tableList,
                             "_tables",
                             TABLES,
                             tablesNode,
@@ -77,8 +113,14 @@ public class MobileServiceNode extends Node {
                             Table.class);
 
                     // load custom APIs
+                    final List<CustomAPI> apiList = apiManager.getAPIList(subscriptionId, serviceName);
+
+                    if (eventState.isEventTriggered()) {
+                        return;
+                    }
+
                     customAPIsNode = loadServiceNode(
-                            apiManager.getAPIList(subscriptionId, serviceName),
+                            apiList,
                             "_apis",
                             CUSTOM_APIS,
                             customAPIsNode,
@@ -86,8 +128,14 @@ public class MobileServiceNode extends Node {
                             CustomAPI.class);
 
                     // load scheduled jobs
+                    final List<Job> jobList = apiManager.listJobs(subscriptionId, serviceName);
+
+                    if (eventState.isEventTriggered()) {
+                        return;
+                    }
+
                     jobsNode = loadServiceNode(
-                            apiManager.listJobs(subscriptionId, serviceName),
+                            jobList,
                             "_jobs",
                             SCHEDULED_JOBS,
                             jobsNode,
@@ -130,7 +178,7 @@ public class MobileServiceNode extends Node {
         // have been added then the service explorer tool window will not be
         // notified of those new nodes
         if (parentNode == null) {
-            parentNode = new Node(mobileService.getName() + idSuffix, displayName, this, null, false);
+            parentNode = new Node(mobileService.getName() + idSuffix, displayName, this, null);
             addChildNode(parentNode);
         } else {
             // clear the parent node since we are re-initializing it
@@ -202,53 +250,4 @@ public class MobileServiceNode extends Node {
     public Node getJobsNode() {
         return jobsNode;
     }
-
-    public class DeleteMobileServiceAction extends NodeActionListenerAsync {
-        int optionDialog;
-
-        public DeleteMobileServiceAction() {
-            super("Deleting Mobile Service");
-        }
-
-        @NotNull
-        @Override
-        protected Callable<Boolean> beforeAsyncActionPerfomed() {
-
-            return new Callable<Boolean>() {
-                @Override
-                public Boolean call() throws Exception {
-                    optionDialog = JOptionPane.showOptionDialog(null,
-                            "This operation will delete mobile service " + mobileService.getName() +
-                                    ".\nAre you sure you want to continue?",
-                            "Service explorer",
-                            JOptionPane.YES_NO_OPTION,
-                            JOptionPane.QUESTION_MESSAGE,
-                            null,
-                            new String[]{"Yes", "No"},
-                            null);
-
-                    return (optionDialog == JOptionPane.YES_OPTION);
-                }
-            };
-        }
-
-        @Override
-        protected void runInBackground(NodeActionEvent e) throws AzureCmdException {
-
-            MobileServiceNode.this.setLoading(true);
-
-            AzureManagerImpl.getManager().deleteMobileService(mobileService.getSubcriptionId(), mobileService.getName());
-
-            DefaultLoader.getIdeHelper().invokeLater(new Runnable() {
-                @Override
-                public void run() {
-
-                    // instruct parent node to remove this node
-                    getParent().removeDirectChildNode(MobileServiceNode.this);
-                }
-            });
-
-        }
-    }
-
 }

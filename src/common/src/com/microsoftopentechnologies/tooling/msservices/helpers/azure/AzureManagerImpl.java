@@ -44,6 +44,7 @@ import com.microsoftopentechnologies.tooling.msservices.model.Subscription;
 import com.microsoftopentechnologies.tooling.msservices.model.ms.*;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount;
 import com.microsoftopentechnologies.tooling.msservices.model.vm.*;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.EventHelper.EventWaitHandle;
 import org.apache.commons.lang.NotImplementedException;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -64,6 +65,7 @@ import java.security.cert.CertificateException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -77,6 +79,27 @@ public class AzureManagerImpl implements AzureManager {
         @NotNull
         V getAADClient(@NotNull String subscriptionId, @NotNull String accessToken)
                 throws Throwable;
+    }
+
+    private static class EventWaitHandleImpl implements EventWaitHandle {
+        Semaphore eventSignal = new Semaphore(0, true);
+
+        @Override
+        public void waitEvent(@NotNull Runnable callback)
+                throws AzureCmdException {
+            try {
+                eventSignal.acquire();
+                callback.run();
+            } catch (InterruptedException e) {
+                throw new AzureCmdException("Unable to aquire permit", e);
+            }
+        }
+
+        private synchronized void signalEvent() {
+            if (eventSignal.availablePermits() == 0) {
+                eventSignal.release();
+            }
+        }
     }
 
     private static AzureManager instance;
@@ -97,6 +120,9 @@ public class AzureManagerImpl implements AzureManager {
     private Map<UserInfo, ReentrantReadWriteLock> lockByUser;
     private Map<UserInfo, String> accessTokenByUser;
 
+    private ReentrantReadWriteLock subscriptionsChangedLock = new ReentrantReadWriteLock(true);
+    private Set<EventWaitHandleImpl> subscriptionsChangedHandles;
+
     private AzureManagerImpl() {
         authDataLock.writeLock().lock();
 
@@ -115,6 +141,7 @@ public class AzureManagerImpl implements AzureManager {
 
             accessTokenByUser = new HashMap<UserInfo, String>();
             lockByUser = new HashMap<UserInfo, ReentrantReadWriteLock>();
+            subscriptionsChangedHandles = new HashSet<EventWaitHandleImpl>();
         } finally {
             authDataLock.writeLock().unlock();
         }
@@ -192,9 +219,9 @@ public class AzureManagerImpl implements AzureManager {
     }
 
     @Override
-    public void importPublishSettingsFile(@NotNull String pubblishSettingsFilePath)
+    public void importPublishSettingsFile(@NotNull String publishSettingsFilePath)
             throws AzureCmdException {
-        List<Subscription> subscriptions = importSubscription(pubblishSettingsFilePath);
+        List<Subscription> subscriptions = importSubscription(publishSettingsFilePath);
 
         for (Subscription subscription : subscriptions) {
             try {
@@ -228,7 +255,6 @@ public class AzureManagerImpl implements AzureManager {
         try {
             sslSocketFactoryBySubscriptionId.clear();
             removeUnusedSubscriptions();
-
             storeSubscriptions();
         } finally {
             authDataLock.writeLock().unlock();
@@ -282,47 +308,52 @@ public class AzureManagerImpl implements AzureManager {
 
         try {
             for (String subscriptionId : subscriptions.keySet()) {
-                if (selectedList.contains(subscriptionId)) {
-                    subscriptions.get(subscriptionId).setSelected(true);
-                } else {
-                    subscriptions.get(subscriptionId).setSelected(false);
-                }
+                Subscription subscription = subscriptions.get(subscriptionId);
+                subscription.setSelected(selectedList.contains(subscriptionId));
             }
 
             storeSubscriptions();
         } finally {
             authDataLock.writeLock().unlock();
         }
+
+        notifySubscriptionsChanged();
     }
 
-/*
     @NotNull
     @Override
-    public List<String> getLocations(@NotNull String subscriptionId)
+    public EventWaitHandle registerSubscriptionsChanged()
             throws AzureCmdException {
+        subscriptionsChangedLock.writeLock().lock();
+
         try {
-            String path = String.format("/%s/services/mobileservices/regions", subscriptionId);
-            String json = executeGetRequest(subscriptionId, path);
+            EventWaitHandleImpl handle = new EventWaitHandleImpl();
 
-            Type type = new TypeToken<ArrayList<RegionData>>() {
-            }.getType();
-            List<RegionData> tempRes = new Gson().fromJson(json, type);
-            List<String> res = new ArrayList<String>();
+            subscriptionsChangedHandles.add(handle);
 
-            for (RegionData item : tempRes) {
-                res.add(item.getRegion());
-            }
-
-            return res;
-        } catch (Throwable t) {
-            if (t instanceof AzureCmdException) {
-                throw (AzureCmdException) t;
-            }
-
-            throw new AzureCmdException("Error getting region list", t);
+            return handle;
+        } finally {
+            subscriptionsChangedLock.writeLock().unlock();
         }
     }
-*/
+
+    @Override
+    public void unregisterSubscriptionsChanged(@NotNull EventWaitHandle handle)
+            throws AzureCmdException {
+        if (!(handle instanceof EventWaitHandleImpl)) {
+            throw new AzureCmdException("Invalid handle instance");
+        }
+
+        subscriptionsChangedLock.writeLock().lock();
+
+        try {
+            subscriptionsChangedHandles.remove(handle);
+        } finally {
+            subscriptionsChangedLock.writeLock().unlock();
+        }
+
+        ((EventWaitHandleImpl) handle).signalEvent();
+    }
 
     @NotNull
     @Override
@@ -1431,6 +1462,18 @@ public class AzureManagerImpl implements AzureManager {
             }
         } finally {
             authDataLock.readLock().unlock();
+        }
+    }
+
+    private void notifySubscriptionsChanged() {
+        subscriptionsChangedLock.readLock().lock();
+
+        try {
+            for (EventWaitHandleImpl handle : subscriptionsChangedHandles) {
+                handle.signalEvent();
+            }
+        } finally {
+            subscriptionsChangedLock.readLock().unlock();
         }
     }
 

@@ -13,18 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.microsoftopentechnologies.tooling.msservices.serviceexplorer;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterators;
-import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.SettableFuture;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.tooling.msservices.helpers.Name;
-import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.tooling.msservices.helpers.collections.ObservableList;
 
 import java.beans.PropertyChangeListener;
@@ -54,22 +48,19 @@ public class Node {
 
     protected PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
-    private boolean hasRefreshAction;
-
     public Node(String id, String name) {
-        this(id, name, null, null, false, false);
+        this(id, name, null, null, false);
     }
 
-    public Node(String id, String name, Node parent, String iconPath, boolean hasRefreshAction) {
-        this(id, name, parent, iconPath, hasRefreshAction, false);
+    public Node(String id, String name, Node parent, String iconPath) {
+        this(id, name, parent, iconPath, false);
     }
 
-    public Node(String id, String name, Node parent, String iconPath, boolean hasRefreshAction, boolean delayActionLoading) {
+    public Node(String id, String name, Node parent, String iconPath, boolean delayActionLoading) {
         this.id = id;
         this.name = name;
         this.parent = parent;
         this.iconPath = iconPath;
-        this.hasRefreshAction = hasRefreshAction;
 
         if (!delayActionLoading) {
             loadActions();
@@ -115,11 +106,11 @@ public class Node {
 
     // Walk up the tree till we find a parent node who's type
     // is equal to "clazz".
-    public Node findParentByType(Class clazz) {
+    public <T extends Node> T findParentByType(Class<T> clazz) {
         if (parent == null)
             return null;
         if (parent.getClass().equals(clazz))
-            return parent;
+            return (T) parent;
         return parent.findParentByType(clazz);
     }
 
@@ -192,25 +183,6 @@ public class Node {
             }
         });
 
-        // add the refresh node action
-        if (hasRefreshAction) {
-            addAction("Refresh", new NodeActionListener() {
-                @Override
-                public void actionPerformed(NodeActionEvent e) {
-                    Futures.addCallback(load(), new FutureCallback<List<Node>>() {
-                        @Override
-                        public void onSuccess(List<Node> nodes) {
-                        }
-
-                        @Override
-                        public void onFailure(Throwable throwable) {
-                            DefaultLoader.getUIHelper().showException("An error occurred while refreshing the service.", throwable);
-                        }
-                    });
-                }
-            });
-        }
-
         // add the other actions
         Map<String, Class<? extends NodeActionListener>> actions = initActions();
 
@@ -248,7 +220,7 @@ public class Node {
     // is guaranteed to be called only once per node
     // NOTE: The Class<?> objects returned by this method MUST be
     // public inner classes of the sub-class. We assume that they are.
-    protected Map<String, Class<? extends NodeActionListener>> initActions(){
+    protected Map<String, Class<? extends NodeActionListener>> initActions() {
         List<Class<? extends NodeActionListener>> actions = DefaultLoader.getActions(this.getClass());
         if (actions != null) {
             try {
@@ -336,33 +308,6 @@ public class Node {
     @Override
     public String toString() {
         return getName();
-    }
-
-    // Sub-classes are expected to override this method if they wish to
-    // refresh items synchronously. The default implementation does nothing.
-    protected void refreshItems() throws AzureCmdException {
-    }
-
-    // Sub-classes are expected to override this method if they wish
-    // to refresh items asynchronously. The default implementation simply
-    // delegates to "refreshItems" *synchronously* and completes the Future
-    // with the result of calling getChildNodes.
-    public void refreshItems(SettableFuture<List<Node>> future) throws AzureCmdException {
-        setLoading(true);
-        try {
-            refreshItems();
-            future.set(getChildNodes());
-        } finally {
-            setLoading(false);
-        }
-    }
-
-    public ListenableFuture<List<Node>> load() {
-        final SettableFuture<List<Node>> future = SettableFuture.create();
-
-        DefaultLoader.getIdeHelper().invokeBackgroundLoader(getProject(), this, future, "Loading " + getName() + "...");
-
-        return future;
     }
 
     public boolean isLoading() {

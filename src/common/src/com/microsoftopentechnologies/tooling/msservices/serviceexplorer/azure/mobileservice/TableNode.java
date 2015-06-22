@@ -17,18 +17,21 @@ package com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.m
 
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
+import com.microsoftopentechnologies.tooling.msservices.helpers.NotNull;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureManagerImpl;
 import com.microsoftopentechnologies.tooling.msservices.model.ms.Column;
 import com.microsoftopentechnologies.tooling.msservices.model.ms.MobileService;
 import com.microsoftopentechnologies.tooling.msservices.model.ms.Script;
 import com.microsoftopentechnologies.tooling.msservices.model.ms.Table;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.EventHelper.EventStateHandle;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.Node;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.NodeActionEvent;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.AzureRefreshableNode;
 
 import java.util.List;
 
-public class TableNode extends Node {
+public class TableNode extends AzureRefreshableNode {
     public static final String ICON_PATH = "table.png";
     public static final String SCRIPTS = "Scripts";
     public static final String COLUMNS = "Columns";
@@ -39,14 +42,15 @@ public class TableNode extends Node {
     protected Node columnsNode; // parent node for all column nodes
 
     public TableNode(Node parent, Table table) {
-        super(table.getName(), table.getName(), parent, ICON_PATH, false);
+        super(table.getName(), table.getName(), parent, ICON_PATH);
         this.table = table;
     }
 
     @Override
-    protected void refreshItems() throws AzureCmdException {
+    protected void refresh(@NotNull EventStateHandle eventState)
+            throws AzureCmdException {
         // get the parent MobileServiceNode node
-        MobileServiceNode mobileServiceNode = (MobileServiceNode) findParentByType(MobileServiceNode.class);
+        MobileServiceNode mobileServiceNode = findParentByType(MobileServiceNode.class);
         MobileService mobileService = mobileServiceNode.getMobileService();
 
         // fetch table details
@@ -54,6 +58,10 @@ public class TableNode extends Node {
                 mobileService.getSubcriptionId(),
                 mobileService.getName(),
                 table.getName());
+
+        if (eventState.isEventTriggered()) {
+            return;
+        }
 
         // load scripts and columns nodes
         scriptsNode = loadScriptNode(tableInfo);
@@ -68,7 +76,7 @@ public class TableNode extends Node {
         // have been added then the service explorer tool window will not be
         // notified of those new nodes
         if (scriptsNode == null) {
-            scriptsNode = new Node(table.getName() + "_script", SCRIPTS, this, null, false);
+            scriptsNode = new Node(table.getName() + "_script", SCRIPTS, this, null);
             addChildNode(scriptsNode);
         } else {
             scriptsNode.removeAllChildNodes();
@@ -100,7 +108,7 @@ public class TableNode extends Node {
         // have been added then the service explorer tool window will not be
         // notified of those new nodes
         if (columnsNode == null) {
-            columnsNode = new Node(table.getName() + "_column", COLUMNS, this, null, false);
+            columnsNode = new Node(table.getName() + "_column", COLUMNS, this, null);
             addChildNode(columnsNode);
         } else {
             columnsNode.removeAllChildNodes();

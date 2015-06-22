@@ -15,28 +15,38 @@
  */
 package com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.storage;
 
+import com.microsoftopentechnologies.tooling.msservices.helpers.NotNull;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk.StorageClientSDKManagerImpl;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.BlobContainer;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.ClientStorageAccount;
-import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.Node;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.EventHelper.EventStateHandle;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.AzureRefreshableNode;
 
-public class BlobModule extends Node {
+import java.util.List;
+
+public class BlobModule extends AzureRefreshableNode {
     private static final String BLOBS = "Blobs";
-    Node parent;
     final ClientStorageAccount storageAccount;
 
-    public BlobModule(Node parent, ClientStorageAccount storageAccount) {
-        super(BLOBS + storageAccount.getName(), BLOBS, parent, null, true);
+    public BlobModule(ClientStorageNode parent, ClientStorageAccount storageAccount) {
+        super(BLOBS + storageAccount.getName(), BLOBS, parent, null);
         this.parent = parent;
         this.storageAccount = storageAccount;
     }
 
     @Override
-    protected void refreshItems() throws AzureCmdException {
+    protected void refresh(@NotNull EventStateHandle eventState)
+            throws AzureCmdException {
         removeAllChildNodes();
 
-        for (BlobContainer blobContainer : StorageClientSDKManagerImpl.getManager().getBlobContainers(storageAccount)) {
+        final List<BlobContainer> blobContainers = StorageClientSDKManagerImpl.getManager().getBlobContainers(storageAccount);
+
+        if (eventState.isEventTriggered()) {
+            return;
+        }
+
+        for (BlobContainer blobContainer : blobContainers) {
             addChildNode(new ContainerNode(this, storageAccount, blobContainer));
         }
     }

@@ -19,14 +19,16 @@ import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureManagerImpl;
 import com.microsoftopentechnologies.tooling.msservices.model.Subscription;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.EventHelper.EventWaitHandle;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.Node;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.RefreshableNode;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.mobileservice.MobileServiceModule;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.storage.StorageModule;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.vm.VMServiceModule;
 
 import java.util.List;
 
-public class AzureServiceModule extends Node {
+public class AzureServiceModule extends RefreshableNode {
     private static final String AZURE_SERVICE_MODULE_ID = AzureServiceModule.class.getName();
     private static final String ICON_PATH = "azure.png";
     private static final String BASE_MODULE_NAME = "Azure";
@@ -35,6 +37,9 @@ public class AzureServiceModule extends Node {
     private MobileServiceModule mobileServiceModule = new MobileServiceModule(this);
     private VMServiceModule vmServiceModule = new VMServiceModule(this);
     private StorageModule storageServiceModule = new StorageModule(this);
+    private EventWaitHandle subscriptionsChanged;
+    private boolean registeredSubscriptionsChanged;
+    private final Object subscriptionsChangedSync = new Object();
 
     public AzureServiceModule(Object project) {
         this(null, ICON_PATH, null);
@@ -42,7 +47,7 @@ public class AzureServiceModule extends Node {
     }
 
     public AzureServiceModule(Node parent, String iconPath, Object data) {
-        super(AZURE_SERVICE_MODULE_ID, BASE_MODULE_NAME, parent, iconPath, true);
+        super(AZURE_SERVICE_MODULE_ID, BASE_MODULE_NAME, parent, iconPath);
     }
 
     @Override
@@ -71,6 +76,7 @@ public class AzureServiceModule extends Node {
             if (!isDirectChild(mobileServiceModule)) {
                 addChildNode(mobileServiceModule);
             }
+
             mobileServiceModule.load();
         }
 
@@ -78,6 +84,7 @@ public class AzureServiceModule extends Node {
             if (!isDirectChild(vmServiceModule)) {
                 addChildNode(vmServiceModule);
             }
+
             vmServiceModule.load();
         }
 
@@ -86,6 +93,7 @@ public class AzureServiceModule extends Node {
             if (!isDirectChild(storageServiceModule)) {
                 addChildNode(storageServiceModule);
             }
+
             storageServiceModule.load();
         }
     }
@@ -93,5 +101,54 @@ public class AzureServiceModule extends Node {
     @Override
     public Object getProject() {
         return project;
+    }
+
+    public void registerSubscriptionsChanged()
+            throws AzureCmdException {
+        synchronized (subscriptionsChangedSync) {
+            if (subscriptionsChanged == null) {
+                subscriptionsChanged = AzureManagerImpl.getManager().registerSubscriptionsChanged();
+            }
+
+            registeredSubscriptionsChanged = true;
+
+            DefaultLoader.getIdeHelper().executeOnPooledThread(new Runnable() {
+                @Override
+                public void run() {
+                    while (registeredSubscriptionsChanged) {
+                        try {
+                            subscriptionsChanged.waitEvent(new Runnable() {
+                                @Override
+                                public void run() {
+                                    if (registeredSubscriptionsChanged) {
+                                        removeAllChildNodes();
+
+                                        mobileServiceModule = new MobileServiceModule(AzureServiceModule.this);
+                                        vmServiceModule = new VMServiceModule(AzureServiceModule.this);
+                                        storageServiceModule = new StorageModule(AzureServiceModule.this);
+
+                                        load();
+                                    }
+                                }
+                            });
+                        } catch (AzureCmdException ignored) {
+                            break;
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    public void unregisterSubscriptionsChanged()
+            throws AzureCmdException {
+        synchronized (subscriptionsChangedSync) {
+            registeredSubscriptionsChanged = false;
+
+            if (subscriptionsChanged != null) {
+                AzureManagerImpl.getManager().unregisterSubscriptionsChanged(subscriptionsChanged);
+                subscriptionsChanged = null;
+            }
+        }
     }
 }

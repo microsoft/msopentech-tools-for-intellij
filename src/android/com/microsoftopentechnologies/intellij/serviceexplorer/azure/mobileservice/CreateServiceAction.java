@@ -68,11 +68,7 @@ public class CreateServiceAction extends NodeActionListener {
                 ApplicationManager.getApplication().invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        try {
-                            mobileServiceModule.refreshItems();
-                        } catch (AzureCmdException e1) {
-                            DefaultLoader.getUIHelper().showException("An error occurred while creating the mobile service.", e1);
-                        }
+                        mobileServiceModule.load();
                     }
                 });
             }

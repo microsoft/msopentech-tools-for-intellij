@@ -22,16 +22,149 @@ import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdEx
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureManagerImpl;
 import com.microsoftopentechnologies.tooling.msservices.model.vm.Endpoint;
 import com.microsoftopentechnologies.tooling.msservices.model.vm.VirtualMachine;
-import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.*;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.EventHelper.EventStateHandle;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.Node;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.NodeAction;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.NodeActionEvent;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.NodeActionListener;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.AzureNodeActionListener;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.AzureRefreshableNode;
 
 import javax.swing.*;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
-public class VMNode extends Node {
+public class VMNode extends AzureRefreshableNode {
+    private static abstract class VMNodeActionPromptListener extends AzureNodeActionPromptListener {
+        private VMNode vmNode;
+
+        public VMNodeActionPromptListener(@NotNull VMNode vmNode,
+                                          @NotNull String promptMessageFormat,
+                                          @NotNull String progressMessage) {
+            super(vmNode, String.format(promptMessageFormat, vmNode.virtualMachine.getName()), progressMessage);
+            this.vmNode = vmNode;
+        }
+
+        @Override
+        protected void onSubscriptionsChanged(NodeActionEvent e)
+                throws AzureCmdException {
+        }
+    }
+
+    public class DeleteVMAction extends VMNodeActionPromptListener {
+        public DeleteVMAction() {
+            super(VMNode.this,
+                    "This operation will delete virtual machine %s. The associated disks will not be deleted " +
+                            "from your storage account. Are you sure you want to continue?",
+                    "Deleting VM");
+        }
+
+        @Override
+        protected void azureNodeAction(NodeActionEvent e, @NotNull EventStateHandle stateHandle)
+                throws AzureCmdException {
+            AzureManagerImpl.getManager().deleteVirtualMachine(virtualMachine, false);
+            DefaultLoader.getIdeHelper().invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    // instruct parent node to remove this node
+                    getParent().removeDirectChildNode(VMNode.this);
+                }
+            });
+        }
+    }
+
+    public class DownloadRDPAction extends AzureNodeActionListener {
+        private JFileChooser saveFile;
+
+        public DownloadRDPAction() {
+            super(VMNode.this, "Downloading RDP File");
+        }
+
+        @NotNull
+        @Override
+        protected Callable<Boolean> beforeAsyncActionPerfomed() {
+            return new Callable<Boolean>() {
+                @Override
+                public Boolean call() throws Exception {
+                    saveFile = new JFileChooser();
+                    saveFile.setDialogTitle("Save RDP file");
+
+                    return (saveFile.showSaveDialog(null) == JFileChooser.APPROVE_OPTION);
+                }
+            };
+        }
+
+        @Override
+        protected void azureNodeAction(NodeActionEvent e, @NotNull EventStateHandle stateHandle)
+                throws AzureCmdException {
+            try {
+                File rdpFile = saveFile.getSelectedFile();
+
+                if (rdpFile.exists() || rdpFile.createNewFile()) {
+                    FileOutputStream fileOutputStream = new FileOutputStream(rdpFile);
+                    fileOutputStream.write(AzureManagerImpl.getManager().downloadRDP(virtualMachine));
+                    fileOutputStream.flush();
+                    fileOutputStream.close();
+                }
+            } catch (Exception ex) {
+                DefaultLoader.getUIHelper().showException("Error downloading RDP file:", ex);
+            }
+        }
+
+        @Override
+        protected void onSubscriptionsChanged(NodeActionEvent e)
+                throws AzureCmdException {
+        }
+    }
+
+    public class ShutdownVMAction extends VMNodeActionPromptListener {
+        public ShutdownVMAction() {
+            super(VMNode.this,
+                    "This operation will result in losing the VIP that was assigned to this virtual machine. " +
+                            "Are you sure that you want to shut down virtual machine %s?",
+                    "Shutting down VM");
+        }
+
+        @Override
+        protected void azureNodeAction(NodeActionEvent e, @NotNull EventStateHandle stateHandle)
+                throws AzureCmdException {
+            AzureManagerImpl.getManager().shutdownVirtualMachine(virtualMachine, true);
+        }
+    }
+
+    public class StartVMAction extends VMNodeActionPromptListener {
+        public StartVMAction() {
+            super(VMNode.this,
+                    "Are you sure you want to start the virtual machine %s?",
+                    "Starting VM");
+        }
+
+        @Override
+        protected void azureNodeAction(NodeActionEvent e, @NotNull EventStateHandle stateHandle)
+                throws AzureCmdException {
+            AzureManagerImpl.getManager().startVirtualMachine(virtualMachine);
+        }
+    }
+
+    public class RestartVMAction extends VMNodeActionPromptListener {
+        public RestartVMAction() {
+            super(VMNode.this,
+                    "Are you sure you want to restart the virtual machine %s?",
+                    "Restarting VM");
+        }
+
+        @Override
+        protected void azureNodeAction(NodeActionEvent e, @NotNull EventStateHandle stateHandle)
+                throws AzureCmdException {
+            AzureManagerImpl.getManager().restartVirtualMachine(virtualMachine);
+        }
+    }
+
     private static final String WAIT_ICON_PATH = "virtualmachinewait.png";
     private static final String STOP_ICON_PATH = "virtualmachinestop.png";
     private static final String RUN_ICON_PATH = "virtualmachinerun.png";
@@ -44,9 +177,12 @@ public class VMNode extends Node {
 
     protected VirtualMachine virtualMachine;
 
-    public VMNode(Node parent, VirtualMachine virtualMachine) throws AzureCmdException {
+    public VMNode(Node parent, VirtualMachine virtualMachine)
+            throws AzureCmdException {
         super(virtualMachine.getName(), virtualMachine.getName(), parent, WAIT_ICON_PATH, true);
         this.virtualMachine = virtualMachine;
+
+        loadActions();
 
         // update vm icon based on vm status
         refreshItemsInternal();
@@ -65,14 +201,18 @@ public class VMNode extends Node {
     }
 
     @Override
-    protected void refreshItems() throws AzureCmdException {
-        // update vm name and status icon
+    protected void refresh(@NotNull EventStateHandle eventState)
+            throws AzureCmdException {
         virtualMachine = AzureManagerImpl.getManager().refreshVirtualMachineInformation(virtualMachine);
+
+        if (eventState.isEventTriggered()) {
+            return;
+        }
 
         refreshItemsInternal();
     }
 
-    private void refreshItemsInternal() throws AzureCmdException {
+    private void refreshItemsInternal() {
         // update vm name and status icon
         setName(virtualMachine.getName());
         setIconPath(getVMIconPath());
@@ -83,18 +223,21 @@ public class VMNode extends Node {
         for (Endpoint endpoint : virtualMachine.getEndpoints()) {
             VMEndpointNode vmEndPoint = new VMEndpointNode(this, endpoint);
             addChildNode(vmEndPoint);
-            vmEndPoint.refreshItems();
         }
     }
 
     @Override
     protected Map<String, Class<? extends NodeActionListener>> initActions() {
-        return ImmutableMap.of(
-                ACTION_DELETE, DeleteVMAction.class,
-                ACTION_DOWNLOAD_RDP_FILE, DownloadRDPAction.class,
-                ACTION_SHUTDOWN, ShutdownVMAction.class,
-                ACTION_START, StartVMAction.class,
-                ACTION_RESTART, RestartVMAction.class);
+        Map<String, Class<? extends NodeActionListener>> actionMap =
+                new HashMap<String, Class<? extends NodeActionListener>>();
+
+        actionMap.put(ACTION_DELETE, DeleteVMAction.class);
+        actionMap.put(ACTION_DOWNLOAD_RDP_FILE, DownloadRDPAction.class);
+        actionMap.put(ACTION_SHUTDOWN, ShutdownVMAction.class);
+        actionMap.put(ACTION_START, StartVMAction.class);
+        actionMap.put(ACTION_RESTART, RestartVMAction.class);
+
+        return ImmutableMap.copyOf(actionMap);
     }
 
     @Override
@@ -120,170 +263,5 @@ public class VMNode extends Node {
         }
 
         return false;
-    }
-
-    public class DeleteVMAction extends NodeActionListenerAsync {
-        int optionDialog;
-
-        public DeleteVMAction() {
-            super("Deleting VM");
-        }
-
-        @NotNull
-        @Override
-        protected Callable<Boolean> beforeAsyncActionPerfomed() {
-
-            return new Callable<Boolean>() {
-                @Override
-                public Boolean call() throws Exception {
-                    optionDialog = JOptionPane.showOptionDialog(null,
-                            "This operation will delete virtual machine " + virtualMachine.getName() +
-                                    ". The associated disks will not be deleted from your storage account. " +
-                                    "Are you sure you want to continue?",
-                            "Service explorer",
-                            JOptionPane.YES_NO_OPTION,
-                            JOptionPane.QUESTION_MESSAGE,
-                            null,
-                            new String[]{"Yes", "No"},
-                            null);
-
-                    return (optionDialog == JOptionPane.YES_OPTION);
-                }
-            };
-        }
-
-        @Override
-        protected void runInBackground(NodeActionEvent e) throws AzureCmdException {
-
-            AzureManagerImpl.getManager().deleteVirtualMachine(virtualMachine, false);
-            DefaultLoader.getIdeHelper().invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    // instruct parent node to remove this node
-                    getParent().removeDirectChildNode(VMNode.this);
-                }
-            });
-
-        }
-    }
-
-    public class DownloadRDPAction extends NodeActionListener {
-        @Override
-        public void actionPerformed(NodeActionEvent e) {
-            try {
-                JFileChooser saveFile = new JFileChooser();
-                saveFile.setDialogTitle("Save RDP file");
-                if (saveFile.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
-                    File rdpFile = saveFile.getSelectedFile();
-
-                    if (rdpFile.exists() || rdpFile.createNewFile()) {
-                        FileOutputStream fileOutputStream = new FileOutputStream(rdpFile);
-                        fileOutputStream.write(AzureManagerImpl.getManager().downloadRDP(virtualMachine));
-                        fileOutputStream.flush();
-                        fileOutputStream.close();
-                    }
-                }
-            } catch (Exception ex) {
-                DefaultLoader.getUIHelper().showException("Error downloading RDP file:", ex);
-            }
-        }
-    }
-
-    public abstract class VMNodeActionListener extends NodeActionListenerAsync {
-        private String promptMessageFormat;
-        private String progressMessage;
-        private int optionDialog;
-
-        public VMNodeActionListener(String promptMessageFormat,
-                                    String progressMessage) {
-            super(progressMessage);
-            this.promptMessageFormat = promptMessageFormat;
-            this.progressMessage = progressMessage;
-        }
-
-        @NotNull
-        @Override
-        protected Callable<Boolean> beforeAsyncActionPerfomed() {
-            return new Callable<Boolean>() {
-                @Override
-                public Boolean call() throws Exception {
-                    DefaultLoader.getIdeHelper().invokeAndWait(new Runnable() {
-                        @Override
-                        public void run() {
-                            optionDialog = JOptionPane.showOptionDialog(null,
-                                    String.format(promptMessageFormat, virtualMachine.getName()),
-                                    "Service explorer",
-                                    JOptionPane.YES_NO_OPTION,
-                                    JOptionPane.QUESTION_MESSAGE,
-                                    null,
-                                    new String[]{"Yes", "No"},
-                                    null);
-                        }
-                    });
-
-                    return (optionDialog == JOptionPane.YES_OPTION);
-                }
-            };
-        }
-
-        @Override
-        protected void runInBackground(NodeActionEvent e) throws AzureCmdException {
-            try {
-                runVMAction();
-
-                // reload vm details
-                refreshItems();
-            } catch (AzureCmdException ex) {
-                DefaultLoader.getUIHelper().showException("Error " + progressMessage + " " + virtualMachine.getName(), ex);
-                throw ex;
-            }
-
-        }
-
-        protected void runVMAction() throws AzureCmdException {
-        }
-    }
-
-    public class ShutdownVMAction extends VMNodeActionListener {
-        public ShutdownVMAction() {
-            super(
-                    "This operation will result in losing the VIP that was assigned to this virtual machine. Are you " +
-                            "sure that you want to shut down virtual machine %s?",
-                    "Shutting down VM"
-            );
-        }
-
-        @Override
-        protected void runVMAction() throws AzureCmdException {
-            AzureManagerImpl.getManager().shutdownVirtualMachine(virtualMachine, true);
-        }
-    }
-
-    public class StartVMAction extends VMNodeActionListener {
-        public StartVMAction() {
-            super(
-                    "Are you sure you want to start the virtual machine %s?",
-                    "Starting VM"
-            );
-        }
-
-        @Override
-        protected void runVMAction() throws AzureCmdException {
-            AzureManagerImpl.getManager().startVirtualMachine(virtualMachine);
-        }
-    }
-
-    public class RestartVMAction extends VMNodeActionListener {
-        public RestartVMAction() {
-            super(
-                    "Are you sure you want to restart the virtual machine %s?",
-                    "Restarting VM"
-            );
-        }
-
-        @Override
-        protected void runVMAction() throws AzureCmdException {
-            AzureManagerImpl.getManager().restartVirtualMachine(virtualMachine);
-        }
     }
 }

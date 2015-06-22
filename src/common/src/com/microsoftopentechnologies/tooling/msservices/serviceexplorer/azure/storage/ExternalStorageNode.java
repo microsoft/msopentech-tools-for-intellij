@@ -20,102 +20,67 @@ import com.microsoftopentechnologies.tooling.msservices.helpers.ExternalStorageH
 import com.microsoftopentechnologies.tooling.msservices.helpers.NotNull;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.ClientStorageAccount;
-import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.*;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.EventHelper.EventStateHandle;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.Node;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.NodeAction;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.NodeActionEvent;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.NodeActionListener;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
 
-import javax.swing.*;
 import java.util.Map;
-import java.util.concurrent.Callable;
 
-public class ExternalStorageNode extends Node {
-    private static final String WAIT_ICON_PATH = "externalstorageaccount.png";
-    private final ClientStorageAccount storageAccount;
+public class ExternalStorageNode extends ClientStorageNode {
+    private class DetachAction extends AzureNodeActionPromptListener {
+        public DetachAction() {
+            super(ExternalStorageNode.this,
+                    String.format("This operation will detach external storage account %s.\nAre you sure you want to continue?", clientStorageAccount.getName()),
+                    "Detaching External Storage Account");
+        }
 
-    public ExternalStorageNode(Node parent, ClientStorageAccount sm) {
-        super(sm.getName(), sm.getName(), parent, WAIT_ICON_PATH, true);
-        this.storageAccount = sm;
-    }
+        @Override
+        protected void azureNodeAction(NodeActionEvent e, @NotNull EventStateHandle stateHandle)
+                throws AzureCmdException {
+            Node node = e.getAction().getNode();
+            node.getParent().removeDirectChildNode(node);
 
-    public ClientStorageAccount getStorageAccount() {
-        return storageAccount;
-    }
+            ExternalStorageHelper.detach(clientStorageAccount);
+        }
 
-    @Override
-    protected void onNodeClick(NodeActionEvent e) {
-        this.load();
-    }
-
-    @Override
-    protected void refreshItems() throws AzureCmdException {
-        removeAllChildNodes();
-
-        if (storageAccount.getPrimaryKey().isEmpty()) {
-            try {
-                NodeActionListener listener = DefaultLoader.getActions(this.getClass()).get(0).getConstructor().newInstance();
-                listener.actionPerformed(new NodeActionEvent(new NodeAction(this, this.getName())));
-            } catch (Exception e) {
-                throw new AzureCmdException("Error opening external storage", e);
-            }
-        } else {
-            fillChildren();
+        @Override
+        protected void onSubscriptionsChanged(NodeActionEvent e)
+                throws AzureCmdException {
         }
     }
 
-    public void fillChildren() {
-        Node blobsNode = new BlobModule(this, storageAccount);
-        blobsNode.load();
-        addChildNode(blobsNode);
+    private static final String WAIT_ICON_PATH = "externalstorageaccount.png";
 
-        Node queueNode = new QueueModule(this, storageAccount);
-        queueNode.load();
-        addChildNode(queueNode);
+    public ExternalStorageNode(StorageModule parent, ClientStorageAccount sm) {
+        super(sm.getName(), sm.getName(), parent, WAIT_ICON_PATH, sm, true);
 
-        Node tableNode = new TableModule(this, storageAccount);
-        tableNode.load();
-        addChildNode(tableNode);
+        loadActions();
+    }
+
+    @Override
+    protected void refresh(@NotNull EventStateHandle eventState)
+            throws AzureCmdException {
+        removeAllChildNodes();
+
+        if (clientStorageAccount.getPrimaryKey().isEmpty()) {
+            try {
+                NodeActionListener listener = DefaultLoader.getActions(this.getClass()).get(0).getConstructor().newInstance();
+                listener.actionPerformedAsync(new NodeActionEvent(new NodeAction(this, this.getName()))).get();
+            } catch (Throwable t) {
+                throw new AzureCmdException("Error opening external storage", t);
+            }
+        } else {
+            fillChildren(eventState);
+        }
     }
 
     @Override
     protected Map<String, Class<? extends NodeActionListener>> initActions() {
-        addAction("Detach", new DetachAction(""));
+        addAction("Detach", new DetachAction());
 
         return super.initActions();
-    }
-
-    private class DetachAction extends NodeActionListenerAsync {
-        int optionDialog;
-
-        public DetachAction(String ignored) {
-            super("Detaching External Storage Account");
-        }
-
-        @NotNull
-        @Override
-        protected Callable<Boolean> beforeAsyncActionPerfomed() {
-
-            return new Callable<Boolean>() {
-                @Override
-                public Boolean call() throws Exception {
-                    optionDialog = JOptionPane.showOptionDialog(null,
-                            "This operation will detach external storage account " + storageAccount.getName() +
-                                    ".\nAre you sure you want to continue?",
-                            "Service explorer",
-                            JOptionPane.YES_NO_OPTION,
-                            JOptionPane.QUESTION_MESSAGE,
-                            null,
-                            new String[]{"Yes", "No"},
-                            null);
-
-                    return (optionDialog == JOptionPane.YES_OPTION);
-                }
-            };
-        }
-
-        @Override
-        public void runInBackground(NodeActionEvent e) {
-            Node node = e.getAction().getNode();
-            node.getParent().removeDirectChildNode(node);
-
-            ExternalStorageHelper.detach(storageAccount);
-        }
     }
 }

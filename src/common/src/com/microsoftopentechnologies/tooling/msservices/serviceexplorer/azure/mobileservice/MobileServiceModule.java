@@ -15,25 +15,29 @@
  */
 package com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.mobileservice;
 
+import com.microsoftopentechnologies.tooling.msservices.helpers.NotNull;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureManagerImpl;
-import com.microsoftopentechnologies.tooling.msservices.model.ms.MobileService;
 import com.microsoftopentechnologies.tooling.msservices.model.Subscription;
+import com.microsoftopentechnologies.tooling.msservices.model.ms.MobileService;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.EventHelper.EventStateHandle;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.Node;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.AzureRefreshableNode;
 
 import java.util.List;
 
-public class MobileServiceModule extends Node {
+public class MobileServiceModule extends AzureRefreshableNode {
     private static final String MOBILE_SERVICE_MODULE_ID = MobileServiceModule.class.getName();
     private static final String ICON_PATH = "mobileservices.png";
     private static final String BASE_MODULE_NAME = "Mobile Services";
 
     public MobileServiceModule(Node parent) {
-        super(MOBILE_SERVICE_MODULE_ID, BASE_MODULE_NAME, parent, ICON_PATH, true);
+        super(MOBILE_SERVICE_MODULE_ID, BASE_MODULE_NAME, parent, ICON_PATH);
     }
 
     @Override
-    public void refreshItems() throws AzureCmdException {
+    protected void refresh(@NotNull EventStateHandle eventState)
+            throws AzureCmdException {
         // remove all child mobile service nodes
         removeAllChildNodes();
 
@@ -42,6 +46,11 @@ public class MobileServiceModule extends Node {
 
         for (Subscription subscription : subscriptionList) {
             List<MobileService> mobileServices = AzureManagerImpl.getManager().getMobileServiceList(subscription.getId());
+
+            if (eventState.isEventTriggered()) {
+                return;
+            }
+
             for (MobileService mobileService : mobileServices) {
                 addChildNode(new MobileServiceNode(this, mobileService));
             }

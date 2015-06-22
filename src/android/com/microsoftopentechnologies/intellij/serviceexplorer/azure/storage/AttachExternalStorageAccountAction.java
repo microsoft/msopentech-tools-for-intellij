@@ -64,8 +64,6 @@ public class AttachExternalStorageAccountAction extends NodeActionListener {
                     }
                 }
 
-
-
                 ExternalStorageNode node = new ExternalStorageNode(storageModule, fullStorageAccount);
                 storageModule.addChildNode(node);
 

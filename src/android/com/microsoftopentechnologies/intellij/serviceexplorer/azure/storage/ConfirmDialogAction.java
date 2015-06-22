@@ -23,31 +23,29 @@ import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.NodeActi
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.storage.ExternalStorageNode;
 
-
 public class ConfirmDialogAction extends NodeActionListener {
-
     @Override
     public void actionPerformed(NodeActionEvent e) {
         final ExternalStorageNode node = (ExternalStorageNode) e.getAction().getNode();
 
         final ExternalStorageAccountForm form = new ExternalStorageAccountForm();
         form.setTitle("Storage Account Key Required");
-        form.setStorageAccount(node.getStorageAccount());
+        form.setStorageAccount(node.getClientStorageAccount());
 
         UIHelperImpl.packAndCenterJDialog(form);
 
         form.setOnFinish(new Runnable() {
             @Override
             public void run() {
-                node.getStorageAccount().setPrimaryKey(form.getPrimaryKey());
-                ClientStorageAccount clientStorageAccount = StorageClientSDKManagerImpl.getManager().getStorageAccount(node.getStorageAccount().getConnectionString());
+                node.getClientStorageAccount().setPrimaryKey(form.getPrimaryKey());
+                ClientStorageAccount clientStorageAccount = StorageClientSDKManagerImpl.getManager().getStorageAccount(node.getClientStorageAccount().getConnectionString());
 
-                node.getStorageAccount().setPrimaryKey(clientStorageAccount.getPrimaryKey());
-                node.getStorageAccount().setBlobsUri(clientStorageAccount.getBlobsUri());
-                node.getStorageAccount().setQueuesUri(clientStorageAccount.getQueuesUri());
-                node.getStorageAccount().setTablesUri(clientStorageAccount.getTablesUri());
+                node.getClientStorageAccount().setPrimaryKey(clientStorageAccount.getPrimaryKey());
+                node.getClientStorageAccount().setBlobsUri(clientStorageAccount.getBlobsUri());
+                node.getClientStorageAccount().setQueuesUri(clientStorageAccount.getQueuesUri());
+                node.getClientStorageAccount().setTablesUri(clientStorageAccount.getTablesUri());
 
-                node.fillChildren();
+                node.load();
             }
         });
 
