@@ -19,6 +19,7 @@ import com.google.common.collect.ImmutableMap;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.tooling.msservices.helpers.NotNull;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureManager.EventWaitHandle;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureManagerImpl;
 import com.microsoftopentechnologies.tooling.msservices.model.vm.Endpoint;
 import com.microsoftopentechnologies.tooling.msservices.model.vm.VirtualMachine;
@@ -30,8 +31,129 @@ import java.io.FileOutputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.Semaphore;
 
 public class VMNode extends Node {
+    private static abstract class VMNodeActionListener extends NodeActionListenerAsync {
+        private static class EventSyncInfo {
+            private final Object eventSync = new Object();
+            Semaphore semaphore = new Semaphore(0);
+
+            EventWaitHandle eventWaitHandle;
+            boolean registeredEvent = false;
+            boolean eventTriggered = false;
+            AzureCmdException exception;
+        }
+
+        protected VMNode vmNode;
+        private String promptMessageFormat;
+        private int optionDialog;
+
+        public VMNodeActionListener(String promptMessageFormat,
+                                    String progressMessage) {
+            super(progressMessage);
+            this.promptMessageFormat = promptMessageFormat;
+        }
+
+        @NotNull
+        @Override
+        protected Callable<Boolean> beforeAsyncActionPerfomed() {
+            return new Callable<Boolean>() {
+                @Override
+                public Boolean call() throws Exception {
+                    DefaultLoader.getIdeHelper().invokeAndWait(new Runnable() {
+                        @Override
+                        public void run() {
+                            optionDialog = JOptionPane.showOptionDialog(null,
+                                    String.format(promptMessageFormat, vmNode.virtualMachine.getName()),
+                                    "Service explorer",
+                                    JOptionPane.YES_NO_OPTION,
+                                    JOptionPane.QUESTION_MESSAGE,
+                                    null,
+                                    new String[]{"Yes", "No"},
+                                    null);
+                        }
+                    });
+
+                    return (optionDialog == JOptionPane.YES_OPTION);
+                }
+            };
+        }
+
+        @Override
+        protected void runInBackground(NodeActionEvent e) throws AzureCmdException {
+            final EventSyncInfo subsChanged = new EventSyncInfo();
+
+            subsChanged.eventWaitHandle = AzureManagerImpl.getManager().registerSubscriptionsChanged();
+            subsChanged.registeredEvent = true;
+
+            DefaultLoader.getIdeHelper().executeOnPooledThread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        subsChanged.eventWaitHandle.waitEvent(new Runnable() {
+                            @Override
+                            public void run() {
+                                synchronized (subsChanged.eventSync) {
+                                    if (subsChanged.registeredEvent) {
+                                        subsChanged.registeredEvent = false;
+                                        subsChanged.eventTriggered = true;
+                                        subsChanged.semaphore.release();
+                                    }
+                                }
+                            }
+                        });
+                    } catch (AzureCmdException ignored) {
+                    }
+                }
+            });
+
+            DefaultLoader.getIdeHelper().executeOnPooledThread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        runVMAction();
+
+                        synchronized (subsChanged.eventSync) {
+                            if (subsChanged.registeredEvent) {
+                                subsChanged.registeredEvent = false;
+                                subsChanged.semaphore.release();
+                            }
+                        }
+                    } catch (AzureCmdException ex) {
+                        synchronized (subsChanged.eventSync) {
+                            if (subsChanged.registeredEvent) {
+                                subsChanged.registeredEvent = false;
+                                subsChanged.exception = ex;
+                                subsChanged.semaphore.release();
+                            }
+                        }
+                    }
+                }
+            });
+
+            try {
+                subsChanged.semaphore.acquire();
+            } catch (InterruptedException e1) {
+                e1.printStackTrace();
+            } finally {
+                AzureManagerImpl.getManager().unregisterSubscriptionsChanged(subsChanged.eventWaitHandle);
+            }
+
+            synchronized (subsChanged.eventSync) {
+                if (!subsChanged.eventTriggered) {
+                    if (subsChanged.exception != null) {
+                        throw subsChanged.exception;
+                    }
+
+                    vmNode.refreshItems();
+                }
+            }
+        }
+
+        protected abstract void runVMAction() throws AzureCmdException;
+    }
+
     private static final String WAIT_ICON_PATH = "virtualmachinewait.png";
     private static final String STOP_ICON_PATH = "virtualmachinestop.png";
     private static final String RUN_ICON_PATH = "virtualmachinerun.png";
@@ -189,61 +311,6 @@ public class VMNode extends Node {
         }
     }
 
-    public abstract class VMNodeActionListener extends NodeActionListenerAsync {
-        private String promptMessageFormat;
-        private String progressMessage;
-        private int optionDialog;
-
-        public VMNodeActionListener(String promptMessageFormat,
-                                    String progressMessage) {
-            super(progressMessage);
-            this.promptMessageFormat = promptMessageFormat;
-            this.progressMessage = progressMessage;
-        }
-
-        @NotNull
-        @Override
-        protected Callable<Boolean> beforeAsyncActionPerfomed() {
-            return new Callable<Boolean>() {
-                @Override
-                public Boolean call() throws Exception {
-                    DefaultLoader.getIdeHelper().invokeAndWait(new Runnable() {
-                        @Override
-                        public void run() {
-                            optionDialog = JOptionPane.showOptionDialog(null,
-                                    String.format(promptMessageFormat, virtualMachine.getName()),
-                                    "Service explorer",
-                                    JOptionPane.YES_NO_OPTION,
-                                    JOptionPane.QUESTION_MESSAGE,
-                                    null,
-                                    new String[]{"Yes", "No"},
-                                    null);
-                        }
-                    });
-
-                    return (optionDialog == JOptionPane.YES_OPTION);
-                }
-            };
-        }
-
-        @Override
-        protected void runInBackground(NodeActionEvent e) throws AzureCmdException {
-            try {
-                runVMAction();
-
-                // reload vm details
-                refreshItems();
-            } catch (AzureCmdException ex) {
-                DefaultLoader.getUIHelper().showException("Error " + progressMessage + " " + virtualMachine.getName(), ex);
-                throw ex;
-            }
-
-        }
-
-        protected void runVMAction() throws AzureCmdException {
-        }
-    }
-
     public class ShutdownVMAction extends VMNodeActionListener {
         public ShutdownVMAction() {
             super(
@@ -251,11 +318,13 @@ public class VMNode extends Node {
                             "sure that you want to shut down virtual machine %s?",
                     "Shutting down VM"
             );
+
+            vmNode = VMNode.this;
         }
 
         @Override
         protected void runVMAction() throws AzureCmdException {
-            AzureManagerImpl.getManager().shutdownVirtualMachine(virtualMachine, true);
+            AzureManagerImpl.getManager().shutdownVirtualMachine(vmNode.virtualMachine, true);
         }
     }
 
@@ -265,11 +334,13 @@ public class VMNode extends Node {
                     "Are you sure you want to start the virtual machine %s?",
                     "Starting VM"
             );
+
+            vmNode = VMNode.this;
         }
 
         @Override
         protected void runVMAction() throws AzureCmdException {
-            AzureManagerImpl.getManager().startVirtualMachine(virtualMachine);
+            AzureManagerImpl.getManager().startVirtualMachine(vmNode.virtualMachine);
         }
     }
 
@@ -279,11 +350,13 @@ public class VMNode extends Node {
                     "Are you sure you want to restart the virtual machine %s?",
                     "Restarting VM"
             );
+
+            vmNode = VMNode.this;
         }
 
         @Override
         protected void runVMAction() throws AzureCmdException {
-            AzureManagerImpl.getManager().restartVirtualMachine(virtualMachine);
+            AzureManagerImpl.getManager().restartVirtualMachine(vmNode.virtualMachine);
         }
     }
 }

@@ -26,6 +26,10 @@ import com.microsoftopentechnologies.tooling.msservices.model.vm.*;
 import java.util.List;
 
 public interface AzureManager {
+    interface EventWaitHandle {
+        void waitEvent(@NotNull Runnable callback) throws AzureCmdException;
+    }
+
     void authenticate() throws AzureCmdException;
 
     boolean authenticated();
@@ -55,6 +59,13 @@ public interface AzureManager {
             throws AzureCmdException;
 
     void setSelectedSubscriptions(@NotNull List<String> selectedList)
+            throws AzureCmdException;
+
+    @NotNull
+    EventWaitHandle registerSubscriptionsChanged()
+            throws AzureCmdException;
+
+    void unregisterSubscriptionsChanged(@NotNull EventWaitHandle handle)
             throws AzureCmdException;
 
     @NotNull

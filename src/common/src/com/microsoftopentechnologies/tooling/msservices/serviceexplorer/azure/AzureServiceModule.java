@@ -17,6 +17,7 @@ package com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure;
 
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureManager.EventWaitHandle;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureManagerImpl;
 import com.microsoftopentechnologies.tooling.msservices.model.Subscription;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.Node;
@@ -35,6 +36,9 @@ public class AzureServiceModule extends Node {
     private MobileServiceModule mobileServiceModule = new MobileServiceModule(this);
     private VMServiceModule vmServiceModule = new VMServiceModule(this);
     private StorageModule storageServiceModule = new StorageModule(this);
+    private EventWaitHandle subscriptionsChanged;
+    private boolean registeredSubscriptionsChanged;
+    private final Object subscriptionsChangedSync = new Object();
 
     public AzureServiceModule(Object project) {
         this(null, ICON_PATH, null);
@@ -93,5 +97,48 @@ public class AzureServiceModule extends Node {
     @Override
     public Object getProject() {
         return project;
+    }
+
+    public void registerSubscriptionsChanged()
+            throws AzureCmdException {
+        synchronized (subscriptionsChangedSync) {
+            if (subscriptionsChanged == null) {
+                subscriptionsChanged = AzureManagerImpl.getManager().registerSubscriptionsChanged();
+            }
+
+            registeredSubscriptionsChanged = true;
+
+            DefaultLoader.getIdeHelper().executeOnPooledThread(new Runnable() {
+                @Override
+                public void run() {
+                    while (registeredSubscriptionsChanged) {
+                        try {
+                            subscriptionsChanged.waitEvent(new Runnable() {
+                                @Override
+                                public void run() {
+                                    if (registeredSubscriptionsChanged) {
+                                        load();
+                                    }
+                                }
+                            });
+                        } catch (AzureCmdException ignored) {
+                            break;
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    public void unregisterSubscriptionsChanged()
+            throws AzureCmdException {
+        synchronized (subscriptionsChangedSync) {
+            registeredSubscriptionsChanged = false;
+
+            if (subscriptionsChanged != null) {
+                AzureManagerImpl.getManager().unregisterSubscriptionsChanged(subscriptionsChanged);
+                subscriptionsChanged = null;
+            }
+        }
     }
 }

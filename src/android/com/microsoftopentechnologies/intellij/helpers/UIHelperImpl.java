@@ -17,7 +17,6 @@ package com.microsoftopentechnologies.intellij.helpers;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.microsoftopentechnologies.intellij.forms.ErrorMessageForm;
-import com.microsoftopentechnologies.intellij.forms.ImportSubscriptionForm;
 import com.microsoftopentechnologies.tooling.msservices.helpers.NotNull;
 import com.microsoftopentechnologies.tooling.msservices.helpers.Nullable;
 import com.microsoftopentechnologies.tooling.msservices.helpers.UIHelper;
@@ -49,29 +48,6 @@ public class UIHelperImpl implements UIHelper {
         ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
             public void run() {
-                // TODO: Verify if this side-effect is legacy code and remove it
-                if (ex instanceof AzureCmdException) {
-                    String errorLog = ((AzureCmdException) ex).getErrorLog();
-
-                    //Not showing error if no account info found
-                    if (errorLog != null &&
-                            (errorLog.contains("No publish settings file found.") ||
-                                    errorLog.contains("No account information found."))) {
-                        JOptionPane.showMessageDialog(null,
-                                "No account information found. Please import subscription information.",
-                                "Error",
-                                JOptionPane.ERROR_MESSAGE);
-
-                        // TODO: This should probably be showing the "Manage Subscriptions" form instead since
-                        // we also support A/D auth now.
-                        ImportSubscriptionForm isf = new ImportSubscriptionForm();
-                        packAndCenterJDialog(isf);
-                        isf.setVisible(true);
-
-                        return;
-                    }
-                }
-
                 String headerMessage = getHeaderMessage(message, ex, appendEx, suggestDetail);
 
                 String details = getDetails(ex);
