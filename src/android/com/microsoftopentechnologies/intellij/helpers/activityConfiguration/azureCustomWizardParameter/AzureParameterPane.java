@@ -28,6 +28,7 @@ import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.psi.PsiElement;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.tooling.msservices.model.ms.MobileService;
+import org.jetbrains.android.facet.AndroidFacet;
 
 import javax.swing.*;
 import javax.swing.text.BadLocationException;
@@ -103,30 +104,41 @@ public class AzureParameterPane extends JPanel {
                     DataContext dataContext = DataManager.getInstance().getDataContext(mainPanel);
                     Project project = DataKeys.PROJECT.getData(dataContext);
 
-                    PsiElement selectedElement = (PsiElement) ProjectView.getInstance(project).getCurrentProjectViewPane().getSelectedElement();
-                    Module module = ModuleUtil.findModuleForPsiElement(selectedElement);
+                    Module module = null;
+                    Object selectedElement = ProjectView.getInstance(project).getCurrentProjectViewPane().getSelectedElement();
 
-                    final NotificationHubConfigForm form = new NotificationHubConfigForm(module);
-
-                    if(connectionString != null) {
-                        form.setConnectionString(connectionString);
-                    }
-                    if(senderID != null) {
-                        form.setSenderID(senderID);
-                    }
-                    if(hubName != null) {
-                        form.setHubName(hubName);
+                    if(selectedElement instanceof PsiElement) {
+                        PsiElement psiSelectedElement = (PsiElement) selectedElement;
+                        module = ModuleUtil.findModuleForPsiElement(psiSelectedElement);
+                    } else if(selectedElement instanceof AndroidFacet) {
+                        module = ((AndroidFacet) selectedElement).getModule();
+                    } else if(selectedElement instanceof Module) {
+                        module = (Module) selectedElement;
                     }
 
-                    form.show();
+                    if(module != null) {
+                        final NotificationHubConfigForm form = new NotificationHubConfigForm(module);
 
-                    if(form.getExitCode() == DialogWrapper.OK_EXIT_CODE) {
-                        connectionString = form.getConnectionString();
-                        hubName = form.getHubName();
-                        senderID = form.getSenderID();
+                        if (connectionString != null) {
+                            form.setConnectionString(connectionString);
+                        }
+                        if (senderID != null) {
+                            form.setSenderID(senderID);
+                        }
+                        if (hubName != null) {
+                            form.setHubName(hubName);
+                        }
+
+                        form.show();
+
+                        if (form.getExitCode() == DialogWrapper.OK_EXIT_CODE) {
+                            connectionString = form.getConnectionString();
+                            hubName = form.getHubName();
+                            senderID = form.getSenderID();
+                        }
+
+                        updateDocument();
                     }
-
-                    updateDocument();
                 } catch (Throwable e) {
                     DefaultLoader.getUIHelper().showException("Error loading notification hubs configuration", e);
                 }
