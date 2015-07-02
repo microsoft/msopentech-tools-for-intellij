@@ -41,7 +41,6 @@ import com.microsoftopentechnologies.tooling.msservices.helpers.NotNull;
 import com.microsoftopentechnologies.tooling.msservices.helpers.Nullable;
 import com.microsoftopentechnologies.tooling.msservices.helpers.ServiceCodeReferenceHelper;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.*;
-import com.microsoftopentechnologies.tooling.msservices.model.storage.Table;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.Node;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -373,11 +372,23 @@ public class IDEHelperImpl implements IDEHelper {
     @Override
     public void setProperty(@NotNull String name, @NotNull String value) {
         PropertiesComponent.getInstance().setValue(name, value);
+        ApplicationManager.getApplication().invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                ApplicationManager.getApplication().saveSettings();
+            }
+        }, ModalityState.any());
     }
 
     @Override
     public void unsetProperty(@NotNull String name) {
         PropertiesComponent.getInstance().unsetValue(name);
+        ApplicationManager.getApplication().invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                ApplicationManager.getApplication().saveSettings();
+            }
+        }, ModalityState.any());
     }
 
     @Override
@@ -385,8 +396,50 @@ public class IDEHelperImpl implements IDEHelper {
         return PropertiesComponent.getInstance().isValueSet(name);
     }
 
+    @Nullable
+    @Override
+    public String getProperty(@NotNull Object projectObject, @NotNull String name) {
+        return PropertiesComponent.getInstance((Project) projectObject).getValue(name);
+    }
+
     @NotNull
     @Override
+    public String getProperty(@NotNull Object projectObject, @NotNull String name, @NotNull String defaultValue) {
+        return PropertiesComponent.getInstance((Project) projectObject).getValue(name, defaultValue);
+    }
+
+    @Override
+    public void setProperty(@NotNull Object projectObject, @NotNull String name, @NotNull String value) {
+        final Project project = (Project) projectObject;
+        PropertiesComponent.getInstance(project).setValue(name, value);
+        ApplicationManager.getApplication().invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                project.save();
+            }
+        }, ModalityState.any());
+    }
+
+    @Override
+    public void unsetProperty(@NotNull Object projectObject, @NotNull String name) {
+        final Project project = (Project) projectObject;
+        PropertiesComponent.getInstance(project).unsetValue(name);
+        ApplicationManager.getApplication().invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                project.save();
+            }
+        }, ModalityState.any());
+    }
+
+    @Override
+    public boolean isPropertySet(@NotNull Object projectObject, @NotNull String name) {
+        return PropertiesComponent.getInstance((Project) projectObject).isValueSet(name);
+    }
+
+    @NotNull
+    @Override
+
     public String promptForOpenSSLPath() {
         OpenSSLFinderForm openSSLFinderForm = new OpenSSLFinderForm();
         openSSLFinderForm.setModal(true);
@@ -405,6 +458,7 @@ public class IDEHelperImpl implements IDEHelper {
     @Override
     public void setProperties(@NotNull String name, @NotNull String[] value) {
         PropertiesComponent.getInstance().setValues(name, value);
+        ApplicationManager.getApplication().saveSettings();
     }
 
     private static void openFile(@NotNull final Object projectObject, @Nullable final VirtualFile finalEditfile) {
@@ -453,7 +507,7 @@ public class IDEHelperImpl implements IDEHelper {
                     final VirtualFile libs = libsVf;
                     final String fileName = zipEntry.getName().split("/")[1];
 
-                    if(libs.findChild(fileName) == null) {
+                    if (libs.findChild(fileName) == null) {
                         ApplicationManager.getApplication().invokeAndWait(new Runnable() {
                             @Override
                             public void run() {

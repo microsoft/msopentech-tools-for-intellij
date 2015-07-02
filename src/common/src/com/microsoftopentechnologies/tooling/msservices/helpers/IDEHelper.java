@@ -58,7 +58,9 @@ public interface IDEHelper {
     void closeFile(@NotNull Object projectObject, @NotNull Object openedFile);
 
     void refreshQueue(@NotNull Object projectObject, @NotNull ClientStorageAccount storageAccount, @NotNull Queue queue);
+
     void refreshBlobs(@NotNull Object projectObject, @NotNull ClientStorageAccount storageAccount, @NotNull BlobContainer container);
+
     void refreshTable(@NotNull Object projectObject, @NotNull ClientStorageAccount storageAccount, @NotNull Table table);
 
     void invokeBackgroundLoader(@Nullable Object projectObject, @NotNull Node node,
@@ -69,6 +71,18 @@ public interface IDEHelper {
     void invokeAndWait(@NotNull Runnable runnable);
 
     void executeOnPooledThread(@NotNull Runnable runnable);
+
+    @Nullable
+    String getProperty(@NotNull Object projectObject, @NotNull String name);
+
+    @NotNull
+    String getProperty(@NotNull Object projectObject, @NotNull String name, @NotNull String defaultValue);
+
+    void setProperty(@NotNull Object projectObject, @NotNull String name, @NotNull String value);
+
+    void unsetProperty(@NotNull Object projectObject, @NotNull String name);
+
+    boolean isPropertySet(@NotNull Object projectObject, @NotNull String name);
 
     @Nullable
     String getProperty(@NotNull String name);

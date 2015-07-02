@@ -29,7 +29,7 @@ import com.intellij.ui.wizard.WizardStep;
 import com.intellij.util.Consumer;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk.AzureSDKManagerImpl;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureManagerImpl;
 import com.microsoftopentechnologies.tooling.msservices.model.vm.VirtualMachineImage;
 import com.microsoftopentechnologies.tooling.msservices.model.vm.VirtualMachineSize;
 import org.jetbrains.annotations.NotNull;
@@ -205,7 +205,7 @@ public class MachineSettingsStep extends WizardStep<CreateVMWizardModel> {
                     progressIndicator.setIndeterminate(true);
 
                     try {
-                        final List<VirtualMachineSize> virtualMachineSizes = AzureSDKManagerImpl.getManager().getVirtualMachineSizes(model.getSubscription().getId().toString());
+                        final List<VirtualMachineSize> virtualMachineSizes = AzureManagerImpl.getManager().getVirtualMachineSizes(model.getSubscription().getId().toString());
 
                         Collections.sort(virtualMachineSizes, new Comparator<VirtualMachineSize>() {
                             @Override

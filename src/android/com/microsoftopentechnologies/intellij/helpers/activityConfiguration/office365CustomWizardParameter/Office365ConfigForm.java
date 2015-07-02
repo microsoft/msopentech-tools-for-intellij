@@ -38,7 +38,7 @@ import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader
 import com.microsoftopentechnologies.tooling.msservices.helpers.StringHelper;
 import com.microsoftopentechnologies.tooling.msservices.helpers.graph.ServicePermissionEntry;
 import com.microsoftopentechnologies.tooling.msservices.helpers.o365.Office365Manager;
-import com.microsoftopentechnologies.tooling.msservices.helpers.o365.Office365RestAPIManager;
+import com.microsoftopentechnologies.tooling.msservices.helpers.o365.Office365ManagerImpl;
 import com.microsoftopentechnologies.tooling.msservices.model.Office365Permission;
 import com.microsoftopentechnologies.tooling.msservices.model.Office365PermissionList;
 import com.microsoftopentechnologies.tooling.msservices.model.Office365Service;
@@ -53,7 +53,6 @@ import javax.swing.table.TableColumn;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.text.ParseException;
 import java.util.List;
 import java.util.Vector;
 
@@ -103,7 +102,7 @@ public class Office365ConfigForm extends DialogWrapper {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // clear the authentication token
-                Office365RestAPIManager.getManager().setAuthenticationToken(null);
+                Office365ManagerImpl.getManager().clearAuthentication();
 
                 // refresh apps to cause the sign in popup to be displayed
                 refreshApps(null);
@@ -138,6 +137,7 @@ public class Office365ConfigForm extends DialogWrapper {
             summary.append("</b>.</li> ");
             summary.append("<li>Will add a static method to instantiate OutlookClient and list messages.</li> ");
         }
+
 
         if (isFileServices) {
             summary.append("<li>Will add a reference to the File Services library in project <b>");
@@ -183,7 +183,7 @@ public class Office365ConfigForm extends DialogWrapper {
             }
         }, ModalityState.any());
 
-        final Office365Manager manager = Office365RestAPIManager.getManager();
+        final Office365Manager manager = Office365ManagerImpl.getManager();
 
         try {
             if (!manager.authenticated()) {
@@ -192,7 +192,7 @@ public class Office365ConfigForm extends DialogWrapper {
                 // if we still don't have an authentication token then the
                 // user has cancelled out of login; so we cancel out of this
                 // wizard
-                if (manager.getAuthenticationToken() == null) {
+                if (!manager.authenticated()) {
                     ApplicationManager.getApplication().invokeAndWait(new Runnable() {
                         @Override
                         public void run() {
@@ -262,7 +262,7 @@ public class Office365ConfigForm extends DialogWrapper {
         }
     }
 
-    private void fillPermissions(@NotNull Application app) throws ParseException {
+    private void fillPermissions(@NotNull Application app) {
         // show a status message while we're fetching permissions
         ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
@@ -278,7 +278,7 @@ public class Office365ConfigForm extends DialogWrapper {
             }
         }, ModalityState.any());
 
-        Futures.addCallback(Office365RestAPIManager.getManager().getO365PermissionsForApp(app.getobjectId()), new FutureCallback<List<ServicePermissionEntry>>() {
+        Futures.addCallback(Office365ManagerImpl.getManager().getO365PermissionsForApp(app.getobjectId()), new FutureCallback<List<ServicePermissionEntry>>() {
             @Override
             public void onSuccess(final List<ServicePermissionEntry> servicePermissionEntries) {
                 ApplicationManager.getApplication().invokeLater(new Runnable() {
@@ -323,11 +323,7 @@ public class Office365ConfigForm extends DialogWrapper {
         ApplicationManager.getApplication().executeOnPooledThread(new Runnable() {
             @Override
             public void run() {
-                try {
-                    fillPermissions(app);
-                } catch (ParseException e) {
-                    DefaultLoader.getUIHelper().showException("An error occurred while fetching permissions for Office 365 services.", e);
-                }
+                fillPermissions(app);
             }
         });
     }

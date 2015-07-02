@@ -1,25 +1,24 @@
 /**
  * Copyright 2014 Microsoft Open Technologies Inc.
- *
+ * <p/>
  * Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p/>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p/>
  * Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-
 package com.microsoftopentechnologies.intellij.forms;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
-import com.microsoftopentechnologies.tooling.msservices.helpers.azure.rest.AzureRestAPIManagerImpl;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureManagerImpl;
 import com.microsoftopentechnologies.tooling.msservices.model.ms.CustomAPI;
 import com.microsoftopentechnologies.tooling.msservices.model.ms.CustomAPIPermissions;
 import com.microsoftopentechnologies.tooling.msservices.model.ms.PermissionItem;
@@ -33,7 +32,6 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 public class CustomAPIForm extends JDialog {
     private JPanel mainPanel;
@@ -45,7 +43,7 @@ public class CustomAPIForm extends JDialog {
     private JComboBox putPermissionComboBox;
     private JComboBox patchPermissionComboBox;
     private JComboBox deletePermissionComboBox;
-    private UUID subscriptionId;
+    private String subscriptionId;
     private String serviceName;
     private Project project;
     private CustomAPI editingCustomAPI;
@@ -55,13 +53,15 @@ public class CustomAPIForm extends JDialog {
     public Project getProject() {
         return project;
     }
+
     public void setProject(Project project) {
         this.project = project;
     }
 
-    public void setSubscriptionId(UUID subscriptionId) {
+    public void setSubscriptionId(String subscriptionId) {
         this.subscriptionId = subscriptionId;
     }
+
     public void setServiceName(String serviceName) {
         this.serviceName = serviceName;
     }
@@ -120,22 +120,22 @@ public class CustomAPIForm extends JDialog {
                         try {
                             form.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
-                            if(!apiName.matches("^[A-Za-z][A-Za-z0-9_]+")) {
+                            if (!apiName.matches("^[A-Za-z][A-Za-z0-9_]+")) {
                                 form.setCursor(Cursor.getDefaultCursor());
                                 JOptionPane.showMessageDialog(form, "Invalid api name. Api name must start with a letter, \n" +
                                         "contain only letters, numbers, and undercores.", "Service Explorer", JOptionPane.ERROR_MESSAGE);
                                 return;
                             }
 
-                            if(existingApiNames == null) {
+                            if (existingApiNames == null) {
                                 existingApiNames = new ArrayList<String>();
 
-                                for (CustomAPI api : AzureRestAPIManagerImpl.getManager().getAPIList(subscriptionId, serviceName)) {
+                                for (CustomAPI api : AzureManagerImpl.getManager().getAPIList(subscriptionId, serviceName)) {
                                     existingApiNames.add(api.getName().toLowerCase());
                                 }
                             }
 
-                            if(editingCustomAPI == null && existingApiNames.contains(apiName.toLowerCase())) {
+                            if (editingCustomAPI == null && existingApiNames.contains(apiName.toLowerCase())) {
                                 form.setCursor(Cursor.getDefaultCursor());
                                 JOptionPane.showMessageDialog(form, "Invalid API name. An API with that name already exists in this service.",
                                         "Service Explorer", JOptionPane.ERROR_MESSAGE);
@@ -143,11 +143,10 @@ public class CustomAPIForm extends JDialog {
                             }
 
 
-                            if(editingCustomAPI == null) {
-                                AzureRestAPIManagerImpl.getManager().createCustomAPI(subscriptionId, serviceName, apiName, permissions);
-                            }
-                            else {
-                                AzureRestAPIManagerImpl.getManager().updateCustomAPI(subscriptionId, serviceName, apiName, permissions);
+                            if (editingCustomAPI == null) {
+                                AzureManagerImpl.getManager().createCustomAPI(subscriptionId, serviceName, apiName, permissions);
+                            } else {
+                                AzureManagerImpl.getManager().updateCustomAPI(subscriptionId, serviceName, apiName, permissions);
                                 editingCustomAPI.setCustomAPIPermissions(permissions);
                             }
 
@@ -171,8 +170,8 @@ public class CustomAPIForm extends JDialog {
     }
 
     private int permissionIndex(PermissionItem[] p, PermissionType pt) {
-        for(int i = 0;i < p.length;i++) {
-            if(p[i].getType() == pt)
+        for (int i = 0; i < p.length; i++) {
+            if (p[i].getType() == pt)
                 return i;
         }
         return 0;
@@ -191,7 +190,7 @@ public class CustomAPIForm extends JDialog {
 
         PermissionItem[] tablePermissions = PermissionItem.getTablePermissions();
 
-        if(editingCustomAPI != null) {
+        if (editingCustomAPI != null) {
             getPermissionComboBox.setSelectedIndex(permissionIndex(tablePermissions, editingCustomAPI.getCustomAPIPermissions().getGetPermission()));
             deletePermissionComboBox.setSelectedIndex(permissionIndex(tablePermissions, editingCustomAPI.getCustomAPIPermissions().getDeletePermission()));
             patchPermissionComboBox.setSelectedIndex(permissionIndex(tablePermissions, editingCustomAPI.getCustomAPIPermissions().getPatchPermission()));

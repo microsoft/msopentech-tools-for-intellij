@@ -17,21 +17,20 @@ package com.microsoftopentechnologies.intellij.wizards.createvm;
 
 import com.intellij.ui.wizard.WizardNavigationState;
 import com.intellij.ui.wizard.WizardStep;
+import com.microsoftopentechnologies.intellij.forms.ManageSubscriptionForm;
 import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
-import com.microsoftopentechnologies.intellij.forms.ManageSubscriptionForm;
-import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureAuthenticationMode;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.tooling.msservices.helpers.azure.rest.AzureRestAPIManager;
-import com.microsoftopentechnologies.tooling.msservices.helpers.azure.rest.AzureRestAPIManagerImpl;
-import com.microsoftopentechnologies.tooling.msservices.model.ms.Subscription;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureManager;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureManagerImpl;
+import com.microsoftopentechnologies.tooling.msservices.model.Subscription;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 
 public class SubscriptionStep extends WizardStep<CreateVMWizardModel> {
@@ -81,18 +80,18 @@ public class SubscriptionStep extends WizardStep<CreateVMWizardModel> {
 
     private void loadSubscriptions() {
         try {
-            AzureRestAPIManager manager = AzureRestAPIManagerImpl.getManager();
+            AzureManager manager = AzureManagerImpl.getManager();
 
-            if (manager.getAuthenticationMode().equals(AzureAuthenticationMode.ActiveDirectory)) {
-                String upn = manager.getAuthenticationToken().getUserInfo().getUniqueName();
+            if (manager.authenticated()) {
+                String upn = manager.getUserInfo().getUniqueName();
                 userInfoLabel.setText("Signed in as: " + (upn.contains("#") ? upn.split("#")[1] : upn));
             } else {
                 userInfoLabel.setText("");
             }
 
-            ArrayList<Subscription> subscriptionList = manager.getSubscriptionList();
+            List<Subscription> subscriptionList = manager.getSubscriptionList();
 
-            final Vector<Subscription> subscriptions = new Vector<Subscription>((subscriptionList == null) ? new Vector<Subscription>() : subscriptionList);
+            final Vector<Subscription> subscriptions = new Vector<Subscription>(subscriptionList);
             subscriptionComboBox.setModel(new DefaultComboBoxModel(subscriptions));
 
             if (!subscriptions.isEmpty()) {

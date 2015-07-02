@@ -13,17 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.vm;
 
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.tooling.msservices.helpers.azure.rest.AzureRestAPIManagerImpl;
-import com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk.AzureSDKManagerImpl;
-import com.microsoftopentechnologies.tooling.msservices.model.ms.Subscription;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureManagerImpl;
+import com.microsoftopentechnologies.tooling.msservices.model.Subscription;
 import com.microsoftopentechnologies.tooling.msservices.model.vm.VirtualMachine;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.Node;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class VMServiceModule extends Node {
@@ -41,14 +38,12 @@ public class VMServiceModule extends Node {
         removeAllChildNodes();
 
         // load all VMs
-        ArrayList<Subscription> subscriptionList = AzureRestAPIManagerImpl.getManager().getSubscriptionList();
+        List<Subscription> subscriptionList = AzureManagerImpl.getManager().getSubscriptionList();
 
-        if (subscriptionList != null) {
-            for (Subscription subscription : subscriptionList) {
-                List<VirtualMachine> virtualMachines = AzureSDKManagerImpl.getManager().getVirtualMachines(subscription.getId().toString());
-                for (VirtualMachine vm : virtualMachines) {
-                    addChildNode(new VMNode(this, vm));
-                }
+        for (Subscription subscription : subscriptionList) {
+            List<VirtualMachine> virtualMachines = AzureManagerImpl.getManager().getVirtualMachines(subscription.getId());
+            for (VirtualMachine vm : virtualMachines) {
+                addChildNode(new VMNode(this, vm));
             }
         }
     }

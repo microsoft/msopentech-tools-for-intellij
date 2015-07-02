@@ -24,7 +24,7 @@ import com.microsoft.directoryservices.Application;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.helpers.LinkListener;
 import com.microsoftopentechnologies.tooling.msservices.helpers.StringHelper;
-import com.microsoftopentechnologies.tooling.msservices.helpers.o365.Office365RestAPIManager;
+import com.microsoftopentechnologies.tooling.msservices.helpers.o365.Office365ManagerImpl;
 
 import javax.swing.*;
 import java.awt.*;
@@ -130,7 +130,7 @@ public class CreateOffice365ApplicationForm extends JDialog {
                             application.setavailableToOtherTenants(multiTenantCheckBox.isSelected());
                             application.setpublicClient(true);
 
-                            Futures.addCallback(Office365RestAPIManager.getManager().registerApplication(application),
+                            Futures.addCallback(Office365ManagerImpl.getManager().registerApplication(application),
                                     new FutureCallback<Application>() {
                                         @Override
                                         public void onSuccess(final Application application) {

@@ -1,31 +1,29 @@
 /**
  * Copyright 2014 Microsoft Open Technologies Inc.
- *
+ * <p/>
  * Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p/>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p/>
  * Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-
 package com.microsoftopentechnologies.intellij.forms;
 
+import com.microsoftopentechnologies.intellij.helpers.ReadOnlyCellTableModel;
 import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
-import com.microsoftopentechnologies.tooling.msservices.helpers.azure.rest.AzureRestAPIManagerImpl;
-import com.microsoftopentechnologies.intellij.helpers.ReadOnlyCellTableModel;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureManagerImpl;
 import com.microsoftopentechnologies.tooling.msservices.model.ms.LogEntry;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
-import java.util.UUID;
 import java.util.Vector;
 
 public class ViewLogForm extends JDialog {
@@ -58,13 +56,13 @@ public class ViewLogForm extends JDialog {
             logTable.getColumn("Level").setCellRenderer(new DefaultTableCellRenderer() {
                 public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 
-                    if(value.toString().equals("information")) {
+                    if (value.toString().equals("information")) {
                         setIcon(UIHelperImpl.loadIcon("loginfo.png"));
                         value = "Information";
-                    } else if(value.toString().equals("error")) {
+                    } else if (value.toString().equals("error")) {
                         setIcon(UIHelperImpl.loadIcon("logerr.png"));
                         value = "Error";
-                    } else if(value.toString().equals("warning")) {
+                    } else if (value.toString().equals("warning")) {
                         setIcon(UIHelperImpl.loadIcon("logwarn.png"));
                         value = "Warning";
                     }
@@ -81,17 +79,17 @@ public class ViewLogForm extends JDialog {
     }
 
 
-    public void queryLog(UUID subscriptionId, String serviceName, String runtime) {
+    public void queryLog(String subscriptionId, String serviceName, String runtime) {
 
         try {
             this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
             ReadOnlyCellTableModel model = (ReadOnlyCellTableModel) logTable.getModel();
 
-            while(model.getRowCount() > 0)
+            while (model.getRowCount() > 0)
                 model.removeRow(0);
 
-            for(LogEntry log : AzureRestAPIManagerImpl.getManager().listLog(subscriptionId, serviceName, runtime)) {
+            for (LogEntry log : AzureManagerImpl.getManager().listLog(subscriptionId, serviceName, runtime)) {
 
                 Vector<Object> row = new Vector<Object>();
                 row.add(log.getType());

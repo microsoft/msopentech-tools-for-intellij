@@ -23,11 +23,9 @@ import com.intellij.openapi.project.Project;
 import com.intellij.ui.ListCellRendererWrapper;
 import com.microsoftopentechnologies.intellij.helpers.LinkListener;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
-import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureAuthenticationMode;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.tooling.msservices.helpers.azure.rest.AzureRestAPIManagerImpl;
-import com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk.AzureSDKManagerImpl;
-import com.microsoftopentechnologies.tooling.msservices.model.ms.Subscription;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureManagerImpl;
+import com.microsoftopentechnologies.tooling.msservices.model.Subscription;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount;
 import com.microsoftopentechnologies.tooling.msservices.model.vm.AffinityGroup;
 import com.microsoftopentechnologies.tooling.msservices.model.vm.Location;
@@ -38,7 +36,6 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.ArrayList;
 import java.util.Vector;
 
 public class CreateStorageAccountForm extends JDialog {
@@ -147,8 +144,8 @@ public class CreateStorageAccountForm extends JDialog {
             }
         });
 
-        if (AzureRestAPIManagerImpl.getManager().getAuthenticationMode().equals(AzureAuthenticationMode.ActiveDirectory)) {
-            String upn = AzureRestAPIManagerImpl.getManager().getAuthenticationToken().getUserInfo().getUniqueName();
+        if (AzureManagerImpl.getManager().authenticated()) {
+            String upn = AzureManagerImpl.getManager().getUserInfo().getUniqueName();
             userInfoLabel.setText("Signed in as: " + (upn.contains("#") ? upn.split("#")[1] : upn));
         } else {
             userInfoLabel.setText("");
@@ -193,8 +190,8 @@ public class CreateStorageAccountForm extends JDialog {
             storageAccount.setLocation(region);
             storageAccount.setAffinityGroup(affinityGroup);
 
-            AzureSDKManagerImpl.getManager().createStorageAccount(storageAccount);
-            AzureSDKManagerImpl.getManager().refreshStorageAccountInformation(storageAccount);
+            AzureManagerImpl.getManager().createStorageAccount(storageAccount);
+            AzureManagerImpl.getManager().refreshStorageAccountInformation(storageAccount);
 
             if (onCreate != null) {
                 onCreate.run();
@@ -222,7 +219,7 @@ public class CreateStorageAccountForm extends JDialog {
             try {
                 subscriptionComboBox.setEnabled(true);
 
-                ArrayList<Subscription> fullSubscriptionList = AzureRestAPIManagerImpl.getManager().getFullSubscriptionList();
+                java.util.List<Subscription> fullSubscriptionList = AzureManagerImpl.getManager().getFullSubscriptionList();
                 subscriptionComboBox.setModel(new DefaultComboBoxModel(new Vector<Subscription>(fullSubscriptionList)));
                 subscriptionComboBox.addItemListener(new ItemListener() {
                     @Override
@@ -264,8 +261,8 @@ public class CreateStorageAccountForm extends JDialog {
                 progressIndicator.setIndeterminate(true);
 
                 try {
-                    final java.util.List<AffinityGroup> affinityGroups = AzureSDKManagerImpl.getManager().getAffinityGroups(subscription.getId().toString());
-                    final java.util.List<Location> locations = AzureSDKManagerImpl.getManager().getLocations(subscription.getId().toString());
+                    final java.util.List<AffinityGroup> affinityGroups = AzureManagerImpl.getManager().getAffinityGroups(subscription.getId().toString());
+                    final java.util.List<Location> locations = AzureManagerImpl.getManager().getLocations(subscription.getId().toString());
 
                     ApplicationManager.getApplication().invokeLater(new Runnable() {
                         @Override

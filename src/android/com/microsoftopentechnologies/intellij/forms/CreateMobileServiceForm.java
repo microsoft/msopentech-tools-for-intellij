@@ -17,21 +17,21 @@ package com.microsoftopentechnologies.intellij.forms;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
-import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.helpers.LinkListener;
+import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureManagerImpl;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.rest.AzureRestAPIHelper;
-import com.microsoftopentechnologies.tooling.msservices.helpers.azure.rest.AzureRestAPIManagerImpl;
 import com.microsoftopentechnologies.tooling.msservices.model.ms.SqlDb;
 import com.microsoftopentechnologies.tooling.msservices.model.ms.SqlServer;
-import com.microsoftopentechnologies.tooling.msservices.model.ms.Subscription;
+import com.microsoftopentechnologies.tooling.msservices.model.Subscription;
+import com.microsoftopentechnologies.tooling.msservices.model.vm.Location;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
@@ -123,7 +123,7 @@ public class CreateMobileServiceForm extends JDialog {
             @Override
             public void run() {
                 try {
-                    List<Subscription> subsList = AzureRestAPIManagerImpl.getManager().getSubscriptionList();
+                    List<Subscription> subsList = AzureManagerImpl.getManager().getSubscriptionList();
                     DefaultComboBoxModel subscriptionDefaultComboBoxModel = new DefaultComboBoxModel(subsList.toArray(new Subscription[subsList.size()]));
                     subscriptionComboBox.setModel(subscriptionDefaultComboBoxModel);
 
@@ -148,7 +148,7 @@ public class CreateMobileServiceForm extends JDialog {
 
                         try {
 
-                            UUID id = ((Subscription) subscriptionComboBox.getSelectedItem()).getId();
+                            String id = ((Subscription) subscriptionComboBox.getSelectedItem()).getId();
                             String name = nameTextField.getText();
                             String region = regionComboBox.getSelectedItem().toString();
                             String server = (serverComboBox.getSelectedItem() instanceof SqlDb ? ((SqlDb) serverComboBox.getSelectedItem()).getServer().getName() : null);
@@ -220,7 +220,7 @@ public class CreateMobileServiceForm extends JDialog {
                                 return;
                             }
 
-                            AzureRestAPIManagerImpl.getManager().createService(id, region, admin, pass, name, server, db);
+                            AzureManagerImpl.getManager().createMobileService(id, region, admin, pass, name, server, db);
 
                             serviceCreated.run();
 
@@ -264,7 +264,7 @@ public class CreateMobileServiceForm extends JDialog {
             @Override
             public void run() {
                 try {
-                    final List<String> locations = AzureRestAPIManagerImpl.getManager().getLocations(subscription.getId());
+                    final List<Location> locations = AzureManagerImpl.getManager().getLocations(subscription.getId());
 
                     ApplicationManager.getApplication().invokeLater(new Runnable() {
                         @Override
@@ -285,7 +285,7 @@ public class CreateMobileServiceForm extends JDialog {
             public void run() {
                 try {
                     final List<SqlDb> databaseList = new ArrayList<SqlDb>();
-                    List<SqlServer> sqlServerList = AzureRestAPIManagerImpl.getManager().getSqlServers(subscription.getId());
+                    List<SqlServer> sqlServerList = AzureManagerImpl.getManager().getSqlServers(subscription.getId());
 
                     ArrayList<Future<List<SqlDb>>> futures = new ArrayList<Future<List<SqlDb>>>();
 
@@ -293,7 +293,7 @@ public class CreateMobileServiceForm extends JDialog {
                         futures.add(ApplicationManager.getApplication().executeOnPooledThread(new Callable<List<SqlDb>>() {
                             @Override
                             public List<SqlDb> call() throws Exception {
-                                return AzureRestAPIManagerImpl.getManager().getSqlDb(subscription.getId(), server);
+                                return AzureManagerImpl.getManager().getSqlDb(subscription.getId(), server);
                             }
                         }));
                     }

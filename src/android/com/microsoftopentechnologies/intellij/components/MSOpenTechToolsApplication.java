@@ -16,7 +16,6 @@
 package com.microsoftopentechnologies.intellij.components;
 
 import com.google.gson.Gson;
-import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.CommandProcessor;
 import com.intellij.openapi.components.ApplicationComponent;
@@ -35,6 +34,7 @@ import com.microsoftopentechnologies.tooling.msservices.components.AppSettingsNa
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.tooling.msservices.components.PluginComponent;
 import com.microsoftopentechnologies.tooling.msservices.components.PluginSettings;
+import com.microsoftopentechnologies.tooling.msservices.helpers.IDEHelper;
 import com.microsoftopentechnologies.tooling.msservices.helpers.StringHelper;
 import org.jetbrains.annotations.NotNull;
 
@@ -84,7 +84,7 @@ public class MSOpenTechToolsApplication extends ApplicationComponent.Adapter imp
                     "settings for the MSOpenTech Tools plugin.", e);
         }
 
-        cleanTempData(PropertiesComponent.getInstance());
+        cleanTempData(DefaultLoader.getIdeHelper());
 
     }
 
@@ -123,7 +123,7 @@ public class MSOpenTechToolsApplication extends ApplicationComponent.Adapter imp
         }
     }
 
-    private void cleanTempData(PropertiesComponent propComp) {
+    private void cleanTempData(IDEHelper ideHelper) {
         // check the plugin version stored in the properties; if it
         // doesn't match with the current plugin version then we clear
         // all stored options
@@ -131,26 +131,27 @@ public class MSOpenTechToolsApplication extends ApplicationComponent.Adapter imp
         // suffix to AZURE_AUTHENTICATION_TOKEN. So clearing that requires that we enumerate the
         // current subscriptions and iterate over that list to clear the auth tokens for those
         // subscriptions.
-        PropertiesComponent properties = PropertiesComponent.getInstance();
-        String currentPluginVersion = properties.getValue(AppSettingsNames.CURRENT_PLUGIN_VERSION);
+
+        String currentPluginVersion = ideHelper.getProperty(AppSettingsNames.CURRENT_PLUGIN_VERSION);
 
         if (StringHelper.isNullOrWhiteSpace(currentPluginVersion) ||
                 !getSettings().getPluginVersion().equals(currentPluginVersion)) {
 
             String[] settings = new String[]{
-                    AppSettingsNames.AZURE_AUTHENTICATION_MODE,
-                    AppSettingsNames.AZURE_AUTHENTICATION_TOKEN,
-                    AppSettingsNames.O365_AUTHENTICATION_TOKEN,
-                    AppSettingsNames.SUBSCRIPTION_FILE
+                    AppSettingsNames.AAD_AUTHENTICATION_RESULTS,
+                    AppSettingsNames.O365_USER_INFO,
+                    AppSettingsNames.AZURE_SUBSCRIPTIONS,
+                    AppSettingsNames.AZURE_USER_INFO,
+                    AppSettingsNames.AZURE_USER_SUBSCRIPTIONS
             };
 
             for (String setting : settings) {
-                properties.unsetValue(setting);
+                ideHelper.unsetProperty(setting);
             }
         }
 
         // save the current plugin version
-        properties.setValue(AppSettingsNames.CURRENT_PLUGIN_VERSION, getSettings().getPluginVersion());
+        ideHelper.setProperty(AppSettingsNames.CURRENT_PLUGIN_VERSION, getSettings().getPluginVersion());
     }
 
 }

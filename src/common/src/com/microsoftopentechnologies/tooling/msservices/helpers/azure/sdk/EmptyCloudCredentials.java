@@ -34,7 +34,7 @@ public class EmptyCloudCredentials extends SubscriptionCloudCredentials {
 
     @Override
     public <T> void applyConfig(String profile, Map<String, Object> properties) {
-        // all of our logic is in the AuthTokenRequestFilter and the AzureSDKManagerADAuthDecorator
-        // classes; this is a "token" cloud credentials implementation (pun intended).
+        // all of our logic is in the AuthTokenRequestFilter class;
+        // this is a "token" cloud credentials implementation (pun intended).
     }
 }

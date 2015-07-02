@@ -1,19 +1,18 @@
 /**
  * Copyright 2014 Microsoft Open Technologies Inc.
- *
+ * <p/>
  * Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p/>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p/>
  * Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-
 package com.microsoftopentechnologies.intellij.forms;
 
 import com.google.common.base.Predicate;
@@ -21,7 +20,7 @@ import com.google.common.collect.Iterables;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
-import com.microsoftopentechnologies.tooling.msservices.helpers.azure.rest.AzureRestAPIManagerImpl;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureManagerImpl;
 import com.microsoftopentechnologies.tooling.msservices.model.ms.PermissionItem;
 import com.microsoftopentechnologies.tooling.msservices.model.ms.PermissionType;
 import com.microsoftopentechnologies.tooling.msservices.model.ms.Table;
@@ -34,7 +33,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
-import java.util.UUID;
 
 
 public class TableForm extends JDialog {
@@ -46,7 +44,7 @@ public class TableForm extends JDialog {
     private JComboBox updatePermissionComboBox;
     private JComboBox deletePermissionComboBox;
     private JComboBox readPermissionComboBox;
-    private UUID subscriptionId;
+    private String subscriptionId;
     private String serviceName;
     private Project project;
     private Table editingTable;
@@ -56,16 +54,19 @@ public class TableForm extends JDialog {
     public Project getProject() {
         return project;
     }
+
     public void setProject(Project project) {
         this.project = project;
     }
 
-    public void setSubscriptionId(UUID subscriptionId) {
+    public void setSubscriptionId(String subscriptionId) {
         this.subscriptionId = subscriptionId;
     }
+
     public void setServiceName(String serviceName) {
         this.serviceName = serviceName;
     }
+
     public void setAfterSave(Runnable afterSave) {
         this.afterSave = afterSave;
     }
@@ -84,7 +85,7 @@ public class TableForm extends JDialog {
 
         PermissionItem[] tablePermissions = PermissionItem.getTablePermissions();
 
-        if(editingTable != null) {
+        if (editingTable != null) {
             deletePermissionComboBox.setSelectedIndex(permissionIndex(tablePermissions, editingTable.getTablePermissions().getDelete()));
             insertPermisssionComboBox.setSelectedIndex(permissionIndex(tablePermissions, editingTable.getTablePermissions().getInsert()));
             readPermissionComboBox.setSelectedIndex(permissionIndex(tablePermissions, editingTable.getTablePermissions().getRead()));
@@ -141,14 +142,14 @@ public class TableForm extends JDialog {
 
                             final String tableName = tableNameTextField.getText().trim();
 
-                            if(!tableName.matches("^[A-Za-z][A-Za-z0-9_]+")) {
+                            if (!tableName.matches("^[A-Za-z][A-Za-z0-9_]+")) {
                                 JOptionPane.showMessageDialog(form, "Invalid table name. Table name must start with a letter, \n" +
                                         "contain only letters, numbers, and underscores.", "Service Explorer", JOptionPane.ERROR_MESSAGE);
                                 return;
                             }
 
                             int tableNameIndex = -1;
-                            if(existingTableNames != null) {
+                            if (existingTableNames != null) {
                                 tableNameIndex = Iterables.indexOf(existingTableNames, new Predicate<String>() {
                                     @Override
                                     public boolean apply(String name) {
@@ -157,7 +158,7 @@ public class TableForm extends JDialog {
                                 });
                             }
 
-                            if(tableNameIndex != -1) {
+                            if (tableNameIndex != -1) {
                                 JOptionPane.showMessageDialog(form, "Invalid table name. A table with that name already exists in this service.",
                                         "Error creating the table", JOptionPane.ERROR_MESSAGE);
                                 return;
@@ -165,12 +166,12 @@ public class TableForm extends JDialog {
 
                             form.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
-                            if(editingTable == null) {
-                                AzureRestAPIManagerImpl.getManager().createTable(subscriptionId, serviceName, tableName, tablePermissions);
+                            if (editingTable == null) {
+                                AzureManagerImpl.getManager().createTable(subscriptionId, serviceName, tableName, tablePermissions);
                             } else {
-                                AzureRestAPIManagerImpl.getManager().updateTable(subscriptionId, serviceName, tableName, tablePermissions);
+                                AzureManagerImpl.getManager().updateTable(subscriptionId, serviceName, tableName, tablePermissions);
                             }
-                            if(afterSave != null)
+                            if (afterSave != null)
                                 afterSave.run();
 
                             form.setVisible(false);
@@ -189,8 +190,8 @@ public class TableForm extends JDialog {
     }
 
     private int permissionIndex(PermissionItem[] p, PermissionType pt) {
-        for(int i = 0;i < p.length;i++) {
-            if(p[i].getType() == pt)
+        for (int i = 0; i < p.length; i++) {
+            if (p[i].getType() == pt)
                 return i;
         }
         return 0;

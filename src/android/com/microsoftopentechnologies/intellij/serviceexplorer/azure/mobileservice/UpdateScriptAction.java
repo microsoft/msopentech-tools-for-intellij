@@ -11,8 +11,9 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.tooling.msservices.helpers.Name;
+import com.microsoftopentechnologies.tooling.msservices.helpers.NotNull;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.tooling.msservices.helpers.azure.rest.AzureRestAPIManagerImpl;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureManagerImpl;
 import com.microsoftopentechnologies.tooling.msservices.model.ms.MobileService;
 import com.microsoftopentechnologies.tooling.msservices.model.ms.Script;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.NodeActionEvent;
@@ -22,7 +23,6 @@ import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.mo
 
 import javax.swing.*;
 import java.io.File;
-import java.util.UUID;
 
 @Name("Update script")
 public class UpdateScriptAction extends NodeActionListener {
@@ -54,7 +54,7 @@ public class UpdateScriptAction extends NodeActionListener {
         });
     }
 
-    public void saveScript(Project project, final Script script, final String serviceName, final UUID subscriptionId) throws AzureCmdException {
+    public void saveScript(Project project, final Script script, final String serviceName, final String subscriptionId) throws AzureCmdException {
         VirtualFile editorFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(new File(script.getLocalFilePath(serviceName)));
         if (editorFile != null) {
             FileEditor[] fe = FileEditorManager.getInstance(project).getAllEditors(editorFile);
@@ -79,10 +79,10 @@ public class UpdateScriptAction extends NodeActionListener {
 
             ProgressManager.getInstance().run(new Task.Backgroundable(project, "Uploading table script", false) {
                 @Override
-                public void run(ProgressIndicator progressIndicator) {
+                public void run(@NotNull ProgressIndicator progressIndicator) {
                     try {
                         progressIndicator.setIndeterminate(true);
-                        AzureRestAPIManagerImpl.getManager().uploadTableScript(
+                        AzureManagerImpl.getManager().uploadTableScript(
                                 subscriptionId,
                                 serviceName,
                                 script.getName(),

@@ -17,15 +17,13 @@ package com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.s
 
 import com.microsoftopentechnologies.tooling.msservices.helpers.ExternalStorageHelper;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
-import com.microsoftopentechnologies.tooling.msservices.helpers.azure.rest.AzureRestAPIManagerImpl;
-import com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk.AzureSDKManagerImpl;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureManagerImpl;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk.StorageClientSDKManagerImpl;
-import com.microsoftopentechnologies.tooling.msservices.model.ms.Subscription;
+import com.microsoftopentechnologies.tooling.msservices.model.Subscription;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.ClientStorageAccount;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.Node;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class StorageModule extends Node {
@@ -42,14 +40,13 @@ public class StorageModule extends Node {
         removeAllChildNodes();
 
         // load all Storage Accounts
-        ArrayList<Subscription> subscriptionList = AzureRestAPIManagerImpl.getManager().getSubscriptionList();
+        List<Subscription> subscriptionList = AzureManagerImpl.getManager().getSubscriptionList();
 
-        if (subscriptionList != null) {
-            for (Subscription subscription : subscriptionList) {
-                List<StorageAccount> storageAccounts = AzureSDKManagerImpl.getManager().getStorageAccounts(subscription.getId().toString());
-                for (StorageAccount sm : storageAccounts) {
-                    addChildNode(new StorageNode(this, sm));
-                }
+        for (Subscription subscription : subscriptionList) {
+            List<StorageAccount> storageAccounts = AzureManagerImpl.getManager().getStorageAccounts(subscription.getId());
+
+            for (StorageAccount sm : storageAccounts) {
+                addChildNode(new StorageNode(this, sm));
             }
         }
 

@@ -20,51 +20,58 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.directoryservices.Application;
 import com.microsoft.directoryservices.OAuth2PermissionGrant;
 import com.microsoft.directoryservices.ServicePrincipal;
-import com.microsoftopentechnologies.aad.adal4j.AuthenticationResult;
 import com.microsoftopentechnologies.tooling.msservices.helpers.NotNull;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.tooling.msservices.helpers.graph.ServicePermissionEntry;
 
-import java.io.IOException;
-import java.text.ParseException;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 public interface Office365Manager {
-    void setAuthenticationToken(AuthenticationResult token);
+    void authenticate() throws AzureCmdException;
 
-    AuthenticationResult getAuthenticationToken();
+    boolean authenticated();
 
-    boolean authenticated() throws ParseException;
-
-    void authenticate() throws IOException, ExecutionException, InterruptedException, ParseException;
+    void clearAuthentication();
 
     @NotNull
-    ListenableFuture<List<Application>> getApplicationList() throws ParseException;
-
-    ListenableFuture<Application> getApplicationByObjectId(String objectId) throws ParseException;
-
-    ListenableFuture<List<ServicePermissionEntry>> getO365PermissionsForApp(String objectId) throws ParseException;
-
-    ListenableFuture<Application> setO365PermissionsForApp(Application application, List<ServicePermissionEntry> permissionEntryList) throws ParseException;
-
-    ListenableFuture<Application> updateApplication(Application application) throws ParseException;
-
-    ListenableFuture<List<ServicePrincipal>> getServicePrincipalsForO365() throws ParseException;
-
-    ListenableFuture<List<ServicePrincipal>> getServicePrincipals() throws ParseException;
-
-    ListenableFuture<List<OAuth2PermissionGrant>> getPermissionGrants() throws ParseException;
-
-    ListenableFuture<Application> registerApplication(@NotNull Application application) throws ParseException;
-
-    void setApplicationForProject(Project project, Application application);
-
-    ListenableFuture<Application> getApplicationForProject(Project project) throws ParseException;
+    ListenableFuture<List<Application>> getApplicationList();
 
     @NotNull
-    ListenableFuture<List<ServicePrincipal>> getServicePrincipalsForApp(@NotNull Application application) throws ParseException;
+    ListenableFuture<Application> getApplicationByObjectId(@NotNull String objectId);
 
-    ListenableFuture<List<ServicePrincipal>> getO365ServicePrincipalsForApp(@NotNull final Application application) throws ParseException;
+    @NotNull
+    ListenableFuture<List<ServicePermissionEntry>> getO365PermissionsForApp(@NotNull String objectId);
 
-    ListenableFuture<List<ServicePrincipal>> addServicePrincipals(@NotNull List<ServicePrincipal> servicePrincipals) throws ParseException;
+    @NotNull
+    ListenableFuture<Application> setO365PermissionsForApp(@NotNull Application application,
+                                                           @NotNull List<ServicePermissionEntry> permissionEntryList);
+
+    @NotNull
+    ListenableFuture<Application> updateApplication(@NotNull Application application);
+
+    @NotNull
+    ListenableFuture<List<ServicePrincipal>> getServicePrincipalsForO365();
+
+    @NotNull
+    ListenableFuture<List<ServicePrincipal>> getServicePrincipals();
+
+    @NotNull
+    ListenableFuture<List<OAuth2PermissionGrant>> getPermissionGrants();
+
+    @NotNull
+    ListenableFuture<Application> registerApplication(@NotNull Application application);
+
+    void setApplicationForProject(@NotNull Project project, @NotNull Application application);
+
+    @NotNull
+    ListenableFuture<Application> getApplicationForProject(@NotNull Project project);
+
+    @NotNull
+    ListenableFuture<List<ServicePrincipal>> getServicePrincipalsForApp(@NotNull Application application);
+
+    @NotNull
+    ListenableFuture<List<ServicePrincipal>> getO365ServicePrincipalsForApp(@NotNull Application application);
+
+    @NotNull
+    ListenableFuture<List<ServicePrincipal>> addServicePrincipals(@NotNull List<ServicePrincipal> servicePrincipals);
 }
