@@ -339,12 +339,12 @@ public class IDEHelperImpl implements IDEHelper {
             public void run() {
                 ProgressManager.getInstance().run(new BackgroundLoader(node, future, (Project) projectObject, name, false));
             }
-        });
+        }, ModalityState.any());
     }
 
     @Override
     public void invokeLater(@NotNull Runnable runnable) {
-        ApplicationManager.getApplication().invokeLater(runnable);
+        ApplicationManager.getApplication().invokeLater(runnable, ModalityState.any());
     }
 
     @Override
