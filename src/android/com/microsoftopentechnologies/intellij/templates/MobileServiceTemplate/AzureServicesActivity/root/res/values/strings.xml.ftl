@@ -8,7 +8,7 @@
 </#if>
 <#if parameters.hasNotificationHub>
     <string name="nh_sender_id_${activityToLayout(activityClass)}">${parameters.sender}</string>
-    <string name="nh_conn_str_${activityToLayout(activityClass)}">${parameters.connStr}</string>
+    <string name="nh_conn_str_${activityToLayout(activityClass)}">${parameters.connStr?xml}</string>
     <string name="nh_name_${activityToLayout(activityClass)}">${parameters.hub}</string>
 </#if>
 </resources>

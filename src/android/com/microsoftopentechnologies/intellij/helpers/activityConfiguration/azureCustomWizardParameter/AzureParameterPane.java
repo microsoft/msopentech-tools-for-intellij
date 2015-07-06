@@ -17,6 +17,7 @@
 package com.microsoftopentechnologies.intellij.helpers.activityConfiguration.azureCustomWizardParameter;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.intellij.ide.DataManager;
 import com.intellij.ide.projectView.ProjectView;
 import com.intellij.openapi.actionSystem.DataContext;
@@ -181,7 +182,9 @@ public class AzureParameterPane extends JPanel {
                 && connectionString != null
                 && hubName != null)) {
 
-            Gson gson = new Gson();
+            GsonBuilder gsonBuilder = new GsonBuilder();
+            gsonBuilder.disableHtmlEscaping();
+            Gson gson = gsonBuilder.create();
 
             AzureParameters azureParameters = new AzureParameters(
                     mobileServicesCheckBox.isSelected(),
