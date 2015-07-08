@@ -15,6 +15,7 @@
  */
 package com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.storage;
 
+import com.microsoft.windowsazure.management.storage.models.StorageAccountTypes;
 import com.microsoftopentechnologies.tooling.msservices.helpers.ExternalStorageHelper;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureManagerImpl;
@@ -46,7 +47,15 @@ public class StorageModule extends Node {
             List<StorageAccount> storageAccounts = AzureManagerImpl.getManager().getStorageAccounts(subscription.getId());
 
             for (StorageAccount sm : storageAccounts) {
-                addChildNode(new StorageNode(this, sm));
+                String type = sm.getType();
+
+                if(type.equals(StorageAccountTypes.STANDARD_GRS)
+                        || type.equals(StorageAccountTypes.STANDARD_LRS)
+                        || type.equals(StorageAccountTypes.STANDARD_RAGRS)
+                        || type.equals(StorageAccountTypes.STANDARD_ZRS)) {
+
+                    addChildNode(new StorageNode(this, sm));
+                }
             }
         }
 
