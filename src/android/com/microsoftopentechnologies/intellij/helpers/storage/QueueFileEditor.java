@@ -32,10 +32,12 @@ import com.microsoftopentechnologies.intellij.forms.ViewMessageForm;
 import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureManagerImpl;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk.StorageClientSDKManagerImpl;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.ClientStorageAccount;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.Queue;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.QueueMessage;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.EventHelper.EventWaitHandle;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -59,6 +61,10 @@ public class QueueFileEditor implements FileEditor {
     private JButton clearQueueButton;
     private JTable queueTable;
     private List<QueueMessage> queueMessages;
+
+    private EventWaitHandle subscriptionsChanged;
+    private boolean registeredSubscriptionsChanged;
+    private final Object subscriptionsChangedSync = new Object();
 
     public QueueFileEditor() {
         queueTable.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -212,6 +218,11 @@ public class QueueFileEditor implements FileEditor {
                 }
             }
         });
+
+        try {
+            registerSubscriptionsChanged();
+        } catch (AzureCmdException ignored) {
+        }
     }
 
     public void fillGrid() {
@@ -407,6 +418,10 @@ public class QueueFileEditor implements FileEditor {
 
     @Override
     public void dispose() {
+        try {
+            unregisterSubscriptionsChanged();
+        } catch (AzureCmdException ignored) {
+        }
     }
 
     @Nullable
@@ -417,5 +432,49 @@ public class QueueFileEditor implements FileEditor {
 
     @Override
     public <T> void putUserData(@NotNull Key<T> key, @Nullable T t) {
+    }
+
+    private void registerSubscriptionsChanged()
+            throws AzureCmdException {
+        synchronized (subscriptionsChangedSync) {
+            if (subscriptionsChanged == null) {
+                subscriptionsChanged = AzureManagerImpl.getManager().registerSubscriptionsChanged();
+            }
+
+            registeredSubscriptionsChanged = true;
+
+            DefaultLoader.getIdeHelper().executeOnPooledThread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        subscriptionsChanged.waitEvent(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (registeredSubscriptionsChanged) {
+                                    Object openedFile = DefaultLoader.getIdeHelper().getOpenedFile(project, storageAccount, queue);
+
+                                    if (openedFile != null) {
+                                        DefaultLoader.getIdeHelper().closeFile(project, openedFile);
+                                    }
+                                }
+                            }
+                        });
+                    } catch (AzureCmdException ignored) {
+                    }
+                }
+            });
+        }
+    }
+
+    private void unregisterSubscriptionsChanged()
+            throws AzureCmdException {
+        synchronized (subscriptionsChangedSync) {
+            registeredSubscriptionsChanged = false;
+
+            if (subscriptionsChanged != null) {
+                AzureManagerImpl.getManager().unregisterSubscriptionsChanged(subscriptionsChanged);
+                subscriptionsChanged = null;
+            }
+        }
     }
 }

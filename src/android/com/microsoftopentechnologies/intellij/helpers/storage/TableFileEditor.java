@@ -32,10 +32,12 @@ import com.microsoftopentechnologies.intellij.forms.TablesQueryDesigner;
 import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureManagerImpl;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk.StorageClientSDKManagerImpl;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.ClientStorageAccount;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.Table;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.TableEntity;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.EventHelper.EventWaitHandle;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -65,6 +67,10 @@ public class TableFileEditor implements FileEditor {
     private JButton queryDesignerButton;
     private JTable entitiesTable;
     private List<TableEntity> tableEntities;
+
+    private EventWaitHandle subscriptionsChanged;
+    private boolean registeredSubscriptionsChanged;
+    private final Object subscriptionsChangedSync = new Object();
 
     public TableFileEditor() {
         ActionListener queryActionListener = new ActionListener() {
@@ -178,6 +184,11 @@ public class TableFileEditor implements FileEditor {
             public void keyReleased(KeyEvent keyEvent) {
             }
         });
+
+        try {
+            registerSubscriptionsChanged();
+        } catch (AzureCmdException ignored) {
+        }
     }
 
     private JPopupMenu createTablePopUp() {
@@ -208,7 +219,7 @@ public class TableFileEditor implements FileEditor {
     private void editEntity() {
         TableEntity[] selectedEntities = getSelectedEntities();
 
-        if (selectedEntities.length > 0) {
+        if (selectedEntities != null && selectedEntities.length > 0) {
             final TableEntity selectedEntity = selectedEntities[0];
 
             final TableEntityForm form = new TableEntityForm();
@@ -276,7 +287,7 @@ public class TableFileEditor implements FileEditor {
 
                 for (TableEntity tableEntity : tableEntities) {
                     for (String column : columnData.keySet()) {
-                        if(!column.equals(PARTITION_KEY) && !column.equals(ROW_KEY) && !column.equals(TIMESTAMP)) {
+                        if (!column.equals(PARTITION_KEY) && !column.equals(ROW_KEY) && !column.equals(TIMESTAMP)) {
                             columnData.get(column).add(tableEntity.getProperties().containsKey(column)
                                     ? getFormattedProperty(tableEntity.getProperties().get(column))
                                     : "");
@@ -484,6 +495,10 @@ public class TableFileEditor implements FileEditor {
 
     @Override
     public void dispose() {
+        try {
+            unregisterSubscriptionsChanged();
+        } catch (AzureCmdException ignored) {
+        }
     }
 
     @Nullable
@@ -494,5 +509,49 @@ public class TableFileEditor implements FileEditor {
 
     @Override
     public <T> void putUserData(@NotNull Key<T> key, @Nullable T t) {
+    }
+
+    private void registerSubscriptionsChanged()
+            throws AzureCmdException {
+        synchronized (subscriptionsChangedSync) {
+            if (subscriptionsChanged == null) {
+                subscriptionsChanged = AzureManagerImpl.getManager().registerSubscriptionsChanged();
+            }
+
+            registeredSubscriptionsChanged = true;
+
+            DefaultLoader.getIdeHelper().executeOnPooledThread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        subscriptionsChanged.waitEvent(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (registeredSubscriptionsChanged) {
+                                    Object openedFile = DefaultLoader.getIdeHelper().getOpenedFile(project, storageAccount, table);
+
+                                    if (openedFile != null) {
+                                        DefaultLoader.getIdeHelper().closeFile(project, openedFile);
+                                    }
+                                }
+                            }
+                        });
+                    } catch (AzureCmdException ignored) {
+                    }
+                }
+            });
+        }
+    }
+
+    private void unregisterSubscriptionsChanged()
+            throws AzureCmdException {
+        synchronized (subscriptionsChangedSync) {
+            registeredSubscriptionsChanged = false;
+
+            if (subscriptionsChanged != null) {
+                AzureManagerImpl.getManager().unregisterSubscriptionsChanged(subscriptionsChanged);
+                subscriptionsChanged = null;
+            }
+        }
     }
 }

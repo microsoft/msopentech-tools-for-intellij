@@ -29,6 +29,7 @@ import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.treeStructure.Tree;
 import com.microsoftopentechnologies.intellij.forms.ManageSubscriptionForm;
 import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.tooling.msservices.helpers.collections.ListChangeListener;
 import com.microsoftopentechnologies.tooling.msservices.helpers.collections.ListChangedEvent;
 import com.microsoftopentechnologies.tooling.msservices.helpers.collections.ObservableList;
@@ -81,6 +82,11 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
 
         // setup toolbar icons
         addToolbarItems(toolWindow);
+
+        try {
+            azureServiceModule.registerSubscriptionsChanged();
+        } catch (AzureCmdException ignored) {
+        }
     }
 
     private DefaultMutableTreeNode initRoot() {
@@ -318,7 +324,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
                             ManageSubscriptionForm form = new ManageSubscriptionForm(anActionEvent.getProject());
                             UIHelperImpl.packAndCenterJDialog(form);
                             form.setVisible(true);
-                            azureServiceModule.load();
+                            //azureServiceModule.load();
                         }
                     });
         }

@@ -50,7 +50,7 @@ public class UpdateCustomAPIAction extends NodeActionListener {
     public void actionPerformed(NodeActionEvent e) {
         try {
             // get the parent MobileServiceNode node
-            MobileServiceNode mobileServiceNode = (MobileServiceNode) customAPINode.findParentByType(MobileServiceNode.class);
+            MobileServiceNode mobileServiceNode = customAPINode.findParentByType(MobileServiceNode.class);
             MobileService mobileService = mobileServiceNode.getMobileService();
             saveCustomAPI((Project) customAPINode.getProject(), mobileService.getName(), mobileService.getSubcriptionId());
         } catch (AzureCmdException e1) {

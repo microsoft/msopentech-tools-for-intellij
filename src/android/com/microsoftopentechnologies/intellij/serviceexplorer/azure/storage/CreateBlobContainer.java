@@ -1,13 +1,13 @@
 package com.microsoftopentechnologies.intellij.serviceexplorer.azure.storage;
 
 import com.intellij.openapi.project.Project;
-import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
-import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.intellij.forms.CreateBlobContainerForm;
+import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
 import com.microsoftopentechnologies.tooling.msservices.helpers.Name;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.storage.BlobModule;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.storage.ClientStorageNode;
 
 @Name("Create blob container")
 public class CreateBlobContainer extends NodeActionListener {
@@ -28,12 +28,11 @@ public class CreateBlobContainer extends NodeActionListener {
             @Override
             public void run() {
                 blobModule.getParent().removeAllChildNodes();
-                blobModule.getParent().load();
+                ((ClientStorageNode) blobModule.getParent()).load();
             }
         });
 
         UIHelperImpl.packAndCenterJDialog(form);
         form.setVisible(true);
-
     }
 }

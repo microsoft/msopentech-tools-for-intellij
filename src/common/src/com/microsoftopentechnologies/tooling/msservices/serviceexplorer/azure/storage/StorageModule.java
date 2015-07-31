@@ -17,27 +17,31 @@ package com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.s
 
 import com.microsoft.windowsazure.management.storage.models.StorageAccountTypes;
 import com.microsoftopentechnologies.tooling.msservices.helpers.ExternalStorageHelper;
+import com.microsoftopentechnologies.tooling.msservices.helpers.NotNull;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureManagerImpl;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk.StorageClientSDKManagerImpl;
 import com.microsoftopentechnologies.tooling.msservices.model.Subscription;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.ClientStorageAccount;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.StorageAccount;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.EventHelper.EventStateHandle;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.Node;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.AzureRefreshableNode;
 
 import java.util.List;
 
-public class StorageModule extends Node {
+public class StorageModule extends AzureRefreshableNode {
     private static final String STORAGE_MODULE_ID = StorageModule.class.getName();
     private static final String ICON_PATH = "storage.png";
     private static final String BASE_MODULE_NAME = "Storage";
 
     public StorageModule(Node parent) {
-        super(STORAGE_MODULE_ID, BASE_MODULE_NAME, parent, ICON_PATH, true);
+        super(STORAGE_MODULE_ID, BASE_MODULE_NAME, parent, ICON_PATH);
     }
 
     @Override
-    public void refreshItems() throws AzureCmdException {
+    protected void refresh(@NotNull EventStateHandle eventState)
+            throws AzureCmdException {
         removeAllChildNodes();
 
         // load all Storage Accounts
@@ -45,6 +49,10 @@ public class StorageModule extends Node {
 
         for (Subscription subscription : subscriptionList) {
             List<StorageAccount> storageAccounts = AzureManagerImpl.getManager().getStorageAccounts(subscription.getId());
+
+            if (eventState.isEventTriggered()) {
+                return;
+            }
 
             for (StorageAccount sm : storageAccounts) {
                 String type = sm.getType();
@@ -62,6 +70,11 @@ public class StorageModule extends Node {
         // load External Accounts
         for (ClientStorageAccount clientStorageAccount : ExternalStorageHelper.getList()) {
             ClientStorageAccount storageAccount = StorageClientSDKManagerImpl.getManager().getStorageAccount(clientStorageAccount.getConnectionString());
+
+            if (eventState.isEventTriggered()) {
+                return;
+            }
+
             addChildNode(new ExternalStorageNode(this, storageAccount));
         }
     }

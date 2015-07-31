@@ -15,7 +15,6 @@
  */
 package com.microsoftopentechnologies.tooling.msservices.helpers;
 
-import com.google.common.util.concurrent.SettableFuture;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.*;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.Node;
 import org.apache.commons.lang3.tuple.Pair;
@@ -23,14 +22,9 @@ import org.apache.commons.lang3.tuple.Pair;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 
 public interface IDEHelper {
     void openFile(@NotNull File file, @NotNull Node node);
-
-    void runInBackground(@Nullable Object project, @NotNull String name, boolean canBeCancelled,
-                         boolean isIndeterminate, @Nullable String indicatorText,
-                         Runnable runnable);
 
     void saveFile(@NotNull File file, @NotNull ByteArrayOutputStream buff, @NotNull Node node);
 
@@ -43,7 +37,7 @@ public interface IDEHelper {
 
     <T extends StorageServiceTreeItem> void openItem(@NotNull Object projectObject,
                                                      @Nullable ClientStorageAccount storageAccount,
-                                                     @NotNull T blobContainer,
+                                                     @NotNull T item,
                                                      @Nullable String itemType,
                                                      @NotNull String itemName,
                                                      @Nullable String iconName);
@@ -53,7 +47,7 @@ public interface IDEHelper {
     @Nullable
     <T extends StorageServiceTreeItem> Object getOpenedFile(@NotNull Object projectObject,
                                                             @NotNull ClientStorageAccount storageAccount,
-                                                            @NotNull T blobContainer);
+                                                            @NotNull T item);
 
     void closeFile(@NotNull Object projectObject, @NotNull Object openedFile);
 
@@ -63,14 +57,15 @@ public interface IDEHelper {
 
     void refreshTable(@NotNull Object projectObject, @NotNull ClientStorageAccount storageAccount, @NotNull Table table);
 
-    void invokeBackgroundLoader(@Nullable Object projectObject, @NotNull Node node,
-                                @NotNull SettableFuture<List<Node>> future, @NotNull String name);
-
     void invokeLater(@NotNull Runnable runnable);
 
     void invokeAndWait(@NotNull Runnable runnable);
 
     void executeOnPooledThread(@NotNull Runnable runnable);
+
+    void runInBackground(@Nullable Object project, @NotNull String name, boolean canBeCancelled,
+                         boolean isIndeterminate, @Nullable String indicatorText,
+                         Runnable runnable);
 
     @Nullable
     String getProperty(@NotNull Object projectObject, @NotNull String name);

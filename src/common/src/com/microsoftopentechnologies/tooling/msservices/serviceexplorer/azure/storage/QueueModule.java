@@ -15,28 +15,40 @@
  */
 package com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.storage;
 
+import com.microsoftopentechnologies.tooling.msservices.helpers.NotNull;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk.StorageClientSDKManagerImpl;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.ClientStorageAccount;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.Queue;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.EventHelper.EventStateHandle;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.Node;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.AzureRefreshableNode;
 
-public class QueueModule extends Node {
+import java.util.List;
+
+public class QueueModule extends AzureRefreshableNode {
     private static final String QUEUES = "Queues";
     final ClientStorageAccount storageAccount;
 
-    public QueueModule(Node parent, ClientStorageAccount storageAccount) {
-        super(QUEUES + storageAccount.getName(), QUEUES, parent, null, true);
+    public QueueModule(ClientStorageNode parent, ClientStorageAccount storageAccount) {
+        super(QUEUES + storageAccount.getName(), QUEUES, parent, null);
 
         this.storageAccount = storageAccount;
         this.parent = parent;
     }
 
     @Override
-    protected void refreshItems() throws AzureCmdException {
+    protected void refresh(@NotNull EventStateHandle eventState)
+            throws AzureCmdException {
         removeAllChildNodes();
 
-        for (Queue queue : StorageClientSDKManagerImpl.getManager().getQueues(storageAccount)) {
+        final List<Queue> queues = StorageClientSDKManagerImpl.getManager().getQueues(storageAccount);
+
+        if (eventState.isEventTriggered()) {
+            return;
+        }
+
+        for (Queue queue : queues) {
             addChildNode(new QueueNode(this, storageAccount, queue));
         }
     }

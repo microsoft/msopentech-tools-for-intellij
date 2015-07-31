@@ -24,7 +24,7 @@ public class TableColumnNode extends Node {
     protected Column column;
 
     public TableColumnNode(Node parent, Column column) {
-        super(column.getName(), column.toString(), parent, ICON_PATH, false);
+        super(column.getName(), column.toString(), parent, ICON_PATH);
         this.column = column;
     }
 }

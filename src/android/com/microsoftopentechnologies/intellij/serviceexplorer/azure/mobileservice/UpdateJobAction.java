@@ -49,7 +49,7 @@ public class UpdateJobAction extends NodeActionListener {
     @Override
     public void actionPerformed(NodeActionEvent e) {
         // get the parent MobileServiceNode node
-        MobileServiceNode mobileServiceNode = (MobileServiceNode) scheduledJobNode.findParentByType(MobileServiceNode.class);
+        MobileServiceNode mobileServiceNode = scheduledJobNode.findParentByType(MobileServiceNode.class);
         final MobileService mobileService = mobileServiceNode.getMobileService();
 
         VirtualFile editorFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(new File(scheduledJobNode.getJob().getLocalFilePath(mobileService.getName())));

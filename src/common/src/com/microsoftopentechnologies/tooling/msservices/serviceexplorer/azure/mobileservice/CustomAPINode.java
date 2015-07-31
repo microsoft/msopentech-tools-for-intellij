@@ -27,7 +27,7 @@ public class CustomAPINode extends ScriptNodeBase {
     protected CustomAPI customAPI;
 
     public CustomAPINode(Node parent, CustomAPI customAPI) {
-        super(customAPI.getName(), customAPI.getName(), parent, ICON_PATH, false);
+        super(customAPI.getName(), customAPI.getName(), parent, ICON_PATH);
         this.customAPI = customAPI;
     }
 
@@ -37,7 +37,8 @@ public class CustomAPINode extends ScriptNodeBase {
     }
 
     @Override
-    protected void downloadScript(MobileService mobileService, String scriptName, String localFilePath) throws AzureCmdException {
+    protected void downloadScript(MobileService mobileService, String scriptName, String localFilePath)
+            throws AzureCmdException {
         AzureManagerImpl.getManager().downloadAPIScript(
                 mobileService.getSubcriptionId(),
                 mobileService.getName(),

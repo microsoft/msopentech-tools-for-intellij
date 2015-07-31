@@ -15,28 +15,40 @@
  */
 package com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.storage;
 
+import com.microsoftopentechnologies.tooling.msservices.helpers.NotNull;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk.StorageClientSDKManagerImpl;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.ClientStorageAccount;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.Table;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.EventHelper.EventStateHandle;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.Node;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.AzureRefreshableNode;
 
-public class TableModule extends Node {
+import java.util.List;
+
+public class TableModule extends AzureRefreshableNode {
     private static final String TABLES = "Tables";
     final ClientStorageAccount storageAccount;
 
-    public TableModule(Node parent, ClientStorageAccount storageAccount) {
-        super(TABLES + storageAccount.getName(), TABLES, parent, null, true);
+    public TableModule(ClientStorageNode parent, ClientStorageAccount storageAccount) {
+        super(TABLES + storageAccount.getName(), TABLES, parent, null);
 
         this.storageAccount = storageAccount;
         this.parent = parent;
     }
 
     @Override
-    protected void refreshItems() throws AzureCmdException {
+    protected void refresh(@NotNull EventStateHandle eventState)
+            throws AzureCmdException {
         removeAllChildNodes();
 
-        for (Table table : StorageClientSDKManagerImpl.getManager().getTables(storageAccount)) {
+        final List<Table> tables = StorageClientSDKManagerImpl.getManager().getTables(storageAccount);
+
+        if (eventState.isEventTriggered()) {
+            return;
+        }
+
+        for (Table table : tables) {
             addChildNode(new TableNode(this, storageAccount, table));
         }
     }

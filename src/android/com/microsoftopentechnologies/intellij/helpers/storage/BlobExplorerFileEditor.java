@@ -27,15 +27,15 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
-import com.intellij.util.io.IOUtil;
 import com.microsoftopentechnologies.intellij.forms.UploadBlobFileForm;
 import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.tooling.msservices.helpers.CallableSingleArg;
-import com.microsoftopentechnologies.tooling.msservices.helpers.OpenSSLHelper;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
+import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureManagerImpl;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.sdk.StorageClientSDKManagerImpl;
 import com.microsoftopentechnologies.tooling.msservices.model.storage.*;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.EventHelper.EventWaitHandle;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import sun.misc.IOUtils;
@@ -81,6 +81,10 @@ public class BlobExplorerFileEditor implements FileEditor {
 
     private LinkedList<BlobDirectory> directoryQueue = new LinkedList<BlobDirectory>();
     private List<BlobItem> blobItems;
+
+    private EventWaitHandle subscriptionsChanged;
+    private boolean registeredSubscriptionsChanged;
+    private final Object subscriptionsChangedSync = new Object();
 
     public BlobExplorerFileEditor() {
         blobListTable.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -275,6 +279,11 @@ public class BlobExplorerFileEditor implements FileEditor {
                 uploadFile();
             }
         });
+
+        try {
+            registerSubscriptionsChanged();
+        } catch (AzureCmdException ignored) {
+        }
     }
 
     public void fillGrid() {
@@ -291,7 +300,7 @@ public class BlobExplorerFileEditor implements FileEditor {
                     }
 
                     blobItems = StorageClientSDKManagerImpl.getManager().getBlobItems(storageAccount, directoryQueue.peekLast());
-                    
+
                     if (!queryTextField.getText().isEmpty()) {
                         for (int i = blobItems.size() - 1; i >= 0; i--) {
                             BlobItem blobItem = blobItems.get(i);
@@ -571,7 +580,7 @@ public class BlobExplorerFileEditor implements FileEditor {
                                     try {
                                         StorageClientSDKManagerImpl.getManager().downloadBlobFileContent(storageAccount, fileSelection, bufferedOutputStream);
 
-                                        if(open && targetFile.exists()) {
+                                        if (open && targetFile.exists()) {
                                             Desktop.getDesktop().open(targetFile);
                                         }
                                     } catch (AzureCmdException e) {
@@ -829,6 +838,10 @@ public class BlobExplorerFileEditor implements FileEditor {
 
     @Override
     public void dispose() {
+        try {
+            unregisterSubscriptionsChanged();
+        } catch (AzureCmdException ignored) {
+        }
     }
 
     @Nullable
@@ -851,5 +864,49 @@ public class BlobExplorerFileEditor implements FileEditor {
 
     public void setProject(Project project) {
         this.project = project;
+    }
+
+    private void registerSubscriptionsChanged()
+            throws AzureCmdException {
+        synchronized (subscriptionsChangedSync) {
+            if (subscriptionsChanged == null) {
+                subscriptionsChanged = AzureManagerImpl.getManager().registerSubscriptionsChanged();
+            }
+
+            registeredSubscriptionsChanged = true;
+
+            DefaultLoader.getIdeHelper().executeOnPooledThread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        subscriptionsChanged.waitEvent(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (registeredSubscriptionsChanged) {
+                                    Object openedFile = DefaultLoader.getIdeHelper().getOpenedFile(project, storageAccount, blobContainer);
+
+                                    if (openedFile != null) {
+                                        DefaultLoader.getIdeHelper().closeFile(project, openedFile);
+                                    }
+                                }
+                            }
+                        });
+                    } catch (AzureCmdException ignored) {
+                    }
+                }
+            });
+        }
+    }
+
+    private void unregisterSubscriptionsChanged()
+            throws AzureCmdException {
+        synchronized (subscriptionsChangedSync) {
+            registeredSubscriptionsChanged = false;
+
+            if (subscriptionsChanged != null) {
+                AzureManagerImpl.getManager().unregisterSubscriptionsChanged(subscriptionsChanged);
+                subscriptionsChanged = null;
+            }
+        }
     }
 }

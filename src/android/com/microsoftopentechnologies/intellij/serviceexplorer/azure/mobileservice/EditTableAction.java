@@ -16,47 +16,51 @@
 package com.microsoftopentechnologies.intellij.serviceexplorer.azure.mobileservice;
 
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.progress.ProgressIndicator;
-import com.intellij.openapi.progress.ProgressManager;
-import com.intellij.openapi.progress.Task;
+import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.project.Project;
+import com.microsoftopentechnologies.intellij.forms.TableForm;
 import com.microsoftopentechnologies.intellij.helpers.UIHelperImpl;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
-import com.microsoftopentechnologies.intellij.forms.TableForm;
 import com.microsoftopentechnologies.tooling.msservices.helpers.Name;
+import com.microsoftopentechnologies.tooling.msservices.helpers.NotNull;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureCmdException;
 import com.microsoftopentechnologies.tooling.msservices.helpers.azure.AzureManagerImpl;
 import com.microsoftopentechnologies.tooling.msservices.model.ms.MobileService;
 import com.microsoftopentechnologies.tooling.msservices.model.ms.Table;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.EventHelper.EventStateHandle;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.NodeActionEvent;
-import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.NodeActionListener;
+import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.AzureNodeActionListener;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.mobileservice.MobileServiceNode;
 import com.microsoftopentechnologies.tooling.msservices.serviceexplorer.azure.mobileservice.TableNode;
 
 @Name("Edit table")
-public class EditTableAction extends NodeActionListener {
+public class EditTableAction extends AzureNodeActionListener {
     private TableNode tableNode;
 
     public EditTableAction(TableNode tableNode) {
+        super(tableNode, "Retrieving Table Information");
         this.tableNode = tableNode;
     }
 
     @Override
-    public void actionPerformed(NodeActionEvent e) {
-        // get the parent MobileServiceNode node
-        MobileServiceNode mobileServiceNode = (MobileServiceNode) tableNode.findParentByType(MobileServiceNode.class);
-        final MobileService mobileService = mobileServiceNode.getMobileService();
+    protected void azureNodeAction(NodeActionEvent e, @NotNull EventStateHandle stateHandle)
+            throws AzureCmdException {
+        try {
+            // get the parent MobileServiceNode node
+            final MobileService mobileService = tableNode.findParentByType(MobileServiceNode.class).getMobileService();
 
-        runAsBackground("Editing table " + tableNode.getName() + "...", new Runnable() {
-            @Override
-            public void run() {
-                Table selectedTable = null;
-                try {
-                    selectedTable = AzureManagerImpl.getManager().showTableDetails(
-                            mobileService.getSubcriptionId(),
-                            mobileService.getName(),
-                            tableNode.getTable().getName());
+            final Table selectedTable = AzureManagerImpl.getManager().showTableDetails(
+                    mobileService.getSubcriptionId(),
+                    mobileService.getName(),
+                    tableNode.getTable().getName());
 
+            if (stateHandle.isEventTriggered()) {
+                return;
+            }
+
+            ApplicationManager.getApplication().invokeLater(new Runnable() {
+                @Override
+                public void run() {
                     TableForm form = new TableForm();
                     form.setServiceName(mobileService.getName());
                     form.setSubscriptionId(mobileService.getSubcriptionId());
@@ -64,25 +68,15 @@ public class EditTableAction extends NodeActionListener {
                     form.setProject((Project) tableNode.getProject());
                     UIHelperImpl.packAndCenterJDialog(form);
                     form.setVisible(true);
-                } catch (AzureCmdException e1) {
-                    DefaultLoader.getUIHelper().showException("Error editing table", e1);
                 }
-            }
-        });
+            }, ModalityState.any());
+        } catch (AzureCmdException e1) {
+            DefaultLoader.getUIHelper().showException("Error editing table", e1);
+        }
     }
 
-    public void runAsBackground(final String status, final Runnable runnable) {
-        ApplicationManager.getApplication().invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                ProgressManager.getInstance().run(
-                        new Task.Backgroundable((Project) tableNode.getProject(), status, false) {
-                            @Override
-                            public void run(ProgressIndicator progressIndicator) {
-                                runnable.run();
-                            }
-                        });
-            }
-        });
+    @Override
+    protected void onSubscriptionsChanged(NodeActionEvent e)
+            throws AzureCmdException {
     }
 }

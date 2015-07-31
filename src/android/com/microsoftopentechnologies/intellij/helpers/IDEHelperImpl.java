@@ -16,7 +16,6 @@
 package com.microsoftopentechnologies.intellij.helpers;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.util.concurrent.SettableFuture;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
@@ -34,7 +33,6 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.LightVirtualFile;
 import com.microsoftopentechnologies.intellij.forms.OpenSSLFinderForm;
 import com.microsoftopentechnologies.intellij.helpers.storage.*;
-import com.microsoftopentechnologies.intellij.serviceexplorer.BackgroundLoader;
 import com.microsoftopentechnologies.tooling.msservices.components.DefaultLoader;
 import com.microsoftopentechnologies.tooling.msservices.helpers.IDEHelper;
 import com.microsoftopentechnologies.tooling.msservices.helpers.NotNull;
@@ -50,13 +48,12 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Enumeration;
-import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 public class IDEHelperImpl implements IDEHelper {
-    public static Key<ClientStorageAccount> STORAGE_KEY = new Key<ClientStorageAccount>("storageAccount");
+    public static Key<ClientStorageAccount> STORAGE_KEY = new Key<ClientStorageAccount>("clientStorageAccount");
     private Map<Class<? extends StorageServiceTreeItem>, Key<? extends StorageServiceTreeItem>> name2Key = ImmutableMap.of(BlobContainer.class, BlobExplorerFileEditorProvider.CONTAINER_KEY,
             Queue.class, QueueExplorerFileEditorProvider.QUEUE_KEY,
             Table.class, TableExplorerFileEditorProvider.TABLE_KEY);
@@ -72,27 +69,6 @@ public class IDEHelperImpl implements IDEHelper {
                 } finally {
                     node.setLoading(false);
                 }
-            }
-        });
-    }
-
-    @Override
-    public void runInBackground(@Nullable Object project, @NotNull String name, boolean canBeCancelled,
-                                final boolean isIndeterminate, @Nullable final String indicatorText,
-                                final Runnable runnable) {
-        ProgressManager.getInstance().run(new Task.Backgroundable((Project) project,
-                name, canBeCancelled) {
-            @Override
-            public void run(@NotNull ProgressIndicator indicator) {
-                if (isIndeterminate) {
-                    indicator.setIndeterminate(true);
-                }
-
-                if (indicatorText != null) {
-                    indicator.setText(indicatorText);
-                }
-
-                runnable.run();
             }
         });
     }
@@ -237,8 +213,13 @@ public class IDEHelperImpl implements IDEHelper {
     }
 
     @Override
-    public void openItem(@NotNull Object projectObject, @NotNull Object itemVirtualFile) {
-        FileEditorManager.getInstance((Project) projectObject).openFile((VirtualFile) itemVirtualFile, true, true);
+    public void openItem(@NotNull final Object projectObject, @NotNull final Object itemVirtualFile) {
+        ApplicationManager.getApplication().invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                FileEditorManager.getInstance((Project) projectObject).openFile((VirtualFile) itemVirtualFile, true, true);
+            }
+        }, ModalityState.any());
     }
 
     @Nullable
@@ -264,8 +245,13 @@ public class IDEHelperImpl implements IDEHelper {
     }
 
     @Override
-    public void closeFile(@NotNull Object projectObject, @NotNull Object openedFile) {
-        FileEditorManager.getInstance((Project) projectObject).closeFile((VirtualFile) openedFile);
+    public void closeFile(@NotNull final Object projectObject, @NotNull final Object openedFile) {
+        ApplicationManager.getApplication().invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                FileEditorManager.getInstance((Project) projectObject).closeFile((VirtualFile) openedFile);
+            }
+        }, ModalityState.any());
     }
 
     @Override
@@ -330,21 +316,8 @@ public class IDEHelperImpl implements IDEHelper {
     }
 
     @Override
-    public void invokeBackgroundLoader(@Nullable final Object projectObject, @NotNull final Node node,
-                                       @NotNull final SettableFuture<List<Node>> future, @NotNull final String name) {
-        // background tasks via ProgressManager can be scheduled only on the
-        // dispatch thread
-        ApplicationManager.getApplication().invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                ProgressManager.getInstance().run(new BackgroundLoader(node, future, (Project) projectObject, name, false));
-            }
-        });
-    }
-
-    @Override
     public void invokeLater(@NotNull Runnable runnable) {
-        ApplicationManager.getApplication().invokeLater(runnable);
+        ApplicationManager.getApplication().invokeLater(runnable, ModalityState.any());
     }
 
     @Override
@@ -355,6 +328,34 @@ public class IDEHelperImpl implements IDEHelper {
     @Override
     public void executeOnPooledThread(@NotNull Runnable runnable) {
         ApplicationManager.getApplication().executeOnPooledThread(runnable);
+    }
+
+    @Override
+    public void runInBackground(@Nullable final Object project, @NotNull final String name, final boolean canBeCancelled,
+                                final boolean isIndeterminate, @Nullable final String indicatorText,
+                                final Runnable runnable) {
+        // background tasks via ProgressManager can be scheduled only on the
+        // dispatch thread
+        ApplicationManager.getApplication().invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                ProgressManager.getInstance().run(new Task.Backgroundable((Project) project,
+                        name, canBeCancelled) {
+                    @Override
+                    public void run(@NotNull ProgressIndicator indicator) {
+                        if (isIndeterminate) {
+                            indicator.setIndeterminate(true);
+                        }
+
+                        if (indicatorText != null) {
+                            indicator.setText(indicatorText);
+                        }
+
+                        runnable.run();
+                    }
+                });
+            }
+        }, ModalityState.any());
     }
 
     @Nullable
