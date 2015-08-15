@@ -15,7 +15,7 @@ limitations under the License.
 
 -->
 
-<componentsets version="2.7.0">
+<componentsets version="2.7.1">
 <!-- 
 *******************************************************************************
 HOW TO CREATE A NEW JDK PACKAGE DEPLOYMENT TEMPLATE:
@@ -260,12 +260,17 @@ them out of order will likely produce faulty logic.
 		<component deploydir="%SERVER_APPS_LOCATION%" deploymethod="copy" importsrc="${placeholder}" importmethod="${placeholder}" importas="${placeholder}" type="server.app"/>
 		<component deploymethod="exec" deploydir="%CATALINA_HOME%\bin" importas="startup.bat" type="server.start"/>
 		<downloads>
+			<download
+				name="Tomcat v8.0.24"
+				licenseurl="http://www.apache.org/licenses/LICENSE-2.0"
+				cloudaltsrc="https://azuredownloads.blob.core.windows.net/tomcat/apache-tomcat-8.0.24.zip"
+				home="%DEPLOYROOT%\apache-tomcat-8.0.24"	
+				default="true"/>	
 			<download 
 				name="Tomcat v8.0.20"
 				licenseurl="http://www.apache.org/licenses/LICENSE-2.0"
 				cloudaltsrc="https://azuredownloads.blob.core.windows.net/tomcat/apache-tomcat-8.0.20.zip"
-				home="%DEPLOYROOT%\apache-tomcat-8.0.20"
-				default="true"/>			
+				home="%DEPLOYROOT%\apache-tomcat-8.0.20"/>	
 		</downloads>
 	</componentset>
 
@@ -276,6 +281,11 @@ them out of order will likely produce faulty logic.
 		<component deploydir="%SERVER_APPS_LOCATION%" deploymethod="copy" importsrc="${placeholder}" importmethod="${placeholder}" importas="${placeholder}" type="server.app"/>
 		<component deploymethod="exec" deploydir="%CATALINA_HOME%\bin" importas="startup.bat" type="server.start"/>
 		<downloads>
+			<download 
+				name="Tomcat v7.0.63"
+				licenseurl="http://www.apache.org/licenses/LICENSE-2.0"
+				cloudaltsrc="https://azuredownloads.blob.core.windows.net/tomcat/apache-tomcat-7.0.63.zip"
+				home="%DEPLOYROOT%\apache-tomcat-7.0.63"/>						
 			<download 
 				name="Tomcat v7.0.59"
 				licenseurl="http://www.apache.org/licenses/LICENSE-2.0"
@@ -292,6 +302,11 @@ them out of order will likely produce faulty logic.
 		<component deploymethod="exec" deploydir="%CATALINA_HOME%\bin" importas="startup.bat" type="server.start"/>
 		<downloads>
 			<download 
+				name="Tomcat v6.0.44"
+				licenseurl="http://www.apache.org/licenses/LICENSE-2.0"
+				cloudaltsrc="https://azuredownloads.blob.core.windows.net/tomcat/apache-tomcat-6.0.44.zip"
+				home="%DEPLOYROOT%\apache-tomcat-6.0.44"/>
+			<download 
 				name="Tomcat v6.0.43"
 				licenseurl="http://www.apache.org/licenses/LICENSE-2.0"
 				cloudaltsrc="https://azuredownloads.blob.core.windows.net/tomcat/apache-tomcat-6.0.43.zip"
@@ -306,6 +321,11 @@ them out of order will likely produce faulty logic.
 		<component deploydir="%SERVER_APPS_LOCATION%" deploymethod="copy" importsrc="${placeholder}" importmethod="${placeholder}" importas="${placeholder}" type="server.app"/>
 		<component deploymethod="exec" deploydir="%JETTY_HOME%" importas="%JAVA_HOME%\bin\java.exe -jar start.jar" type="server.start"/>
 		<downloads>
+			<download 
+				name="Jetty v9.3.1"
+				licenseurl="http://www.eclipse.org/jetty/licenses.php"
+				cloudaltsrc="https://azuredownloads.blob.core.windows.net/jetty/jetty-distribution-9.3.1.v20150714.zip"
+				home="%DEPLOYROOT%\jetty-distribution-9.3.1.v20150714"/>
 			<download 
 				name="Jetty v9.2.9"
 				licenseurl="http://www.eclipse.org/jetty/licenses.php"
@@ -322,6 +342,11 @@ them out of order will likely produce faulty logic.
 		<component deploymethod="exec" deploydir="%JETTY_HOME%" importas="%JAVA_HOME%\bin\java.exe -jar start.jar" type="server.start"/>
 		<downloads>
 			<download 
+				name="Jetty v8.1.17"
+				licenseurl="http://www.eclipse.org/jetty/licenses.php"
+				cloudaltsrc="https://azuredownloads.blob.core.windows.net/jetty/jetty-distribution-8.1.17.v20150415.zip"
+				home="%DEPLOYROOT%\jetty-distribution-8.1.17.v20150415"/>
+			<download 
 				name="Jetty v8.1.16"
 				licenseurl="http://www.eclipse.org/jetty/licenses.php"
 				cloudaltsrc="https://azuredownloads.blob.core.windows.net/jetty/jetty-distribution-8.1.16.v20140903.zip"
@@ -336,6 +361,11 @@ them out of order will likely produce faulty logic.
 		<component deploydir="%SERVER_APPS_LOCATION%" deploymethod="copy" importsrc="${placeholder}" importmethod="${placeholder}" importas="${placeholder}" type="server.app"/>
 		<component deploymethod="exec" deploydir="%JETTY_HOME%" importas="%JAVA_HOME%\bin\java.exe -jar start.jar" type="server.start"/>
 		<downloads>
+			<download 
+				name="Jetty v7.6.17"
+				licenseurl="http://www.eclipse.org/jetty/licenses.php"
+				cloudaltsrc="https://azuredownloads.blob.core.windows.net/jetty/jetty-distribution-7.6.17.v20150415.zip"
+				home="%DEPLOYROOT%\jetty-distribution-7.6.17.v20150415"/>				
 			<download 
 				name="Jetty v7.6.16"
 				licenseurl="http://www.eclipse.org/jetty/licenses.php"

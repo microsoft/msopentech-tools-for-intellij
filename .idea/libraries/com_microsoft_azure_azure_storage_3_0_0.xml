@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="com.microsoft.azure:azure-storage:3.0.0" type="repository">
+    <properties maven-id="com.microsoft.azure:azure-storage:3.0.0" />
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/microsoft/azure/azure-storage/3.0.0/azure-storage-3.0.0.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/com/fasterxml/jackson/core/jackson-core/2.6.0/jackson-core-2.6.0.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/slf4j/slf4j-api/1.7.12/slf4j-api-1.7.12.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/apache/commons/commons-lang3/3.4/commons-lang3-3.4.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
