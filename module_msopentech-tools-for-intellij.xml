@@ -152,7 +152,7 @@
     <copy file="${path.variable.maven_repository}/org/slf4j/slf4j-api/1.7.12/slf4j-api-1.7.12.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/lib/slf4j-api-1.7.12.jar"/>
     <copy file="${path.variable.maven_repository}/org/apache/commons/commons-lang3/3.4/commons-lang3-3.4.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/lib/commons-lang3-3.4.jar"/>
     <copy file="${module.msopentech-tools-for-intellij.basedir}/lib/ProjectManagerLibrary.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/lib/ProjectManagerLibrary.jar"/>
-    <copy file="${path.variable.maven_repository}/org/apache/commons/commons-lang3/3.3.4/commons-lang3-3.4.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/lib/commons-lang3-3.4.jar"/>
+    <copy file="${path.variable.maven_repository}/org/apache/commons/commons-lang3/3.4/commons-lang3-3.4.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/lib/commons-lang3-3.4.jar"/>
     <copy file="${path.variable.maven_repository}/org/apache/httpcomponents/httpclient-cache/4.3.5/httpclient-cache-4.3.5.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/lib/httpclient-cache-4.3.5.jar"/>
     <copy file="${path.variable.maven_repository}/org/apache/httpcomponents/httpclient/4.3.5/httpclient-4.3.5.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/lib/httpclient-4.3.5.jar"/>
     <copy file="${path.variable.maven_repository}/org/apache/httpcomponents/httpcore/4.3.2/httpcore-4.3.2.jar" tofile="${tmp.dir.msopentech-tools-for-intellij}/lib/httpcore-4.3.2.jar"/>
