@@ -1,4 +1,4 @@
-MS Open Tech Tools:  IntelliJ and Android Studio Plugin for Microsoft Services (DEPRACATED)
+MS Open Tech Tools:  IntelliJ and Android Studio Plugin for Microsoft Services (DEPRECATED)
 ================================================================================
 
 > :warning: **NOTE** This project has been deprecated in favor of the newer plugin versions released by Microsoft, which are equivalent in functionality, but split across 3 separate plugins:
