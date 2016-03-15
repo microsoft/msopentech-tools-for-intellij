@@ -1,11 +1,11 @@
 MS Open Tech Tools:  IntelliJ and Android Studio Plugin for Microsoft Services (DEPRECATED)
 ================================================================================
 
-> :warning: **NOTE** This project has been deprecated in favor of the newer plugin versions released by Microsoft, which are equivalent in functionality, but split across 3 separate plugins:
+> :warning: **NOTE** This project has been deprecated in favor of the newer plugin versions released by Microsoft, which are equivalent in functionality, but split across 2 separate plugins:
 * [Azure Toolkit for IntelliJ IDEA](https://plugins.jetbrains.com/plugin/8053) is for Java developers on Azure
 * [Microsoft Cloud Services for Android](https://plugins.jetbrains.com/plugin/8077) is for Android developers
 
-> If you are a user of this older combined plugin, it is recommended to uninstall it, then install the [Azure Services Explorer](https://plugins.jetbrains.com/plugin/8052) plugin, and then one or two of the other plugins, depending on your needs. 
+> If you are a user of this older combined plugin, it is recommended to uninstall it, then install one or two of the other plugins, depending on your needs. 
 
 > Issues logged in this project will no longer be addresseed.
 
