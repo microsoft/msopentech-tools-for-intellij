@@ -9,6 +9,8 @@ MS Open Tech Tools:  IntelliJ and Android Studio Plugin for Microsoft Services (
 
 > Issues logged in this project will no longer be addresseed.
 
+> The GitHub repo for the Azure Toolkit for IntelliJ is: https://github.com/microsoft/azure-tools-for-java 
+
 *Original readme:*
 
 Plugin for easy and fast development to enable developers of Android Apps to connect to Office 365 services and Azure Mobile Services, and developers of Java middleware to connect to Azure compute services. 
