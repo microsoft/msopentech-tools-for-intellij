@@ -168,7 +168,8 @@ public class Node {
     public NodeAction addAction(String name, NodeActionListener actionListener) {
         NodeAction nodeAction = getNodeActionByName(name);
         if (nodeAction == null) {
-            addAction(nodeAction = new NodeAction(this, name));
+            nodeAction = new NodeAction(this, name);
+            addAction(nodeAction);
         }
         nodeAction.addListener(actionListener);
         return nodeAction;
@@ -225,9 +226,9 @@ public class Node {
         if (actions != null) {
             try {
                 for (Class<? extends NodeActionListener> actionListener : actions) {
-                    Name name = actionListener.getAnnotation(Name.class);
-                    if (name != null) {
-                        addAction(name.value(), createNodeActionListener(actionListener));
+                    Name actionName = actionListener.getAnnotation(Name.class);
+                    if (actionName != null) {
+                        addAction(actionName.value(), createNodeActionListener(actionListener));
                     }
                 }
             } catch (InstantiationException e) {

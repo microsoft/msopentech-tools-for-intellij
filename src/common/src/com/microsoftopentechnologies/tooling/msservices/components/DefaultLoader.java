@@ -31,6 +31,9 @@ public class DefaultLoader {
     private static PluginComponent pluginComponent;
     private static Map<Class<? extends Node>, ImmutableList<Class<? extends NodeActionListener>>> node2Actions;
 
+    private DefaultLoader() {
+    }
+
     public static void setUiHelper(UIHelper uiHelper) {
         DefaultLoader.uiHelper = uiHelper;
     }
