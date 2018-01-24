@@ -168,7 +168,8 @@ public class Node {
     public NodeAction addAction(String name, NodeActionListener actionListener) {
         NodeAction nodeAction = getNodeActionByName(name);
         if (nodeAction == null) {
-            addAction(nodeAction = new NodeAction(this, name));
+            nodeAction = new NodeAction(this, name);
+            addAction(nodeAction);
         }
         nodeAction.addListener(actionListener);
         return nodeAction;
