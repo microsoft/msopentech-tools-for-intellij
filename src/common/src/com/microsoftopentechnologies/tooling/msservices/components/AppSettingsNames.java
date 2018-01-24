@@ -22,6 +22,10 @@ package com.microsoftopentechnologies.tooling.msservices.components;
  * upgrades which can potentially cause issues.
  */
 public class AppSettingsNames {
+
+    private AppSettingsNames() {
+    }
+
     public static final String CURRENT_PLUGIN_VERSION = "com.microsoftopentechnologies.intellij.PluginVersion";
     public static final String EXTERNAL_STORAGE_ACCOUNT_LIST = "com.microsoftopentechnologies.intellij.ExternalStorageAccountList";
 
